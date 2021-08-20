@@ -50,7 +50,9 @@ class CompareSheets:
         notfoundCount = 0
         req_id_re_str = '[A-Z]\-[A-Z\d\-]+'
         req_id_re = re.compile(req_id_re_str)
-        section_re = re.compile('id="\d[\d_]*')
+        section_id_re = re.compile('id="\d[\d_]*')
+        #section_content_re = re.compile('id="\d[\d_]*.*<h/d>')
+
         # section_id_re = re.compile('\d\.\d\.(\d\.)?[\d]?')
         # section_id_re = re.compile('\d\.\d\.\d?\.?\d?')
 
@@ -59,8 +61,8 @@ class CompareSheets:
         with open("cdd-11.html", "r") as text_file:
             cdd_string = text_file.read()
 
-        cdd_sections_splits = re.split(section_re, cdd_string)
-        cdd_section_findall = re.findall(section_re, cdd_string)
+        cdd_sections_splits = re.findall('id="\d[\d_]*.+?<h', cdd_string, flags=re.DOTALL)
+        cdd_section_findall = re.findall(section_id_re, cdd_string)
         total_requirement_count = 0
         section_id_count = 0
         cdd_section_id: str = ""
