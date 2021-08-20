@@ -27,7 +27,7 @@ def read_table(file_name: str):
                 class_def_value = table[table_index][header.index("class_def")]
                 method_value = table[table_index][header.index("method")]
                 module_value = table[table_index][header.index("module")]
-                key_value = '{}/{}'.format(section_id_value, req_id_value)
+                key_value = '{}/{}'.format(section_id_value.lstrip('.'), req_id_value)
                 keyFields[key_value] = table_index
                 line_count += 1
                 print(f'Processed {line_count} lines {key_value} ')
@@ -48,7 +48,7 @@ class CompareSheets:
         section_to_data_dict = {"none": "[]"}
         foundCount = 0
         notfoundCount = 0
-        req_id_re_str = '[A-Z]\-[A-Z\d\-]+'
+        req_id_re_str = '[ACHTW]-[0-9][0-9]?-[0-9][0-9]?'
         req_id_re = re.compile(req_id_re_str)
         section_id_re = re.compile('id="\d[\d_]*')
         #section_content_re = re.compile('id="\d[\d_]*.*<h/d>')
@@ -74,26 +74,31 @@ class CompareSheets:
                 cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
             section_to_data_dict[cdd_section_id] = section
 
-            record_id_findall = re.findall(req_id_re, section)
-            record_id_splits = re.split(req_id_re, section)
+            #record_id_findall = re.findall(req_id_re, section)
+            record_id_splits = re.findall('[ACHTW]-[0-9][0-9]?-[0-9][0-9]?.+?\[',section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
                 foundUrls = re.findall("(<url>https?://[^\s]+)", record_id_split)
                 previous_value = None
-                if record_id_count < len(record_id_findall):
-                    record_id = record_id_findall[record_id_count]
+                record_id_result= re.search('[ACHTW]-[0-9][0-9]?-[0-9][0-9]?',record_id_split)
+                if record_id_result:
+                    record_id = record_id_result[0].rstrip(']')
                     rec_id_key = '{}/{}'.format(cdd_section_id, record_id)
-                    previous_value = section_to_data_dict.get(rec_id_key)
                     value = self.cleanhtml(record_id_split)
                     value = re.sub("\s\s+", " ", value)
                     value = value.strip("][")
 
+                    previous_value = section_to_data_dict.get(rec_id_key)
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
+                    else:
+                        value = 'key=[{}]: {}'.format(rec_id_key, value)
                     section_to_data_dict[rec_id_key] = value
                     record_id_count += 1
-                    print(
-                        f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{rec_id_key}] value {value} ')
+                    total_requirement_count += 1
+                    print( f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{rec_id_key}] value {value} ')
+                else:
+                    print(f'Error red_id not found in [{record_id_split}]')
             section_id_count += 1
 
         for temp_key in recs_read:
@@ -103,9 +108,8 @@ class CompareSheets:
 
             section_data = section_to_data_dict.get(key_str)
             if section_data:
-                print('Dict result {}'.format(section_data))
                 foundCount += 1
-                print(f'Found {foundCount} key [{key_str}] index {section_data} ')
+                print(f'Found#=[{foundCount}] key=[{key_str}] requirement=[{section_data}]')
             else:
                 notfoundCount += 1
                 print(f'Not {notfoundCount} key [{key_str}] ')
