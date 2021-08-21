@@ -45,24 +45,22 @@ class CompareSheets:
 
     def compare_tables(self):
         recs_read: dict
-        section_to_data_dict = {"none": "[]"}
+        key_to_full_requirement_text = dict()
+        key_to_java_objects = dict()
         foundCount = 0
         notfoundCount = 0
         keys_not_found: list = []
-        req_id_re_str = '(Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-        req_id_re = re.compile(req_id_re_str)
+        req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
         section_id_re_str: str = 'id="\d[\d_]*'
         section_id_re = re.compile(section_id_re_str)
 
-        # section_id_re = re.compile('\d\.\d\.(\d\.)?[\d]?')
-        # section_id_re = re.compile('\d\.\d\.\d?\.?\d?')
 
         table1, recs_read = read_table('new-recs-11.csv')
         cdd_string: str = ""
         with open("cdd-11.html", "r") as text_file:
             cdd_string = text_file.read()
 
-        cdd_sections_splits = re.findall('id="\d[\d_]*.+?<h', cdd_string, flags=re.DOTALL)
+        cdd_sections_splits = re.findall(section_id_re_str+'.+?<h', cdd_string, flags=re.DOTALL)
         cdd_section_findall = re.findall(section_id_re, cdd_string)
         total_requirement_count = 0
         section_id_count = 0
@@ -73,33 +71,40 @@ class CompareSheets:
                 cdd_section_id: str = cdd_section_findall[section_id_count]
                 cdd_section_id = cdd_section_id.replace('id="', '')
                 cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
-            section_to_data_dict[cdd_section_id] = section
+            key_to_full_requirement_text[cdd_section_id] = section
 
             #record_id_findall = re.findall(req_id_re, section)
-            record_id_splits = re.findall("(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?.+?\[",section, flags=re.DOTALL)
+            record_id_splits = re.findall(req_id_re_str+".+?\[",section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
                 foundUrls = re.findall("(<url>https?://[^\s]+)", record_id_split)
                 previous_value = None
                 record_id_result= re.search(req_id_re_str,record_id_split)
                 if record_id_result:
+
                     record_id = record_id_result[0].rstrip(']')
                     rec_id_key = '{}/{}'.format(cdd_section_id, record_id)
                     value = self.cleanhtml(record_id_split)
                     value = re.sub("\s\s+", " ", value)
                     value = value.strip("][")
+                    java_object_re_str = '(?:[a-zA-Z]\w+\.)+(?:\w+)'
+                    java_objects = re.findall(java_object_re_str, value)
+                    java_objects_str = ""
+                    for java_object in java_objects:
+                        java_objects_str += "{} ".format(java_object)
 
-                    previous_value = section_to_data_dict.get(rec_id_key)
+                    key_to_java_objects[rec_id_key] = java_objects_str
+                    previous_value = key_to_full_requirement_text.get(rec_id_key)
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
                     else:
-                        value = 'key=[{}]: {}'.format(rec_id_key, value)
-                    section_to_data_dict[rec_id_key] = value
+                        value = 'key=[{}]: [{}'.format(rec_id_key, value)
+                    key_to_full_requirement_text[rec_id_key] = value
                     record_id_count += 1
                     total_requirement_count += 1
                     print( f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{rec_id_key}] value {value} ')
                 else:
-                    print(f'Error red_id not found in [{record_id_split}]')
+                    print(f'Error red\c_id not found in [{record_id_split}]')
             section_id_count += 1
         #output_file = open('augmented_output.csv', 'w')
         with open('augmented_output.csv', 'w', newline='') as f:
@@ -110,16 +115,19 @@ class CompareSheets:
                 key_str: str = temp_key
                 key_str = key_str.rstrip(".").strip(' ')
 
-                section_data = section_to_data_dict.get(key_str)
+                section_data = key_to_full_requirement_text.get(key_str)
                 if section_data:
                     foundCount += 1
                     table1[output_count].append(',{}'.format(section_data))
+
                     print(f'Found#=[{foundCount}] key=[{key_str}] requirement_text=[{section_data}]')
                 else:
                     notfoundCount += 1
                     keys_not_found.append(key_str)
-                    table1[output_count].append('Item: {} Not found in CDD 11 https://source.android.com/compatibility/11/android-11-cdd'.format(notfoundCount))
+                    table1[output_count].append('! ERROR Item: {} Not found in CDD 11 https://source.android.com/compatibility/11/android-11-cdd'.format(notfoundCount))
                     print(f'Not {notfoundCount} key [{key_str}] ')
+
+                table1[output_count].append(',{}'.format(key_to_java_objects.get(key_str)))
                 output_count += 1
                 print(f'Not {notfoundCount} found {foundCount} ')
             table_writer = csv.writer(f)
