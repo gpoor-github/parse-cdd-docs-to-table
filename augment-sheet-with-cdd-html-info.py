@@ -101,22 +101,30 @@ class CompareSheets:
                 else:
                     print(f'Error red_id not found in [{record_id_split}]')
             section_id_count += 1
+        #output_file = open('augmented_output.csv', 'w')
+        with open('augmented_output.csv', 'w', newline='') as f:
 
-        for temp_key in recs_read:
-            section_name = ""
-            key_str: str = temp_key
-            key_str = key_str.rstrip(".").strip(' ')
+            output_count = 0
+            for temp_key in recs_read:
+                section_name = ""
+                key_str: str = temp_key
+                key_str = key_str.rstrip(".").strip(' ')
 
-            section_data = section_to_data_dict.get(key_str)
-            if section_data:
-                foundCount += 1
-                print(f'Found#=[{foundCount}] key=[{key_str}] requirement=[{section_data}]')
-            else:
-                notfoundCount += 1
-                keys_not_found.append(key_str)
-                print(f'Not {notfoundCount} key [{key_str}] ')
-
-            print(f'Not {notfoundCount} found {foundCount} ')
+                section_data = section_to_data_dict.get(key_str)
+                if section_data:
+                    foundCount += 1
+                    table1[output_count].append(',{}'.format(section_data))
+                    print(f'Found#=[{foundCount}] key=[{key_str}] requirement_text=[{section_data}]')
+                else:
+                    notfoundCount += 1
+                    keys_not_found.append(key_str)
+                    table1[output_count].append('Item: {} Not found in CDD 11 https://source.android.com/compatibility/11/android-11-cdd'.format(notfoundCount))
+                    print(f'Not {notfoundCount} key [{key_str}] ')
+                output_count += 1
+                print(f'Not {notfoundCount} found {foundCount} ')
+            table_writer = csv.writer(f)
+            table_writer.writerows(table1)
+        f.close()
 
         for missing_key in keys_not_found:
             key_result = cdd_string.find(missing_key)
