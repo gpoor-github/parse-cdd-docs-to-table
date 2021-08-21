@@ -5,7 +5,7 @@ import re
 def read_table(file_name: str):
     table = []
     header = []
-    keyFields: dict = {"": ""}
+    keyFields: dict = dict()
     with open(file_name) as csv_file:
 
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -27,7 +27,7 @@ def read_table(file_name: str):
                 class_def_value = table[table_index][header.index("class_def")]
                 method_value = table[table_index][header.index("method")]
                 module_value = table[table_index][header.index("module")]
-                key_value = '{}/{}'.format(section_id_value.lstrip('.'), req_id_value)
+                key_value = '{}/{}'.format(section_id_value.rstrip('.'), req_id_value)
                 keyFields[key_value] = table_index
                 line_count += 1
                 print(f'Processed {line_count} lines {key_value} ')
@@ -48,10 +48,11 @@ class CompareSheets:
         section_to_data_dict = {"none": "[]"}
         foundCount = 0
         notfoundCount = 0
-        req_id_re_str = '[ACHTW]-[0-9][0-9]?-[0-9][0-9]?'
+        keys_not_found: list = []
+        req_id_re_str = '(Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
         req_id_re = re.compile(req_id_re_str)
-        section_id_re = re.compile('id="\d[\d_]*')
-        #section_content_re = re.compile('id="\d[\d_]*.*<h/d>')
+        section_id_re_str: str = 'id="\d[\d_]*'
+        section_id_re = re.compile(section_id_re_str)
 
         # section_id_re = re.compile('\d\.\d\.(\d\.)?[\d]?')
         # section_id_re = re.compile('\d\.\d\.\d?\.?\d?')
@@ -75,12 +76,12 @@ class CompareSheets:
             section_to_data_dict[cdd_section_id] = section
 
             #record_id_findall = re.findall(req_id_re, section)
-            record_id_splits = re.findall('[ACHTW]-[0-9][0-9]?-[0-9][0-9]?.+?\[',section, flags=re.DOTALL)
+            record_id_splits = re.findall("(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?.+?\[",section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
                 foundUrls = re.findall("(<url>https?://[^\s]+)", record_id_split)
                 previous_value = None
-                record_id_result= re.search('[ACHTW]-[0-9][0-9]?-[0-9][0-9]?',record_id_split)
+                record_id_result= re.search(req_id_re_str,record_id_split)
                 if record_id_result:
                     record_id = record_id_result[0].rstrip(']')
                     rec_id_key = '{}/{}'.format(cdd_section_id, record_id)
@@ -112,10 +113,26 @@ class CompareSheets:
                 print(f'Found#=[{foundCount}] key=[{key_str}] requirement=[{section_data}]')
             else:
                 notfoundCount += 1
+                keys_not_found.append(key_str)
                 print(f'Not {notfoundCount} key [{key_str}] ')
 
             print(f'Not {notfoundCount} found {foundCount} ')
-            pass
+
+        for missing_key in keys_not_found:
+            key_result = cdd_string.find(missing_key)
+            if key_result > -1:
+                Exception('Key {} not found, but it was there '.format(missing_key))
+            else: # look harder
+                split_key = str(missing_key).split('/')
+                id_rec_re_str = 'id=\"{}_[a-z].+?{}'.format(split_key[0],section_id_re_str)
+                re_key_result = re.findall(id_rec_re_str,cdd_string,flags=re.DOTALL)
+                if re_key_result:
+                    is_id_rec_in_section = re_key_result[0].find(split_key[1])
+                    if is_id_rec_in_section > -1:
+                        Exception('Key {} not found, but it was there {}'.format(missing_key,re_key_result[0]))
+                else:
+                    print('Note no key result for section key=[{}]'.format(missing_key))
+
 
 
 if __name__ == '__main__':
