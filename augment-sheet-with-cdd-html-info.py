@@ -1,6 +1,6 @@
 import csv
 import re
-
+import os
 
 def read_table(file_name: str):
     table = []
@@ -36,17 +36,38 @@ def read_table(file_name: str):
         return table, keyFields
 
 
-class CompareSheets:
+class AugmentSheetWithCDDInfo:
+    # !/usr/bin/python
+
+    def find_test_files(self, reference_diction: dict):
+        # traverse root directory, and list directories as dirs and files as files
+        collected_value : dict = dict()
+        for root, dirs, files in os.walk("/home/gpoor/cts-source"):
+            path = root.split(os.sep)
+            for file in files:
+                if file.endswith('.java'):
+                    fullpath ='{}/{}'.format(root,file)
+                    with open(fullpath, "r") as text_file:
+                        cdd_string = text_file.read()
+                        for reference in reference_diction:
+                            value = reference_diction[reference]
+                            result = cdd_string.find(value)
+                            if result > -1:
+                                print('found {} in  {}'.format(value,fullpath))
+                                collected_value[reference]=fullpath
+        return collected_value
 
     def cleanhtml(self, raw_html):
         cleanr = re.compile('<.*?>')
         cleantext = re.sub(cleanr, '', raw_html)
         return cleantext
 
-    def compare_tables(self):
+    def augment_table(self):
         recs_read: dict
         key_to_full_requirement_text = dict()
         key_to_java_objects = dict()
+        key_to_urls = dict()
+
         foundCount = 0
         notfoundCount = 0
         keys_not_found: list = []
@@ -55,7 +76,7 @@ class CompareSheets:
         section_id_re = re.compile(section_id_re_str)
 
 
-        table1, recs_read = read_table('new-recs-11.csv')
+        table1, recs_read = read_table('new_recs_todo.csv')
         cdd_string: str = ""
         with open("cdd-11.html", "r") as text_file:
             cdd_string = text_file.read()
@@ -77,13 +98,19 @@ class CompareSheets:
             record_id_splits = re.findall(req_id_re_str+".+?\[",section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
-                foundUrls = re.findall("(<url>https?://[^\s]+)", record_id_split)
+
                 previous_value = None
                 record_id_result= re.search(req_id_re_str,record_id_split)
                 if record_id_result:
-
                     record_id = record_id_result[0].rstrip(']')
                     rec_id_key = '{}/{}'.format(cdd_section_id, record_id)
+                    findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
+                    found_urls = re.findall(findurl_re_str, record_id_split)
+                    found_urls_str = ""
+                    for found_url in found_urls:
+                        found_urls_str += "{} ".format(found_url)
+                    key_to_urls[rec_id_key] = found_urls_str
+
                     value = self.cleanhtml(record_id_split)
                     value = re.sub("\s\s+", " ", value)
                     value = value.strip("][")
@@ -92,8 +119,9 @@ class CompareSheets:
                     java_objects_str = ""
                     for java_object in java_objects:
                         java_objects_str += "{} ".format(java_object)
+                    if java_objects_str != "":
+                        key_to_java_objects[rec_id_key] = java_objects_str
 
-                    key_to_java_objects[rec_id_key] = java_objects_str
                     previous_value = key_to_full_requirement_text.get(rec_id_key)
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
@@ -106,6 +134,7 @@ class CompareSheets:
                 else:
                     print(f'Error red\c_id not found in [{record_id_split}]')
             section_id_count += 1
+        key_to_file = self.find_test_files(key_to_java_objects)
         #output_file = open('augmented_output.csv', 'w')
         with open('augmented_output.csv', 'w', newline='') as f:
 
@@ -128,6 +157,11 @@ class CompareSheets:
                     print(f'Not {notfoundCount} key [{key_str}] ')
 
                 table1[output_count].append(',{}'.format(key_to_java_objects.get(key_str)))
+                table1[output_count].append(',{}'.format(key_to_urls.get(key_str)))
+                table1[output_count].append(',{}'.format(key_to_file.get(key_str)))
+                table1[output_count].append('Last augmented column')
+
+
                 output_count += 1
                 print(f'Not {notfoundCount} found {foundCount} ')
             table_writer = csv.writer(f)
@@ -147,9 +181,9 @@ class CompareSheets:
                     if is_id_rec_in_section > -1:
                         Exception('Key {} not found, but it was there {}'.format(missing_key,re_key_result[0]))
                 else:
-                    print('Note no key result for section key=[{}]'.format(missing_key))
+                    print('Note no key result for section [{}] part of key=[{}]'.format(split_key[0],missing_key))
 
 
 
 if __name__ == '__main__':
-    CompareSheets().compare_tables()
+    AugmentSheetWithCDDInfo().augment_table()
