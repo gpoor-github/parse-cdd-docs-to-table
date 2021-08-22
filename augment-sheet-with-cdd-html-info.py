@@ -33,7 +33,8 @@ def read_table(file_name: str):
                 print(f'Processed {line_count} lines {key_value} ')
             print(f'For table {line_count}')
         print("End for loop")
-        return table, keyFields
+        return table, keyFields,header
+
 
 
 class AugmentSheetWithCDDInfo:
@@ -52,12 +53,15 @@ class AugmentSheetWithCDDInfo:
                         for reference in reference_diction:
                             value_set = reference_diction[reference]
                             values = str(value_set).split(' ')
+                            path_set = set()
                             for value in values:
                                 if len(value) > 4:
                                     result = cdd_string.find(value)
                                     if result > -1:
                                         print('found {} in  {}'.format(value,fullpath))
-                                        collected_value[reference]=fullpath
+                                        path_set.add(fullpath)
+                            if len(path_set) > 0:
+                                collected_value[reference] = ' '.join(path_set)
         return collected_value
 
     def cleanhtml(self, raw_html):
@@ -79,7 +83,7 @@ class AugmentSheetWithCDDInfo:
         section_id_re = re.compile(section_id_re_str)
 
 
-        table1, recs_read = read_table('new_recs_todo.csv')
+        table1, recs_read, header= read_table('new_recs_todo.csv')
         cdd_string: str = ""
         with open("cdd-11.html", "r") as text_file:
             cdd_string = text_file.read()
@@ -108,28 +112,34 @@ class AugmentSheetWithCDDInfo:
                     record_id = record_id_result[0].rstrip(']')
                     rec_id_key = '{}/{}'.format(cdd_section_id, record_id)
                     findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
-                    found_urls = re.findall(findurl_re_str, record_id_split)
+                    found_urls = set(re.findall(findurl_re_str, record_id_split))
                     found_urls_str = ""
                     for found_url in found_urls:
                         found_urls_str += "{} ".format(found_url)
                     key_to_urls[rec_id_key] = found_urls_str
 
+
                     value = self.cleanhtml(record_id_split)
                     value = re.sub("\s\s+", " ", value)
                     value = value.strip("][")
+                    java_elements_aggregated_str = ""
+                    java_methods_re_str = '(?:[a-zA-Z]\w+\(\))'
+                    java_methods = set(re.findall(java_methods_re_str, value))
+                    if len(java_methods) > 0:
+                        java_elements_aggregated_str += ' '.join(java_methods)+' '
+
                     java_object_re_str = '(?:[a-zA-Z]\w+\.)+(?:\w+)'
                     java_objects = set(re.findall(java_object_re_str, value))
                     java_defines_str = '[A-Z0-9]{4,29}_[_A-Z]*'
                     java_defines = set(re.findall(java_defines_str, value))
 
 
-                    java_objects_str = ""
                     for java_define in java_defines:
-                        java_objects_str += "{} ".format(java_define)
+                        java_elements_aggregated_str += "{} ".format(java_define)
                     for java_object in java_objects:
-                        java_objects_str += "{} ".format(java_object)
-                    if java_objects_str != "":
-                        key_to_java_objects[rec_id_key] = java_objects_str
+                        java_elements_aggregated_str += "{} ".format(java_object)
+                    if java_elements_aggregated_str != "":
+                        key_to_java_objects[rec_id_key] = java_elements_aggregated_str
 
                     previous_value = key_to_full_requirement_text.get(rec_id_key)
                     if previous_value:
@@ -145,7 +155,8 @@ class AugmentSheetWithCDDInfo:
             section_id_count += 1
         key_to_file = self.find_test_files(key_to_java_objects)
         #output_file = open('augmented_output.csv', 'w')
-        with open('augmented_output.csv', 'w', newline='') as f:
+        with open('augmented_output.csv', 'w', newline='') as csv_output_file:
+           # csv_writer = csv.writer(csv_output_file, delimiter=',')
 
             output_count = 0
             for temp_key in recs_read:
@@ -175,7 +186,7 @@ class AugmentSheetWithCDDInfo:
                 print(f'Not {notfoundCount} found {foundCount} ')
             table_writer = csv.writer(f)
             table_writer.writerows(table1)
-        f.close()
+        csv_output_file.close()
 
         for missing_key in keys_not_found:
             key_result = cdd_string.find(missing_key)
