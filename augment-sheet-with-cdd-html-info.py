@@ -50,11 +50,14 @@ class AugmentSheetWithCDDInfo:
                     with open(fullpath, "r") as text_file:
                         cdd_string = text_file.read()
                         for reference in reference_diction:
-                            value = reference_diction[reference]
-                            result = cdd_string.find(value)
-                            if result > -1:
-                                print('found {} in  {}'.format(value,fullpath))
-                                collected_value[reference]=fullpath
+                            value_set = reference_diction[reference]
+                            values = str(value_set).split(' ')
+                            for value in values:
+                                if len(value) > 4:
+                                    result = cdd_string.find(value)
+                                    if result > -1:
+                                        print('found {} in  {}'.format(value,fullpath))
+                                        collected_value[reference]=fullpath
         return collected_value
 
     def cleanhtml(self, raw_html):
@@ -115,8 +118,14 @@ class AugmentSheetWithCDDInfo:
                     value = re.sub("\s\s+", " ", value)
                     value = value.strip("][")
                     java_object_re_str = '(?:[a-zA-Z]\w+\.)+(?:\w+)'
-                    java_objects = re.findall(java_object_re_str, value)
+                    java_objects = set(re.findall(java_object_re_str, value))
+                    java_defines_str = '[A-Z0-9]{4,29}_[_A-Z]*'
+                    java_defines = set(re.findall(java_defines_str, value))
+
+
                     java_objects_str = ""
+                    for java_define in java_defines:
+                        java_objects_str += "{} ".format(java_define)
                     for java_object in java_objects:
                         java_objects_str += "{} ".format(java_object)
                     if java_objects_str != "":
