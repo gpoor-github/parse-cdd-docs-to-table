@@ -154,7 +154,25 @@ class AugmentSheetWithCDDInfo:
                     print(f'Error red\c_id not found in [{record_id_split}]')
             section_id_count += 1
         key_to_file = self.find_test_files(key_to_java_objects)
-        #output_file = open('augmented_output.csv', 'w')
+        #output_file = open('augmented_output.csv', 'w') cdd_string = self.cleanhtml(cdd_string)
+
+        cdd_string = self.cleanhtml(cdd_string)
+        for missing_key in keys_not_found:
+            key_result = cdd_string.find(missing_key)
+            if key_result > -1:
+                Exception('Key {} not found, but it was there '.format(missing_key))
+            else: # look harder
+                split_key = str(missing_key).split('/')
+                id_rec_re_str = 'id=\"{}_[a-z].+?{}'.format(split_key[0],section_id_re_str)
+                re_key_result = re.findall(id_rec_re_str,cdd_string,flags=re.DOTALL)
+                if re_key_result:
+                    is_id_rec_in_section = re_key_result[0].find(split_key[1])
+                    if is_id_rec_in_section > -1:
+                        Exception('Key {} not found, but it was there {}'.format(missing_key,re_key_result[0]))
+                else:
+                    print('Note no key result for section [{}] part of key=[{}]'.format(split_key[0],missing_key))
+
+
         with open('augmented_output.csv', 'w', newline='') as csv_output_file:
            # csv_writer = csv.writer(csv_output_file, delimiter=',')
 
@@ -174,34 +192,27 @@ class AugmentSheetWithCDDInfo:
                     notfoundCount += 1
                     keys_not_found.append(key_str)
                     table1[output_count].append('! ERROR Item: {} Not found in CDD 11 https://source.android.com/compatibility/11/android-11-cdd'.format(notfoundCount))
-                    print(f'Not {notfoundCount} key [{key_str}] ')
+                    print(f'Did not find with key [{key_str}] count {notfoundCount} key  ')
 
-                table1[output_count].append(',{}'.format(key_to_java_objects.get(key_str)))
-                table1[output_count].append(',{}'.format(key_to_urls.get(key_str)))
-                table1[output_count].append(',{}'.format(key_to_file.get(key_str)))
+                table1[output_count].append(key_to_java_objects.get(key_str))
+                table1[output_count].append(key_to_urls.get(key_str))
+                filename = key_to_file.get(key_str)
+                table1[output_count].append(filename)
+                if filename:
+                    class_name_split_src=filename.split('/src/')
+                    if len(class_name_split_src) > 1:
+                        class_name = str(class_name_split_src[1]).replace("/",".").rstrip(".java")
+                        table1[output_count][7] = class_name
+                        table1[output_count][3] = "Yes"
                 table1[output_count].append('Last augmented column')
+
 
 
                 output_count += 1
                 print(f'Not {notfoundCount} found {foundCount} ')
-            table_writer = csv.writer(f)
+            table_writer = csv.writer(csv_output_file)
             table_writer.writerows(table1)
         csv_output_file.close()
-
-        for missing_key in keys_not_found:
-            key_result = cdd_string.find(missing_key)
-            if key_result > -1:
-                Exception('Key {} not found, but it was there '.format(missing_key))
-            else: # look harder
-                split_key = str(missing_key).split('/')
-                id_rec_re_str = 'id=\"{}_[a-z].+?{}'.format(split_key[0],section_id_re_str)
-                re_key_result = re.findall(id_rec_re_str,cdd_string,flags=re.DOTALL)
-                if re_key_result:
-                    is_id_rec_in_section = re_key_result[0].find(split_key[1])
-                    if is_id_rec_in_section > -1:
-                        Exception('Key {} not found, but it was there {}'.format(missing_key,re_key_result[0]))
-                else:
-                    print('Note no key result for section [{}] part of key=[{}]'.format(split_key[0],missing_key))
 
 
 
