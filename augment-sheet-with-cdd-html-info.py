@@ -87,7 +87,7 @@ class AugmentSheetWithCDDInfo:
         section_id_re_str: str = 'id="\d[\d_]*'
         section_id_re = re.compile(section_id_re_str)
 
-        table1, recs_read, header = read_table('new_recs_todo.csv')
+        table1, recs_read, header = read_table('CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11.csv')
         cdd_string: str = ""
         total_requirement_count = 0
 
@@ -242,8 +242,8 @@ class AugmentSheetWithCDDInfo:
                         '! ERROR Item: {} Not found in CDD 11 https://source.android.com/compatibility/11/android-11-cdd'.format(
                             notfoundCount))
                     table1[output_count].append(key_to_urls.get(key_str))
-
                     print(f'NOT FOUND![{key_str}] count {notfoundCount} key  ')
+
 
                 table1[output_count].append(key_to_java_objects.get(key_str))
                 if keys_to_files_dict:
@@ -259,7 +259,6 @@ class AugmentSheetWithCDDInfo:
                 table1[output_count].append('Last augmented column')
 
                 output_count += 1
-                print(f'Not {notfoundCount} found {foundCount} ')
             table_writer = csv.writer(csv_output_file)
             table_writer.writerows(table1)
             csv_output_file.close()
