@@ -293,7 +293,6 @@ class AugmentSheetWithCDDInfo:
                 table2[output_count].append('Last augmented column')
 
                 output_count += 1
-                print(f'Not {notfoundCount} found {foundCount} ')
             table_writer = csv.writer(csv_output_file)
             table_writer.writerows(table2)
             csv_output_file.close()
@@ -308,19 +307,18 @@ class AugmentSheetWithCDDInfo:
             if key_result > -1:
                 Exception('Key {} not found, but it was there '.format(missing_key))
             else:  # look harder
-                print(f"\nConfirmed missing whole key {missing_key} {i}")
+                # print(f"\nConfirmed missing whole key {missing_key} {i}")
                 split_key = str(missing_key).split('/')
                 key_result = cdd_string.find(split_key[0])
                 if key_result == -1:
-                    print(f"Even Section {split_key[0]} of {missing_key} Not found")
+                    print(f"Even SECTION {split_key[0]} of {missing_key} Not found!")
                 id_rec_re_str = 'id=\"{}_[a-z].+?{}'.format(split_key[0], section_id_re_str)
                 re_key_result = re.findall(id_rec_re_str, cdd_string, flags=re.DOTALL)
                 if re_key_result:
                     is_id_rec_in_section = re_key_result[0].find(split_key[1])
                     if is_id_rec_in_section > -1:
                         Exception('Key {} not found, but it was there {}'.format(missing_key, re_key_result[0]))
-                else:
-                    print('Note no key result for section [{}] part of key=[{}]'.format(split_key[0], missing_key))
+        print(f'Not {notfoundCount} found {foundCount} ')
 
 
 if __name__ == '__main__':
