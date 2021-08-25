@@ -98,7 +98,6 @@ class AugmentSheetWithCDDInfo:
         cdd_section_findall = re.findall(section_id_re, cdd_string)
         section_id_count = 0
         cdd_section_id: str = ""
-        req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
         for section in cdd_sections_splits:
             if section_id_count < len(cdd_section_findall):
                 cdd_section_id: str = cdd_section_findall[section_id_count]
@@ -106,7 +105,6 @@ class AugmentSheetWithCDDInfo:
                 cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
             key_to_full_requirement_text[cdd_section_id] = section
            # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
-            #^.* > \[
             record_id_splits = re.split(r"\s*(?:<li>)?\[",str(section)) #re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
@@ -163,7 +161,7 @@ class AugmentSheetWithCDDInfo:
             record_id_count = 0
             for record_id_split in record_id_splits:
                 previous_value = None
-                record_id_result= re.search(key_string_re,record_id_split)
+                record_id_result = re.search(key_string_re,record_id_split)
                 if record_id_result:
                     found_full_key = record_id_result[0].rstrip(']')
                     findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
@@ -198,7 +196,7 @@ class AugmentSheetWithCDDInfo:
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
                     else:
-                        value = 'key=[{}]: [{}'.format(found_full_key, value)
+                        value = 'fullkeyF=[{}]: [{}'.format(found_full_key, value)
                     key_to_full_requirement_text[found_full_key] = value
                     record_id_count += 1
                     total_requirement_count += 1
