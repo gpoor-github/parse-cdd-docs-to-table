@@ -90,7 +90,7 @@ class AugmentSheetWithCDDInfo:
         cdd_string: str = ""
         total_requirement_count = 0
 
-        with open("sample_cdd.txt", "r") as text_file:
+        with open("cdd-11.html", "r") as text_file:
             cdd_string = text_file.read()
 
         cdd_string = self.clean_html_anchors(cdd_string)
