@@ -85,28 +85,32 @@ class AugmentSheetWithCDDInfo:
         req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
         key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
         section_id_re_str: str = 'id="\d[\d_]*'
-        section_id_re = re.compile(section_id_re_str)
 
-        table1, recs_read, header = read_table('CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11.csv')
+        table1, recs_read, header = read_table('new_recs_todo.csv')
         cdd_string: str = ""
         total_requirement_count = 0
 
-        with open("cdd-11.html", "r") as text_file:
+        with open("sample_cdd.txt", "r") as text_file:
             cdd_string = text_file.read()
 
         cdd_string = self.clean_html_anchors(cdd_string)
-        cdd_sections_splits = re.findall(section_id_re_str + '.+?<h', cdd_string, flags=re.DOTALL)
+        section_id_re_str: str = '"(?:\d{1,3}_)+'
+        section_id_re = re.compile(section_id_re_str)
+        cdd_sections_splits = re.findall(section_id_re_str + '.+?id=', cdd_string, flags=re.DOTALL)
         cdd_section_findall = re.findall(section_id_re, cdd_string)
         section_id_count = 0
         cdd_section_id: str = ""
-
+        req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+        req_id_re_str
         for section in cdd_sections_splits:
             if section_id_count < len(cdd_section_findall):
                 cdd_section_id: str = cdd_section_findall[section_id_count]
-                cdd_section_id = cdd_section_id.replace('id="', '')
+                cdd_section_id = cdd_section_id.replace('"', '')
                 cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
             key_to_full_requirement_text[cdd_section_id] = section
-            record_id_splits = re.findall(req_id_re_str + ".+?\[", section, flags=re.DOTALL)
+           # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
+
+            record_id_splits = str(section).split("[")#re. findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
 
@@ -218,7 +222,7 @@ class AugmentSheetWithCDDInfo:
             # output_file = open('augmented_output.csv', 'w') cdd_string = self.cleanhtml(cdd_string)
 
         keys_to_files_dict = None
-        keys_to_files_dict = self.find_test_files(key_to_java_objects)
+        #keys_to_files_dict = self.find_test_files(key_to_java_objects)
 
         with open('augmented_output.csv', 'w', newline='') as csv_output_file:
             # csv_writer = csv.writer(csv_output_file, delimiter=',')
@@ -265,11 +269,11 @@ class AugmentSheetWithCDDInfo:
         table2 = list([])
         with open('created_output.csv', 'w', newline='') as csv_output_file:
             # csv_writer = csv.writer(csv_output_file, delimiter=',')
-
             output_count = 0
             for key in key_to_full_requirement_text:
                 section_name = ""
                 key_str: str = key
+                print(f"keys from  {output_count} [{key_str}]")
                 key_str = key_str.rstrip(".").strip(' ')
                 key_split = key_str.split('/')
                 table2.append(['','','','','','','','',''])
@@ -318,7 +322,8 @@ class AugmentSheetWithCDDInfo:
                     is_id_rec_in_section = re_key_result[0].find(split_key[1])
                     if is_id_rec_in_section > -1:
                         Exception('Key {} not found, but it was there {}'.format(missing_key, re_key_result[0]))
-        print(f'Not {notfoundCount} found {foundCount} ')
+            print(f"{missing_key} Missing {i}")
+        print(f'Not {notfoundCount} Found {foundCount}  of {notfoundCount+foundCount}')
 
 
 if __name__ == '__main__':
