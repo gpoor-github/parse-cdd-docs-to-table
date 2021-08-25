@@ -109,8 +109,8 @@ class AugmentSheetWithCDDInfo:
                 cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
             key_to_full_requirement_text[cdd_section_id] = section
            # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
-
-            record_id_splits = str(section).split("[")#re. findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
+            #^.* > \[
+            record_id_splits = re.split(r"\s*(?:<li>)?\[",str(section)) #re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
 
