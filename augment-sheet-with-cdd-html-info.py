@@ -83,12 +83,11 @@ class AugmentSheetWithCDDInfo:
         notfoundCount = 0
         keys_not_found: list = []
         req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-        key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
         table1, recs_read, header = read_table('new_recs_todo.csv')
         cdd_string: str = ""
         total_requirement_count = 0
 
-        with open("cdd-11.html", "r") as text_file:
+        with open("Android 11 Compatibility Definition_full_original.html.txt", "r") as text_file:
             cdd_string = text_file.read()
 
         cdd_string = self.clean_html_anchors(cdd_string)
@@ -110,8 +109,8 @@ class AugmentSheetWithCDDInfo:
             for record_id_split in record_id_splits:
 
                 previous_value = None
-                section_id_part = re.compile('(?<!/)'+req_id_re_str)
-                record_id_result = re.search(section_id_part, record_id_split)
+                record_id_re = re.compile('(?<!/)'+req_id_re_str)
+                record_id_result = re.search(record_id_re, record_id_split)
                 if record_id_result:
                     record_id = record_id_result[0].rstrip(']')
                     composite_key = '{}/{}'.format(cdd_section_id, record_id)
@@ -122,9 +121,7 @@ class AugmentSheetWithCDDInfo:
                         found_urls_str += "{} ".format(found_url)
                     key_to_urls[composite_key] = found_urls_str
 
-                    value = self.cleanhtml(record_id_split)
-                    value = re.sub("\s\s+", " ", value)
-                    value = value.strip("][")
+                    value = record_id_split
                     java_elements_aggregated_str = ""
                     java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
                     java_methods = set(re.findall(java_methods_re_str, value))
@@ -144,6 +141,8 @@ class AugmentSheetWithCDDInfo:
                         key_to_java_objects[composite_key] = java_elements_aggregated_str
 
                     previous_value = key_to_full_requirement_text.get(composite_key)
+                    value = self.cleanhtml(record_id_split)
+                    value = re.sub("\s\s+", " ", value)
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
                     else:
@@ -152,18 +151,22 @@ class AugmentSheetWithCDDInfo:
                     record_id_count += 1
                     total_requirement_count += 1
                     print(
-                        f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{composite_key}] value {value} ')
+                        f' composite_key [{composite_key}] value [{value}]  section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
                 else:
                     print(f'Error red\c_id not found in [{record_id_split}]')
 
            # full_keys_find_all = re.findall(key_string_re, section)
+           # key_string_re = '(?:[0-9]+\.){1,3}[0-9]{1,6}\/' + req_id_re_str
+         #   key_string_re = '[0-9].[0-9].[0-9][0-9]?.[0-9]/' + req_id_re_str
+            key_string_re =  '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
+
             record_id_splits = re.split('(?={})'.format(key_string_re), section)
             record_id_count = 0
             for record_id_split in record_id_splits:
                 previous_value = None
                 record_id_result = re.search(key_string_re,record_id_split)
                 if record_id_result:
-                    found_full_key = record_id_result[0].rstrip(']')
+                    found_full_key = record_id_result[0].rstrip(']').lstrip('>')
                     findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
                     found_urls = set(re.findall(findurl_re_str, record_id_split))
                     found_urls_str = ""
@@ -171,9 +174,7 @@ class AugmentSheetWithCDDInfo:
                         found_urls_str += "{} ".format(found_url)
                     key_to_urls[found_full_key] = found_urls_str
 
-                    value = self.cleanhtml(record_id_split)
-                    value = re.sub("\s\s+", " ", value)
-                    value = value.strip("][")
+                    value = record_id_split
                     java_elements_aggregated_str = ""
                     java_methods_re_str = '(?:[a-zA-Z]\w+\(\))'
                     java_methods = set(re.findall(java_methods_re_str, value))
@@ -192,6 +193,8 @@ class AugmentSheetWithCDDInfo:
                     if java_elements_aggregated_str != "":
                         key_to_java_objects[found_full_key] = java_elements_aggregated_str
 
+                    value = self.cleanhtml(record_id_split)
+                    value = re.sub("\s\s+", " ", value)
                     previous_value = key_to_full_requirement_text.get(found_full_key)
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
@@ -201,7 +204,7 @@ class AugmentSheetWithCDDInfo:
                     record_id_count += 1
                     total_requirement_count += 1
                     print(
-                        f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{found_full_key}] value {value} ')
+                        f'found_full_key [{found_full_key}] value [{value}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
             # else:
             #         print(f'Error red\c_id not found in [{record_id_split}]')
             section_id_count += 1
