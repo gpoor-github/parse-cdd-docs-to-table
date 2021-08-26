@@ -110,16 +110,17 @@ class AugmentSheetWithCDDInfo:
             for record_id_split in record_id_splits:
 
                 previous_value = None
-                record_id_result = re.search(req_id_re_str, record_id_split)
+                section_id_part = re.compile('(?<!/)'+req_id_re_str)
+                record_id_result = re.search(section_id_part, record_id_split)
                 if record_id_result:
                     record_id = record_id_result[0].rstrip(']')
-                    constructed_key = '{}/{}'.format(cdd_section_id, record_id)
+                    composit_key = '{}/{}'.format(cdd_section_id, record_id)
                     findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
                     found_urls = set(re.findall(findurl_re_str, record_id_split))
                     found_urls_str = ""
                     for found_url in found_urls:
                         found_urls_str += "{} ".format(found_url)
-                    key_to_urls[constructed_key] = found_urls_str
+                    key_to_urls[composit_key] = found_urls_str
 
                     value = self.cleanhtml(record_id_split)
                     value = re.sub("\s\s+", " ", value)
@@ -140,21 +141,20 @@ class AugmentSheetWithCDDInfo:
                     for java_object in java_objects:
                         java_elements_aggregated_str += "{} ".format(java_object)
                     if java_elements_aggregated_str != "":
-                        key_to_java_objects[constructed_key] = java_elements_aggregated_str
+                        key_to_java_objects[composit_key] = java_elements_aggregated_str
 
-                    previous_value = key_to_full_requirement_text.get(constructed_key)
+                    previous_value = key_to_full_requirement_text.get(composit_key)
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
                     else:
-                        value = 'key=[{}]: [{}'.format(constructed_key, value)
-                    key_to_full_requirement_text[constructed_key] = value
+                        value = 'composit=[{}]:{}'.format(composit_key, value)
+                    key_to_full_requirement_text[composit_key] = value
                     record_id_count += 1
                     total_requirement_count += 1
                     print(
-                        f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{constructed_key}] value {value} ')
+                        f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{composit_key}] value {value} ')
                 else:
                     print(f'Error red\c_id not found in [{record_id_split}]')
-
 
            # full_keys_find_all = re.findall(key_string_re, section)
             record_id_splits = re.split('(?={})'.format(key_string_re), section)
@@ -196,7 +196,7 @@ class AugmentSheetWithCDDInfo:
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
                     else:
-                        value = 'fullkeyF=[{}]: [{}'.format(found_full_key, value)
+                        value = 'found=[{}]: [{}'.format(found_full_key, value)
                     key_to_full_requirement_text[found_full_key] = value
                     record_id_count += 1
                     total_requirement_count += 1
@@ -223,7 +223,6 @@ class AugmentSheetWithCDDInfo:
                 if section_data:
                     foundCount += 1
                     table1[output_count].append('{}'.format(section_data))
-
                     print(f' Found[{key_str}] count {foundCount} requirement_text=[{section_data}]')
                 else:
                     notfoundCount += 1
@@ -252,6 +251,7 @@ class AugmentSheetWithCDDInfo:
             table_writer = csv.writer(csv_output_file)
             table_writer.writerows(table1)
             csv_output_file.close()
+
         table2 = list([])
         with open('created_output.csv', 'w', newline='') as csv_output_file:
             # csv_writer = csv.writer(csv_output_file, delimiter=',')
