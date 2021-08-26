@@ -114,19 +114,19 @@ class AugmentSheetWithCDDInfo:
                 record_id_result = re.search(section_id_part, record_id_split)
                 if record_id_result:
                     record_id = record_id_result[0].rstrip(']')
-                    composit_key = '{}/{}'.format(cdd_section_id, record_id)
+                    composite_key = '{}/{}'.format(cdd_section_id, record_id)
                     findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
                     found_urls = set(re.findall(findurl_re_str, record_id_split))
                     found_urls_str = ""
                     for found_url in found_urls:
                         found_urls_str += "{} ".format(found_url)
-                    key_to_urls[composit_key] = found_urls_str
+                    key_to_urls[composite_key] = found_urls_str
 
                     value = self.cleanhtml(record_id_split)
                     value = re.sub("\s\s+", " ", value)
                     value = value.strip("][")
                     java_elements_aggregated_str = ""
-                    java_methods_re_str = '(?:[a-zA-Z]\w+\(\))'
+                    java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
                     java_methods = set(re.findall(java_methods_re_str, value))
                     if len(java_methods) > 0:
                         java_elements_aggregated_str += ' '.join(java_methods) + ' '
@@ -141,18 +141,18 @@ class AugmentSheetWithCDDInfo:
                     for java_object in java_objects:
                         java_elements_aggregated_str += "{} ".format(java_object)
                     if java_elements_aggregated_str != "":
-                        key_to_java_objects[composit_key] = java_elements_aggregated_str
+                        key_to_java_objects[composite_key] = java_elements_aggregated_str
 
-                    previous_value = key_to_full_requirement_text.get(composit_key)
+                    previous_value = key_to_full_requirement_text.get(composite_key)
                     if previous_value:
                         value = '{} | {}'.format(previous_value, value)
                     else:
-                        value = 'composit=[{}]:{}'.format(composit_key, value)
-                    key_to_full_requirement_text[composit_key] = value
+                        value = 'composit=[{}]:{}'.format(composite_key, value)
+                    key_to_full_requirement_text[composite_key] = value
                     record_id_count += 1
                     total_requirement_count += 1
                     print(
-                        f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{composit_key}] value {value} ')
+                        f'section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} key [{composite_key}] value {value} ')
                 else:
                     print(f'Error red\c_id not found in [{record_id_split}]')
 
