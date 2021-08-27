@@ -6,7 +6,7 @@ import os
 def read_table(file_name: str):
     table = []
     header = []
-    keyFields: dict = dict()
+    key_fields: dict = dict()
     with open(file_name) as csv_file:
 
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -29,12 +29,12 @@ def read_table(file_name: str):
                 method_value = table[table_index][header.index("method")]
                 module_value = table[table_index][header.index("module")]
                 key_value = '{}/{}'.format(section_id_value.rstrip('.'), req_id_value)
-                keyFields[key_value] = table_index
+                key_fields[key_value] = table_index
                 line_count += 1
                 print(f'Processed {line_count} lines {key_value} ')
             print(f'For table {line_count}')
         print("End for loop")
-        return table, keyFields, header
+        return table, key_fields, header
 
     # find urls that may help find the tests for the requirment
 
@@ -63,9 +63,10 @@ def find_java_objects(text_to_scan_for_java_objects: str):
     return " ".join(java_objects)
 
 
-def process_requirment_text(text_for_requirement_value: str, previous_value: str):
+def process_requirement_text(text_for_requirement_value: str, previous_value: str):
     value = cleanhtml(text_for_requirement_value)
     value = re.sub("\s\s+", " ", value)
+    value = re.sub(",", ";", value)
     if previous_value:
         return '{} | {}'.format(previous_value, value)
     else:
@@ -115,17 +116,15 @@ class AugmentSheetWithCDDInfo:
         key_to_java_objects = dict()
         key_to_urls = dict()
 
-        cdd_string, foundCount, keys_not_found, notfoundCount, recs_read, section_id_re_str, table1 = self.parse_cdd_html_to_requirements_table(
-            "cdd-11.html",key_to_full_requirement_text, key_to_java_objects, key_to_urls, recs_read)
-
-        # output_file = open('augmented_output.csv', 'w') cdd_string = self.cleanhtml(cdd_string)
-
+        cdd_string, foundCount, keys_not_found, notfoundCount, recs_read, section_id_re_str, table1 =\
+            self.parse_cdd_html_to_requirements_table(
+            'Android 11 Compatibility Definition_full_original.html', key_to_full_requirement_text, key_to_java_objects,
+            key_to_urls, recs_read)
 
         keys_to_files_dict = None
         # keys_to_files_dict = self.find_test_files(key_to_java_objects)
 
         with open('augmented_output.csv', 'w', newline='') as csv_output_file:
-            # csv_writer = csv.writer(csv_output_file, delimiter=',')
 
             output_count = 0
             for temp_key in recs_read:
@@ -223,12 +222,12 @@ class AugmentSheetWithCDDInfo:
             print(f"{missing_key} Missing {i}")
         print(f'Not {notfoundCount} Found {foundCount}  of {notfoundCount + foundCount}')
 
-    def parse_cdd_html_to_requirements_table(self, cdd_html_file,key_to_full_requirement_text, key_to_java_objects, key_to_urls,
+    def parse_cdd_html_to_requirements_table(self, cdd_html_file, key_to_full_requirement_text, key_to_java_objects,
+                                             key_to_urls,
                                              recs_read):
         foundCount = 0
         notfoundCount = 0
         keys_not_found: list = []
-        section_id_re_str: str = 'id="\d[\d_]*'
         req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
         table1, recs_read, header = read_table('new_recs_todo.csv')
         cdd_string: str = ""
@@ -237,21 +236,22 @@ class AugmentSheetWithCDDInfo:
             cdd_string = text_file.read()
         cdd_string = clean_html_anchors(cdd_string)
         section_id_re_str: str = '"(?:\d{1,3}_)+'
-        section_id_re = re.compile(section_id_re_str)
-        cdd_sections_splits = re.findall(section_id_re_str + '.+?id=', cdd_string, flags=re.DOTALL)
-        cdd_section_findall = re.findall(section_id_re, cdd_string)
+        cdd_sections_splits =re.split('(?={})'.format(section_id_re_str),cdd_string, flags=re.DOTALL)
+        #cdd_section_findall = re.findall(section_id_re, cdd_string)
         section_id_count = 0
         cdd_section_id: str = ""
         for section in cdd_sections_splits:
-            if section_id_count < len(cdd_section_findall):
-                cdd_section_id: str = cdd_section_findall[section_id_count]
-                cdd_section_id = cdd_section_id.replace('"', '')
-                cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
-            key_to_full_requirement_text[cdd_section_id] = section
+            cdd_section_id_search_results =re.search(section_id_re_str, section)
+            if not cdd_section_id_search_results:
+                continue
+            cdd_section_id = cdd_section_id_search_results[0]
+            cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
+            cdd_section_id = cdd_section_id.replace('_', '.')
+            key_to_full_requirement_text[cdd_section_id] = process_requirement_text(section,None)
             # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
             composite_key_string_re = "\s*(?:<li>)?\["
             req_id_splits = re.split(composite_key_string_re,
-                                        str(section))  # re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
+                                     str(section))  # re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
             req_part_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
             total_requirement_count = self.process_section(self.build_composite_key, req_id_re_str, cdd_section_id,
                                                            key_to_full_requirement_text,
@@ -276,15 +276,14 @@ class AugmentSheetWithCDDInfo:
             if key:
                 key_to_urls[key] = find_urls(record_id_split)
                 key_to_java_objects[key] = find_java_objects(record_id_split)
-                key_to_full_requirement_text[key] = process_requirment_text(record_id_split,
-                                                                                       key_to_full_requirement_text.get(
-                                                                                           key))
+                key_to_full_requirement_text[key] = process_requirement_text(record_id_split,
+                                                                             key_to_full_requirement_text.get(
+                                                                                 key))
                 record_id_count += 1
                 total_requirement_count += 1
                 print(
                     f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
         return total_requirement_count
-
 
     def find_full_key(self, key_string_for_re, record_id_split, section_id):
         record_id_result = re.search(key_string_for_re, record_id_split)
@@ -294,9 +293,7 @@ class AugmentSheetWithCDDInfo:
         else:
             return None
 
-
     def build_composite_key(self, key_string_for_re, record_id_split, section_id):
-        record_id_re = re.compile('(?<!/)' + key_string_for_re)
         record_id_result = re.search(key_string_for_re, record_id_split)
         if record_id_result:
             record_id = record_id_result[0].rstrip(']')
