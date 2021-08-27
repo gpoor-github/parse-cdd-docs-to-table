@@ -36,6 +36,51 @@ def read_table(file_name: str):
         print("End for loop")
         return table, keyFields, header
 
+    # find urls that may help find the tests for the requirment
+
+
+def find_urls(text_to_scan_urls: str):
+    find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
+    return " ".join(set(re.findall(find_url_re_str, text_to_scan_urls)))
+
+
+# find likely java objects from a text block
+def find_java_objects(text_to_scan_for_java_objects: str):
+    java_elements_aggregated_str = ""
+    java_objects = set()
+
+    java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
+    java_objects.update(re.findall(java_methods_re_str, text_to_scan_for_java_objects))
+
+    java_object_re_str = '(?:[a-zA-Z]\w+\.)+(?:\w+)'
+    java_objects.update(re.findall(java_object_re_str, text_to_scan_for_java_objects))
+
+    java_defines_str = '[A-Z0-9]{3,29}[_A-Z]*'
+    java_objects.update(re.findall(java_defines_str, text_to_scan_for_java_objects))
+    java_objects.difference_update(
+        {"MUST", "SHOULD", "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'developer.android.com'})
+
+    return " ".join(java_objects)
+
+
+def process_requirment_text(text_for_requirement_value: str, previous_value: str):
+    value = cleanhtml(text_for_requirement_value)
+    value = re.sub("\s\s+", " ", value)
+    if previous_value:
+        return '{} | {}'.format(previous_value, value)
+    else:
+        return value
+
+
+def cleanhtml(raw_html):
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw_html)
+    return cleantext
+
+
+def clean_html_anchors( raw_html: str):
+    return raw_html.replace("</a>", "")
+
 
 class AugmentSheetWithCDDInfo:
     # !/usr/bin/python
@@ -64,15 +109,8 @@ class AugmentSheetWithCDDInfo:
                                 collected_value[reference] = ' '.join(path_set)
         return collected_value
 
-    def cleanhtml(self, raw_html):
-        cleanr = re.compile('<.*?>')
-        cleantext = re.sub(cleanr, '', raw_html)
-        return cleantext
-
-    def clean_html_anchors(self, raw_html: str):
-        return raw_html.replace("</a>", "")
-
     def augment_table(self):
+        global found_urls
         recs_read: dict
         key_to_full_requirement_text = dict()
         key_to_java_objects = dict()
@@ -90,7 +128,7 @@ class AugmentSheetWithCDDInfo:
         with open("Android 11 Compatibility Definition_full_original.html.txt", "r") as text_file:
             cdd_string = text_file.read()
 
-        cdd_string = self.clean_html_anchors(cdd_string)
+        cdd_string = clean_html_anchors(cdd_string)
         section_id_re_str: str = '"(?:\d{1,3}_)+'
         section_id_re = re.compile(section_id_re_str)
         cdd_sections_splits = re.findall(section_id_re_str + '.+?id=', cdd_string, flags=re.DOTALL)
@@ -103,115 +141,54 @@ class AugmentSheetWithCDDInfo:
                 cdd_section_id = cdd_section_id.replace('"', '')
                 cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
             key_to_full_requirement_text[cdd_section_id] = section
-           # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
-            record_id_splits = re.split(r"\s*(?:<li>)?\[",str(section)) #re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
+            # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
+            record_id_splits = re.split(r"\s*(?:<li>)?\[",
+                                        str(section))  # re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
             record_id_count = 0
             for record_id_split in record_id_splits:
 
                 previous_value = None
-                record_id_re = re.compile('(?<!/)'+req_id_re_str)
+                record_id_re = re.compile('(?<!/)' + req_id_re_str)
                 record_id_result = re.search(record_id_re, record_id_split)
                 if record_id_result:
                     record_id = record_id_result[0].rstrip(']')
                     composite_key = '{}/{}'.format(cdd_section_id, record_id)
-                    findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
-                    found_urls = set(re.findall(findurl_re_str, record_id_split))
-                    found_urls_str = ""
-                    for found_url in found_urls:
-                        found_urls_str += "{} ".format(found_url)
-                    key_to_urls[composite_key] = found_urls_str
 
-                    value = record_id_split
-                    java_elements_aggregated_str = ""
-                    java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
-                    java_methods = set(re.findall(java_methods_re_str, value))
-                    if len(java_methods) > 0:
-                        java_elements_aggregated_str += ' '.join(java_methods) + ' '
-
-                    java_object_re_str = '(?:[a-zA-Z]\w+\.)+(?:\w+)'
-                    java_objects = set(re.findall(java_object_re_str, value))
-                    java_defines_str = '[A-Z0-9]{4,29}_[_A-Z]*'
-                    java_defines = set(re.findall(java_defines_str, value))
-
-                    for java_define in java_defines:
-                        java_elements_aggregated_str += "{} ".format(java_define)
-                    for java_object in java_objects:
-                        java_elements_aggregated_str += "{} ".format(java_object)
-                    if java_elements_aggregated_str != "":
-                        key_to_java_objects[composite_key] = java_elements_aggregated_str
+                    key_to_urls[composite_key] = find_urls(record_id_split)
+                    key_to_java_objects[composite_key] = find_java_objects(record_id_split)
 
                     previous_value = key_to_full_requirement_text.get(composite_key)
-                    value = self.cleanhtml(record_id_split)
-                    value = re.sub("\s\s+", " ", value)
-                    if previous_value:
-                        value = '{} | {}'.format(previous_value, value)
-                    else:
-                        value = 'composit=[{}]:{}'.format(composite_key, value)
-                    key_to_full_requirement_text[composite_key] = value
+                    key_to_full_requirement_text[composite_key] = process_requirment_text(record_id_split,key_to_full_requirement_text.get(composite_key))
                     record_id_count += 1
                     total_requirement_count += 1
                     print(
-                        f' composite_key [{composite_key}] value [{value}]  section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
+                        f' composite_key [{composite_key}] value [{key_to_full_requirement_text.get(composite_key)}]  section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
                 else:
                     print(f'Error red\c_id not found in [{record_id_split}]')
 
-           # full_keys_find_all = re.findall(key_string_re, section)
-           # key_string_re = '(?:[0-9]+\.){1,3}[0-9]{1,6}\/' + req_id_re_str
-         #   key_string_re = '[0-9].[0-9].[0-9][0-9]?.[0-9]/' + req_id_re_str
-            key_string_re =  '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
-
-            record_id_splits = re.split('(?={})'.format(key_string_re), section)
+            full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
+            record_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
             record_id_count = 0
             for record_id_split in record_id_splits:
                 previous_value = None
-                record_id_result = re.search(key_string_re,record_id_split)
+                record_id_result = re.search(full_key_string_for_re, record_id_split)
                 if record_id_result:
                     found_full_key = record_id_result[0].rstrip(']').lstrip('>')
-                    findurl_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
-                    found_urls = set(re.findall(findurl_re_str, record_id_split))
-                    found_urls_str = ""
-                    for found_url in found_urls:
-                        found_urls_str += "{} ".format(found_url)
-                    key_to_urls[found_full_key] = found_urls_str
-
-                    value = record_id_split
-                    java_elements_aggregated_str = ""
-                    java_methods_re_str = '(?:[a-zA-Z]\w+\(\))'
-                    java_methods = set(re.findall(java_methods_re_str, value))
-                    if len(java_methods) > 0:
-                        java_elements_aggregated_str += ' '.join(java_methods) + ' '
-
-                    java_object_re_str = '(?:[a-zA-Z]\w+\.)+(?:\w+)'
-                    java_objects = set(re.findall(java_object_re_str, value))
-                    java_defines_str = '[A-Z0-9]{4,29}_[_A-Z]*'
-                    java_defines = set(re.findall(java_defines_str, value))
-
-                    for java_define in java_defines:
-                        java_elements_aggregated_str += "{} ".format(java_define)
-                    for java_object in java_objects:
-                        java_elements_aggregated_str += "{} ".format(java_object)
-                    if java_elements_aggregated_str != "":
-                        key_to_java_objects[found_full_key] = java_elements_aggregated_str
-
-                    value = self.cleanhtml(record_id_split)
-                    value = re.sub("\s\s+", " ", value)
-                    previous_value = key_to_full_requirement_text.get(found_full_key)
-                    if previous_value:
-                        value = '{} | {}'.format(previous_value, value)
-                    else:
-                        value = 'found=[{}]: [{}'.format(found_full_key, value)
-                    key_to_full_requirement_text[found_full_key] = value
+                    key_to_urls[found_full_key] = find_urls(record_id_split)
+                    key_to_java_objects[found_full_key] = find_java_objects(record_id_split)
+                    key_to_full_requirement_text[found_full_key] = process_requirment_text(record_id_split,
+                                                                                           key_to_full_requirement_text.get(
+                                                                                               found_full_key))
                     record_id_count += 1
                     total_requirement_count += 1
                     print(
-                        f'found_full_key [{found_full_key}] value [{value}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
-            # else:
-            #         print(f'Error red\c_id not found in [{record_id_split}]')
+                        f'found_full_key [{found_full_key}] value [{key_to_full_requirement_text.get(found_full_key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
+
             section_id_count += 1
             # output_file = open('augmented_output.csv', 'w') cdd_string = self.cleanhtml(cdd_string)
 
         keys_to_files_dict = None
-        #keys_to_files_dict = self.find_test_files(key_to_java_objects)
+        # keys_to_files_dict = self.find_test_files(key_to_java_objects)
 
         with open('augmented_output.csv', 'w', newline='') as csv_output_file:
             # csv_writer = csv.writer(csv_output_file, delimiter=',')
@@ -235,7 +212,6 @@ class AugmentSheetWithCDDInfo:
                             notfoundCount))
                     table1[output_count].append(key_to_urls.get(key_str))
                     print(f'NOT FOUND![{key_str}] count {notfoundCount} key  ')
-
 
                 table1[output_count].append(key_to_java_objects.get(key_str))
                 if keys_to_files_dict:
@@ -265,13 +241,13 @@ class AugmentSheetWithCDDInfo:
                 print(f"keys from  {output_count} [{key_str}]")
                 key_str = key_str.rstrip(".").strip(' ')
                 key_split = key_str.split('/')
-                table2.append(['','','','','','','','',''])
-                table2[output_count][1]=key_split[0]
+                table2.append(['', '', '', '', '', '', '', '', ''])
+                table2[output_count][1] = key_split[0]
                 if len(key_split) > 1:
-                    table2[output_count][2]=key_split[1]
+                    table2[output_count][2] = key_split[1]
                 table2[output_count][3] = key_str
-                section_data = self.cleanhtml(key_to_full_requirement_text.get(key_str))
-                table2[output_count].append(section_data.replace(","," ").replace("\n"," "))
+                section_data = key_to_full_requirement_text.get(key_str)
+                table2[output_count].append(section_data.replace(",", " ").replace("\n", " "))
                 table2[output_count].append(key_to_urls.get(key_str))
                 table2[output_count].append(key_to_java_objects.get(key_str))
                 if keys_to_files_dict:
@@ -290,9 +266,8 @@ class AugmentSheetWithCDDInfo:
             table_writer.writerows(table2)
             csv_output_file.close()
 
-
         i = 0
-        cdd_string = self.cleanhtml(cdd_string)
+        cdd_string = clean_html_anchors(cdd_string)
         for missing_key in keys_not_found:
             i += 1
             key_result = cdd_string.find(missing_key)
@@ -312,7 +287,7 @@ class AugmentSheetWithCDDInfo:
                     if is_id_rec_in_section > -1:
                         Exception('Key {} not found, but it was there {}'.format(missing_key, re_key_result[0]))
             print(f"{missing_key} Missing {i}")
-        print(f'Not {notfoundCount} Found {foundCount}  of {notfoundCount+foundCount}')
+        print(f'Not {notfoundCount} Found {foundCount}  of {notfoundCount + foundCount}')
 
 
 if __name__ == '__main__':
