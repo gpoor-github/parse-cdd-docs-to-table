@@ -78,7 +78,7 @@ def cleanhtml(raw_html):
     return cleantext
 
 
-def clean_html_anchors( raw_html: str):
+def clean_html_anchors(raw_html: str):
     return raw_html.replace("</a>", "")
 
 
@@ -110,82 +110,16 @@ class AugmentSheetWithCDDInfo:
         return collected_value
 
     def augment_table(self):
-        global found_urls
-        recs_read: dict
+        recs_read: dict = dict()
         key_to_full_requirement_text = dict()
         key_to_java_objects = dict()
-        section_id_re_str: str = 'id="\d[\d_]*'
         key_to_urls = dict()
 
-        foundCount = 0
-        notfoundCount = 0
-        keys_not_found: list = []
-        req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-        table1, recs_read, header = read_table('new_recs_todo.csv')
-        cdd_string: str = ""
-        total_requirement_count = 0
+        cdd_string, foundCount, keys_not_found, notfoundCount, recs_read, section_id_re_str, table1 = self.parse_cdd_html_to_requirements_table(
+            "cdd-11.html",key_to_full_requirement_text, key_to_java_objects, key_to_urls, recs_read)
 
-        with open("Android 11 Compatibility Definition_full_original.html.txt", "r") as text_file:
-            cdd_string = text_file.read()
+        # output_file = open('augmented_output.csv', 'w') cdd_string = self.cleanhtml(cdd_string)
 
-        cdd_string = clean_html_anchors(cdd_string)
-        section_id_re_str: str = '"(?:\d{1,3}_)+'
-        section_id_re = re.compile(section_id_re_str)
-        cdd_sections_splits = re.findall(section_id_re_str + '.+?id=', cdd_string, flags=re.DOTALL)
-        cdd_section_findall = re.findall(section_id_re, cdd_string)
-        section_id_count = 0
-        cdd_section_id: str = ""
-        for section in cdd_sections_splits:
-            if section_id_count < len(cdd_section_findall):
-                cdd_section_id: str = cdd_section_findall[section_id_count]
-                cdd_section_id = cdd_section_id.replace('"', '')
-                cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
-            key_to_full_requirement_text[cdd_section_id] = section
-            # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
-            record_id_splits = re.split(r"\s*(?:<li>)?\[",
-                                        str(section))  # re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
-            record_id_count = 0
-            for record_id_split in record_id_splits:
-
-                previous_value = None
-                record_id_re = re.compile('(?<!/)' + req_id_re_str)
-                record_id_result = re.search(record_id_re, record_id_split)
-                if record_id_result:
-                    record_id = record_id_result[0].rstrip(']')
-                    composite_key = '{}/{}'.format(cdd_section_id, record_id)
-
-                    key_to_urls[composite_key] = find_urls(record_id_split)
-                    key_to_java_objects[composite_key] = find_java_objects(record_id_split)
-
-                    previous_value = key_to_full_requirement_text.get(composite_key)
-                    key_to_full_requirement_text[composite_key] = process_requirment_text(record_id_split,key_to_full_requirement_text.get(composite_key))
-                    record_id_count += 1
-                    total_requirement_count += 1
-                    print(
-                        f' composite_key [{composite_key}] value [{key_to_full_requirement_text.get(composite_key)}]  section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
-                else:
-                    print(f'Error red\c_id not found in [{record_id_split}]')
-
-            full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
-            record_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
-            record_id_count = 0
-            for record_id_split in record_id_splits:
-                previous_value = None
-                record_id_result = re.search(full_key_string_for_re, record_id_split)
-                if record_id_result:
-                    found_full_key = record_id_result[0].rstrip(']').lstrip('>')
-                    key_to_urls[found_full_key] = find_urls(record_id_split)
-                    key_to_java_objects[found_full_key] = find_java_objects(record_id_split)
-                    key_to_full_requirement_text[found_full_key] = process_requirment_text(record_id_split,
-                                                                                           key_to_full_requirement_text.get(
-                                                                                               found_full_key))
-                    record_id_count += 1
-                    total_requirement_count += 1
-                    print(
-                        f'found_full_key [{found_full_key}] value [{key_to_full_requirement_text.get(found_full_key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
-
-            section_id_count += 1
-            # output_file = open('augmented_output.csv', 'w') cdd_string = self.cleanhtml(cdd_string)
 
         keys_to_files_dict = None
         # keys_to_files_dict = self.find_test_files(key_to_java_objects)
@@ -288,6 +222,87 @@ class AugmentSheetWithCDDInfo:
                         Exception('Key {} not found, but it was there {}'.format(missing_key, re_key_result[0]))
             print(f"{missing_key} Missing {i}")
         print(f'Not {notfoundCount} Found {foundCount}  of {notfoundCount + foundCount}')
+
+    def parse_cdd_html_to_requirements_table(self, cdd_html_file,key_to_full_requirement_text, key_to_java_objects, key_to_urls,
+                                             recs_read):
+        foundCount = 0
+        notfoundCount = 0
+        keys_not_found: list = []
+        section_id_re_str: str = 'id="\d[\d_]*'
+        req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+        table1, recs_read, header = read_table('new_recs_todo.csv')
+        cdd_string: str = ""
+        total_requirement_count = 0
+        with open(cdd_html_file, "r") as text_file:
+            cdd_string = text_file.read()
+        cdd_string = clean_html_anchors(cdd_string)
+        section_id_re_str: str = '"(?:\d{1,3}_)+'
+        section_id_re = re.compile(section_id_re_str)
+        cdd_sections_splits = re.findall(section_id_re_str + '.+?id=', cdd_string, flags=re.DOTALL)
+        cdd_section_findall = re.findall(section_id_re, cdd_string)
+        section_id_count = 0
+        cdd_section_id: str = ""
+        for section in cdd_sections_splits:
+            if section_id_count < len(cdd_section_findall):
+                cdd_section_id: str = cdd_section_findall[section_id_count]
+                cdd_section_id = cdd_section_id.replace('"', '')
+                cdd_section_id = cdd_section_id.rstrip('_').replace('_', '.')
+            key_to_full_requirement_text[cdd_section_id] = section
+            # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
+            composite_key_string_re = "\s*(?:<li>)?\["
+            req_id_splits = re.split(composite_key_string_re,
+                                        str(section))  # re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
+            req_part_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+            total_requirement_count = self.process_section(self.build_composite_key, req_id_re_str, cdd_section_id,
+                                                           key_to_full_requirement_text,
+                                                           key_to_java_objects, key_to_urls, req_id_splits,
+                                                           section_id_count, total_requirement_count)
+            full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
+            req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
+            total_requirement_count = self.process_section(self.find_full_key, full_key_string_for_re, cdd_section_id,
+                                                           key_to_full_requirement_text,
+                                                           key_to_java_objects, key_to_urls, req_id_splits,
+                                                           section_id_count, total_requirement_count)
+            section_id_count += 1
+        return cdd_string, foundCount, keys_not_found, notfoundCount, recs_read, section_id_re_str, table1
+
+    def process_section(self, record_key_method, key_string_for_re, section_id, key_to_full_requirement_text,
+                        key_to_java_objects, key_to_urls,
+                        record_id_splits, section_id_count, total_requirement_count):
+        record_id_count = 0
+        for record_id_split in record_id_splits:
+            previous_value = None
+            key = record_key_method(key_string_for_re, record_id_split, section_id)
+            if key:
+                key_to_urls[key] = find_urls(record_id_split)
+                key_to_java_objects[key] = find_java_objects(record_id_split)
+                key_to_full_requirement_text[key] = process_requirment_text(record_id_split,
+                                                                                       key_to_full_requirement_text.get(
+                                                                                           key))
+                record_id_count += 1
+                total_requirement_count += 1
+                print(
+                    f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
+        return total_requirement_count
+
+
+    def find_full_key(self, key_string_for_re, record_id_split, section_id):
+        record_id_result = re.search(key_string_for_re, record_id_split)
+        if record_id_result:
+            record_id_string = record_id_result[0]
+            return record_id_string.rstrip(']').lstrip('>')
+        else:
+            return None
+
+
+    def build_composite_key(self, key_string_for_re, record_id_split, section_id):
+        record_id_re = re.compile('(?<!/)' + key_string_for_re)
+        record_id_result = re.search(key_string_for_re, record_id_split)
+        if record_id_result:
+            record_id = record_id_result[0].rstrip(']')
+            return '{}/{}'.format(section_id, record_id)
+        else:
+            return None
 
 
 if __name__ == '__main__':
