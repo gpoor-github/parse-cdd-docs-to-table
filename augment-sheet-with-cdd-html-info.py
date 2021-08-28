@@ -83,36 +83,36 @@ def clean_html_anchors(raw_html: str):
     return raw_html.replace("</a>", "")
 
 
-class AugmentSheetWithCDDInfo:
-    # !/usr/bin/python
+def find_test_files(reference_diction: dict):
+    # traverse root directory, and list directories as dirs and files as files
+    collected_value: dict = dict()
+    for root, dirs, files in os.walk("/home/gpoor/cts-source"):
+        path = root.split(os.sep)
+        for file in files:
+            if file.endswith('.java'):
+                fullpath = '{}/{}'.format(root, file)
+                with open(fullpath, "r") as text_file:
+                    file_string = text_file.read()
+                    for reference in reference_diction:
+                        files_as_seperated_strings = collected_value.get(reference)
+                        if files_as_seperated_strings:
+                            path_set = set(files_as_seperated_strings.split(' '))
+                        else:
+                            path_set = set()
+                        value_set = reference_diction[reference]
+                        values = str(value_set).split(' ')
+                        for value in values:
+                            if len(value) > 4:
+                                result = file_string.find(value)
+                                if result > -1:
+                                    print('{} found {} in  {}'.format(reference, value, fullpath))
+                                    path_set.add(fullpath)
+                        if len(path_set) > 0:
+                            collected_value[reference] = ' '.join(path_set)
+    return collected_value
 
-    def find_test_files(self, reference_diction: dict):
-        # traverse root directory, and list directories as dirs and files as files
-        collected_value: dict = dict()
-        for root, dirs, files in os.walk("/home/gpoor/cts-source"):
-            path = root.split(os.sep)
-            for file in files:
-                if file.endswith('.java'):
-                    fullpath = '{}/{}'.format(root, file)
-                    with open(fullpath, "r") as text_file:
-                        file_string = text_file.read()
-                        for reference in reference_diction:
-                            files_as_seperated_strings = collected_value.get(reference)
-                            if files_as_seperated_strings:
-                                path_set = set(files_as_seperated_strings.split(' '))
-                            else:
-                                path_set = set()
-                            value_set = reference_diction[reference]
-                            values = str(value_set).split(' ')
-                            for value in values:
-                                if len(value) > 4:
-                                    result = file_string.find(value)
-                                    if result > -1:
-                                        print('{} found {} in  {}'.format(reference,value, fullpath))
-                                        path_set.add(fullpath)
-                            if len(path_set) > 0:
-                                collected_value[reference] = ' '.join(path_set)
-        return collected_value
+
+class AugmentSheetWithCDDInfo:
 
     def augment_table(self):
         recs_read: dict = dict()
@@ -120,13 +120,14 @@ class AugmentSheetWithCDDInfo:
         key_to_java_objects = dict()
         key_to_urls = dict()
 
-        cdd_string, foundCount, keys_not_found, notfoundCount, recs_read, section_id_re_str, table1 =\
+        cdd_string, found_count, keys_not_found, notfound_count, recs_read, section_id_re_str, table1 = \
             self.parse_cdd_html_to_requirements_table(
-            'Android 11 Compatibility Definition_full_original.html', key_to_full_requirement_text, key_to_java_objects,
-            key_to_urls, recs_read)
+                'Android 11 Compatibility Definition_full_original.html', key_to_full_requirement_text,
+                key_to_java_objects,
+                key_to_urls, recs_read)
 
         keys_to_files_dict = None
-        keys_to_files_dict = self.find_test_files(key_to_java_objects)
+        # keys_to_files_dict = find_test_files(key_to_java_objects)
 
         with open('augmented_output.csv', 'w', newline='') as csv_output_file:
             output_count = 0
@@ -137,17 +138,17 @@ class AugmentSheetWithCDDInfo:
 
                 section_data = key_to_full_requirement_text.get(key_str)
                 if section_data:
-                    foundCount += 1
+                    found_count += 1
                     table1[output_count].append('{}'.format(section_data))
-                    print(f' Found[{key_str}] count {foundCount} requirement_text=[{section_data}]')
+                    print(f' Found[{key_str}] count {found_count} requirement_text=[{section_data}]')
                 else:
-                    notfoundCount += 1
+                    notfound_count += 1
                     keys_not_found.append(key_str)
                     table1[output_count].append(
                         '! ERROR Item: {} Not found in CDD 11 https://source.android.com/compatibility/11/android-11-cdd'.format(
-                            notfoundCount))
+                            notfound_count))
                     table1[output_count].append(key_to_urls.get(key_str))
-                    print(f'NOT FOUND![{key_str}] count {notfoundCount} key  ')
+                    print(f'NOT FOUND![{key_str}] count {notfound_count} key  ')
 
                 table1[output_count].append(key_to_java_objects.get(key_str))
                 if keys_to_files_dict:
@@ -169,8 +170,14 @@ class AugmentSheetWithCDDInfo:
 
         table2 = list([])
         with open('created_output.csv', 'w', newline='') as csv_output_file:
-            # csv_writer = csv.writer(csv_output_file, delimiter=',')
-            output_count = 0
+
+            table2.append(['Section', 'section_id', 'req_id', 'Test', 'Availability', 'Annotation?' ',''New Req for R?',
+                           'New CTS for R?', 'class_def', 'method', 'module',
+                           'Comment(internal) e.g. why a test is not possible ', 'Comment (external)',
+                           'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
+                           'Test Level',
+                           '', 'external version', '', '', ''])
+            output_count = 1
             for key in key_to_full_requirement_text:
                 section_name = ""
                 key_str: str = key
@@ -222,7 +229,7 @@ class AugmentSheetWithCDDInfo:
                     if is_id_rec_in_section > -1:
                         Exception('Key {} not found, but it was there {}'.format(missing_key, re_key_result[0]))
             print(f"{missing_key} Missing {i}")
-        print(f'Not {notfoundCount} Found {foundCount}  of {notfoundCount + foundCount}')
+        print(f'Not {notfound_count} Found {found_count}  of {notfound_count + found_count}')
 
     def parse_cdd_html_to_requirements_table(self, cdd_html_file, key_to_full_requirement_text, key_to_java_objects,
                                              key_to_urls,
@@ -237,20 +244,20 @@ class AugmentSheetWithCDDInfo:
             cdd_string = text_file.read()
         cdd_string = clean_html_anchors(cdd_string)
         section_id_re_str: str = '"(?:\d{1,3}_)+'
-        cdd_sections_splits =re.split('(?={})'.format(section_id_re_str),cdd_string, flags=re.DOTALL)
+        cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_string, flags=re.DOTALL)
         section_id_count = 0
         cdd_section_id: str = ""
         for section in cdd_sections_splits:
-            cdd_section_id_search_results =re.search(section_id_re_str, section)
+            cdd_section_id_search_results = re.search(section_id_re_str, section)
             if not cdd_section_id_search_results:
                 continue
             cdd_section_id = cdd_section_id_search_results[0]
             cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
             cdd_section_id = cdd_section_id.replace('_', '.')
-            key_to_full_requirement_text[cdd_section_id] = process_requirement_text(section,None)
+            key_to_full_requirement_text[cdd_section_id] = process_requirement_text(section, None)
             composite_key_string_re = "\s*(?:<li>)?\["
             req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-            req_id_splits = re.split(composite_key_string_re,   str(section))
+            req_id_splits = re.split(composite_key_string_re, str(section))
             total_requirement_count = self.process_section(self.build_composite_key, req_id_re_str, cdd_section_id,
                                                            key_to_full_requirement_text,
                                                            key_to_java_objects, key_to_urls, req_id_splits,
