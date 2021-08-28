@@ -55,7 +55,7 @@ def find_java_objects(text_to_scan_for_java_objects: str):
     java_object_re_str = '(?:[a-zA-Z]\w+\.)+(?:\w+)'
     java_objects.update(re.findall(java_object_re_str, text_to_scan_for_java_objects))
 
-    java_defines_str = '[A-Z0-9]{3,29}[_A-Z]*'
+    java_defines_str = '[A-Z0-9\.]{3,29}[_A-Z]*'
     java_objects.update(re.findall(java_defines_str, text_to_scan_for_java_objects))
     java_objects.difference_update(
         {"MUST", "SHOULD", "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'developer.android.com'})
@@ -94,17 +94,21 @@ class AugmentSheetWithCDDInfo:
             for file in files:
                 if file.endswith('.java'):
                     fullpath = '{}/{}'.format(root, file)
-                    path_set = set()
                     with open(fullpath, "r") as text_file:
                         file_string = text_file.read()
                         for reference in reference_diction:
+                            files_as_seperated_strings = collected_value.get(reference)
+                            if files_as_seperated_strings:
+                                path_set = set(files_as_seperated_strings.split(' '))
+                            else:
+                                path_set = set()
                             value_set = reference_diction[reference]
                             values = str(value_set).split(' ')
                             for value in values:
                                 if len(value) > 4:
                                     result = file_string.find(value)
                                     if result > -1:
-                                        print('found {} in  {}'.format(value, fullpath))
+                                        print('{} found {} in  {}'.format(reference,value, fullpath))
                                         path_set.add(fullpath)
                             if len(path_set) > 0:
                                 collected_value[reference] = ' '.join(path_set)
@@ -122,10 +126,9 @@ class AugmentSheetWithCDDInfo:
             key_to_urls, recs_read)
 
         keys_to_files_dict = None
-        # keys_to_files_dict = self.find_test_files(key_to_java_objects)
+        keys_to_files_dict = self.find_test_files(key_to_java_objects)
 
         with open('augmented_output.csv', 'w', newline='') as csv_output_file:
-
             output_count = 0
             for temp_key in recs_read:
                 section_name = ""
@@ -208,7 +211,6 @@ class AugmentSheetWithCDDInfo:
             if key_result > -1:
                 Exception('Key {} not found, but it was there '.format(missing_key))
             else:  # look harder
-                # print(f"\nConfirmed missing whole key {missing_key} {i}")
                 split_key = str(missing_key).split('/')
                 key_result = cdd_string.find(split_key[0])
                 if key_result == -1:
@@ -228,7 +230,6 @@ class AugmentSheetWithCDDInfo:
         foundCount = 0
         notfoundCount = 0
         keys_not_found: list = []
-        req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
         table1, recs_read, header = read_table('new_recs_todo.csv')
         cdd_string: str = ""
         total_requirement_count = 0
@@ -237,7 +238,6 @@ class AugmentSheetWithCDDInfo:
         cdd_string = clean_html_anchors(cdd_string)
         section_id_re_str: str = '"(?:\d{1,3}_)+'
         cdd_sections_splits =re.split('(?={})'.format(section_id_re_str),cdd_string, flags=re.DOTALL)
-        #cdd_section_findall = re.findall(section_id_re, cdd_string)
         section_id_count = 0
         cdd_section_id: str = ""
         for section in cdd_sections_splits:
@@ -248,11 +248,9 @@ class AugmentSheetWithCDDInfo:
             cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
             cdd_section_id = cdd_section_id.replace('_', '.')
             key_to_full_requirement_text[cdd_section_id] = process_requirement_text(section,None)
-            # key_string_re = '[(?:\d.)|\d]+/' + req_id_re_str
             composite_key_string_re = "\s*(?:<li>)?\["
-            req_id_splits = re.split(composite_key_string_re,
-                                     str(section))  # re findall(req_id_re_str + ".+(?=\[)|(?:id=)", section, flags=re.DOTALL)
-            req_part_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+            req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+            req_id_splits = re.split(composite_key_string_re,   str(section))
             total_requirement_count = self.process_section(self.build_composite_key, req_id_re_str, cdd_section_id,
                                                            key_to_full_requirement_text,
                                                            key_to_java_objects, key_to_urls, req_id_splits,
