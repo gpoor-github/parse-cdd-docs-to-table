@@ -38,30 +38,28 @@ def read_table(file_name: str):
         return table, key_fields
 
 
-class CompareSheets:
+def compare_tables(file1, file2):
+    key_fields1: dict
+    key_fields2: dict
+    found_count = 0
+    missing_count = 0
+    item_count = 0
 
-    def compare_tables(self, file1, file2):
-        key_fields1: dict
-        key_fields2: dict
-        found_count = 0
-        missing_count = 0
-        item_count = 0
+    table1, key_fields1 = read_table(file1)
+    table2, key_fields2 = read_table(file2)
 
-        table1, key_fields1 = read_table(file1)
-        table2, key_fields2 = read_table(file2)
+    key_set1 = set(key_fields1.keys())
+    key_set2 = set(key_fields2.keys())
+    dif_2_1 = key_set2.difference(key_set1)
+    inter_2_1 = key_set2.intersection(key_set1)
+    dif_1_2 = key_set1.difference(key_set2)
+    inter_1_2 = key_set1.intersection(key_set2)
+    print(f"\n\nDiff 1=[{file1}] vs 2=[{file2}] size={len(dif_1_2)} {dif_1_2}")
+    print(f"Diff 2=[{file2}] vs 1=[{file1}] size={len(dif_2_1)} {dif_2_1}")
 
-        key_set1 = set(key_fields1.keys())
-        key_set2 = set(key_fields2.keys())
-        dif_2_1 = key_set2.difference(key_set1)
-        inter_2_1 = key_set2.intersection(key_set1)
-        dif_1_2 = key_set1.difference(key_set2)
-        inter_1_2 = key_set1.intersection(key_set2)
-        print(f"\n\nDiff 1=[{file1}] vs 2=[{file2}] size={len(dif_1_2)} {dif_1_2}")
-        print(f"Diff 2=[{file2}] vs 1=[{file1}] size={len(dif_2_1)} {dif_2_1}")
-
-        pass
+    pass
 
 
 if __name__ == '__main__':
-    CompareSheets().compare_tables("CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11.csv",
+    compare_tables("CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11.csv",
                                    "created_output.csv")
