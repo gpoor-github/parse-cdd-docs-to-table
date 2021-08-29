@@ -154,36 +154,7 @@ class AugmentSheetWithCDDInfo:
                            'Test Level',
                            '', 'external version', '', '', ''])
             output_count = 1
-            for key in key_to_full_requirement_text:
-                section_name = ""
-                key_str: str = key
-                print(f"keys from  {output_count} [{key_str}]")
-                key_str = key_str.rstrip(".").strip(' ')
-                key_split = key_str.split('/')
-                table2.append(['', '', '', '', '', '', '', '', ''])
-                table2[output_count][1] = key_split[0]
-                if len(key_split) > 1:
-                    table2[output_count][2] = key_split[1]
-                table2[output_count][3] = key_str
-                section_data = key_to_full_requirement_text.get(key_str)
-                table2[output_count].append(section_data.replace(",", " ").replace("\n", " "))
-                table2[output_count].append(key_to_urls.get(key_str))
-                table2[output_count].append(key_to_java_objects.get(key_str))
-                if keys_to_files_dict:
-                    filename = keys_to_files_dict.get(key_str)
-                    if filename:
-                        table2[output_count].append(filename)
-                        class_name_split_src = filename.split('/src/')
-                        if len(class_name_split_src) > 1:
-                            class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
-                            table2[output_count][7] = class_name
-                            table2[output_count][3] = "Yes"
-                table2[output_count].append('Last augmented column')
 
-                output_count += 1
-            table_writer = csv.writer(csv_output_file)
-            table_writer.writerows(table2)
-            csv_output_file.close()
         keys_not_found = write_sheet('new_created_output.csv', table2,  keys_from_table, key_to_full_requirement_text,
                                      key_to_java_objects, key_to_urls, keys_to_files_dict)
 
@@ -256,7 +227,7 @@ class AugmentSheetWithCDDInfo:
         if record_id_result:
             record_id_string = record_id_result[0]
 
-            return record_id_string.rstrip(']').lstrip('>').replace()
+            return record_id_string.rstrip(']').lstrip('>')
         else:
             return None
 
