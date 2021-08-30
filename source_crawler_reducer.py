@@ -32,7 +32,7 @@ def make_bags_of_word():
                      'interface', 'static', 'class', 'finally', 'long', 'strictfp', '**', 'volatile', 'const', '*',
                      'float', 'native', 'super', 'while', 'void'}
     common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'open', 'getType', 'getMessage', 'equals',
-                      'not', 'find', 'search', 'length', 'size', 'getName'}
+                      'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from', 'String', 'HashMap'}
     license_words = bag_from_text(
         "/** **/ ** Copyright 2020 The Android Open Source Project * * Licensed under the Apache License, Version 2.0 (the  License); "
         "* you may not use this file except in compliance with the License. * You may obtain a copy of the License at ** "
@@ -70,7 +70,7 @@ def make_bags_of_word():
                     method_set = method_set.difference(common_methods)
                     files_to_method_calls[fullpath] = method_set
 
-                    test_method_splits = re.split("@Test", file_string)
+                    test_method_splits = re.split("@Test]", file_string)
                     i = 1
                     while i < len(test_method_splits):
 
