@@ -2,35 +2,6 @@ import os
 import re
 
 
-def find_test_files(reference_diction: dict):
-    # traverse root directory, and list directories as dirs and files as files
-    collected_value: dict = dict()
-    for root, dirs, files in os.walk("/home/gpoor/cts-source"):
-        for file in files:
-            if file.endswith('.java'):
-                fullpath = '{}/{}'.format(root, file)
-                with open(fullpath, "r") as text_file:
-                    file_string = text_file.read()
-                    for reference in reference_diction:
-                        files_as_seperated_strings = collected_value.get(reference)
-                        if files_as_seperated_strings:
-                            path_set = set(files_as_seperated_strings.split(' '))
-                        else:
-                            path_set = set()
-                        value_set = reference_diction[reference]
-                        values = str(value_set).split(' ')
-                        for value in values:
-                            if len(value) > 4:
-                                result = file_string.find(value)
-                                if result > -1:
-                                    print('{} found {} in  {}'.format(reference, value, fullpath))
-                                    path_set.add(fullpath)
-                        if len(path_set) > 0:
-                            collected_value[reference] = ' '.join(path_set)
-    return collected_value
-    pass
-
-
 # This should be used to find method declarations in files. Not hooked up yet.
 def parse_(self, line_method):
     re_method = re.compile('(\w+?)\(\)')
