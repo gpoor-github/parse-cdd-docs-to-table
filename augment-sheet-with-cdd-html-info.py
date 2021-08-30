@@ -353,6 +353,10 @@ def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
         cdd_section_id = cdd_section_id_search_results[0]
         cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
         cdd_section_id = cdd_section_id.replace('_', '.')
+        if '13' == cdd_section_id:
+            # section 13 is "Contact us" and has characters that cause issues at lest for git
+            print(f"Warning skipping section 13 {section}")
+            continue
         key_to_full_requirement_text[cdd_section_id] = process_requirement_text(section, None)
         composite_key_string_re = "\s*(?:<li>)?\["
         req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
@@ -380,24 +384,24 @@ class AugmentSheetWithCDDInfo:
                                              'input/Android 11 Compatibility Definition_full_original.html')
 
         try:
-            keys_to_files_dict = persist.read("keys_to_files_dict.csv")
+            keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
         except:
             print("Could not open key to file map, recreating ")
             keys_to_files_dict: dict = find_test_files(key_to_java_objects)
-            persist.write(keys_to_files_dict, "keys_to_files_dict.csv")
+            persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
         # Map file to TestCase
         try:
-            files_to_words = persist.readp("files_to_words.pickle")
-            method_to_words = persist.readp("method_to_words.pickle")
-            files_to_method_calls = persist.readp("files_to_method_calls.pickle")
-            aggregate_bag = persist.readp("aggregate_bag.pickle")
+            files_to_words = persist.readp("storage/files_to_words.pickle")
+            method_to_words = persist.readp("storage/method_to_words.pickle")
+            files_to_method_calls = persist.readp("storage/files_to_method_calls.pickle")
+            aggregate_bag = persist.readp("storage/aggregate_bag.pickle")
         except:
             print("Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
             files_to_words, method_to_words, files_to_method_calls, aggregate_bag = source_crawler_reducer.make_bags_of_word()
-            persist.writep(files_to_words, "files_to_words.pickle")
-            persist.writep(method_to_words, "method_to_words.pickle")
-            persist.writep(files_to_method_calls, "files_to_method_calls.pickle")
-            persist.writep(aggregate_bag, "aggregate_bag.pickle")
+            persist.writep(files_to_words, "storage/files_to_words.pickle")
+            persist.writep(method_to_words, "storage/method_to_words.pickle")
+            persist.writep(files_to_method_calls, "storage/files_to_method_calls.pickle")
+            persist.writep(aggregate_bag, "storage/aggregate_bag.pickle")
 
         files_to_test_cases = buildTestCasesModuleDictionary('input/testcases-modules.txt')
 
