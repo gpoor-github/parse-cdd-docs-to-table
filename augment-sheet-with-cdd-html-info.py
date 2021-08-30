@@ -3,6 +3,9 @@ import os
 import re
 import time
 
+import persist
+import source_crawler_reducer
+
 
 def buildTestCasesModuleDictionary(testcases_grep_results):
     testCasesToPath: dict = dict()
@@ -38,7 +41,7 @@ def find_test_files(reference_diction: dict):
     count = 0
     start = time.perf_counter()
     # tests/tests/widget/src/android/widget/cts/AbsListView_LayoutParamsTest.java
-    for root, dirs, files in os.walk("/home/gpoor/cts-source/cts/"): #tests/tests/widget/src/android/widget/cts"):
+    for root, dirs, files in os.walk("/home/gpoor/cts-source/cts/"):  # tests/tests/widget/src/android/widget/cts"):
 
         for file in files:
             if file.endswith('.java'):
@@ -235,6 +238,8 @@ def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, 
                 # TODO just handling one file for now! Needs to change.
                 a_single_test_file_name = filenames[len(filenames) - 1]
                 table[table_row_index].append(a_single_test_file_name)
+                table[table_row_index].append(filenames_str)
+
                 class_name_split_src = a_single_test_file_name.split('/src/')
                 # Module
                 if len(class_name_split_src) > 0:
@@ -369,14 +374,33 @@ def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
 class AugmentSheetWithCDDInfo:
 
     def augment_table(self):
-        table_to_augment, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
-            parse_cdd_html_to_requirements_table('input/new_recs_todo.csv',
-                                                 'input/Android 11 Compatibility Definition_full_original.html')
 
-        #keys_to_files_dict = None
-        keys_to_files_dict: dict = find_test_files(key_to_java_objects)
+        table_to_augment, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
+        parse_cdd_html_to_requirements_table('input/new_recs_todo.csv',
+                                             'input/Android 11 Compatibility Definition_full_original.html')
+
+        try:
+            keys_to_files_dict = persist.read("keys_to_files_dict.csv")
+        except:
+            print("Could not open key to file map, recreating ")
+            keys_to_files_dict: dict = find_test_files(key_to_java_objects)
+            persist.write(keys_to_files_dict, "keys_to_files_dict.csv")
         # Map file to TestCase
+        try:
+            files_to_words = persist.readp("files_to_words.pickle")
+            method_to_words = persist.readp("method_to_words.pickle")
+            files_to_method_calls = persist.readp("files_to_method_calls.pickle")
+            aggregate_bag = persist.readp("aggregate_bag.pickle")
+        except:
+            print("Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
+            files_to_words, method_to_words, files_to_method_calls, aggregate_bag = source_crawler_reducer.make_bags_of_word()
+            persist.writep(files_to_words, "files_to_words.pickle")
+            persist.writep(method_to_words, "method_to_words.pickle")
+            persist.writep(files_to_method_calls, "files_to_method_calls.pickle")
+            persist.writep(aggregate_bag, "aggregate_bag.pickle")
+
         files_to_test_cases = buildTestCasesModuleDictionary('input/testcases-modules.txt')
+
         created_table: [[str]] = []
         write_sheet(write_new_data_line_to_table, 'output/created_output.csv', created_table,
                     key_to_full_requirement_text, key_to_full_requirement_text, key_to_java_objects,
@@ -392,4 +416,7 @@ class AugmentSheetWithCDDInfo:
 
 
 if __name__ == '__main__':
+    start = time.perf_counter()
     AugmentSheetWithCDDInfo().augment_table()
+    end = time.perf_counter()
+    print(f'Took time {end - start:0.4f}sec ')
