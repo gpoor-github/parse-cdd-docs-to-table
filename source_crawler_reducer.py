@@ -118,8 +118,8 @@ def make_bags_of_word():
                                     method_bag) + ' | ' + previous_value
                             else:
                                 method_to_words[fullpath] = method_names[0] + ":" + " ".join(method_bag)
-
                         i += 1
+
     print(f"\n\naggregate bag [{aggregate_bag}] \nsize {len(aggregate_bag)}")
     return files_to_words, method_to_words, files_to_method_calls, aggregate_bag
 
