@@ -1,13 +1,11 @@
 import os
 import re
-from typing import Set, Union, Any
 
 
 def find_test_files(reference_diction: dict):
     # traverse root directory, and list directories as dirs and files as files
     collected_value: dict = dict()
     for root, dirs, files in os.walk("/home/gpoor/cts-source"):
-        path = root.split(os.sep)
         for file in files:
             if file.endswith('.java'):
                 fullpath = '{}/{}'.format(root, file)
@@ -33,9 +31,25 @@ def find_test_files(reference_diction: dict):
     pass
 
 
+# This should be used to find method declarations in files. Not hooked up yet.
+def parse_(self, line_method):
+    re_method = re.compile('(\w+?)\(\)')
+    method_result = self.re_method.search(re_method)
+    class_def = ""
+    method = ""
+    if method_result:
+        method = method_result.group(0)
+    else:
+        re_class = re.compile('class (\w+)')
+        class_result = self.re_class.search(re_class)
+        if class_result:
+            class_def = class_result.group(0)
+    return class_def, method
+
+
 def bag_from_text(text: str):
     file_string = re.sub("\s\s+", " ", text)
-    split = text.split(" ")
+    split = file_string.split(" ")
     return set(split)
 
 
@@ -60,10 +74,9 @@ def make_bags_of_word():
     method_to_words: dict = dict()
     files_to_method_calls: dict = dict()
     aggregate_bag = set()
-    method_call_re = re.compile('\w+(?=\(\w*\))(?!\s*?\{)')
+    method_call_re = re.compile('\w{3,40}(?=\(\w*\))(?!\s*?\{)')
 
     for root, dirs, files in os.walk("/home/gpoor/cts-source"):
-        path = root.split(os.sep)
         for file in files:
             if file.endswith('.java'):
                 fullpath = '{}/{}'.format(root, file)
@@ -95,7 +108,7 @@ def make_bags_of_word():
                                                               test_method_split)
                         if len(method_declare_body_splits) > 1:
                             method_declare_body_split = method_declare_body_splits[1]
-                            method_names = re.findall('\w+(?=\(:?\w*\))', test_method_split)
+                            method_names = re.findall('\w{3,40}(?=\(:?\w*\))', test_method_split)
 
                             method_bag = set(method_declare_body_split.split(" ")).difference(java_keywords).difference(
                                 license_words).difference(common_methods)
@@ -107,23 +120,8 @@ def make_bags_of_word():
                                 method_to_words[fullpath] = method_names[0] + ":" + " ".join(method_bag)
 
                         i += 1
+    print(f"\n\naggregate bag [{aggregate_bag}] \nsize {len(aggregate_bag)}")
     return files_to_words, method_to_words, files_to_method_calls, aggregate_bag
-
-    def parse_(self, line_method):
-        re_method = re.compile('(\w+?)\(\)')
-        method_result = self.re_method.search(re_method)
-        class_def = ""
-        method = ""
-        if method_result:
-            method = method_result.group(0)
-        else:
-            re_class = re.compile('class (\w+)')
-            class_result = self.re_class.search(re_class)
-            if class_result:
-                class_def = class_result.group(0)
-        return class_def, method
-
-    return files_to_words
 
 
 if __name__ == '__main__':
