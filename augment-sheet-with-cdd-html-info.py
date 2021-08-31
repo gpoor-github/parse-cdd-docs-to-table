@@ -164,8 +164,51 @@ def clean_html_anchors(raw_html: str):
     return raw_html.replace("</a>", "")
 
 
+def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
+                           files_to_words, method_to_words, files_to_method_calls :dict, aggregate_bag,
+                           overwrite: bool = False):
+    if keys_to_files_dict:
+        filenames_str = keys_to_files_dict.get(key_str)
+
+        if filenames_str:
+            filenames = filenames_str.split(' ')
+            if len(filenames) > 0:
+                # TODO just handling one file for now! Needs to change.
+                a_single_test_file_name = filenames[len(filenames) - 1]
+                for file_name in filenames:
+                    found_methods = files_to_method_calls.get(file_name)
+                    if found_methods:
+                        break
+                if found_methods:
+                    # A better single file name :)
+                    a_single_test_file_name = file_name
+                    for method in found_methods:
+                        a_method = method
+
+                table[table_row_index].append(a_single_test_file_name)
+                table[table_row_index].append(filenames_str)
+
+                class_name_split_src = a_single_test_file_name.split('/src/')
+                # Module
+                if len(class_name_split_src) > 0:
+                    test_case_split = str(class_name_split_src[0]).split('/cts/tests/')
+                    if len(test_case_split) > 1:
+                        project_root = str(test_case_split[1]).replace("/", ".")
+                        test_case_name = files_to_test_cases.get(project_root)
+                        if overwrite or (table[table_row_index][9] == ""):
+                            table[table_row_index][9] = test_case_name
+                if len(class_name_split_src) > 1:
+                    class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
+                    if overwrite or (table[table_row_index][7] == ""):
+                        table[table_row_index][7] = class_name
+                        table[table_row_index][3] = "Yes"
+                if a_method:
+                    if overwrite or (table[table_row_index][8] == ""):
+                        table[table_row_index][8] = a_method
+
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write, keys_for_section_data,
-                key_to_java_objects, key_to_urls, keys_to_files_dict: dict, files_to_test_cases: dict):
+                key_to_java_objects, key_to_urls, keys_to_files_dict: dict, files_to_test_cases: dict,
+                files_to_words, method_to_words, files_to_method_calls, aggregate_bag):
     """
 
     :param files_to_test_cases:
@@ -189,41 +232,14 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
             section_data = keys_for_section_data.get(key_str)
             write_row_for_output(key_str, key_to_java_objects, key_to_urls, keys_not_found,
                                  keys_to_files_dict, table_row_index, section_data, table,
-                                 files_to_test_cases)
+                                 files_to_test_cases,
+                                 files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
             table_row_index += 1
 
         table_writer = csv.writer(csv_output_file)
         table_writer.writerows(table)
         csv_output_file.close()
     return keys_not_found
-
-
-def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
-                           overwrite: bool = False):
-    if keys_to_files_dict:
-        filenames_str = keys_to_files_dict.get(key_str)
-        if filenames_str:
-            filenames = filenames_str.split(' ')
-            if len(filenames) > 0:
-                # TODO just handling one file for now! Needs to change.
-                a_single_test_file_name = filenames[len(filenames) - 1]
-                table[table_row_index].append(a_single_test_file_name)
-                table[table_row_index].append(filenames_str)
-
-                class_name_split_src = a_single_test_file_name.split('/src/')
-                # Module
-                if len(class_name_split_src) > 0:
-                    test_case_split = str(class_name_split_src[0]).split('/cts/tests/')
-                    if len(test_case_split) > 1:
-                        project_root = str(test_case_split[1]).replace("/", ".")
-                        test_case_name = files_to_test_cases.get(project_root)
-                        if overwrite or (table[table_row_index][9] == ""):
-                            table[table_row_index][9] = test_case_name
-                if len(class_name_split_src) > 1:
-                    class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
-                    if overwrite or (table[table_row_index][7] == ""):
-                        table[table_row_index][7] = class_name
-                        table[table_row_index][3] = "Yes"
 
 
 default_header: [] = (
@@ -237,7 +253,8 @@ default_header: [] = (
 
 def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys_not_found,
                                  keys_to_files_dict, table_row_index, section_data: str, table: [[str]],
-                                 files_to_test_cases):
+                                 files_to_test_cases,
+                                 files_to_words, method_to_words, files_to_method_calls, aggregate_bag):
     if len(table) <= table_row_index:
         table.append(['', '', '', '', '', '', '', '', ''])
 
@@ -254,12 +271,14 @@ def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys
     table[table_row_index].append(section_data_cleaned)
     table[table_row_index].append(key_to_urls.get(key_str))
     table[table_row_index].append(key_to_java_objects.get(key_str))
-    handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases)
+    handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
+                           files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
     table[table_row_index].append('Last augmented column')
 
 
 def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_found, keys_to_files_dict,
-                            table_row_index, section_data, table: [[str]], files_to_test_cases: dict):
+                            table_row_index, section_data, table: [[str]], files_to_test_cases: dict,
+                            files_to_words, method_to_words, files_to_method_calls, aggregate_bag):
     if section_data:
         # Verify our index in the table we are augmenting corresponds to the key we are using to retrieve augmenting data
         table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
@@ -280,7 +299,8 @@ def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_
         table[table_row_index].append(f'! ERROR {key_str}: Not found in data keys at table index {table_row_index} ')
         table[table_row_index].append(key_to_urls.get(key_str))
     table[table_row_index].append(key_to_java_objects.get(key_str))
-    handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases)
+    handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
+                            files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
     table[table_row_index].append('Last augmented column')
 
 
@@ -289,7 +309,6 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
                     record_id_splits, section_id_count, total_requirement_count):
     record_id_count = 0
     for record_id_split in record_id_splits:
-        previous_value = None
         key = record_key_method(key_string_for_re, record_id_split, section_id)
         if key:
             key_to_urls[key] = find_urls(record_id_split)
@@ -399,14 +418,18 @@ class AugmentSheetWithCDDInfo:
 
         files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
 
+        # Write New Table
         created_table: [[str]] = []
         write_sheet(write_new_data_line_to_table, 'output/created_output.csv', created_table,
                     key_to_full_requirement_text, key_to_full_requirement_text, key_to_java_objects,
-                    key_to_urls, keys_to_files_dict, files_to_test_cases)
+                    key_to_urls, keys_to_files_dict, files_to_test_cases,
+                    files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
 
+        # Write Augmented Table
         keys_not_found = write_sheet(append_to_existing_data, 'output/augmented_output.csv', table_to_augment,
                                      keys_from_table, key_to_full_requirement_text, key_to_java_objects,
-                                     key_to_urls, keys_to_files_dict, files_to_test_cases)
+                                     key_to_urls, keys_to_files_dict, files_to_test_cases,
+                                     files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
 
         found_count = len(keys_from_table)
         not_found_count = len(keys_not_found)
