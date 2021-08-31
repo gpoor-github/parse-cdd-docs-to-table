@@ -10,3 +10,8 @@
 /data_files/sample_problem_html.txt
 /data_files/removed_<a>_html.txt
 /data_files/augmented_output.csv
+/storage/aggregate_bag.pickle
+/storage/files_to_method_calls.pickle
+/storage/files_to_words.pickle
+/storage/keys_to_files_dict.csv
+/storage/method_to_words.pickle
