@@ -7,8 +7,8 @@ import persist
 import source_crawler_reducer
 
 
-def buildTestCasesModuleDictionary(testcases_grep_results):
-    testCasesToPath: dict = dict()
+def build_test_cases_module_dictionary(testcases_grep_results):
+    test_cases_to_path: dict = dict()
 
     with open(testcases_grep_results, "r") as f:
         file_content = f.readlines()
@@ -30,8 +30,8 @@ def buildTestCasesModuleDictionary(testcases_grep_results):
         re_value = re.search("(\w+)TestCases", value)
         if re_value:
             test_case_name = re_value[0]
-            testCasesToPath[path] = test_case_name
-    return testCasesToPath
+            test_cases_to_path[path] = test_case_name
+    return test_cases_to_path
 
 
 def find_test_files(reference_diction: dict):
@@ -39,7 +39,7 @@ def find_test_files(reference_diction: dict):
     collected_value: dict = dict()
     value_matched: dict = dict()
     count = 0
-    start = time.perf_counter()
+    start_time_file_crawl = time.perf_counter()
     # tests/tests/widget/src/android/widget/cts/AbsListView_LayoutParamsTest.java
     for root, dirs, files in os.walk("/home/gpoor/cts-source/cts/"):  # tests/tests/widget/src/android/widget/cts"):
 
@@ -63,16 +63,17 @@ def find_test_files(reference_diction: dict):
                                 if result > -1:
                                     count += 1
                                     if (count % 100) == 0:
-                                        end = time.perf_counter()
+                                        end_time_file_crawl = time.perf_counter()
                                         print(
-                                            f'{count} time {end - start:0.4f}sec {reference} found {value} in  {fullpath}')
+                                            f'{count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference} found {value} in  {fullpath}')
                                     path_set.add(fullpath)
                                     value_matched[value] = fullpath
                         if len(path_set) > 0:
                             collected_value[reference] = ' '.join(path_set)
 
-    end = time.perf_counter()
-    print(f'Final return {len(collected_value)}, {count} time {end - start:0.4f}  {collected_value}')
+    end_time_file_crawl = time.perf_counter()
+    print(
+        f'Final return {len(collected_value)}, {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}  {collected_value}')
     return collected_value  # , value_matched
 
 
@@ -123,7 +124,6 @@ def find_urls(text_to_scan_urls: str):
 
 # find likely java objects from a text block
 def find_java_objects(text_to_scan_for_java_objects: str):
-    java_elements_aggregated_str = ""
     java_objects = set()
 
     java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
@@ -180,8 +180,6 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
     """
     with open(file_name, 'w', newline='') as csv_output_file:
         table_row_index = 0
-        found_count = 0
-        notfound_count = 0
         keys_not_found: set = set()
 
         for temp_key in keys_to_find_and_write:
@@ -189,8 +187,8 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
             key_str = key_str.rstrip(".").strip(' ')
 
             section_data = keys_for_section_data.get(key_str)
-            write_row_for_output(found_count, key_str, key_to_java_objects, key_to_urls, keys_not_found,
-                                 keys_to_files_dict, notfound_count, table_row_index, section_data, table,
+            write_row_for_output(key_str, key_to_java_objects, key_to_urls, keys_not_found,
+                                 keys_to_files_dict, table_row_index, section_data, table,
                                  files_to_test_cases)
             table_row_index += 1
 
@@ -198,34 +196,6 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
         table_writer.writerows(table)
         csv_output_file.close()
     return keys_not_found
-
-
-def append_to_existing_data(found_count, key_str, key_to_java_objects, key_to_urls, keys_not_found, keys_to_files_dict,
-                            notfound_count, table_row_index, section_data, table: [[str]], files_to_test_cases: dict):
-    if section_data:
-        found_count += 1
-        # Verify our index in the table we are augmenting corresponds to the key we are using to retrieve augmenting data
-        table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
-        if table_key != key_str:
-            print(
-                f'Error:  Table Key has a trailing "." Table key [{table_key}] key to append data [{key_str}] at line {table_row_index} remove and re test')
-            # fix and test again.
-            table[table_row_index][1] = str(table[table_row_index][1]).rstrip('.').strip(' ')
-            table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
-            if table_key != key_str:
-                raise Exception(
-                    f'Error Key mismatch! Table key [{table_key}] key to append data [{key_str}] at line {table_row_index}')
-        table[table_row_index].append('{}'.format(section_data))
-        print(f' Found[{key_str}] count {found_count} requirement_text=[{section_data}]')
-    else:
-        notfound_count += 1
-        keys_not_found.add(key_str)
-        print(f'NOT FOUND![{key_str}] count {notfound_count} key  ')
-        table[table_row_index].append(f'! ERROR {key_str}: {notfound_count} Not found in data keys.')
-        table[table_row_index].append(key_to_urls.get(key_str))
-    table[table_row_index].append(key_to_java_objects.get(key_str))
-    handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases)
-    table[table_row_index].append('Last augmented column')
 
 
 def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
@@ -265,9 +235,8 @@ default_header: [] = (
      '', 'external version', '', '', ''])
 
 
-def write_new_data_line_to_table(found_count, key_str, key_to_java_objects, key_to_urls, keys_not_found,
-                                 keys_to_files_dict,
-                                 notfound_count, table_row_index, section_data: str, table: [[str]],
+def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys_not_found,
+                                 keys_to_files_dict, table_row_index, section_data: str, table: [[str]],
                                  files_to_test_cases):
     if len(table) <= table_row_index:
         table.append(['', '', '', '', '', '', '', '', ''])
@@ -284,6 +253,32 @@ def write_new_data_line_to_table(found_count, key_str, key_to_java_objects, key_
     section_data_cleaned = section_data.replace(",", " ").replace("\n", " ")
     table[table_row_index].append(section_data_cleaned)
     table[table_row_index].append(key_to_urls.get(key_str))
+    table[table_row_index].append(key_to_java_objects.get(key_str))
+    handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases)
+    table[table_row_index].append('Last augmented column')
+
+
+def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_found, keys_to_files_dict,
+                            table_row_index, section_data, table: [[str]], files_to_test_cases: dict):
+    if section_data:
+        # Verify our index in the table we are augmenting corresponds to the key we are using to retrieve augmenting data
+        table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
+        if table_key != key_str:
+            print(
+                f'Error:  Table Key has a trailing "." Table key [{table_key}] key to append data [{key_str}] at line {table_row_index} remove and re test')
+            # fix and test again.
+            table[table_row_index][1] = str(table[table_row_index][1]).rstrip('.').strip(' ')
+            table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
+            if table_key != key_str:
+                raise Exception(
+                    f'Error Key mismatch! Table key [{table_key}] key to append data [{key_str}] at line {table_row_index}')
+        table[table_row_index].append('{}'.format(section_data))
+        print(f' Found[{key_str}] at table index {table_row_index} requirement_text=[{section_data}]')
+    else:
+        keys_not_found.add(key_str)
+        print(f'NOT FOUND![{key_str}] at table index {table_row_index}   ')
+        table[table_row_index].append(f'! ERROR {key_str}: Not found in data keys at table index {table_row_index} ')
+        table[table_row_index].append(key_to_urls.get(key_str))
     table[table_row_index].append(key_to_java_objects.get(key_str))
     handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases)
     table[table_row_index].append('Last augmented column')
@@ -334,17 +329,15 @@ def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
     key_to_full_requirement_text = dict()
     key_to_java_objects = dict()
     key_to_urls = dict()
-    found_count = 0
-    notfound_count = 0
+    # Should do key_to_cdd_section = dict()
     keys_not_found: list = []
     table, keys_from_table, header = read_table(table_file_name)
-    cdd_string: str = ""
     total_requirement_count = 0
     with open(cdd_html_file, "r") as text_file:
-        cdd_string = text_file.read()
-    cdd_string = clean_html_anchors(cdd_string)
+        cdd_requirements_file_as_string = text_file.read()
+    cdd_requirements_file_as_string = clean_html_anchors(cdd_requirements_file_as_string)
     section_id_re_str: str = '"(?:\d{1,3}_)+'
-    cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_string, flags=re.DOTALL)
+    cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string, flags=re.DOTALL)
     section_id_count = 0
     for section in cdd_sections_splits:
         cdd_section_id_search_results = re.search(section_id_re_str, section)
@@ -361,6 +354,7 @@ def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
         composite_key_string_re = "\s*(?:<li>)?\["
         req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
         req_id_splits = re.split(composite_key_string_re, str(section))
+
         total_requirement_count = process_section(build_composite_key, req_id_re_str, cdd_section_id,
                                                   key_to_full_requirement_text,
                                                   key_to_java_objects, key_to_urls, req_id_splits,
@@ -372,7 +366,7 @@ def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
                                                   key_to_java_objects, key_to_urls, req_id_splits,
                                                   section_id_count, total_requirement_count)
         section_id_count += 1
-    return table, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string
+    return table, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_requirements_file_as_string
 
 
 class AugmentSheetWithCDDInfo:
@@ -380,12 +374,12 @@ class AugmentSheetWithCDDInfo:
     def augment_table(self):
 
         table_to_augment, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
-        parse_cdd_html_to_requirements_table('input/new_recs_todo.csv',
-                                             'input/Android 11 Compatibility Definition_full_original.html')
+            parse_cdd_html_to_requirements_table('input/new_recs_todo.csv',
+                                                 'input/Android 11 Compatibility Definition_no_section_13.html')
 
         try:
             keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
-        except:
+        except IOError:
             print("Could not open key to file map, recreating ")
             keys_to_files_dict: dict = find_test_files(key_to_java_objects)
             persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
@@ -395,7 +389,7 @@ class AugmentSheetWithCDDInfo:
             method_to_words = persist.readp("storage/method_to_words.pickle")
             files_to_method_calls = persist.readp("storage/files_to_method_calls.pickle")
             aggregate_bag = persist.readp("storage/aggregate_bag.pickle")
-        except:
+        except IOError:
             print("Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
             files_to_words, method_to_words, files_to_method_calls, aggregate_bag = source_crawler_reducer.make_bags_of_word()
             persist.writep(files_to_words, "storage/files_to_words.pickle")
@@ -403,7 +397,7 @@ class AugmentSheetWithCDDInfo:
             persist.writep(files_to_method_calls, "storage/files_to_method_calls.pickle")
             persist.writep(aggregate_bag, "storage/aggregate_bag.pickle")
 
-        files_to_test_cases = buildTestCasesModuleDictionary('input/testcases-modules.txt')
+        files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
 
         created_table: [[str]] = []
         write_sheet(write_new_data_line_to_table, 'output/created_output.csv', created_table,
