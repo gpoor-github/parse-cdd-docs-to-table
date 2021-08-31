@@ -256,7 +256,7 @@ def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys
                                  files_to_test_cases,
                                  files_to_words, method_to_words, files_to_method_calls, aggregate_bag):
     if len(table) <= table_row_index:
-        table.append(['', '', '', '', '', '', '', '', ''])
+        table.append(['', '', '', '', '', '', '', '', '', '', '', ''])
 
     section_name = ""
     print(f"keys from  {table_row_index} [{key_str}]")
