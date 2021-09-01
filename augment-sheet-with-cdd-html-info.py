@@ -165,11 +165,13 @@ def clean_html_anchors(raw_html: str):
 
 
 def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
-                           files_to_words, method_to_words, files_to_method_calls :dict, aggregate_bag,
+                           files_to_words, method_to_words, files_to_method_calls: dict, aggregate_bag,
                            overwrite: bool = False):
     if keys_to_files_dict:
         filenames_str = keys_to_files_dict.get(key_str)
-
+        found_methods = None
+        file_name = None
+        a_method = None
         if filenames_str:
             filenames = filenames_str.split(' ')
             if len(filenames) > 0:
@@ -201,10 +203,12 @@ def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, 
                     class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
                     if overwrite or (table[table_row_index][7] == ""):
                         table[table_row_index][7] = class_name
-                        table[table_row_index][3] = "Yes"
+                        if overwrite or (table[table_row_index][7] == ""):
+                            table[table_row_index][3] = "Test Available"
                 if a_method:
                     if overwrite or (table[table_row_index][8] == ""):
                         table[table_row_index][8] = a_method
+
 
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write, keys_for_section_data,
                 key_to_java_objects, key_to_urls, keys_to_files_dict: dict, files_to_test_cases: dict,
@@ -263,17 +267,38 @@ def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys
     key_str = key_str.rstrip(".").strip(' ')
     key_split = key_str.split('/')
     table[table_row_index][1] = key_split[0]
+    table[table_row_index][3] = key_str
+    section_data_cleaned = '"{}"'.format(section_data.replace("\n", "  "))
+    table[table_row_index].append(section_data_cleaned)
+    table[table_row_index][4]=convert_version_to_number(key_split[0])
 
     if len(key_split) > 1:
         table[table_row_index][2] = key_split[1]
-    table[table_row_index][3] = key_str
-    section_data_cleaned = section_data.replace(",", " ").replace("\n", " ")
-    table[table_row_index].append(section_data_cleaned)
-    table[table_row_index].append(key_to_urls.get(key_str))
-    table[table_row_index].append(key_to_java_objects.get(key_str))
-    handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
-                           files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
-    table[table_row_index].append('Last augmented column')
+        table[table_row_index].append(key_to_urls.get(key_str))
+        table[table_row_index].append(key_to_java_objects.get(key_str))
+        handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
+                               files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+    else:
+        print(f"Only a major key? {key_str}")
+
+
+def convert_version_to_number(version: str):
+    version_splits = str(version).split(".")
+    version_as_number = ''
+    for i in range(4):
+        if i < len(version_splits):
+            idx = 0
+            for j in range(1,-1,-1):
+                print(j)
+                if j >= len(version_splits[i]):
+                    version_as_number += '0'
+                else:
+                    version_as_number += version_splits[i][idx]
+                    idx += 1
+                print(version_as_number)
+        else:
+            version_as_number += "00"
+    return version_as_number
 
 
 def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_found, keys_to_files_dict,
@@ -300,7 +325,7 @@ def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_
         table[table_row_index].append(key_to_urls.get(key_str))
     table[table_row_index].append(key_to_java_objects.get(key_str))
     handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
-                            files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+                           files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
     table[table_row_index].append('Last augmented column')
 
 
@@ -393,7 +418,7 @@ class AugmentSheetWithCDDInfo:
     def augment_table(self):
 
         table_to_augment, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
-            parse_cdd_html_to_requirements_table('input/new_recs_todo.csv',
+            parse_cdd_html_to_requirements_table('input/new_recs_remaining_todo.csv',
                                                  'input/Android 11 Compatibility Definition_no_section_13.html')
 
         try:
