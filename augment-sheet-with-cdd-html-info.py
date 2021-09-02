@@ -132,7 +132,7 @@ def find_java_objects(text_to_scan_for_java_objects: str):
     java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
     java_objects.update(re.findall(java_object_re_str, text_to_scan_for_java_objects))
 
-    java_defines_str = '[A-Z][A-Z0-9]{3,20}[_A-Z0-9]{0,40}'
+    java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
     java_objects.update(re.findall(java_defines_str, text_to_scan_for_java_objects))
     java_objects.difference_update(
         {"MUST", "SHOULD", "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'STRONGLY',
