@@ -188,7 +188,7 @@ def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, 
                         a_method = method
 
                 table[table_row_index].append(a_single_test_file_name)
-                #table[table_row_index].append(filenames_str)
+                # table[table_row_index].append(filenames_str)
 
                 class_name_split_src = a_single_test_file_name.split('/src/')
                 # Module
@@ -252,7 +252,7 @@ default_header: [] = (
      'Comment(internal) e.g. why a test is not possible ', 'Comment (external)',
      'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
      'Test Level',
-     '', 'external version', '', '', ''])
+     '', 'external section_id', '', '', ''])
 
 
 def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys_not_found,
@@ -271,33 +271,43 @@ def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys
     table[table_row_index][3] = key_str
     section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
     table[table_row_index].append(section_data_cleaned)
-    table[table_row_index][4]=convert_version_to_number(key_split[0])
 
     if len(key_split) > 1:
         table[table_row_index][2] = key_split[1]
+        table[table_row_index][4] = convert_version_to_number(key_split[0], key_split[1])
         table[table_row_index].append(key_to_urls.get(key_str))
         table[table_row_index].append(key_to_java_objects.get(key_str))
         handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
                                files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
     else:
+        table[table_row_index][4] = convert_version_to_number(key_split[0])
         print(f"Only a major key? {key_str}")
 
 
-def convert_version_to_number(version: str):
-    version_splits = str(version).split(".")
-    version_as_number = ''
+def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00'):
+    section_splits = section_id.split(".")
+    section_as_number = ''
     for i in range(4):
-        if i < len(version_splits):
+        if i < len(section_splits):
             idx = 0
-            for j in range(1,-1,-1):
-                if j >= len(version_splits[i]):
-                    version_as_number += '0'
+            for j in range(1, -1, -1):
+                if j >= len(section_splits[i]):
+                    section_as_number += '0'
                 else:
-                    version_as_number += version_splits[i][idx]
+                    section_as_number += section_splits[i][idx]
                     idx += 1
         else:
-            version_as_number += "00"
-    return version_as_number
+            section_as_number += "00"
+
+    requirement_splits = requirement_id.split("-")
+    requirement_as_number = f'{ord(requirement_splits[0][-1])}'
+    for k in range(1, len(requirement_splits)):
+        if len(requirement_splits[k]) > 1:
+            requirement_as_number = f'{requirement_as_number}{requirement_splits[k]}'
+        else:
+            requirement_as_number = f'{requirement_as_number}0{requirement_splits[k]}'
+
+    return f'"{section_as_number}.{requirement_as_number}"'
 
 
 def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_found, keys_to_files_dict,
@@ -326,7 +336,7 @@ def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_
     handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
                            files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
 
-    table[table_row_index][4]=convert_version_to_number(table[table_row_index][1])
+    table[table_row_index][4] = convert_version_to_number(table[table_row_index][1])
     table[table_row_index].append('Last augmented column')
 
 
