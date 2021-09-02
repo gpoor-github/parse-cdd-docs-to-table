@@ -188,7 +188,7 @@ def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, 
                         a_method = method
 
                 table[table_row_index].append(a_single_test_file_name)
-                table[table_row_index].append(filenames_str)
+                #table[table_row_index].append(filenames_str)
 
                 class_name_split_src = a_single_test_file_name.split('/src/')
                 # Module
@@ -267,8 +267,9 @@ def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys
     key_str = key_str.rstrip(".").strip(' ')
     key_split = key_str.split('/')
     table[table_row_index][1] = key_split[0]
+
     table[table_row_index][3] = key_str
-    section_data_cleaned = '"{}"'.format(section_data.replace("\n", "  "))
+    section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
     table[table_row_index].append(section_data_cleaned)
     table[table_row_index][4]=convert_version_to_number(key_split[0])
 
@@ -289,13 +290,11 @@ def convert_version_to_number(version: str):
         if i < len(version_splits):
             idx = 0
             for j in range(1,-1,-1):
-                print(j)
                 if j >= len(version_splits[i]):
                     version_as_number += '0'
                 else:
                     version_as_number += version_splits[i][idx]
                     idx += 1
-                print(version_as_number)
         else:
             version_as_number += "00"
     return version_as_number
@@ -326,6 +325,8 @@ def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_
     table[table_row_index].append(key_to_java_objects.get(key_str))
     handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
                            files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+
+    table[table_row_index][4]=convert_version_to_number(table[table_row_index][1])
     table[table_row_index].append('Last augmented column')
 
 
