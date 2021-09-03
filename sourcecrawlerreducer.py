@@ -34,7 +34,6 @@ class SourceCrawlerReducer:
         return set(split)
 
     def make_bags_of_word(self, root_cts_source_directory):
-
         # traverse root directory, and list directories as dirs and files as files
         files_to_words: dict = dict()
         method_to_words: dict = dict()
@@ -61,7 +60,7 @@ class SourceCrawlerReducer:
                         # get the names we want to search for to see if they are declared in other files
                         files_to_method_calls[fullpath] = self.remove_non_determinative_words(set(re.findall(method_call_re, file_string)))
 
-                        test_method_splits = re.split("@Test]", file_string)
+                        test_method_splits = re.split("@Test", file_string)
                         i = 1
                         while i < len(test_method_splits):
 
