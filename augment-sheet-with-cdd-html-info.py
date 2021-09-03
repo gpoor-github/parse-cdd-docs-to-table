@@ -4,7 +4,7 @@ import re
 import time
 
 import persist
-import source_crawler_reducer
+import sourcecrawlerreducer
 
 
 def build_test_cases_module_dictionary(testcases_grep_results):
@@ -446,7 +446,7 @@ class AugmentSheetWithCDDInfo:
             aggregate_bag = persist.readp("storage/aggregate_bag.pickle")
         except IOError:
             print("Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
-            files_to_words, method_to_words, files_to_method_calls, aggregate_bag = source_crawler_reducer.make_bags_of_word()
+            files_to_words, method_to_words, files_to_method_calls, aggregate_bag = sourcecrawlerreducer.make_bags_of_word()
             persist.writep(files_to_words, "storage/files_to_words.pickle")
             persist.writep(method_to_words, "storage/method_to_words.pickle")
             persist.writep(files_to_method_calls, "storage/files_to_method_calls.pickle")
