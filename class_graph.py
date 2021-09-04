@@ -1,5 +1,10 @@
+import os
 import re
 import time
+
+import persist
+
+FILES_TO_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
 
 
 def get_package_name(class_path):
@@ -27,7 +32,25 @@ re_method = re.compile('(\w+?)\(\)')
 re_class = re.compile('class (\w+)')
 
 
-def parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
+def get_cached_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
+    try:
+        test_files_to_methods = persist.read(FILES_TO_METHODS_PICKLE)
+    except IOError:
+        print("Could not open test_files_to_methods, recreating ")
+        test_files_to_methods = __parse_grep_of_at_test_files(
+            'input/android_studio_dependencies_for_cts.txt')
+        persist.write(test_files_to_methods, FILES_TO_METHODS_PICKLE)
+    return test_files_to_methods
+
+
+def clear_cached_crawler_data():
+    try:
+        os.remove(FILES_TO_METHODS_PICKLE)
+    except:
+        pass
+
+
+def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
     test_files_to_methods: {str: str} = dict()
 
     re_annotations = re.compile('@Test.*?$')
@@ -40,9 +63,8 @@ def parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.tx
             result = re_annotations.search(line)
             # Skip lines without annotations
             if result:
-                print("read {} :{}".format(count, result))
-                test_annotated_file_name = line.split(":")[0]
-
+                test_annotated_file_name_absolute_path = line.split(":")[0]
+                test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
                 # requirement = result.group(0)
                 line_method = file_content.pop()
                 count += 1
@@ -52,17 +74,18 @@ def parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.tx
                     count += 1
                     class_def, method = parse_(line_method)
                 if method:
-                    method_dict: {str: str} = test_files_to_methods.get(test_annotated_file_name)
-                    if not method_dict:
-                        method_dict = dict({method: 0})
-                    else:
-                        if method_dict.get(method):
-                            method_dict[method] += 1
-                        else:
-                            method_dict[method] = 0
-                    test_files_to_methods[test_annotated_file_name] = method_dict
-                    print(f'{count}){test_annotated_file_name}:{method_dict}')
+                    test_files_to_methods[test_annotated_file_name] = \
+                        f'{test_files_to_methods.get(test_annotated_file_name)} {method}'.strip(' ')
+
+                print(f'{count}) {test_annotated_file_name}:{method}')
+    print(f'{count}) {len(test_files_to_methods)}')
     return test_files_to_methods
+
+
+def get_cts_root(test_annotated_file_name_absolute_path):
+    test_annotated_file_name_split = test_annotated_file_name_absolute_path.split('/cts/', 1)
+    test_annotated_file_name = f'cts/{test_annotated_file_name_split[1]}'
+    return test_annotated_file_name
 
 
 def parse_(line_method):
@@ -99,9 +122,9 @@ def parse_dependency_file(file_name_in: str):
 
 
 if __name__ == '__main__':
-
- start = time.perf_counter()
- tests_files_methods = parse_grep_of_at_test_files()
- print(tests_files_methods)
- end = time.perf_counter()
- print(f'Took time {end - start:0.4f}sec ')
+    start = time.perf_counter()
+    clear_cached_crawler_data
+    tests_files_methods = get_cached_grep_of_at_test_files()
+    print(tests_files_methods)
+    end = time.perf_counter()
+    print(f'Took time {end - start:0.4f}sec ')

@@ -7,6 +7,8 @@ import class_graph
 import persist
 import sourcecrawlerreducer
 
+CTS_SOURCE_ROOT = "/home/gpoor/cts-source/cts/"
+
 
 def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
     test_cases_to_path: dict = dict()
@@ -38,11 +40,11 @@ def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
 def find_test_files(reference_diction: dict):
     # traverse root directory, and list directories as dirs and files as files
     collected_value: dict = dict()
-    value_matched: dict = dict()
+    found_words_to_count: dict = dict()
     count = 0
     start_time_file_crawl = time.perf_counter()
     # tests/tests/widget/src/android/widget/cts/AbsListView_LayoutParamsTest.java
-    for root, dirs, files in os.walk("/home/gpoor/cts-source/cts/"):  # tests/tests/widget/src/android/widget/cts"):
+    for root, dirs, files in os.walk(CTS_SOURCE_ROOT): #+"/tests/tests/bluetooth"):  # tests/tests/widget/src/android/widget/cts"):
 
         for file in files:
             if file.endswith('.java'):
@@ -55,27 +57,39 @@ def find_test_files(reference_diction: dict):
                             path_set = set(files_as_seperated_strings.split(' '))
                         else:
                             path_set = set()
-                        value_set = reference_diction[reference]
-                        values = str(value_set).split(' ')
-                        for value in values:
-                            value = value.strip(' ').strip('.')
+                        value_set = set(reference_diction[reference].split(' '))
+                        value_set = sourcecrawlerreducer.remove_non_determinative_words(value_set)
+                        reference_split = reference.split('/')
+
+                        value_set.add(reference_split[0])
+                        value_set.add(reference_split[1])
+
+                        for value in value_set:
+                            value = value.strip(' ').strip('.').strip(']').strip('(').strip(')').strip('<').strip('>')
                             if len(value) > 2:
-                                result = file_string.find(value)
-                                if result > -1:
+                                result = file_string.count(value)
+                                if result > 0:
                                     count += 1
+                                    path_from_project_root = class_graph.get_cts_root(fullpath)
+                                    if found_words_to_count.get(path_from_project_root):
+                                        found_words_to_count[value] = result + found_words_to_count[value]
+                                    else:
+                                        found_words_to_count[value] = result
                                     if (count % 100) == 0:
                                         end_time_file_crawl = time.perf_counter()
                                         print(
-                                            f'{count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference} found {value} in  {fullpath}')
-                                    path_set.add(fullpath)
-                                    value_matched[value] = fullpath
+                                            f' {value} found {found_words_to_count[value]} {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference}  path  {path_from_project_root}')
+                                    path_set.add(path_from_project_root)
+
                         if len(path_set) > 0:
                             collected_value[reference] = ' '.join(path_set)
-
+    sorted_words = {k: v for k, v in sorted(found_words_to_count.items(), key=lambda item: item[1],reverse=True)}
+    print(sorted_words)
+    sorted_words_keys = sorted_words.keys()
     end_time_file_crawl = time.perf_counter()
     print(
-        f'Final return {len(collected_value)}, {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}  {collected_value}')
-    return collected_value  # , value_matched
+        f'Final return {len(collected_value)}, {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}')
+    return collected_value #,  sorted_words_keys
 
 
 def read_table(file_name: str):
@@ -128,7 +142,7 @@ def find_java_objects(text_to_scan_for_java_objects: str):
     java_objects = set()
 
     java_objects.update(cleanhtml(process_requirement_text(text_to_scan_for_java_objects)).split(' '))
-    java_objects = sourcecrawlerreducer.SourceCrawlerReducer().remove_non_determinative_words(java_objects)
+    java_objects = sourcecrawlerreducer.remove_non_determinative_words(java_objects)
     java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
     java_objects.update(re.findall(java_methods_re_str, text_to_scan_for_java_objects))
 
@@ -137,10 +151,8 @@ def find_java_objects(text_to_scan_for_java_objects: str):
 
     java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
     java_objects.update(re.findall(java_defines_str, text_to_scan_for_java_objects))
-    java_objects.difference_update(
-        {"MUST", "SHOULD", "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'STRONGLY',
-         'developer.android.com'})
 
+    java_objects = sourcecrawlerreducer.remove_non_determinative_words(java_objects)
     if len(java_objects) > 0:
         return " ".join(java_objects)
     else:
@@ -170,6 +182,7 @@ def clean_html_anchors(raw_html: str):
 def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
                            files_to_words, method_to_words, files_to_method_calls: dict, test_file_to_dependencies,
                            overwrite: bool = False):
+    tests_files_methods = class_graph.get_cached_grep_of_at_test_files()
     if keys_to_files_dict:
         filenames_str = keys_to_files_dict.get(key_str)
         found_methods = None
@@ -213,6 +226,12 @@ def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, 
                         table[table_row_index][8] = a_method
 
 
+def handle_java_files_data2(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
+                            files_to_words, method_to_words, files_to_method_calls: dict, test_file_to_dependencies,
+                            overwrite: bool = False):
+    pass
+
+
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write, keys_for_section_data,
                 key_to_java_objects, key_to_urls):
     try:
@@ -229,7 +248,7 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
         test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
     except IOError:
         print("Could not open android_studio_dependencies_for_cts, recreating ")
-        test_file_to_dependencies = class_graph.ReadClassGraph().parse_dependency_file(
+        test_file_to_dependencies = class_graph.parse_dependency_file(
             'input/android_studio_dependencies_for_cts.txt')
         persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
 
