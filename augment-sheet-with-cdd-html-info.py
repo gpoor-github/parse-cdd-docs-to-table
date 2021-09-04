@@ -229,7 +229,7 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
         test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
     except IOError:
         print("Could not open android_studio_dependencies_for_cts, recreating ")
-        test_file_to_dependencies = class_graph.read_class_graph().parse_data(
+        test_file_to_dependencies = class_graph.ReadClassGraph().parse_dependency_file(
             'input/android_studio_dependencies_for_cts.txt')
         persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
 

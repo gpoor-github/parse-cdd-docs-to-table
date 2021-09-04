@@ -24,12 +24,17 @@ class SourceCrawlerReducer:
                      'float', 'native', 'super', 'while', 'void'}
     common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'open', 'getType', 'getMessage', 'equals',
                       'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from', 'String', 'HashMap'}
-    cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device', 'condition',
-     'Condition', 'any', 'unconditional;', '-', 'SR]', 'C:', 'Type', 'Tab:', 'implementation', '1', 'When', 'id=',
-     'assigned', ':', '2.', 'requirement', '(Requirements', 'consists', '(see', 'This', 'Each',
-     'ID', 'assigned.', 'Device', '1st', 'section', 'Watch', 'conditional;', 'A:', '<h4',
-      '(e.g.', 'type.', 'C-0-1).', 'T:', 'condition.', 'increments', 'defined', '0.', 'within', 'below:',
-     'applied', 'W:''', 'party',   'earlier', 'exempted', 'MUST', 'applications', 'requirement.', 'Devices', ';', 'support', 'document', 'level', 'through', 'logical', 'available', 'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'}
+    cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
+                        'condition',
+                        'Condition', 'any', 'unconditional;', '-', 'SR]', 'C:', 'Type', 'Tab:', 'implementation', '1',
+                        'When', 'id=',
+                        'assigned', ':', '2.', 'requirement', '(Requirements', 'consists', '(see', 'This', 'Each',
+                        'ID', 'assigned.', 'Device', '1st', 'section', 'Watch', 'conditional;', 'A:', '<h4',
+                        '(e.g.', 'type.', 'C-0-1).', 'T:', 'condition.', 'increments', 'defined', '0.', 'within',
+                        'below:',
+                        'applied', 'W:''', 'party', 'earlier', 'exempted', 'MUST', 'applications', 'requirement.',
+                        'Devices', ';', 'support', 'document', 'level', 'through', 'logical', 'available',
+                        'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'}
     license_words = {
         "/** **/ ** Copyright 2020 The Android Open Source Project * * Licensed under the Apache License, Version 2.0 (the  License); "
         "* you may not use this file except in compliance with the License. * You may obtain a copy of the License at ** "
@@ -44,7 +49,7 @@ class SourceCrawlerReducer:
     __files_to_words: dict = dict()
     __method_to_words: dict = dict()
     __files_to_method_calls: dict = dict()
-    __aggregate_bag:dict = dict()
+    __aggregate_bag: dict = dict()
 
     def clear_cached_crawler_data(self):
         try:
@@ -61,7 +66,7 @@ class SourceCrawlerReducer:
         except:
             pass
 
-    def get_cached_crawler_data(self, cts_root_directory: str ='/home/gpoor/cts-source'):
+    def get_cached_crawler_data(self, cts_root_directory: str = '/home/gpoor/cts-source'):
         try:
             self.__files_to_words = persist.readp(self.files_to_words_storage)
             self.__method_to_words = persist.readp(self.method_to_words_storage)
@@ -108,7 +113,7 @@ class SourceCrawlerReducer:
                         bag = self.remove_non_determinative_words(set(split))
                         files_to_words[fullpath] = bag
                         # print(f'file {file} bag {bag}')
-                        #aggregate_bag.update(bag)
+                        # aggregate_bag.update(bag)
 
                         # get the names we want to search for to see if they are declared in other files
                         files_to_method_calls[fullpath] = self.remove_non_determinative_words(
@@ -144,7 +149,6 @@ class SourceCrawlerReducer:
 
 
 if __name__ == '__main__':
-
     start = time.perf_counter()
     scr = SourceCrawlerReducer()
     scr.clear_cached_crawler_data()
