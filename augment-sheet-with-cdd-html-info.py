@@ -3,9 +3,9 @@ import os
 import re
 import time
 
+import class_graph
 import persist
 import sourcecrawlerreducer
-import class_graph
 
 
 def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
@@ -101,12 +101,12 @@ def read_table(file_name: str):
                 table.append(row)
                 table_index = line_count - 1
                 # Section,section_id,req_id
-                section_value = table[table_index][read_header.index(default_header[0])]
+                # section_value = table[table_index][read_header.index(default_header[0])]
                 section_id_value = table[table_index][read_header.index(default_header[1])]
                 req_id_value = table[table_index][read_header.index(default_header[2])]
-                class_def_value = table[table_index][read_header.index("class_def")]
-                method_value = table[table_index][read_header.index("method")]
-                module_value = table[table_index][read_header.index("module")]
+                # class_def_value = table[table_index][read_header.index("class_def")]
+                # method_value = table[table_index][read_header.index("method")]
+                # module_value = table[table_index][read_header.index("module")]
                 key_value = '{}/{}'.format(section_id_value.rstrip('.'), req_id_value)
                 keys_from_table[key_value] = table_index
                 line_count += 1
@@ -127,6 +127,8 @@ def find_urls(text_to_scan_urls: str):
 def find_java_objects(text_to_scan_for_java_objects: str):
     java_objects = set()
 
+    java_objects.update(cleanhtml(process_requirement_text(text_to_scan_for_java_objects)).split(' '))
+    java_objects = sourcecrawlerreducer.SourceCrawlerReducer().remove_non_determinative_words(java_objects)
     java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
     java_objects.update(re.findall(java_methods_re_str, text_to_scan_for_java_objects))
 
@@ -166,7 +168,7 @@ def clean_html_anchors(raw_html: str):
 
 
 def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
-                           files_to_words, method_to_words, files_to_method_calls: dict, aggregate_bag,
+                           files_to_words, method_to_words, files_to_method_calls: dict, test_file_to_dependencies,
                            overwrite: bool = False):
     if keys_to_files_dict:
         filenames_str = keys_to_files_dict.get(key_str)
@@ -212,11 +214,31 @@ def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, 
 
 
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write, keys_for_section_data,
-                key_to_java_objects, key_to_urls, keys_to_files_dict: dict, files_to_test_cases: dict):
+                key_to_java_objects, key_to_urls):
+    try:
+        keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
+    except IOError:
+        print("Could not open key to file map, recreating ")
+        keys_to_files_dict: dict = find_test_files(key_to_java_objects)
+        persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
+    # Map file to TestCase
+
+    # test_file_to_dependencies
+
+    try:
+        test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
+    except IOError:
+        print("Could not open android_studio_dependencies_for_cts, recreating ")
+        test_file_to_dependencies = class_graph.read_class_graph().parse_data(
+            'input/android_studio_dependencies_for_cts.txt')
+        persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
+
+    files_to_words, method_to_words, files_to_method_calls, aggregate_bag = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
+
+    files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
     with open(file_name, 'w', newline='') as csv_output_file:
         table_row_index = 0
         keys_not_found: set = set()
-        files_to_words, method_to_words, files_to_method_calls, aggregate_bag = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
 
         for temp_key in keys_to_find_and_write:
             key_str: str = temp_key
@@ -226,7 +248,7 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
             write_row_for_output(key_str, key_to_java_objects, key_to_urls, keys_not_found,
                                  keys_to_files_dict, table_row_index, section_data, table,
                                  files_to_test_cases,
-                                 files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+                                 files_to_words, method_to_words, files_to_method_calls, test_file_to_dependencies)
             table_row_index += 1
 
         table_writer = csv.writer(csv_output_file)
@@ -247,11 +269,10 @@ default_header: [] = (
 def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys_not_found,
                                  keys_to_files_dict, table_row_index, section_data: str, table: [[str]],
                                  files_to_test_cases,
-                                 files_to_words, method_to_words, files_to_method_calls, aggregate_bag):
+                                 files_to_words, method_to_words, files_to_method_calls, test_file_to_dependencies):
     if len(table) <= table_row_index:
         table.append(['', '', '', '', '', '', '', '', '', '', '', ''])
 
-    section_name = ""
     print(f"keys from  {table_row_index} [{key_str}]")
     key_str = key_str.rstrip(".").strip(' ')
     key_split = key_str.split('/')
@@ -267,7 +288,7 @@ def write_new_data_line_to_table(key_str, key_to_java_objects, key_to_urls, keys
         table[table_row_index].append(key_to_urls.get(key_str))
         table[table_row_index].append(key_to_java_objects.get(key_str))
         handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
-                               files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+                               files_to_words, method_to_words, files_to_method_calls, test_file_to_dependencies)
     else:
         table[table_row_index][4] = convert_version_to_number(key_split[0])
         print(f"Only a major key? {key_str}")
@@ -301,7 +322,7 @@ def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00')
 
 def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_found, keys_to_files_dict,
                             table_row_index, section_data, table: [[str]], files_to_test_cases: dict,
-                            files_to_words, method_to_words, files_to_method_calls, aggregate_bag):
+                            files_to_words, method_to_words, files_to_method_calls, test_file_to_dependencies):
     if section_data:
         # Verify our index in the table we are augmenting corresponds to the key we are using to retrieve augmenting data
         table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
@@ -323,7 +344,7 @@ def append_to_existing_data(key_str, key_to_java_objects, key_to_urls, keys_not_
         table[table_row_index].append(key_to_urls.get(key_str))
     table[table_row_index].append(key_to_java_objects.get(key_str))
     handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases,
-                           files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+                           files_to_words, method_to_words, files_to_method_calls, test_file_to_dependencies)
 
     table[table_row_index][4] = convert_version_to_number(table[table_row_index][1])
     table[table_row_index].append('Last augmented column')
@@ -416,41 +437,20 @@ def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
 class AugmentSheetWithCDDInfo:
 
     def augment_table(self):
-
         table_to_augment, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
             parse_cdd_html_to_requirements_table('input/new_recs_remaining_todo.csv',
                                                  'input/Android 11 Compatibility Definition_no_section_13.html')
-
-        try:
-            keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
-        except IOError:
-            print("Could not open key to file map, recreating ")
-            keys_to_files_dict: dict = find_test_files(key_to_java_objects)
-            persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
-        # Map file to TestCase
-
-        # test_file_to_dependencies
-
-        try:
-            test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
-        except IOError:
-            print("Could not open android_studio_dependencies_for_cts, recreating ")
-            test_file_to_dependencies = class_graph.read_class_graph().parse_data(
-                'input/android_studio_dependencies_for_cts.txt')
-            persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
-
-        files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
 
         # Write New Table
         created_table: [[str]] = []
         write_sheet(write_new_data_line_to_table, 'output/created_output.csv', created_table,
                     key_to_full_requirement_text, key_to_full_requirement_text, key_to_java_objects,
-                    key_to_urls, keys_to_files_dict, files_to_test_cases)
+                    key_to_urls)
 
         # Write Augmented Table
         keys_not_found = write_sheet(append_to_existing_data, 'output/augmented_output.csv', table_to_augment,
                                      keys_from_table, key_to_full_requirement_text, key_to_java_objects,
-                                     key_to_urls, keys_to_files_dict, files_to_test_cases)
+                                     key_to_urls)
 
         found_count = len(keys_from_table)
         not_found_count = len(keys_not_found)

@@ -24,6 +24,12 @@ class SourceCrawlerReducer:
                      'float', 'native', 'super', 'while', 'void'}
     common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'open', 'getType', 'getMessage', 'equals',
                       'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from', 'String', 'HashMap'}
+    cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device', 'condition',
+     'Condition', 'any', 'unconditional;', '-', 'SR]', 'C:', 'Type', 'Tab:', 'implementation', '1', 'When', 'id=',
+     'assigned', ':', '2.', 'requirement', '(Requirements', 'consists', '(see', 'This', 'Each',
+     'ID', 'assigned.', 'Device', '1st', 'section', 'Watch', 'conditional;', 'A:', '<h4',
+      '(e.g.', 'type.', 'C-0-1).', 'T:', 'condition.', 'increments', 'defined', '0.', 'within', 'below:',
+     'applied', 'W:''', 'party',   'earlier', 'exempted', 'MUST', 'applications', 'requirement.', 'Devices', ';', 'support', 'document', 'level', 'through', 'logical', 'available', 'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'}
     license_words = {
         "/** **/ ** Copyright 2020 The Android Open Source Project * * Licensed under the Apache License, Version 2.0 (the  License); "
         "* you may not use this file except in compliance with the License. * You may obtain a copy of the License at ** "
@@ -134,7 +140,7 @@ class SourceCrawlerReducer:
 
     def remove_non_determinative_words(self, set_to_diff: set):
         return set_to_diff.difference(self.java_keywords).difference(self.license_words) \
-            .difference(self.common_methods).difference(self.common_english_words)
+            .difference(self.common_methods).difference(self.common_english_words).difference(self.cdd_common_words)
 
 
 if __name__ == '__main__':
