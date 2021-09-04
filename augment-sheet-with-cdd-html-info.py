@@ -5,9 +5,10 @@ import time
 
 import persist
 import sourcecrawlerreducer
+import class_graph
 
 
-def build_test_cases_module_dictionary(testcases_grep_results):
+def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
     test_cases_to_path: dict = dict()
 
     with open(testcases_grep_results, "r") as f:
@@ -211,23 +212,11 @@ def handle_java_files_data(key_str, keys_to_files_dict, table, table_row_index, 
 
 
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write, keys_for_section_data,
-                key_to_java_objects, key_to_urls, keys_to_files_dict: dict, files_to_test_cases: dict,
-                files_to_words, method_to_words, files_to_method_calls, aggregate_bag):
-    """
-
-    :param files_to_test_cases:
-    :param write_row_for_output:
-    :param file_name:
-    :param table:
-    :param keys_to_find_and_write:
-    :param keys_for_section_data:
-    :param key_to_java_objects:
-    :param key_to_urls:
-    :type keys_to_files_dict: dict{str:str}
-    """
+                key_to_java_objects, key_to_urls, keys_to_files_dict: dict, files_to_test_cases: dict):
     with open(file_name, 'w', newline='') as csv_output_file:
         table_row_index = 0
         keys_not_found: set = set()
+        files_to_words, method_to_words, files_to_method_calls, aggregate_bag = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
 
         for temp_key in keys_to_find_and_write:
             key_str: str = temp_key
@@ -439,18 +428,16 @@ class AugmentSheetWithCDDInfo:
             keys_to_files_dict: dict = find_test_files(key_to_java_objects)
             persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
         # Map file to TestCase
+
+        # test_file_to_dependencies
+
         try:
-            files_to_words = persist.readp("storage/files_to_words.pickle")
-            method_to_words = persist.readp("storage/method_to_words.pickle")
-            files_to_method_calls = persist.readp("storage/files_to_method_calls.pickle")
-            aggregate_bag = persist.readp("storage/aggregate_bag.pickle")
+            test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
         except IOError:
-            print("Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
-            files_to_words, method_to_words, files_to_method_calls, aggregate_bag = sourcecrawlerreducer.SourceCrawlerReducer().make_bags_of_word("/home/gpoor/cts-source")
-            persist.writep(files_to_words, "storage/files_to_words.pickle")
-            persist.writep(method_to_words, "storage/method_to_words.pickle")
-            persist.writep(files_to_method_calls, "storage/files_to_method_calls.pickle")
-            persist.writep(aggregate_bag, "storage/aggregate_bag.pickle")
+            print("Could not open android_studio_dependencies_for_cts, recreating ")
+            test_file_to_dependencies = class_graph.read_class_graph().parse_data(
+                'input/android_studio_dependencies_for_cts.txt')
+            persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
 
         files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
 
@@ -458,14 +445,12 @@ class AugmentSheetWithCDDInfo:
         created_table: [[str]] = []
         write_sheet(write_new_data_line_to_table, 'output/created_output.csv', created_table,
                     key_to_full_requirement_text, key_to_full_requirement_text, key_to_java_objects,
-                    key_to_urls, keys_to_files_dict, files_to_test_cases,
-                    files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+                    key_to_urls, keys_to_files_dict, files_to_test_cases)
 
         # Write Augmented Table
         keys_not_found = write_sheet(append_to_existing_data, 'output/augmented_output.csv', table_to_augment,
                                      keys_from_table, key_to_full_requirement_text, key_to_java_objects,
-                                     key_to_urls, keys_to_files_dict, files_to_test_cases,
-                                     files_to_words, method_to_words, files_to_method_calls, aggregate_bag)
+                                     key_to_urls, keys_to_files_dict, files_to_test_cases)
 
         found_count = len(keys_from_table)
         not_found_count = len(keys_not_found)

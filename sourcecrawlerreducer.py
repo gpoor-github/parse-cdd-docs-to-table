@@ -1,5 +1,8 @@
 import os
 import re
+import time
+
+import persist
 
 
 class SourceCrawlerReducer:
@@ -27,20 +30,64 @@ class SourceCrawlerReducer:
         "http://www.apache.org/licenses/LICENSE-2.0 * * Unless required by applicable law or agreed to in writing, software * distributed under the License is distributed on an AS IS"
         " BASIS, * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. * See the License for the specific language governing permissions and * limitations "
         "under the License.(C) \"AS IS\" */"}
+    files_to_words_storage = 'storage/files_to_words.pickle'
+    method_to_words_storage = 'storage/method_to_words.pickle'
+    files_to_method_calls_storage = 'storage/files_to_method_calls.pickle'
+    aggregate_bag_storage = 'storage/aggregate_bag.pickle'
 
-    def bag_from_text(text: str):
+    __files_to_words: dict = dict()
+    __method_to_words: dict = dict()
+    __files_to_method_calls: dict = dict()
+    __aggregate_bag:dict = dict()
+
+    def clear_cached_crawler_data(self):
+        try:
+            os.remove(self.files_to_words_storage)
+        except:
+            pass
+        try:
+            os.remove(self.method_to_words_storage)
+        except:
+            pass
+        try:
+            os.remove(self.files_to_method_calls_storage)
+            os.remove(self.aggregate_bag_storage)
+        except:
+            pass
+
+    def get_cached_crawler_data(self, cts_root_directory: str ='/home/gpoor/cts-source'):
+        try:
+            self.__files_to_words = persist.readp(self.files_to_words_storage)
+            self.__method_to_words = persist.readp(self.method_to_words_storage)
+            self.__files_to_method_calls = persist.readp(self.files_to_method_calls_storage)
+            self.__aggregate_bag = persist.readp(self.aggregate_bag_storage)
+            print(
+                f"Returned cached value from  files_to_words {self.files_to_words_storage} , method_to_words {self.method_to_words_storage}, "
+                f"files_to_method_calls {self.files_to_method_calls_storage}, aggregate_bag {self.aggregate_bag_storage} ")
+        except IOError:
+            print(
+                f" Crawling {cts_root_directory}: Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
+            self.__files_to_words, self.__method_to_words, self.__files_to_method_calls, self.__aggregate_bag = self.__make_bags_of_word(
+                cts_root_directory)
+            persist.writep(self.__files_to_words, self.files_to_words_storage)
+            persist.writep(self.__method_to_words, self.method_to_words_storage)
+            persist.writep(self.__files_to_method_calls, self.files_to_method_calls_storage)
+            persist.writep(self.__aggregate_bag, self.aggregate_bag_storage)
+        return self.__files_to_words, self.__method_to_words, self.__files_to_method_calls, self.__aggregate_bag
+
+    def bag_from_text(self, text: str):
         file_string = re.sub("\s\s+", " ", text)
         split = file_string.split(" ")
         return set(split)
 
-    def make_bags_of_word(self, root_cts_source_directory):
+    def __make_bags_of_word(self, root_cts_source_directory):
         # traverse root directory, and list directories as dirs and files as files
-        files_to_words: dict = dict()
-        method_to_words: dict = dict()
-        files_to_method_calls: dict = dict()
-        aggregate_bag = set()
-        method_call_re = re.compile('\w{3,40}(?=\(\w*\))(?!\s*?\{)')
 
+        method_call_re = re.compile('\w{3,40}(?=\(\w*\))(?!\s*?\{)')
+        files_to_words = dict()
+        method_to_words = dict()
+        files_to_method_calls = dict()
+        aggregate_bag = dict()
         for root, dirs, files in os.walk(root_cts_source_directory):
             for file in files:
                 if file.endswith('.java'):
@@ -55,10 +102,11 @@ class SourceCrawlerReducer:
                         bag = self.remove_non_determinative_words(set(split))
                         files_to_words[fullpath] = bag
                         # print(f'file {file} bag {bag}')
-                        aggregate_bag.update(bag)
+                        #aggregate_bag.update(bag)
 
                         # get the names we want to search for to see if they are declared in other files
-                        files_to_method_calls[fullpath] = self.remove_non_determinative_words(set(re.findall(method_call_re, file_string)))
+                        files_to_method_calls[fullpath] = self.remove_non_determinative_words(
+                            set(re.findall(method_call_re, file_string)))
 
                         test_method_splits = re.split("@Test", file_string)
                         i = 1
@@ -90,6 +138,12 @@ class SourceCrawlerReducer:
 
 
 if __name__ == '__main__':
-    files_to_words, method_to_words, files_to_method_calls, aggregate_bag =  \
-        SourceCrawlerReducer().make_bags_of_word("/home/gpoor/cts-source")
-    print(f"\n\naggregate bag [{aggregate_bag}] \nsize {len(aggregate_bag)}")
+
+    start = time.perf_counter()
+    scr = SourceCrawlerReducer()
+    scr.clear_cached_crawler_data()
+    files_to_words, method_to_words, files_to_method_calls, aggregate_bag = \
+        scr.get_cached_crawler_data('/home/gpoor/cts-source')
+    print(f"\n\nfiles_to_words  [{files_to_words}] \nsize {len(files_to_words)}")
+    end = time.perf_counter()
+    print(f'Took time {end - start:0.4f}sec ')
