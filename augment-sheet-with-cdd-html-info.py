@@ -7,7 +7,6 @@ import class_graph
 import persist
 import sourcecrawlerreducer
 
-CTS_SOURCE_ROOT = "/home/gpoor/cts-source/cts/"
 
 
 def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
@@ -37,59 +36,6 @@ def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
     return test_cases_to_path
 
 
-def find_test_files(reference_diction: dict):
-    # traverse root directory, and list directories as dirs and files as files
-    collected_value: dict = dict()
-    found_words_to_count: dict = dict()
-    count = 0
-    start_time_file_crawl = time.perf_counter()
-    # tests/tests/widget/src/android/widget/cts/AbsListView_LayoutParamsTest.java
-    for root, dirs, files in os.walk(CTS_SOURCE_ROOT): #+"/tests/tests/bluetooth"):  # tests/tests/widget/src/android/widget/cts"):
-
-        for file in files:
-            if file.endswith('.java'):
-                fullpath = '{}/{}'.format(root, file)
-                with open(fullpath, "r") as text_file:
-                    file_string = text_file.read()
-                    for reference in reference_diction:
-                        files_as_seperated_strings = collected_value.get(reference)
-                        if files_as_seperated_strings:
-                            path_set = set(files_as_seperated_strings.split(' '))
-                        else:
-                            path_set = set()
-                        value_set = set(reference_diction[reference].split(' '))
-                        value_set = sourcecrawlerreducer.remove_non_determinative_words(value_set)
-                        reference_split = reference.split('/')
-
-                        value_set.add(reference_split[0])
-                        value_set.add(reference_split[1])
-
-                        for value in value_set:
-                            value = value.strip(' ').strip('.').strip(']').strip('(').strip(')').strip('<').strip('>')
-                            if len(value) > 2:
-                                result = file_string.count(value)
-                                if result > 0:
-                                    count += 1
-                                    path_from_project_root = class_graph.get_cts_root(fullpath)
-                                    if found_words_to_count.get(path_from_project_root):
-                                        found_words_to_count[value] = result + found_words_to_count[value]
-                                    else:
-                                        found_words_to_count[value] = result
-                                    if (count % 100) == 0:
-                                        end_time_file_crawl = time.perf_counter()
-                                        print(
-                                            f' {value} found {found_words_to_count[value]} {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference}  path  {path_from_project_root}')
-                                    path_set.add(path_from_project_root)
-
-                        if len(path_set) > 0:
-                            collected_value[reference] = ' '.join(path_set)
-    sorted_words = {k: v for k, v in sorted(found_words_to_count.items(), key=lambda item: item[1],reverse=True)}
-    print(sorted_words)
-    sorted_words_keys = sorted_words.keys()
-    end_time_file_crawl = time.perf_counter()
-    print(
-        f'Final return {len(collected_value)}, {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}')
-    return collected_value #,  sorted_words_keys
 
 
 def read_table(file_name: str):
@@ -234,12 +180,8 @@ def handle_java_files_data2(key_str, keys_to_files_dict, table, table_row_index,
 
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write, keys_for_section_data,
                 key_to_java_objects, key_to_urls):
-    try:
-        keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
-    except IOError:
-        print("Could not open key to file map, recreating ")
-        keys_to_files_dict: dict = find_test_files(key_to_java_objects)
-        persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
+
+    keys_to_files_dict: dict = sourcecrawlerreducer.get_cached_keys_to_files(key_to_java_objects)
     # Map file to TestCase
 
     # test_file_to_dependencies

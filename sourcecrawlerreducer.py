@@ -2,7 +2,10 @@ import os
 import re
 import time
 
+import class_graph
 import persist
+
+CTS_SOURCE_ROOT = "/home/gpoor/cts-source/cts/"
 
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
                     'condition',
@@ -14,11 +17,14 @@ cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'im
                     'below:',
                     'applied', 'W:''', 'party', 'earlier', 'exempted', 'MUST', 'applications', 'requirement.',
                     'Devices', ';', 'support', 'document', 'level', 'through', 'logical', 'available',
-                    'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'  "MUST", "SHOULD",
+                    'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'  "MUST",
+                    "SHOULD",
                     "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'STRONGLY',
-                    'developer.android.com','Test','@Test'}
-common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test','using','value','more' 'open', 'getType', 'getMessage', 'equals',
-                  'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from', 'String', 'HashMap'}
+                    'developer.android.com', 'Test', '@Test', 'app,data'}
+
+common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'using', 'value', 'more' 'open', 'getType',
+                  'getMessage', 'equals', 'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from',
+                  'String', 'HashMap'}
 
 common_english_words = {'the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on',
                         'are', 'as', 'with', 'his', 'they', 'I', 'at', 'be', 'this', 'have', 'from', 'or', 'one',
@@ -28,7 +34,8 @@ common_english_words = {'the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that'
                         'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go',
                         'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been',
                         'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come',
-                        'made', 'may'}
+                        'made', 'may','here'}
+
 found_in_java_source = {
     'all', 'back', 'result', 'check', 'null', 'test', 'end', 'time', 'regular', 'able', 'start', 'Default',
     'times', 'timestamp', 'should', 'Build', 'Remote',
@@ -57,13 +64,15 @@ found_in_java_source = {
     'emulate', 'Can', 'Note', 'does', 'even', 'between', 'random', 'With', 'methods', 'must',
     'target', 'ID;', 'just', 'naming', 'characters', 'address', 'Generic', 'basic', 'original', 'reported',
     'running', 'complete', 'full', 'certain', 'based', 'away', 'want', 'once', 'real',
-    'started', 'strong', 'buffer', 'range', 'next', 'base', 'far', 'completely', 'least', 'explicit', 'or;','declare'}
+    'started', 'strong', 'buffer', 'range', 'next', 'base', 'far', 'completely', 'least', 'explicit', 'or;', 'declare',
+    '(for', 'Are', 'source', 'preload', 'key','test('}
+
 java_keywords = {'abstract', 'continue', 'for', 'new', 'switch', 'assert', '**', '*default', 'goto', '*', 'package',
                  'synchronized', 'boolean', 'do', 'if', 'private', 'this', 'break', 'double', 'implements',
                  'protected', 'throw', 'byte', 'else', 'import', 'public', 'throws', 'case', 'enum', '**', '**',
                  'instanceof', 'return', 'transient', 'catch', 'extends', 'int', 'short', 'try', 'char', 'final',
                  'interface', 'static', 'class', 'finally', 'long', 'strictfp', '**', 'volatile', 'const', '*',
-                 'float', 'native', 'super', 'while', 'void','include','#include'}
+                 'float', 'native', 'super', 'while', 'void', 'include', '#include'}
 
 license_words = {
     "/** **/ ** Copyright 2020 The Android Open Source Project * * Licensed under the Apache License, Version 2.0 (the  License); "
@@ -71,7 +80,8 @@ license_words = {
     "http://www.apache.org/licenses/LICENSE-2.0 * * Unless required by applicable law or agreed to in writing, software * distributed under the License is distributed on an AS IS"
     " BASIS, * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. * See the License for the specific language governing permissions and * limitations "
     "under the License.(C) \"AS IS\" */"}
-all_words_to_skip = set().union(cdd_common_words).union(common_methods).union(common_english_words) \
+
+all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).union(common_english_words) \
     .union(found_in_java_source) \
     .union(java_keywords) \
     .union(license_words)
@@ -79,6 +89,62 @@ all_words_to_skip = set().union(cdd_common_words).union(common_methods).union(co
 
 def remove_non_determinative_words(set_to_diff: set):
     return set_to_diff.difference(all_words_to_skip)
+
+
+def __find_test_files(reference_diction: dict):
+    # traverse root directory, and list directories as dirs and files as files
+    collected_value: dict = dict()
+    found_words_to_count: dict = dict()
+    count = 0
+    start_time_file_crawl = time.perf_counter()
+    # tests/tests/widget/src/android/widget/cts/AbsListView_LayoutParamsTest.java
+    for root, dirs, files in os.walk(
+            CTS_SOURCE_ROOT):  # +"/tests/tests/bluetooth"):  # tests/tests/widget/src/android/widget/cts"):
+
+        for file in files:
+            if file.endswith('.java'):
+                fullpath = '{}/{}'.format(root, file)
+                with open(fullpath, "r") as text_file:
+                    file_string = text_file.read()
+                    for reference in reference_diction:
+                        files_as_seperated_strings = collected_value.get(reference)
+                        if files_as_seperated_strings:
+                            path_set = set(files_as_seperated_strings.split(' '))
+                        else:
+                            path_set = set()
+                        value_set = set(reference_diction[reference].split(' '))
+                        value_set = remove_non_determinative_words(value_set)
+                        reference_split = reference.split('/')
+
+                        value_set.add(reference_split[0])
+                        value_set.add(reference_split[1])
+
+                        for value in value_set:
+                            value = value.strip(' ').strip('.').strip(']').strip('(').strip(')').strip('<').strip('>')
+                            if len(value) > 2:
+                                result = file_string.count(value)
+                                if result > 0:
+                                    count += 1
+                                    path_from_project_root = class_graph.get_cts_root(fullpath)
+                                    if found_words_to_count.get(path_from_project_root):
+                                        found_words_to_count[value] = result + found_words_to_count[value]
+                                    else:
+                                        found_words_to_count[value] = result
+                                    if (count % 100) == 0:
+                                        end_time_file_crawl = time.perf_counter()
+                                        print(
+                                            f' {value} found {found_words_to_count[value]} {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference}  path  {path_from_project_root}')
+                                    path_set.add(path_from_project_root)
+
+                        if len(path_set) > 0:
+                            collected_value[reference] = ' '.join(path_set)
+    sorted_words = {k: v for k, v in sorted(found_words_to_count.items(), key=lambda item: item[1], reverse=True)}
+    print(sorted_words)
+    sorted_words_keys = sorted_words.keys()
+    end_time_file_crawl = time.perf_counter()
+    print(
+        f'Final return {len(collected_value)}, {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}')
+    return collected_value  # ,  sorted_words_keys
 
 
 class SourceCrawlerReducer:
@@ -194,3 +260,12 @@ if __name__ == '__main__':
     print(f"\n\nfiles_to_words  [{files_to_words}] \nsize {len(files_to_words)}")
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
+
+
+def get_cached_keys_to_files(key_to_java_objects):
+    try:
+        keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
+    except IOError:
+        print("Could not open key to file map, recreating ")
+        keys_to_files_dict: dict =__find_test_files(key_to_java_objects)
+        persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
