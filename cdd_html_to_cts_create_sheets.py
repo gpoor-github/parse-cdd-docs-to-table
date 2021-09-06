@@ -3,8 +3,9 @@ import os
 import re
 import time
 
-import sourcecrawlerreducer
 import data_sources
+import sourcecrawlerreducer
+from comparesheets import read_table
 
 REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
 TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
@@ -36,45 +37,6 @@ def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
             test_cases_to_path[path] = test_case_name
     return test_cases_to_path
 
-
-def read_table(file_name: str = TABLE_FILE_NAME):
-    table = []
-    read_header: [str]
-    keys_from_table: dict = dict()
-    with open(file_name) as csv_file:
-
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-
-        for row in csv_reader:
-            if line_count == 0:
-                if row.index(default_header[0]) > -1:
-                    print(f'Column names are {", ".join(row)}')
-                    read_header = row
-                    line_count += 1
-                else:
-                    raise Exception(
-                        f' First row of file {csv_file} should contain CSV with header like {default_header} looking for <Section> not found in {row}')
-            else:
-                print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
-                table.append(row)
-                table_index = line_count - 1
-                # Section,section_id,req_id
-                # section_value = table[table_index][read_header.index(default_header[0])]
-                section_id_value = table[table_index][read_header.index(default_header[1])]
-                req_id_value = table[table_index][read_header.index(default_header[2])]
-                # class_def_value = table[table_index][read_header.index("class_def")]
-                # method_value = table[table_index][read_header.index("method")]
-                # module_value = table[table_index][read_header.index("module")]
-                key_value = '{}/{}'.format(section_id_value.rstrip('.'), req_id_value)
-                keys_from_table[key_value] = table_index
-                line_count += 1
-                print(f'Processed {line_count} lines {key_value} ')
-            print(f'For table {line_count}')
-        print("End for loop")
-        return table, keys_from_table, read_header
-
-    # find urls that may help find the tests for the requirement
 
 
 def find_urls(text_to_scan_urls: str):
@@ -125,9 +87,9 @@ def clean_html_anchors(raw_html: str):
 
 
 def handle_java_files_data(key_str):
-    keys_to_files_dict =data_sources.RequirementSources().key_to_full_requirement_text
-    files_to_method_calls =data_sources.DataSources().files_to_method_calls
-    files_to_test_cases =data_sources.DataSources().files_to_test_cases
+    keys_to_files_dict = data_sources.RequirementSources().key_to_full_requirement_text
+    files_to_method_calls = data_sources.DataSources().files_to_method_calls
+    files_to_test_cases = data_sources.DataSources().files_to_test_cases
 
     a_single_test_file_name: str = ""
     test_case_name: str = ""
@@ -165,7 +127,8 @@ def handle_java_files_data(key_str):
                     class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
 
         return a_single_test_file_name, test_case_name, a_method, class_name
-    return None,None,None
+    return None, None, None
+
 
 def handle_java_files_data2(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
                             files_to_words, method_to_words, files_to_method_calls: dict, test_file_to_dependencies,
@@ -178,7 +141,7 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
 
     # test_file_to_dependencies
 
-  #  keys_to_files_dict: dict = sourcecrawlerreducer.get_cached_keys_to_files(key_to_java_objects)
+    #  keys_to_files_dict: dict = sourcecrawlerreducer.get_cached_keys_to_files(key_to_java_objects)
 
     files_to_words, method_to_words, files_to_method_calls = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
 
@@ -190,7 +153,7 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
             key_str: str = temp_key
             key_str = key_str.rstrip(".").strip(' ')
 
-            write_row_for_output(key_str,table,table_row_index)# test_file_to_dependencies)
+            write_row_for_output(key_str, table, table_row_index)  # test_file_to_dependencies)
             table_row_index += 1
 
         table_writer = csv.writer(csv_output_file)
@@ -199,16 +162,8 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
     return keys_not_found
 
 
-default_header: [] = (
-    ['Section', 'section_id', 'req_id', 'Test', 'Availability', 'Annotation?' ',''New Req for R?',
-     'New CTS for R?', 'class_def', 'method', 'module',
-     'Comment(internal) e.g. why a test is not possible ', 'Comment (external)',
-     'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
-     'Test Level',
-     '', 'external section_id', '', '', ''])
 
-
-def write_new_data_line_to_table(key_str,table,table_row_index):
+def write_new_data_line_to_table(key_str, table, table_row_index):
     key_to_full_requirement_text = data_sources.RequirementSources().key_to_full_requirement_text
     key_to_java_objects = data_sources.RequirementSources().key_to_java_objects
     key_to_urls = data_sources.RequirementSources().key_to_urls
@@ -225,7 +180,6 @@ def write_new_data_line_to_table(key_str,table,table_row_index):
     table[table_row_index][3] = key_str
     section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
     table[table_row_index].append(section_data_cleaned)
-
 
     if len(key_split) > 1:
         table[table_row_index][2] = key_split[1]
@@ -274,7 +228,7 @@ def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00')
     return f'"{section_as_number}.{requirement_as_number}"'
 
 
-def append_to_existing_data(key_str,table,table_row_index):
+def append_to_existing_data(key_str, table, table_row_index):
     key_to_full_requirement_text = data_sources.RequirementSources().key_to_full_requirement_text
     key_to_java_objects = data_sources.RequirementSources().key_to_java_objects
     key_to_urls = data_sources.RequirementSources().key_to_urls
@@ -347,7 +301,7 @@ def find_full_key(key_string_for_re, record_id_split, section_id):
         return None
 
 
-def parse_cdd_html_to_requirements( cdd_html_file = REQUIREMENTS_FROM_HTML_FILE):
+def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
     key_to_full_requirement_text = dict()
     key_to_java_objects = dict()
     key_to_urls = dict()
@@ -390,29 +344,29 @@ def parse_cdd_html_to_requirements( cdd_html_file = REQUIREMENTS_FROM_HTML_FILE)
     return key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_requirements_file_as_string
 
 
-class AugmentSheetWithCDDInfo:
+def cdd_html_to_cts_create_sheets(targets: str = 'all'):
+    table, keys_from_table, header = read_table(TABLE_FILE_NAME)
+    key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
+        parse_cdd_html_to_requirements(REQUIREMENTS_FROM_HTML_FILE)
 
-    def augment_table(self):
-        table, keys_from_table, header = read_table(TABLE_FILE_NAME)
-        key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
-            parse_cdd_html_to_requirements(REQUIREMENTS_FROM_HTML_FILE)
-
+    if targets == 'new' or targets == 'all':
         # Write New Table
         created_table: [[str]] = []
         write_sheet(write_new_data_line_to_table, 'output/created_output.csv', created_table,
                     key_to_full_requirement_text)
 
+    if targets == 'append' or targets == 'all':
         # Write Augmented Table
         keys_not_found = write_sheet(append_to_existing_data, 'output/augmented_output.csv', table,
                                      keys_from_table)
 
-        found_count = len(keys_from_table)
-        not_found_count = len(keys_not_found)
-        print(f'Not {not_found_count} Found {found_count}  of {not_found_count + found_count}')
+    found_count = len(keys_from_table)
+    not_found_count = len(keys_not_found)
+    print(f'Not {not_found_count} Found {found_count}  of {not_found_count + found_count}')
 
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    AugmentSheetWithCDDInfo().augment_table()
+    cdd_html_to_cts_create_sheets('new')
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

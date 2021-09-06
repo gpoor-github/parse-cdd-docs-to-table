@@ -6,7 +6,7 @@ from rx import operators as ops
 
 import class_graph
 import sourcecrawlerreducer
-from augment_sheet_with_cdd_html_info import read_table, parse_cdd_html_to_requirements, \
+from cdd_html_to_cts_create_sheets import read_table, parse_cdd_html_to_requirements, \
     build_test_cases_module_dictionary
 
 
@@ -23,7 +23,7 @@ java_files = cts_files.pipe(
 
 
 class RequirementSources:
-    table, keys_from_table, header = read_table()
+    table, keys_from_table, header = read_table("input/new_recs_remaining_todo.csv")
     key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
         parse_cdd_html_to_requirements()
 
