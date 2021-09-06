@@ -38,7 +38,6 @@ def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
     return test_cases_to_path
 
 
-
 def find_urls(text_to_scan_urls: str):
     find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
     return " ".join(set(re.findall(find_url_re_str, text_to_scan_urls)))
@@ -130,21 +129,7 @@ def handle_java_files_data(key_str):
     return None, None, None
 
 
-def handle_java_files_data2(key_str, keys_to_files_dict, table, table_row_index, files_to_test_cases: dict,
-                            files_to_words, method_to_words, files_to_method_calls: dict, test_file_to_dependencies,
-                            overwrite: bool = False):
-    pass
-
-
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write):
-    # Map file to TestCase
-
-    # test_file_to_dependencies
-
-    #  keys_to_files_dict: dict = sourcecrawlerreducer.get_cached_keys_to_files(key_to_java_objects)
-
-    files_to_words, method_to_words, files_to_method_calls = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
-
     with open(file_name, 'w', newline='') as csv_output_file:
         table_row_index = 0
         keys_not_found: set = set()
@@ -160,7 +145,6 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
         table_writer.writerows(table)
         csv_output_file.close()
     return keys_not_found
-
 
 
 def write_new_data_line_to_table(key_str, table, table_row_index):
@@ -195,7 +179,6 @@ def write_new_data_line_to_table(key_str, table, table_row_index):
         if a_method:
             table[table_row_index][8] = a_method
             table[table_row_index][3] = "Test Available"
-
 
     else:
         table[table_row_index][4] = convert_version_to_number(key_split[0])

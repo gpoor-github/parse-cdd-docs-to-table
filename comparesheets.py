@@ -10,6 +10,10 @@ default_header: [] = (
 
 
 def read_table(file_name: str):
+    """
+
+    :rtype: object
+    """
     table = []
     header = []
     key_fields: dict = dict()
@@ -49,38 +53,22 @@ def read_table(file_name: str):
 
 
 def compare_tables(file1, file2):
-
-
     table1, key_fields1, header1 = read_table(file1)
     table2, key_fields2, header2 = read_table(file2)
-
     return table1, key_fields1, header1, table2, key_fields2, header2
 
 
-def merge_tables(file1, file2):
-    key_fields1: dict
-    key_fields2: dict
-    found_count = 0
-    missing_count = 0
-    item_count = 0
-
-    table1, key_fields1, header = read_table(file1)
-    table2, key_fields2, header = read_table(file2)
-
-
-    pass
-
 if __name__ == '__main__':
-    file1 = "data_files/cdd-10.csv"
-    file2 = "data_files/cdd-11-org.csv"
-    able1, key_fields1, header1, table2, key_fields2, header2 = compare_tables(file1,file2)
+    _file1 = "data_files/cdd-10.csv"
+    _file2 = "data_files/cdd-11-org.csv"
+    _table1, _key_fields1, _header1, _table2, _key_fields2, _header2 = compare_tables(_file1, _file2)
 
-    key_set1 = set(key_fields1.keys())
-    key_set2 = set(key_fields2.keys())
-    dif_2_1 = key_set2.difference(key_set1)
-    dif_1_2 = key_set1.difference(key_set2)
-    inter_1_2 = key_set1.intersection(key_set2)
+    _key_set1 = set(_key_fields1.keys())
+    _key_set2 = set(_key_fields2.keys())
+    _dif_2_1 = _key_set2.difference(_key_set1)
+    _dif_1_2 = _key_set1.difference(_key_set2)
+    _inter_1_2 = _key_set1.intersection(_key_set2)
 
-    print(f"\n\nIntersection={len(inter_1_2)} 1=[{file1}] ^ 2=[{file2}] intersection = {inter_1_2}")
-    print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
-    print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff= {dif_2_1}")
+    print(f"\n\nIntersection={len(_inter_1_2)} 1=[{_file1}] ^ 2=[{_file2}] _intersection = {_inter_1_2}")
+    print(f"\nDifference 1st-2nd={len(_dif_1_2)} [{_file1}] - 2=[{_file2}]  diff={_dif_1_2}")
+    print(f"\nDifference 2nd-1st={len(_dif_2_1)} [{_file2}] - 1=[{_file1}] diff= {_dif_2_1}")
