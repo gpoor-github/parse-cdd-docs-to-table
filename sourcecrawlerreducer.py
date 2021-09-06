@@ -34,7 +34,7 @@ common_english_words = {'the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that'
                         'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go',
                         'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been',
                         'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come',
-                        'made', 'may','here'}
+                        'made', 'may', 'here'}
 
 found_in_java_source = {
     'all', 'back', 'result', 'check', 'null', 'test', 'end', 'time', 'regular', 'able', 'start', 'Default',
@@ -65,7 +65,7 @@ found_in_java_source = {
     'target', 'ID;', 'just', 'naming', 'characters', 'address', 'Generic', 'basic', 'original', 'reported',
     'running', 'complete', 'full', 'certain', 'based', 'away', 'want', 'once', 'real',
     'started', 'strong', 'buffer', 'range', 'next', 'base', 'far', 'completely', 'least', 'explicit', 'or;', 'declare',
-    '(for', 'Are', 'source', 'preload', 'key','test('}
+    '(for', 'Are', 'source', 'preload', 'key', 'test('}
 
 java_keywords = {'abstract', 'continue', 'for', 'new', 'switch', 'assert', '**', '*default', 'goto', '*', 'package',
                  'synchronized', 'boolean', 'do', 'if', 'private', 'this', 'break', 'double', 'implements',
@@ -91,60 +91,77 @@ def remove_non_determinative_words(set_to_diff: set):
     return set_to_diff.difference(all_words_to_skip)
 
 
-def __find_test_files(reference_diction: dict):
-    # traverse root directory, and list directories as dirs and files as files
-    collected_value: dict = dict()
-    found_words_to_count: dict = dict()
-    count = 0
+#
+# def get_cached_keys_to_files(key_to_java_objects):
+#     try:
+#         keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
+#     except IOError:
+#         print("Could not open key to file map, recreating ")
+#         keys_to_files_dict: dict = __find_test_files(key_to_java_objects)
+#         persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
+#     return keys_to_files_dict
+#
+# def compare_sets( ):
+#     found_words_to_count: dict = dict()
+#     reference_diction: dict
+#     count = 0
+#     count = test_set_againts_string(count, file, file_string, found_words_to_count, path_set, reference,
+#                                     reference_diction, start_time_file_crawl)
+
+
+def get_file_dependencies():
+    # traverse root directory, and list directories as dirs and cts_files as cts_files
+    try:
+        test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
+    except IOError:
+        print("Could not open android_studio_dependencies_for_cts, recreating ")
+        test_file_to_dependencies = class_graph.parse_dependency_file(
+            'input/android_studio_dependencies_for_cts.txt')
+        persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
+    return test_file_to_dependencies
+
+
+def read_files_to_string(file_list):
     start_time_file_crawl = time.perf_counter()
-    # tests/tests/widget/src/android/widget/cts/AbsListView_LayoutParamsTest.java
-    for root, dirs, files in os.walk(
-            CTS_SOURCE_ROOT):  # +"/tests/tests/bluetooth"):  # tests/tests/widget/src/android/widget/cts"):
 
-        for file in files:
-            if file.endswith('.java'):
-                fullpath = '{}/{}'.format(root, file)
-                with open(fullpath, "r") as text_file:
-                    file_string = text_file.read()
-                    for reference in reference_diction:
-                        files_as_seperated_strings = collected_value.get(reference)
-                        if files_as_seperated_strings:
-                            path_set = set(files_as_seperated_strings.split(' '))
-                        else:
-                            path_set = set()
-                        value_set = set(reference_diction[reference].split(' '))
-                        value_set = remove_non_determinative_words(value_set)
-                        reference_split = reference.split('/')
+    files_to_strings: dict = dict()
+    for file in file_list:
+        if file.endswith('.java'):
+            # fullpath = '{}/{}'.format(root, file)
+            with open(file, "r") as text_file:
+                file_string = text_file.read()
+                files_to_strings[file] = file_string
 
-                        value_set.add(reference_split[0])
-                        value_set.add(reference_split[1])
-
-                        for value in value_set:
-                            value = value.strip(' ').strip('.').strip(']').strip('(').strip(')').strip('<').strip('>')
-                            if len(value) > 2:
-                                result = file_string.count(value)
-                                if result > 0:
-                                    count += 1
-                                    path_from_project_root = class_graph.get_cts_root(fullpath)
-                                    if found_words_to_count.get(path_from_project_root):
-                                        found_words_to_count[value] = result + found_words_to_count[value]
-                                    else:
-                                        found_words_to_count[value] = result
-                                    if (count % 100) == 0:
-                                        end_time_file_crawl = time.perf_counter()
-                                        print(
-                                            f' {value} found {found_words_to_count[value]} {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference}  path  {path_from_project_root}')
-                                    path_set.add(path_from_project_root)
-
-                        if len(path_set) > 0:
-                            collected_value[reference] = ' '.join(path_set)
-    sorted_words = {k: v for k, v in sorted(found_words_to_count.items(), key=lambda item: item[1], reverse=True)}
-    print(sorted_words)
-    sorted_words_keys = sorted_words.keys()
     end_time_file_crawl = time.perf_counter()
-    print(
-        f'Final return {len(collected_value)}, {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}')
-    return collected_value  # ,  sorted_words_keys
+    print(f'Took time {end_time_file_crawl - start_time_file_crawl:0.4f}sec ')
+
+    return files_to_strings  # ,  sorted_words_keys
+
+
+def test_set_against_string(count, file, file_string, found_words_to_count, path_set, reference, reference_diction,
+                            start_time_file_crawl):
+    value_set = set(reference_diction[reference].split(' '))
+    value_set = remove_non_determinative_words(value_set)
+    reference_split = reference.split('/')
+    value_set.add(reference_split[0])
+    value_set.add(reference_split[1])
+    for value in value_set:
+        value = value.strip(' ').strip('.').strip(']').strip('(').strip(')').strip('<').strip('>')
+        if len(value) > 2:
+            result = file_string.count(value)
+            if result > 0:
+                count += 1
+                path_from_project_root = file  # class_graph.get_cts_root(fullpath)
+                if found_words_to_count.get(path_from_project_root):
+                    found_words_to_count[value] = result + found_words_to_count[value]
+                else:
+                    found_words_to_count[value] = result
+                if (count % 100) == 0:
+                    end_time_file_crawl = time.perf_counter()
+                    print(
+                        f' {value} found {found_words_to_count[value]} {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference}  path  {path_from_project_root}')
+                path_set.add(path_from_project_root)
+    return count
 
 
 class SourceCrawlerReducer:
@@ -161,19 +178,19 @@ class SourceCrawlerReducer:
     def clear_cached_crawler_data(self):
         try:
             os.remove(self.files_to_words_storage)
-        except:
+        except IOError:
             pass
         try:
             os.remove(self.method_to_words_storage)
-        except:
+        except IOError:
             pass
         try:
             os.remove(self.files_to_method_calls_storage)
             os.remove(self.aggregate_bag_storage)
-        except:
+        except IOError:
             pass
 
-    def get_cached_crawler_data(self, cts_root_directory: str = '/home/gpoor/cts-source'):
+    def get_cached_crawler_data(self, cts_root_directory: str = CTS_SOURCE_ROOT):
         try:
             self.__files_to_words = persist.readp(self.files_to_words_storage)
             self.__method_to_words = persist.readp(self.method_to_words_storage)
@@ -185,27 +202,28 @@ class SourceCrawlerReducer:
         except IOError:
             print(
                 f" Crawling {cts_root_directory}: Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
-            self.__files_to_words, self.__method_to_words, self.__files_to_method_calls, self.__aggregate_bag = self.__make_bags_of_word(
+            self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.__make_bags_of_word(
                 cts_root_directory)
             persist.writep(self.__files_to_words, self.files_to_words_storage)
             persist.writep(self.__method_to_words, self.method_to_words_storage)
             persist.writep(self.__files_to_method_calls, self.files_to_method_calls_storage)
             persist.writep(self.__aggregate_bag, self.aggregate_bag_storage)
-        return self.__files_to_words, self.__method_to_words, self.__files_to_method_calls, self.__aggregate_bag
+        return self.__files_to_words, self.__method_to_words, self.__files_to_method_calls
 
-    def bag_from_text(self, text: str):
+    @staticmethod
+    def bag_from_text(text: str):
         file_string = re.sub("\s\s+", " ", text)
         split = file_string.split(" ")
         return set(split)
 
-    def __make_bags_of_word(self, root_cts_source_directory):
-        # traverse root directory, and list directories as dirs and files as files
+    @staticmethod
+    def __make_bags_of_word(root_cts_source_directory):
+        # traverse root directory, and list directories as dirs and cts_files as cts_files
 
         method_call_re = re.compile('\w{3,40}(?=\(\w*\))(?!\s*?\{)')
-        files_to_words = dict()
-        method_to_words = dict()
-        files_to_method_calls = dict()
-        aggregate_bag = dict()
+        files_to_words_local = dict()
+        method_to_words_local: dict = dict()
+        files_to_method_calls_local = dict()
         for root, dirs, files in os.walk(root_cts_source_directory):
             for file in files:
                 if file.endswith('.java'):
@@ -215,15 +233,14 @@ class SourceCrawlerReducer:
                         text_file.close()
 
                         file_string = re.sub("\s\s+", " ", file_string)
-                        # files to words
+                        # cts_files to words
                         split = file_string.split(" ")
                         bag = remove_non_determinative_words(set(split))
-                        files_to_words[fullpath] = bag
+                        files_to_words_local[fullpath] = bag
                         # print(f'file {file} bag {bag}')
-                        # aggregate_bag.update(bag)
 
-                        # get the names we want to search for to see if they are declared in other files
-                        files_to_method_calls[fullpath] = remove_non_determinative_words(
+                        # get the names we want to search for to see if they are declared in other cts_files
+                        files_to_method_calls_local[fullpath] = remove_non_determinative_words(
                             set(re.findall(method_call_re, file_string)))
 
                         test_method_splits = re.split("@Test", file_string)
@@ -239,33 +256,23 @@ class SourceCrawlerReducer:
 
                                 method_bag = \
                                     remove_non_determinative_words(set(method_declare_body_split.split(" ")))
-                                previous_value = method_to_words.get(fullpath)
+                                previous_value = method_to_words_local.get(fullpath)
                                 if previous_value:
-                                    method_to_words[fullpath] = method_names[0] + ":" + " ".join(
+                                    method_to_words_local[fullpath] = method_names[0] + ":" + " ".join(
                                         method_bag) + ' | ' + previous_value
                                 else:
-                                    method_to_words[fullpath] = method_names[0] + ":" + " ".join(method_bag)
+                                    method_to_words_local[fullpath] = method_names[0] + ":" + " ".join(method_bag)
                             i += 1
 
-        print(f"\n\naggregate bag [{aggregate_bag}] \nsize {len(aggregate_bag)}")
-        return files_to_words, method_to_words, files_to_method_calls, aggregate_bag
+        return files_to_words_local, method_to_words_local, files_to_method_calls_local
 
 
 if __name__ == '__main__':
     start = time.perf_counter()
     scr = SourceCrawlerReducer()
     scr.clear_cached_crawler_data()
-    files_to_words, method_to_words, files_to_method_calls, aggregate_bag = \
+    files_to_words, method_to_words, files_to_method_call = \
         scr.get_cached_crawler_data('/home/gpoor/cts-source')
     print(f"\n\nfiles_to_words  [{files_to_words}] \nsize {len(files_to_words)}")
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
-
-
-def get_cached_keys_to_files(key_to_java_objects):
-    try:
-        keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
-    except IOError:
-        print("Could not open key to file map, recreating ")
-        keys_to_files_dict: dict =__find_test_files(key_to_java_objects)
-        persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")

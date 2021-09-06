@@ -5,6 +5,7 @@ import time
 import persist
 
 FILES_TO_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
+#TEST_FILES_TO_WORDS = "storage/test_files_to_words.pickle"
 
 
 def get_package_name(class_path):
@@ -32,25 +33,25 @@ re_method = re.compile('(\w+?)\(\)')
 re_class = re.compile('class (\w+)')
 
 
-def get_cached_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
+def get_cached_grep_of_at_test_files(results_grep_at_test: str = FILES_TO_METHODS_PICKLE):
     try:
-        test_files_to_methods = persist.read(FILES_TO_METHODS_PICKLE)
+        test_files_to_methods: dict = persist.read(results_grep_at_test)
     except IOError:
         print("Could not open test_files_to_methods, recreating ")
         test_files_to_methods = __parse_grep_of_at_test_files(
-            'input/android_studio_dependencies_for_cts.txt')
-        persist.write(test_files_to_methods, FILES_TO_METHODS_PICKLE)
+            "input/android_studio_dependencies_for_cts.txt")
+        persist.write(test_files_to_methods, results_grep_at_test)
     return test_files_to_methods
 
 
-def clear_cached_crawler_data():
+def clear_cached_grep_of_at_test_files():
     try:
         os.remove(FILES_TO_METHODS_PICKLE)
-    except:
+    except IOError:
         pass
 
 
-def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
+def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-cts_files.txt"):
     test_files_to_methods: {str: str} = dict()
 
     re_annotations = re.compile('@Test.*?$')
@@ -107,7 +108,6 @@ def parse_dependency_file(file_name_in: str):
     test_classes_to_dependent_classes: dict = dict()
     file_as_string = input_file.read()
     file_splits = file_as_string.split('<file path=')
-    target_file_name = "!Error target_file_name not found"
     for a_file_split in file_splits:
         target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(
             0)  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
@@ -123,7 +123,7 @@ def parse_dependency_file(file_name_in: str):
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    clear_cached_crawler_data
+    clear_cached_grep_of_at_test_files()
     tests_files_methods = get_cached_grep_of_at_test_files()
     print(tests_files_methods)
     end = time.perf_counter()

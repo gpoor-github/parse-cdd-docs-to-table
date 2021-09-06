@@ -24,4 +24,4 @@ echo Will grep -inr -A 2 "@Test" --include \*.java "$ctsdir/*"
 grep -inr -A 2 "@Test" --include \*.java $ctsdir/* > test-files.txt
 
 grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input/testcases-modules.txt
-#python3 augment-sheet-with-cdd-html-info.py
+#python3 augment_sheet_with_cdd_html_info.py

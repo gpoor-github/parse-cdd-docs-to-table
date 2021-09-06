@@ -7,6 +7,8 @@ import class_graph
 import persist
 import sourcecrawlerreducer
 
+REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
+TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 
 
 def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
@@ -36,9 +38,7 @@ def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
     return test_cases_to_path
 
 
-
-
-def read_table(file_name: str):
+def read_table(file_name: str = TABLE_FILE_NAME):
     table = []
     read_header: [str]
     keys_from_table: dict = dict()
@@ -180,21 +180,13 @@ def handle_java_files_data2(key_str, keys_to_files_dict, table, table_row_index,
 
 def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write, keys_for_section_data,
                 key_to_java_objects, key_to_urls):
-
-    keys_to_files_dict: dict = sourcecrawlerreducer.get_cached_keys_to_files(key_to_java_objects)
     # Map file to TestCase
 
     # test_file_to_dependencies
 
-    try:
-        test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
-    except IOError:
-        print("Could not open android_studio_dependencies_for_cts, recreating ")
-        test_file_to_dependencies = class_graph.parse_dependency_file(
-            'input/android_studio_dependencies_for_cts.txt')
-        persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
+    keys_to_files_dict: dict = sourcecrawlerreducer.get_cached_keys_to_files(key_to_java_objects)
 
-    files_to_words, method_to_words, files_to_method_calls, aggregate_bag = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
+    files_to_words, method_to_words, files_to_method_calls = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
 
     files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
     with open(file_name, 'w', newline='') as csv_output_file:
@@ -209,7 +201,7 @@ def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_t
             write_row_for_output(key_str, key_to_java_objects, key_to_urls, keys_not_found,
                                  keys_to_files_dict, table_row_index, section_data, table,
                                  files_to_test_cases,
-                                 files_to_words, method_to_words, files_to_method_calls, test_file_to_dependencies)
+                                 files_to_words, method_to_words, files_to_method_calls,files_to_test_cases)# test_file_to_dependencies)
             table_row_index += 1
 
         table_writer = csv.writer(csv_output_file)
@@ -351,13 +343,12 @@ def find_full_key(key_string_for_re, record_id_split, section_id):
         return None
 
 
-def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
+def parse_cdd_html_to_requirements( cdd_html_file = REQUIREMENTS_FROM_HTML_FILE):
     key_to_full_requirement_text = dict()
     key_to_java_objects = dict()
     key_to_urls = dict()
     # Should do key_to_cdd_section = dict()
     keys_not_found: list = []
-    table, keys_from_table, header = read_table(table_file_name)
     total_requirement_count = 0
     with open(cdd_html_file, "r") as text_file:
         cdd_requirements_file_as_string = text_file.read()
@@ -392,15 +383,15 @@ def parse_cdd_html_to_requirements_table(table_file_name, cdd_html_file):
                                                   key_to_java_objects, key_to_urls, req_id_splits,
                                                   section_id_count, total_requirement_count)
         section_id_count += 1
-    return table, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_requirements_file_as_string
+    return key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_requirements_file_as_string
 
 
 class AugmentSheetWithCDDInfo:
 
     def augment_table(self):
-        table_to_augment, keys_from_table, key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
-            parse_cdd_html_to_requirements_table('input/new_recs_remaining_todo.csv',
-                                                 'input/Android 11 Compatibility Definition_no_section_13.html')
+        table, keys_from_table, header = read_table(TABLE_FILE_NAME)
+        key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
+            parse_cdd_html_to_requirements(REQUIREMENTS_FROM_HTML_FILE)
 
         # Write New Table
         created_table: [[str]] = []
@@ -409,7 +400,7 @@ class AugmentSheetWithCDDInfo:
                     key_to_urls)
 
         # Write Augmented Table
-        keys_not_found = write_sheet(append_to_existing_data, 'output/augmented_output.csv', table_to_augment,
+        keys_not_found = write_sheet(append_to_existing_data, 'output/augmented_output.csv', table,
                                      keys_from_table, key_to_full_requirement_text, key_to_java_objects,
                                      key_to_urls)
 
