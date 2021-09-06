@@ -4,8 +4,8 @@ import time
 
 import persist
 
-FILES_TO_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
-#TEST_FILES_TO_WORDS = "storage/test_files_to_words.pickle"
+FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
+INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input/android_studio_dependencies_for_cts.txt'
 
 
 def get_package_name(class_path):
@@ -33,25 +33,24 @@ re_method = re.compile('(\w+?)\(\)')
 re_class = re.compile('class (\w+)')
 
 
-def get_cached_grep_of_at_test_files(results_grep_at_test: str = FILES_TO_METHODS_PICKLE):
+def get_cached_grep_of_at_test_files(results_grep_at_test: str = FILES_TO_TEST_METHODS_PICKLE):
     try:
         test_files_to_methods: dict = persist.read(results_grep_at_test)
     except IOError:
         print("Could not open test_files_to_methods, recreating ")
-        test_files_to_methods = __parse_grep_of_at_test_files(
-            "input/android_studio_dependencies_for_cts.txt")
+        test_files_to_methods = __parse_grep_of_at_test_files()
         persist.write(test_files_to_methods, results_grep_at_test)
     return test_files_to_methods
 
 
 def clear_cached_grep_of_at_test_files():
     try:
-        os.remove(FILES_TO_METHODS_PICKLE)
+        os.remove(FILES_TO_TEST_METHODS_PICKLE)
     except IOError:
         pass
 
 
-def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-cts_files.txt"):
+def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
     test_files_to_methods: {str: str} = dict()
 
     re_annotations = re.compile('@Test.*?$')

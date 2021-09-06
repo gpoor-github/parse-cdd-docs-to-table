@@ -5,6 +5,7 @@ import time
 import class_graph
 import persist
 
+
 CTS_SOURCE_ROOT = "/home/gpoor/cts-source/cts/"
 
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
@@ -108,16 +109,17 @@ def remove_non_determinative_words(set_to_diff: set):
 #     count = test_set_againts_string(count, file, file_string, found_words_to_count, path_set, reference,
 #                                     reference_diction, start_time_file_crawl)
 
+TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
+
 
 def get_file_dependencies():
     # traverse root directory, and list directories as dirs and cts_files as cts_files
     try:
-        test_file_to_dependencies = persist.read("storage/test_file_to_dependencies.pickle")
+        test_file_to_dependencies = persist.read(TEST_FILES_TO_DEPENDENCIES_STORAGE)
     except IOError:
         print("Could not open android_studio_dependencies_for_cts, recreating ")
-        test_file_to_dependencies = class_graph.parse_dependency_file(
-            'input/android_studio_dependencies_for_cts.txt')
-        persist.write(test_file_to_dependencies, "storage/test_file_to_dependencies.pickle")
+        test_file_to_dependencies = class_graph.parse_dependency_file('input/android_studio_dependencies_for_cts.txt')
+        persist.write(test_file_to_dependencies, TEST_FILES_TO_DEPENDENCIES_STORAGE)
     return test_file_to_dependencies
 
 
