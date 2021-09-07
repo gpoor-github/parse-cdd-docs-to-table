@@ -21,15 +21,24 @@ This will take table1 and update missing values in the specified key_to_index1 a
     missingkeys2: set = set()
 
     for key in key_to_index1:
-        table_index1 = key_to_index1.get(key)
-        table_index2 = key_to_index2.get(key)
+        if not key_to_index2.get(key) or not key_to_index1.get(key):
+            continue
+        table_index1 = int(key_to_index1.get(key))
+        table_index2 = int(key_to_index2.get(key))
         if table_index1 and table_index2:
             t1_row = table1[table_index1]
             t2_row = table2[table_index2]
             # Section,section_id,req_id
             for column in columns:
-                if t2_row[header2.index(column)] and (len(t1_row[header1.index(column)]) <= 0):
-                    t1_row[header1.index(column)] = t2_row[header2.index(column)]
+                column1_idx = header1.index(column)
+                column2_idx = header2.index(column)
+                if column1_idx in range(0,len(t1_row)) and column2_idx in range(0,len(column)) :
+                    if t2_row[header2.index(column)] and (len(t1_row[header1.index(column)]) <= 0):
+                        t1_row[header1.index(column)] = t2_row[header2.index(column)]
+                else:
+                    print("Out of range.. not expected ")
+            if t1_row:
+                table1[table_index1] = t1_row
         else:
             if table_index1:
                 missingkeys2.add(key)
@@ -47,7 +56,7 @@ new_row: [] = (
      '', '', '', '', ''])
 
 default_header: [] = (
-    ['Section', 'section_id', 'req_id', 'Test Availability', 'Annotation?' ',''New Req for R?',
+    ['Section', 'section_id', 'req_id', 'Test Availability', 'Annotation?', 'New Req for R?',
      'New CTS for R?', 'class_def', 'method', 'module',
      'Comment(internal) e.g. why a test is not possible ', 'Comment (external)',
      'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',

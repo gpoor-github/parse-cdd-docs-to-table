@@ -28,8 +28,8 @@ key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string = par
 
 #    class DataSources:
 parse_dependency_file = sourcecrawlerreducer.get_file_dependencies()
-tests_files_methods = class_graph.get_cached_grep_of_at_test_files()
 files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
+at_test_files_to_methods = class_graph.get_cached_grep_of_at_test_files()
 
 files_to_words, method_to_words, files_to_method_calls = sourcecrawlerreducer.SourceCrawlerReducer().get_cached_crawler_data()
 rx_cts_files = rx.from_iterable(os.walk(sourcecrawlerreducer.CTS_SOURCE_ROOT))

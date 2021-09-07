@@ -1,11 +1,12 @@
 import os
+import random
 import re
 import time
 
 import data_sources
 import sourcecrawlerreducer
 from comparesheets import read_table
-from update_table import write_table, update_table, default_header, merge_header, new_header, new_row
+from update_table import write_table, update_table, default_header, merge_header, new_header
 
 REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
 TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
@@ -86,47 +87,51 @@ def clean_html_anchors(raw_html: str):
 
 
 def handle_java_files_data(key_str):
-    keys_to_files_dict = data_sources.key_to_full_requirement_text
+    # keys_to_files_dict = data_sources.files_to_words
     files_to_method_calls = data_sources.files_to_method_calls
     files_to_test_cases = data_sources.files_to_test_cases
+    at_test_files_to_methods = data_sources.at_test_files_to_methods
 
+    keys_to_files_dict = sourcecrawlerreducer.search_files_for_words(key_str)
+    # keys_to_files_dict1 = sorted(keys_to_files_dict.items(), key=lambda x: x[1], reverse=True)
     a_single_test_file_name: str = ""
     test_case_name: str = ""
     class_name: str = ""
 
     if keys_to_files_dict:
-        filenames_str = keys_to_files_dict.get(key_str)
+        # filenames_str = keys_to_files_dict.get(key_str)
         found_methods = None
         file_name = None
         a_method = None
-        if filenames_str:
-            filenames = filenames_str.split(' ')
-            if len(filenames) > 0:
-                # TODO just handling one file for now! Needs to change.
-                a_single_test_file_name = filenames[len(filenames) - 1]
-                for file_name in filenames:
-                    found_methods = files_to_method_calls.get(file_name)
-                    if found_methods:
-                        break
-                if found_methods:
-                    # A better single file name :)
-                    a_single_test_file_name = file_name
-                    for method in found_methods:
-                        a_method = method
+        found_methods_string = None
+        if keys_to_files_dict:
+            # TODO just handling one file for now! Needs to change.
 
-                class_name_split_src = a_single_test_file_name.split('/src/')
-                # Module
-                if len(class_name_split_src) > 0:
-                    test_case_split = str(class_name_split_src[0]).split('/cts/tests/')
-                    if len(test_case_split) > 1:
-                        project_root = str(test_case_split[1]).replace("/", ".")
-                        test_case_name = files_to_test_cases.get(project_root)
+            for file_name in keys_to_files_dict:
+                a_single_test_file_name = file_name
+                found_methods_string = at_test_files_to_methods.get(file_name)
+                if found_methods_string:
+                    break
+            if found_methods_string:
+                # A better single file name :)
+                a_single_test_file_name = file_name
+                found_methods = found_methods_string.split(' ')
+                if len(found_methods)>0:
+                    a_method = found_methods[random.randrange(0,len(found_methods))]
 
-                if len(class_name_split_src) > 1:
-                    class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
+            class_name_split_src = a_single_test_file_name.split('/src/')
+            # Module
+            if len(class_name_split_src) > 0:
+                test_case_split = str(class_name_split_src[0]).split('/cts/tests/')
+                if len(test_case_split) > 1:
+                    project_root = str(test_case_split[1]).replace("/", ".")
+                    test_case_name = files_to_test_cases.get(project_root)
+
+            if len(class_name_split_src) > 1:
+                class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
 
         return a_single_test_file_name, test_case_name, a_method, class_name
-    return None, None, None
+    return None, None, None, None
 
 
 def create_populated_table(keys_to_find_and_write):
@@ -152,7 +157,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     section_data = keys_to_sections.get(key_str)
     if len(table) <= table_row_index:
         table.append(['', '', '', '', '', '', '', '',
-     '', '', '', '', ''])
+                      '', '', '', '', ''])
 
     print(f"keys from  {table_row_index} [{key_str}]")
     key_str = key_str.rstrip(".").strip(' ')
@@ -177,7 +182,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
             table[table_row_index][new_header.index('file_name')] = a_single_test_file_name
         if a_method:
             table[table_row_index][new_header.index('method')] = a_method
-            table[table_row_index][new_header.index('Test Available')] = "Test Available"
+        # table[table_row_index][new_header.index('Test Available')] = "Test Available"
 
     else:
         table[table_row_index][new_header.index('key_as_number')] = convert_version_to_number(key_split[0])
@@ -308,7 +313,7 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
     if targets == 'append' or targets == 'all':
         # Write Augmented Table
         updated_table, misskey_key1, misskey_key2 = update_table(table, keys_from_table, header, table_for_sheet,
-                                                                 keys_to_table_indexes, default_header, merge_header)
+                                                                 keys_to_table_indexes, new_header, merge_header)
         write_table('output/updated_table.csv', updated_table, header)
 
     print(

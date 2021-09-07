@@ -74,8 +74,10 @@ def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.
                     count += 1
                     class_def, method = parse_(line_method)
                 if method:
-                    test_files_to_methods[test_annotated_file_name] = \
-                        f'{test_files_to_methods.get(test_annotated_file_name)} {method}'.strip(' ')
+                    if test_files_to_methods.get(test_annotated_file_name):
+                        test_files_to_methods[test_annotated_file_name] =f'{test_files_to_methods.get(test_annotated_file_name)} {method}'.strip(' ')
+                    else:
+                        test_files_to_methods[test_annotated_file_name] = method.strip(' ')
 
                 print(f'{count}) {test_annotated_file_name}:{method}')
     print(f'{count}) {len(test_files_to_methods)}')

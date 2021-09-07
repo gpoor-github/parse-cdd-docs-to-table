@@ -3,10 +3,10 @@ import re
 import time
 
 import class_graph
+import data_sources
 import persist
 
-
-CTS_SOURCE_ROOT = "/home/gpoor/cts-source/cts/"
+CTS_SOURCE_ROOT = "/home/gpoor/cts-source/cts"
 
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
                     'condition',
@@ -101,13 +101,7 @@ def remove_non_determinative_words(set_to_diff: set):
 #         keys_to_files_dict: dict = __find_test_files(key_to_java_objects)
 #         persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
 #     return keys_to_files_dict
-#
-# def compare_sets( ):
-#     found_words_to_count: dict = dict()
-#     reference_diction: dict
-#     count = 0
-#     count = test_set_againts_string(count, file, file_string, found_words_to_count, path_set, reference,
-#                                     reference_diction, start_time_file_crawl)
+
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 
@@ -140,30 +134,53 @@ def read_files_to_string(file_list):
     return files_to_strings  # ,  sorted_words_keys
 
 
-def test_set_against_string(count, file, file_string, found_words_to_count, path_set, reference, reference_diction,
-                            start_time_file_crawl):
-    value_set = set(reference_diction[reference].split(' '))
-    value_set = remove_non_determinative_words(value_set)
-    reference_split = reference.split('/')
-    value_set.add(reference_split[0])
-    value_set.add(reference_split[1])
-    for value in value_set:
-        value = value.strip(' ').strip('.').strip(']').strip('(').strip(')').strip('<').strip('>')
-        if len(value) > 2:
-            result = file_string.count(value)
-            if result > 0:
-                count += 1
-                path_from_project_root = file  # class_graph.get_cts_root(fullpath)
-                if found_words_to_count.get(path_from_project_root):
-                    found_words_to_count[value] = result + found_words_to_count[value]
-                else:
-                    found_words_to_count[value] = result
-                if (count % 100) == 0:
-                    end_time_file_crawl = time.perf_counter()
-                    print(
-                        f' {value} found {found_words_to_count[value]} {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {reference}  path  {path_from_project_root}')
-                path_set.add(path_from_project_root)
-    return count
+def search_string_with_set_of_values(count: int, file_and_path: str, word_set: set, found_words_to_count: dict,
+                                     matching_file_set_out: dict, key: str,
+                                     java_concat: str,
+                                     start_time_file_crawl):
+
+    value_set = remove_non_determinative_words(set(java_concat.split(' ')))
+    keysplit = key.split('/')
+    value_set.add(keysplit[0])
+    value_set.add(keysplit[1])
+    result = word_set.intersection(value_set)
+    if len(result) > 0:
+        count += 1
+        if found_words_to_count.get(file_and_path):
+            found_words_to_count[file_and_path ] = len(result) + found_words_to_count[file_and_path ]
+        else:
+            found_words_to_count[file_and_path] = result
+        if (count % 100) == 0:
+            end_time_file_crawl = time.perf_counter()
+            print(
+                f' {len(result) } {count} time {end_time_file_crawl - start_time_file_crawl:0.4f}sec {key}  path  {file_and_path}')
+        matching_file_set_out[file_and_path] = count
+
+
+    return matching_file_set_out
+
+
+def search_files_for_words(key: str):
+    keys_to_matched_files = dict
+    test_files = data_sources.at_test_files_to_methods
+    java_objects = data_sources.key_to_java_objects.get(key)
+    count = 0
+    # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
+    start_time_crawl = time.perf_counter()
+    matching_file_set_out = dict()
+    word_to_count = dict()
+    for test_file in test_files:
+        # words =  ftw.get(test_file)
+        words = data_sources.files_to_words.get("/home/gpoor/cts-source/" + test_file)
+        if words:
+            matching_file_set_out = search_string_with_set_of_values(count=count, file_and_path=test_file,
+                                                                     word_set=words,
+                                                                     found_words_to_count=word_to_count,
+                                                                     matching_file_set_out=matching_file_set_out,
+                                                                     key=key,
+                                                                     java_concat=java_objects,
+                                                                     start_time_file_crawl=start_time_crawl)
+    return matching_file_set_out
 
 
 class SourceCrawlerReducer:
