@@ -3,7 +3,8 @@ import csv
 from comparesheets import read_table
 
 
-def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2:[[str]], key_to_index2: dict, header2: [str],
+def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2: [[str]], key_to_index2: dict,
+                 header2: [str],
                  columns: [str]):
     """
 This will take table1 and update missing values in the specified key_to_index1 at columns to the target table if empty.
@@ -39,8 +40,12 @@ This will take table1 and update missing values in the specified key_to_index1 a
 
 
 new_header: [] = (
-    ['Section', 'section_id', 'req_id', 'Test Availability','class_def', 'method', 'module','full_key',
-     'requirement', 'key_as_number','search_terms','urls','file_name'])
+    ['Section', 'section_id', 'req_id', 'Test Availability', 'class_def', 'method', 'module', 'full_key',
+     'requirement', 'key_as_number', 'search_terms', 'urls', 'file_name'])
+new_row: [] = (
+    ['', '', '', '', '', '', '', '',
+     '', '', '', '', ''])
+
 default_header: [] = (
     ['Section', 'section_id', 'req_id', 'Test Availability', 'Annotation?' ',''New Req for R?',
      'New CTS for R?', 'class_def', 'method', 'module',
@@ -52,6 +57,7 @@ merge_header: [] = (
     ['Test Availability', 'class_def', 'method', 'module'])
 
 
+# class RequirementSources:
 def merge_tables(file1, file2):
     table1, key_fields1, header1 = read_table(file1)
     table2, key_fields2, header2 = read_table(file2)

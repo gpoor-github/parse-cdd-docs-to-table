@@ -22,10 +22,8 @@ java_files = cts_files.pipe(
 )
 
 
-    #class RequirementSources:
 table, keys_from_table, header = read_table("input/new_recs_remaining_todo.csv")
-key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
-    parse_cdd_html_to_requirements()
+key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string = parse_cdd_html_to_requirements()
 
 
 #    class DataSources:

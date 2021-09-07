@@ -5,7 +5,7 @@ import time
 import data_sources
 import sourcecrawlerreducer
 from comparesheets import read_table
-from update_table import write_table, update_table, default_header, merge_header, new_header
+from update_table import write_table, update_table, default_header, merge_header, new_header, new_row
 
 REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
 TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
@@ -145,13 +145,14 @@ def create_populated_table(keys_to_find_and_write):
 
 # Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,
 # ['Section', 'section_id', 'req_id', 'Test Availability','class_def', 'method', 'module','full_key','requirement', 'key_as_number','search_terms','urls','file_name'])
+
 def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int):
     key_to_java_objects = data_sources.key_to_java_objects
     key_to_urls = data_sources.key_to_urls
-
     section_data = keys_to_sections.get(key_str)
     if len(table) <= table_row_index:
-        table.append(['', '', '', '', '', '', '', '', '', '', '', ''])
+        table.append(['', '', '', '', '', '', '', '',
+     '', '', '', '', ''])
 
     print(f"keys from  {table_row_index} [{key_str}]")
     key_str = key_str.rstrip(".").strip(' ')
@@ -160,14 +161,14 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
 
     table[table_row_index][new_header.index('full_key')] = key_str
     section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
-    table[table_row_index].append(section_data_cleaned)
+    table[table_row_index][new_header.index('requirement')] = section_data_cleaned
 
     if len(key_split) > 1:
         table[table_row_index][new_header.index('req_id')] = key_split[1]
         table[table_row_index][new_header.index('key_as_number')] = convert_version_to_number(key_split[0],
                                                                                               key_split[1])
-        table[table_row_index].append(key_to_urls.get(key_str))
-        table[table_row_index].append(key_to_java_objects.get(key_str))
+        table[table_row_index][new_header.index('urls')] = key_to_urls.get(key_str)
+        table[table_row_index][new_header.index('search_terms')] = key_to_java_objects.get(key_str)
         a_single_test_file_name, test_case_name, a_method, class_name = handle_java_files_data(key_str)
 
         table[table_row_index][new_header.index('module')] = test_case_name
@@ -179,7 +180,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
             table[table_row_index][new_header.index('Test Available')] = "Test Available"
 
     else:
-        table[table_row_index][4] = convert_version_to_number(key_split[0])
+        table[table_row_index][new_header.index('key_as_number')] = convert_version_to_number(key_split[0])
         print(f"Only a major key? {key_str}")
 
 
@@ -292,7 +293,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
                                                       section_id_count, total_requirement_count)
 
         section_id_count += 1
-    return key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_requirements_file_as_string
+    return key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_requirements_file_as_string
 
 
 def cdd_html_to_cts_create_sheets(targets: str = 'all'):
