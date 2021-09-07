@@ -143,13 +143,15 @@ def search_string_with_set_of_values(count: int, file_and_path: str, word_set: s
     keysplit = key.split('/')
     value_set.add(keysplit[0])
     value_set.add(keysplit[1])
+    word_set = remove_non_determinative_words(word_set)
     result = word_set.intersection(value_set)
+
     if len(result) > 0:
         count += 1
         if found_words_to_count.get(file_and_path):
-            found_words_to_count[file_and_path ] = len(result) + found_words_to_count[file_and_path ]
+            found_words_to_count[file_and_path ] = len(result) + int(found_words_to_count[file_and_path ])
         else:
-            found_words_to_count[file_and_path] = result
+            found_words_to_count[file_and_path] = len(result) +5
         if (count % 100) == 0:
             end_time_file_crawl = time.perf_counter()
             print(

@@ -103,28 +103,34 @@ def handle_java_files_data(key_str):
         found_methods = None
         file_name = None
         a_method = None
-        found_methods_string = None
+        a_found_methods_string = None
+        max_matches = -1
         if keys_to_files_dict:
             # TODO just handling one file for now! Needs to change.
-
             for file_name in keys_to_files_dict:
                 a_single_test_file_name = file_name
                 found_methods_string = at_test_files_to_methods.get(file_name)
                 if found_methods_string:
-                    break
-            if found_methods_string:
+                     current_matches = int(keys_to_files_dict.get(file_name))
+                     if current_matches >= max_matches:
+                          a_single_test_file_name = file_name
+                          a_found_methods_string = found_methods_string
+                          max_matches = current_matches
+            if max_matches>1:
+                print (f'wow got matches  {max_matches}  {a_single_test_file_name}')
+            if a_found_methods_string:
                 # A better single file name :)
                 a_single_test_file_name = file_name
-                found_methods = found_methods_string.split(' ')
+                found_methods = a_found_methods_string.split(' ')
                 if len(found_methods)>0:
                     a_method = found_methods[random.randrange(0,len(found_methods))]
 
             class_name_split_src = a_single_test_file_name.split('/src/')
             # Module
             if len(class_name_split_src) > 0:
-                test_case_split = str(class_name_split_src[0]).split('/cts/tests/')
-                if len(test_case_split) > 1:
-                    project_root = str(test_case_split[1]).replace("/", ".")
+                test_case_key = str(class_name_split_src[0]).replace('cts/tests/','')
+                if len(test_case_key) >1:
+                    project_root = str(test_case_key).replace("/", ".")
                     test_case_name = files_to_test_cases.get(project_root)
 
             if len(class_name_split_src) > 1:

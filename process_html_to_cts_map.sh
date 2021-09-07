@@ -21,7 +21,7 @@ echo this is what was entered $ctsdir
 #/home/gpoor/cts-source/
 
 echo Will grep -inr -A 2 "@Test" --include \*.java "$ctsdir/*"
-grep -inr -A 2 "@Test" --include \*.java $ctsdir/* > test-files.txt
+grep -inr -A 2 "@Test" --include \*.java $ctsdir/* > input/test-files.txt
 
 grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input/testcases-modules.txt
 #python3 cdd_html_to_cts_create_sheets.py

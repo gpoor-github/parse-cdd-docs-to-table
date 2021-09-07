@@ -32,11 +32,10 @@ This will take table1 and update missing values in the specified key_to_index1 a
             for column in columns:
                 column1_idx = header1.index(column)
                 column2_idx = header2.index(column)
-                if column1_idx in range(0,len(t1_row)) and column2_idx in range(0,len(column)) :
-                    if t2_row[header2.index(column)] and (len(t1_row[header1.index(column)]) <= 0):
-                        t1_row[header1.index(column)] = t2_row[header2.index(column)]
-                else:
-                    print("Out of range.. not expected ")
+                #if column1_idx in range(0,len(t1_row)) and column2_idx in range(0,len(column)) :
+                 #   if t2_row[column2_idx] and (len(t1_row[column1_idx]) <= 0):
+                t1_row[column1_idx] = t2_row[column2_idx]
+
             if t1_row:
                 table1[table_index1] = t1_row
         else:
