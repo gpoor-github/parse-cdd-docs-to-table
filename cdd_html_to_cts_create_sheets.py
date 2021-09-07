@@ -1,4 +1,3 @@
-import csv
 import os
 import re
 import time
@@ -6,6 +5,7 @@ import time
 import data_sources
 import sourcecrawlerreducer
 from comparesheets import read_table
+from update_table import write_table, update_table, default_header, merge_header
 
 REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
 TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
@@ -129,30 +129,24 @@ def handle_java_files_data(key_str):
     return None, None, None
 
 
-def write_sheet(write_row_for_output: (), file_name: str, table: [[str]], keys_to_find_and_write):
-    with open(file_name, 'w', newline='') as csv_output_file:
-        table_row_index = 0
-        keys_not_found: set = set()
-
-        for temp_key in keys_to_find_and_write:
-            key_str: str = temp_key
-            key_str = key_str.rstrip(".").strip(' ')
-
-            write_row_for_output(key_str, table, table_row_index)  # test_file_to_dependencies)
-            table_row_index += 1
-
-        table_writer = csv.writer(csv_output_file)
-        table_writer.writerows(table)
-        csv_output_file.close()
-    return keys_not_found
+def create_populated_table(keys_to_find_and_write,keys_to_sections):
+    table: [[str]] = []
+    keys_to_table_index: dict[str, int] = dict()
+    table_row_index = 0
+    for temp_key in keys_to_find_and_write:
+        key_str: str = temp_key
+        key_str = key_str.rstrip(".").strip(' ')
+        write_new_data_line_to_table(key_str,keys_to_sections, table, table_row_index)  # test_file_to_dependencies)
+        keys_to_table_index[key_str] =table_row_index
+        table_row_index += 1
+    return table, keys_to_table_index
 
 
-def write_new_data_line_to_table(key_str, table, table_row_index):
-    key_to_full_requirement_text = data_sources.RequirementSources().key_to_full_requirement_text
+def write_new_data_line_to_table(key_str:str, keys_to_sections:dict, table: [[str]],table_row_index:int):
     key_to_java_objects = data_sources.RequirementSources().key_to_java_objects
     key_to_urls = data_sources.RequirementSources().key_to_urls
 
-    section_data = key_to_full_requirement_text.get(key_str)
+    section_data = keys_to_sections.get(key_str)
     if len(table) <= table_row_index:
         table.append(['', '', '', '', '', '', '', '', '', '', '', ''])
 
@@ -166,7 +160,7 @@ def write_new_data_line_to_table(key_str, table, table_row_index):
     table[table_row_index].append(section_data_cleaned)
 
     if len(key_split) > 1:
-        table[table_row_index][2] = key_split[1]
+        table[table_row_index][default_header.index(default_header[1])] = key_split[1]
         table[table_row_index][4] = convert_version_to_number(key_split[0], key_split[1])
         table[table_row_index].append(key_to_urls.get(key_str))
         table[table_row_index].append(key_to_java_objects.get(key_str))
@@ -209,39 +203,6 @@ def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00')
             requirement_as_number = f'{requirement_as_number}0{requirement_splits[k]}'
 
     return f'"{section_as_number}.{requirement_as_number}"'
-
-
-def append_to_existing_data(key_str, table, table_row_index):
-    key_to_full_requirement_text = data_sources.RequirementSources().key_to_full_requirement_text
-    key_to_java_objects = data_sources.RequirementSources().key_to_java_objects
-    key_to_urls = data_sources.RequirementSources().key_to_urls
-    keys_not_found: set = set()
-    section_data = key_to_full_requirement_text.get(key_str)
-
-    if section_data:
-        # Verify our index in the table we are augmenting corresponds to the key we are using to retrieve augmenting data
-        table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
-        if table_key != key_str:
-            print(
-                f'Error:  Table Key has a trailing "." Table key [{table_key}] key to append data [{key_str}] at line {table_row_index} remove and re test')
-            # fix and test again.
-            table[table_row_index][1] = str(table[table_row_index][1]).rstrip('.').strip(' ')
-            table_key = f'{table[table_row_index][1]}/{table[table_row_index][2]}'
-            if table_key != key_str:
-                raise Exception(
-                    f'Error Key mismatch! Table key [{table_key}] key to append data [{key_str}] at line {table_row_index}')
-        table[table_row_index].append('{}'.format(section_data))
-        print(f' Found[{key_str}] at table index {table_row_index} requirement_text=[{section_data}]')
-    else:
-        keys_not_found.add(key_str)
-        print(f'NOT FOUND![{key_str}] at table index {table_row_index}   ')
-        table[table_row_index].append(f'! ERROR {key_str}: Not found in data keys at table index {table_row_index} ')
-        table[table_row_index].append(key_to_urls.get(key_str))
-    table[table_row_index].append(key_to_java_objects.get(key_str))
-    handle_java_files_data(key_str)
-
-    table[table_row_index][4] = convert_version_to_number(table[table_row_index][1])
-    table[table_row_index].append('Last augmented column')
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text,
@@ -311,18 +272,21 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
         key_to_full_requirement_text[cdd_section_id] = process_requirement_text(section, None)
         composite_key_string_re = "\s*(?:<li>)?\["
         req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-        req_id_splits = re.split(composite_key_string_re, str(section))
-
-        total_requirement_count = process_section(build_composite_key, req_id_re_str, cdd_section_id,
-                                                  key_to_full_requirement_text,
-                                                  key_to_java_objects, key_to_urls, req_id_splits,
-                                                  section_id_count, total_requirement_count)
         full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
         req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
         total_requirement_count = process_section(find_full_key, full_key_string_for_re, cdd_section_id,
                                                   key_to_full_requirement_text,
                                                   key_to_java_objects, key_to_urls, req_id_splits,
                                                   section_id_count, total_requirement_count)
+        #Only build a key if you can't find any...
+        if len(req_id_splits) < 2:
+            req_id_splits = re.split(composite_key_string_re, str(section))
+
+            total_requirement_count = process_section(build_composite_key, req_id_re_str, cdd_section_id,
+                                                      key_to_full_requirement_text,
+                                                      key_to_java_objects, key_to_urls, req_id_splits,
+                                                      section_id_count, total_requirement_count)
+
         section_id_count += 1
     return key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_requirements_file_as_string
 
@@ -334,22 +298,20 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
 
     if targets == 'new' or targets == 'all':
         # Write New Table
-        created_table: [[str]] = []
-        write_sheet(write_new_data_line_to_table, 'output/created_output.csv', created_table,
-                    key_to_full_requirement_text)
-
+        table_for_sheet, keys_to_table_indexes = create_populated_table(key_to_full_requirement_text,key_to_full_requirement_text)
+        write_table('output/created_output.csv', table_for_sheet, default_header)
+    else:
+        table_for_sheet, keys_to_table_indexes = create_populated_table(keys_from_table)  # Just a smaller table
     if targets == 'append' or targets == 'all':
         # Write Augmented Table
-        keys_not_found = write_sheet(append_to_existing_data, 'output/augmented_output.csv', table,
-                                     keys_from_table)
+        updated_table, missing_key1, missking_key2 =update_table(table, keys_from_table, header, table_for_sheet,
+                     keys_to_table_indexes,default_header, merge_header)
+        write_table('output/updated_table.csv',updated_table,header)
 
-    found_count = len(keys_from_table)
-    not_found_count = len(keys_not_found)
-    print(f'Not {not_found_count} Found {found_count}  of {not_found_count + found_count}')
-
+    #print(f'Not {not_found_count} Found {found_count}  of {not_found_count + found_count}')
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    cdd_html_to_cts_create_sheets('new')
+    cdd_html_to_cts_create_sheets('all')
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

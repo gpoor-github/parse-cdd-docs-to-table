@@ -1,53 +1,50 @@
 import csv
-
-default_header: [] = (
-    ['Section', 'section_id', 'req_id', 'Test', 'Availability', 'Annotation?' ',''New Req for R?',
-     'New CTS for R?', 'class_def', 'method', 'module',
-     'Comment(internal) e.g. why a test is not possible ', 'Comment (external)',
-     'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
-     'Test Level',
-     '', 'external section_id', '', '', ''])
+import sys
 
 
 def read_table(file_name: str):
     """
 
-    :rtype: object
+    :rtype: {[[str]],dict,[]}
     """
     table = []
     header = []
     key_fields: dict = dict()
-    with open(file_name) as csv_file:
+    try:
+        with open(file_name) as csv_file:
 
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
 
-        for row in csv_reader:
-            if line_count == 0:
-                if row.index(default_header[0]) > -1:
-                    print(f'Column names are {", ".join(row)}')
-                    header = row
-                    line_count += 1
+            for row in csv_reader:
+                if line_count == 0:
+                    if row.index("section_id") > -1:
+                        print(f'Column names are {", ".join(row)}')
+                        header = row
+                        line_count += 1
+                    else:
+                        raise Exception(
+                            f' First row of file {csv_file} should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}')
                 else:
-                    raise Exception(
-                        f' First row of file {csv_file} should contain CSV with header like {default_header} looking for <Section> not found in {row}')
-            else:
-                print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
-                table.append(row)
-                table_index = line_count - 1
-                # Section,section_id,req_id
-                section_id_value = table[table_index][header.index("section_id")].rstrip('.')
-                req_id_value = table[table_index][header.index("req_id")]
-                if len(req_id_value) > 0:
-                    key_value = '{}/{}'.format(section_id_value, req_id_value)
-                elif len(section_id_value) > 0:
-                    key_value = section_id_value
-                key_fields[key_value] = table_index
-                line_count += 1
-                print(f'Processed {line_count} lines {key_value} ')
-            print(f'For table {line_count}')
-        print("End for loop")
-        return table, key_fields, header
+                    print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
+                    table.append(row)
+                    table_index = line_count - 1
+                    # Section,section_id,req_id
+                    section_id_value = table[table_index][header.index("section_id")].rstrip('.')
+                    req_id_value = table[table_index][header.index("req_id")]
+                    if len(req_id_value) > 0:
+                        key_value = '{}/{}'.format(section_id_value, req_id_value)
+                    elif len(section_id_value) > 0:
+                        key_value = section_id_value
+                    key_fields[key_value] = table_index
+                    line_count += 1
+                    print(f'Processed {line_count} lines {key_value} ')
+                print(f'For table {line_count}')
+            print("End with file")
+            return table, key_fields, header
+    except IOError as e:
+        print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+        sys.exit(f"Fatal Error Failed to open file {file_name}")
 
     # find urls that may help find the tests for the requirement
 
