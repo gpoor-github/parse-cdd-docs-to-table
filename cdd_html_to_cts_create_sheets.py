@@ -5,7 +5,7 @@ import time
 import data_sources
 import sourcecrawlerreducer
 from comparesheets import read_table
-from update_table import write_table, update_table, default_header, merge_header
+from update_table import write_table, update_table, default_header, merge_header, new_header
 
 REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
 TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
@@ -86,9 +86,9 @@ def clean_html_anchors(raw_html: str):
 
 
 def handle_java_files_data(key_str):
-    keys_to_files_dict = data_sources.RequirementSources().key_to_full_requirement_text
-    files_to_method_calls = data_sources.DataSources().files_to_method_calls
-    files_to_test_cases = data_sources.DataSources().files_to_test_cases
+    keys_to_files_dict = data_sources.key_to_full_requirement_text
+    files_to_method_calls = data_sources.files_to_method_calls
+    files_to_test_cases = data_sources.files_to_test_cases
 
     a_single_test_file_name: str = ""
     test_case_name: str = ""
@@ -129,22 +129,25 @@ def handle_java_files_data(key_str):
     return None, None, None
 
 
-def create_populated_table(keys_to_find_and_write,keys_to_sections):
+def create_populated_table(keys_to_find_and_write):
     table: [[str]] = []
     keys_to_table_index: dict[str, int] = dict()
     table_row_index = 0
     for temp_key in keys_to_find_and_write:
         key_str: str = temp_key
         key_str = key_str.rstrip(".").strip(' ')
-        write_new_data_line_to_table(key_str,keys_to_sections, table, table_row_index)  # test_file_to_dependencies)
-        keys_to_table_index[key_str] =table_row_index
+        write_new_data_line_to_table(key_str, data_sources.key_to_full_requirement_text, table,
+                                     table_row_index)  # test_file_to_dependencies)
+        keys_to_table_index[key_str] = table_row_index
         table_row_index += 1
     return table, keys_to_table_index
 
 
-def write_new_data_line_to_table(key_str:str, keys_to_sections:dict, table: [[str]],table_row_index:int):
-    key_to_java_objects = data_sources.RequirementSources().key_to_java_objects
-    key_to_urls = data_sources.RequirementSources().key_to_urls
+# Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,
+# ['Section', 'section_id', 'req_id', 'Test Availability','class_def', 'method', 'module','full_key','requirement', 'key_as_number','search_terms','urls','file_name'])
+def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int):
+    key_to_java_objects = data_sources.key_to_java_objects
+    key_to_urls = data_sources.key_to_urls
 
     section_data = keys_to_sections.get(key_str)
     if len(table) <= table_row_index:
@@ -153,26 +156,27 @@ def write_new_data_line_to_table(key_str:str, keys_to_sections:dict, table: [[st
     print(f"keys from  {table_row_index} [{key_str}]")
     key_str = key_str.rstrip(".").strip(' ')
     key_split = key_str.split('/')
-    table[table_row_index][1] = key_split[0]
+    table[table_row_index][new_header.index('section_id')] = key_split[0]
 
-    table[table_row_index][3] = key_str
+    table[table_row_index][new_header.index('full_key')] = key_str
     section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
     table[table_row_index].append(section_data_cleaned)
 
     if len(key_split) > 1:
-        table[table_row_index][default_header.index(default_header[1])] = key_split[1]
-        table[table_row_index][4] = convert_version_to_number(key_split[0], key_split[1])
+        table[table_row_index][new_header.index('req_id')] = key_split[1]
+        table[table_row_index][new_header.index('key_as_number')] = convert_version_to_number(key_split[0],
+                                                                                              key_split[1])
         table[table_row_index].append(key_to_urls.get(key_str))
         table[table_row_index].append(key_to_java_objects.get(key_str))
         a_single_test_file_name, test_case_name, a_method, class_name = handle_java_files_data(key_str)
 
-        table[table_row_index][9] = test_case_name
+        table[table_row_index][new_header.index('module')] = test_case_name
         if a_single_test_file_name:
-            table[table_row_index][7] = class_name
-            table[table_row_index][9] = a_single_test_file_name
+            table[table_row_index][new_header.index('class_def')] = class_name
+            table[table_row_index][new_header.index('file_name')] = a_single_test_file_name
         if a_method:
-            table[table_row_index][8] = a_method
-            table[table_row_index][3] = "Test Available"
+            table[table_row_index][new_header.index('method')] = a_method
+            table[table_row_index][new_header.index('Test Available')] = "Test Available"
 
     else:
         table[table_row_index][4] = convert_version_to_number(key_split[0])
@@ -278,7 +282,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
                                                   key_to_full_requirement_text,
                                                   key_to_java_objects, key_to_urls, req_id_splits,
                                                   section_id_count, total_requirement_count)
-        #Only build a key if you can't find any...
+        # Only build a key if you can't find any...
         if len(req_id_splits) < 2:
             req_id_splits = re.split(composite_key_string_re, str(section))
 
@@ -293,22 +297,22 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
 
 def cdd_html_to_cts_create_sheets(targets: str = 'all'):
     table, keys_from_table, header = read_table(TABLE_FILE_NAME)
-    key_to_full_requirement_text, key_to_java_objects, key_to_urls, keys_not_found, cdd_string = \
-        parse_cdd_html_to_requirements(REQUIREMENTS_FROM_HTML_FILE)
-
     if targets == 'new' or targets == 'all':
         # Write New Table
-        table_for_sheet, keys_to_table_indexes = create_populated_table(key_to_full_requirement_text,key_to_full_requirement_text)
-        write_table('output/created_output.csv', table_for_sheet, default_header)
+        table_for_sheet, keys_to_table_indexes = create_populated_table(
+            data_sources.key_to_full_requirement_text.keys())
+        write_table('output/created_output.csv', table_for_sheet, new_header)
     else:
         table_for_sheet, keys_to_table_indexes = create_populated_table(keys_from_table)  # Just a smaller table
     if targets == 'append' or targets == 'all':
         # Write Augmented Table
-        updated_table, missing_key1, missking_key2 =update_table(table, keys_from_table, header, table_for_sheet,
-                     keys_to_table_indexes,default_header, merge_header)
-        write_table('output/updated_table.csv',updated_table,header)
+        updated_table, misskey_key1, misskey_key2 = update_table(table, keys_from_table, header, table_for_sheet,
+                                                                 keys_to_table_indexes, default_header, merge_header)
+        write_table('output/updated_table.csv', updated_table, header)
 
-    #print(f'Not {not_found_count} Found {found_count}  of {not_found_count + found_count}')
+    print(
+        f'keys missing 1  {misskey_key1} keys missing 2 {misskey_key2}\nkeys1 missing  {len(misskey_key1)} keys2 missing {len(misskey_key2)} of {len(updated_table)}')
+
 
 if __name__ == '__main__':
     start = time.perf_counter()

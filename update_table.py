@@ -38,6 +38,9 @@ This will take table1 and update missing values in the specified key_to_index1 a
     return table1, missingkeys1, missingkeys1
 
 
+new_header: [] = (
+    ['Section', 'section_id', 'req_id', 'Test Availability','class_def', 'method', 'module','full_key',
+     'requirement', 'key_as_number','search_terms','urls','file_name'])
 default_header: [] = (
     ['Section', 'section_id', 'req_id', 'Test Availability', 'Annotation?' ',''New Req for R?',
      'New CTS for R?', 'class_def', 'method', 'module',
