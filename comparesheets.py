@@ -55,8 +55,6 @@ def compare_tables(file1, file2):
     return table1, key_fields1, header1, table2, key_fields2, header2
 
 
-
-
 if __name__ == '__main__':
     _file1 = "data_files/cdd-10.csv"
     _file2 = "data_files/cdd-11-org.csv"

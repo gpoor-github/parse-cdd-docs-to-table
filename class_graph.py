@@ -75,7 +75,9 @@ def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.
                     class_def, method = parse_(line_method)
                 if method:
                     if test_files_to_methods.get(test_annotated_file_name):
-                        test_files_to_methods[test_annotated_file_name] =f'{test_files_to_methods.get(test_annotated_file_name)} {method}'.strip(' ')
+                        test_files_to_methods[
+                            test_annotated_file_name] = f'{test_files_to_methods.get(test_annotated_file_name)} {method}'.strip(
+                            ' ')
                     else:
                         test_files_to_methods[test_annotated_file_name] = method.strip(' ')
 
@@ -116,7 +118,9 @@ def parse_dependency_file(file_name_in: str):
         dependency_list: [] = list()
         for a_dependencies_split in dependencies_split:
             dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
-            dependency_list.append(dependencies_file_name)
+            if dependencies_file_name.endswith('.java') and dependencies_file_name:
+                dependency_list.append(dependencies_file_name)
+
         test_classes_to_dependent_classes[target_file_name] = dependency_list
     input_file.close()
     return test_classes_to_dependent_classes
