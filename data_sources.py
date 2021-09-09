@@ -187,23 +187,23 @@ def handle_java_files_data(key_str):
                         max_matches = current_matches
             if max_matches > 1:
                 print(f'wow got matches  {max_matches}  {a_single_test_file_name}')
-            if a_found_methods_string:
-                # A better single file name :)
-                a_single_test_file_name = file_name
-                found_methods = a_found_methods_string.split(' ')
-                if len(found_methods) > 0:
-                    a_method = found_methods[random.randrange(0, len(found_methods))]
+                if a_found_methods_string:
+                    # A better single file name :)
+                    a_single_test_file_name = file_name
+                    found_methods = a_found_methods_string.split(' ')
+                    if len(found_methods) > 0:
+                        a_method = found_methods[random.randrange(0, len(found_methods))]
 
-            class_name_split_src = a_single_test_file_name.split('/src/')
-            # Module
-            if len(class_name_split_src) > 0:
-                test_case_key = str(class_name_split_src[0]).replace('cts/tests/', '')
-                if len(test_case_key) > 1:
-                    project_root = str(test_case_key).replace("/", ".")
-                    test_case_name = files_to_test_cases.get(project_root)
+                class_name_split_src = a_single_test_file_name.split('/src/')
+                # Module
+                if len(class_name_split_src) > 0:
+                    test_case_key = str(class_name_split_src[0]).replace('cts/tests/', '')
+                    if len(test_case_key) > 1:
+                        project_root = str(test_case_key).replace("/", ".")
+                        test_case_name = files_to_test_cases.get(project_root)
 
-            if len(class_name_split_src) > 1:
-                class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
+                if len(class_name_split_src) > 1:
+                    class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
 
         return a_single_test_file_name, test_case_name, a_method, class_name
     return None, None, None, None
@@ -323,14 +323,15 @@ def build_test_cases_module_dictionary(testcases_grep_results) -> dict:
 
 
 def get_file_dependencies():
-    # traverse root directory, and list directories as dirs and cts_files as cts_files
+    # if not testfile_dependencies_to_words:
     try:
-        test_file_to_dependencies = persist.read(TEST_FILES_TO_DEPENDENCIES_STORAGE)
+        testfile_dependencies_to_words = persist.read(TEST_FILES_TO_DEPENDENCIES_STORAGE)
     except IOError:
         print("Could not open android_studio_dependencies_for_cts, recreating ")
-        test_file_to_dependencies = class_graph.parse_dependency_file('input/android_studio_dependencies_for_cts.txt')
-        persist.write(test_file_to_dependencies, TEST_FILES_TO_DEPENDENCIES_STORAGE)
-    return test_file_to_dependencies
+        testfile_dependencies_to_words, dummy, dummy2 = class_graph.parse_dependency_file(
+            'input/android_studio_dependencies_for_cts.txt')
+        persist.write(testfile_dependencies_to_words, TEST_FILES_TO_DEPENDENCIES_STORAGE)
+    return testfile_dependencies_to_words
 
 
 def read_files_to_string(file_list):
@@ -377,18 +378,20 @@ def search_string_with_set_of_values(count: int, file_and_path: str, word_set: s
 
 
 def search_files_for_words(key: str):
-    test_files = at_test_files_to_methods
     java_objects = key_to_java_objects.get(key)
     count = 0
     # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
     start_time_crawl = time.perf_counter()
     matching_file_set_out = dict()
     word_to_count = dict()
-    for test_file in test_files:
+    for item in files_to_words.items():
         # words =  ftw.get(test_file)
-        words = testfile_dependencies_to_words.get(test_file)
+        # words = testfile_dependencies_to_words.get(test_file)
+        # words = testfile_dependencies_to_words.get(convert_relative_filekey(test_file))
+        # words = files_to_words.get("/home/gpoor/cts-source/" + test_file)
+        words = item[1]
         if words:
-            matching_file_set_out = search_string_with_set_of_values(count=count, file_and_path=test_file,
+            matching_file_set_out = search_string_with_set_of_values(count=count, file_and_path=item[0],
                                                                      word_set=words,
                                                                      found_words_to_count=word_to_count,
                                                                      matching_file_set_out=matching_file_set_out,
@@ -433,12 +436,16 @@ class SourceCrawlerReducer:
     files_to_method_calls_storage = 'storage/files_to_method_calls.pickle'
     testfile_dependencies_to_words_storage = 'storage/testfile_dependencies_to_words_storage.pickle'
 
-    __files_to_words: dict = dict()
-    __method_to_words: dict = dict()
-    __files_to_method_calls: dict = dict()
-    __testfile_dependencies_to_words: dict = dict()
+    __files_to_words: dict = None
+    __method_to_words: dict = None
+    __files_to_method_calls: dict = None
+    __testfile_dependencies_to_words: dict = None
 
     def clear_cached_crawler_data(self):
+
+        __files_to_words = None
+        __method_to_words = None
+        __files_to_method_calls = None
         try:
             os.remove(self.files_to_words_storage)
         except IOError:
@@ -451,30 +458,38 @@ class SourceCrawlerReducer:
             os.remove(self.files_to_method_calls_storage)
         except IOError:
             pass
-        try:
-            os.remove(self.testfile_dependencies_to_words_storage)
-        except IOError:
-            pass
 
     def get_cached_crawler_data(self, cts_root_directory: str = CTS_SOURCE_ROOT):
-        try:
-            self.__files_to_words = persist.readp(self.files_to_words_storage)
-            self.__method_to_words = persist.readp(self.method_to_words_storage)
-            self.__files_to_method_calls = persist.readp(self.files_to_method_calls_storage)
-            self.__testfile_dependencies_to_words = persist.readp(self.testfile_dependencies_to_words_storage)
-            print(
-                f"Returned cached value from  files_to_words {self.files_to_words_storage} , method_to_words {self.method_to_words_storage}, "
-                f"files_to_method_calls {self.files_to_method_calls_storage}, aggregate_bag {self.testfile_dependencies_to_words_storage} ")
-        except IOError:
-            print(
-                f" Crawling {cts_root_directory}: Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
-            self.__files_to_words, self.__method_to_words, self.__files_to_method_calls, self.__testfile_dependencies_to_words = self.__make_bags_of_word(
-                cts_root_directory)
-            persist.writep(self.__files_to_words, self.files_to_words_storage)
-            persist.writep(self.__method_to_words, self.method_to_words_storage)
-            persist.writep(self.__files_to_method_calls, self.files_to_method_calls_storage)
-            persist.writep(self.__testfile_dependencies_to_words, self.testfile_dependencies_to_words_storage)
-        return self.__files_to_words, self.__method_to_words, self.__files_to_method_calls, self.__testfile_dependencies_to_words
+        if not self.__files_to_words or self.__method_to_words or self.__files_to_method_calls:
+            try:
+                self.__files_to_words = persist.readp(self.files_to_words_storage)
+                self.__method_to_words = persist.readp(self.method_to_words_storage)
+                self.__files_to_method_calls = persist.readp(self.files_to_method_calls_storage)
+                print(
+                    f"Returned cached value from  files_to_words {self.files_to_words_storage} , method_to_words {self.method_to_words_storage}, "
+                    f"files_to_method_calls {self.files_to_method_calls_storage}, aggregate_bag {self.testfile_dependencies_to_words_storage} ")
+            except IOError:
+                print(
+                    f" Crawling {cts_root_directory}: Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
+                self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.__make_bags_of_word(
+                    cts_root_directory)
+                persist.writep(self.__files_to_words, self.files_to_words_storage)
+                persist.writep(self.__method_to_words, self.method_to_words_storage)
+                persist.writep(self.__files_to_method_calls, self.files_to_method_calls_storage)
+        return self.__files_to_words, self.__method_to_words, self.__files_to_method_calls
+
+    def get_testfile_dependency_word(self):
+        if not self.__testfile_dependencies_to_words:
+            try:
+                self.__testfile_dependencies_to_words = persist.readp(self.testfile_dependencies_to_words_storage)
+            except IOError:
+                print(
+                    f" : Could not open __testfile_dependencies_to_words, recreating ")
+                files_to_words_local, dummy1, dummy2 = self.get_cached_crawler_data()
+                self.__testfile_dependencies_to_words = self.__make_bags_of_testfile_dependency_word(
+                    files_to_words_local)
+                persist.writep(self.__testfile_dependencies_to_words, self.testfile_dependencies_to_words_storage)
+        return self.__testfile_dependencies_to_words
 
     @staticmethod
     def bag_from_text(text: str):
@@ -530,8 +545,7 @@ class SourceCrawlerReducer:
                                     method_to_words_local[fullpath] = method_names[0] + ":" + " ".join(method_bag)
                             i += 1
 
-        return files_to_words_local, method_to_words_local, files_to_method_calls_local, SourceCrawlerReducer.__make_bags_of_testfile_dependency_word(
-            files_to_words_local)
+        return files_to_words_local, method_to_words_local, files_to_method_calls_local
 
     @staticmethod
     def __make_bags_of_testfile_dependency_word(files_to_words_inner: dict):
@@ -544,7 +558,7 @@ class SourceCrawlerReducer:
             aggregate_words_for_dependencies = set()
             a_files_to_word = files_to_words_inner.get(CTS_SOURCE_PARENT + file)
             aggregate_words_for_dependencies.update(a_files_to_word)
-            dependencies: [str] = files_to_dependencies.get('\"{}\"'.format(file.replace('cts/', '$PROJECT_DIR$/', 1)))
+            dependencies: [str] = testfile_dependencies_to_words.get(convert_relative_filekey(file))
             if dependencies:
                 for i in range(len(dependencies)):
                     dependency: str = dependencies[i]
@@ -563,6 +577,10 @@ def file_transform_to_full_path(value):
     return rx.from_list(tvalue[2])
 
 
+def convert_relative_filekey(local_file: str):
+    return '\"{}\"'.format(local_file.replace('cts/', '$PROJECT_DIR$/', 1))
+
+
 cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
 
 java_files = cts_files.pipe(
@@ -573,16 +591,21 @@ table, keys_from_table, header = read_table("input/new_recs_remaining_todo.csv")
 key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string = parse_cdd_html_to_requirements()
 
 #    class DataSources:
-files_to_dependencies = get_file_dependencies()
 files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
 at_test_files_to_methods = class_graph.get_cached_grep_of_at_test_files()
 
-files_to_words, method_to_words, files_to_method_calls, testfile_dependencies_to_words = SourceCrawlerReducer().get_cached_crawler_data()
+files_to_words, method_to_words, files_to_method_calls = SourceCrawlerReducer().get_cached_crawler_data()
+testfile_dependencies_to_words = get_file_dependencies()
+
 rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
 rx_files_to_words = rx.from_iterable(sorted(files_to_words.items(), key=lambda x: x[1], reverse=True))
 rx_method_to_words = rx.from_iterable(sorted(method_to_words.items(), key=lambda x: x[1], reverse=True))
 rx_files_to_method_calls = rx.from_iterable(sorted(files_to_method_calls.items(), key=lambda x: x[1], reverse=True))
+rx_at_test_files_to_methods = rx.from_iterable(
+    sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
+
+# rx_search_results = rx.pip(ops.)
 
 def my_print(v, f: str = '{}'):
     print(f.format(v))
@@ -598,7 +621,7 @@ if __name__ == '__main__':
     start = time.perf_counter()
     scr = SourceCrawlerReducer()
     #  scr.clear_cached_crawler_data()
-    files_to_words, method_to_words, files_to_method_call, testfile_dependencies_to_words_storage = \
+    files_to_words, method_to_words, files_to_method_call = \
         scr.get_cached_crawler_data('/home/gpoor/cts-source')
     remove_ubiquitous_words_code(files_to_words)
     print(f"\n\nfiles_to_words  [{files_to_words}] \nsize {len(files_to_words)}")

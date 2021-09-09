@@ -1,4 +1,3 @@
-
 import time
 
 import data_sources
@@ -6,6 +5,7 @@ from comparesheets import read_table
 from update_table import write_table, update_table, merge_header, new_header
 
 TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
+
 
 def create_populated_table(keys_to_find_and_write):
     table: [[str]] = []
@@ -19,7 +19,6 @@ def create_populated_table(keys_to_find_and_write):
         keys_to_table_index[key_str] = table_row_index
         table_row_index += 1
     return table, keys_to_table_index
-
 
 
 def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00'):
@@ -100,12 +99,12 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
         table_for_sheet, keys_to_table_indexes = create_populated_table(keys_from_table)  # Just a smaller table
     if targets == 'append' or targets == 'all':
         # Write Augmented Table
-        updated_table, misskey_key1, misskey_key2 = update_table(table, keys_from_table, header, table_for_sheet,
-                                                                 keys_to_table_indexes, new_header, merge_header)
+        updated_table, key_key1, key_key2 = update_table(table, keys_from_table, header, table_for_sheet,
+                                                         keys_to_table_indexes, new_header, merge_header)
         write_table('output/updated_table.csv', updated_table, header)
 
-    print(
-        f'keys missing 1  {misskey_key1} keys missing 2 {misskey_key2}\nkeys1 missing  {len(misskey_key1)} keys2 missing {len(misskey_key2)} of {len(updated_table)}')
+        print(
+            f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
 
 
 if __name__ == '__main__':
