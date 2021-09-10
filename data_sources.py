@@ -163,6 +163,7 @@ def handle_java_files_data(key_str):
     a_single_test_file_name: str = ""
     test_case_name: str = ""
     class_name: str = ""
+    matched: set = set()
 
     if keys_to_files_dict:
         # filenames_str = keys_to_files_dict.get(key_str)
@@ -173,13 +174,14 @@ def handle_java_files_data(key_str):
         if keys_to_files_dict:
             # TODO just handling one file for now! Needs to change.
             for file_name in keys_to_files_dict:
-                file_name_relative = str(file_name).replace(CTS_SOURCE_PARENT,"")
+                file_name_relative = str(file_name).replace(CTS_SOURCE_PARENT, "")
                 a_single_test_file_name = file_name_relative
                 found_methods_string = at_test_files_to_methods.get(file_name_relative)
                 if get_random_method_name(found_methods_string):
                     a_found_methods_string = found_methods_string
                     a_method = get_random_method_name(found_methods_string)
-                    current_matches = len(keys_to_files_dict.get(file_name))
+                    matched = keys_to_files_dict.get(file_name)
+                    current_matches = len(matched)
                     if current_matches >= max_matches:
                         a_single_test_file_name = file_name_relative
                         max_matches = current_matches
@@ -191,6 +193,7 @@ def handle_java_files_data(key_str):
                         a_found_methods_string = found_methods_string
                         a_method = get_random_method_name(found_methods_string)
                         a_single_test_file_name = file_name_relative
+                        matched = keys_to_files_dict.get(file_name)
 
 
                 class_name_split_src = a_single_test_file_name.split('/src/')
@@ -204,8 +207,8 @@ def handle_java_files_data(key_str):
                 if len(class_name_split_src) > 1:
                     class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
 
-        return a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string
-    return None, None, None, None, None
+        return a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched
+    return None, None, None, None, None, None
 
 
 def get_random_method_name(a_found_methods_string):
@@ -303,7 +306,7 @@ def make_files_to_string(iterable_file_list: [str]) -> str:
 
 
 def read_file_to_string(file):
-    with open(CTS_SOURCE_PARENT+file, "r") as text_file:
+    with open(CTS_SOURCE_PARENT + file, "r") as text_file:
         file_string = text_file.read()
         text_file.close()
         return file_string
@@ -584,7 +587,7 @@ class SourceCrawlerReducer:
 
         for test_file in at_test_files_to_methods:
             test_file = str(test_file)
-            if  test_file.endswith(".java"):
+            if test_file.endswith(".java"):
                 file_list.clear()
                 dependencies: [str] = testfile_dependencies_to_words.get(convert_relative_filekey(test_file))
                 file_list.append(test_file)
@@ -648,7 +651,7 @@ if __name__ == '__main__':
     #  scr.clear_cached_crawler_data()
     files_to_words, method_to_words, files_to_method_call = \
         scr.get_cached_crawler_data('/home/gpoor/cts-source')
-    #remove_ubiquitous_words_code(files_to_words)
+    # remove_ubiquitous_words_code(files_to_words)
     test_files_to_strings = scr.make_test_file_to_dependency_strings()
 
     print(f"\n\nfiles_to_words  [{files_to_words}] \nsize {len(files_to_words)}")

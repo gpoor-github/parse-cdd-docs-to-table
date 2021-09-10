@@ -2,7 +2,7 @@ import time
 
 import data_sources
 from comparesheets import read_table
-from update_table import write_table, update_table, merge_header, new_header
+from table_ops import write_table, update_table, merge_header, new_header, new_row
 
 INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 
@@ -54,9 +54,9 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     key_to_java_objects = data_sources.key_to_java_objects
     key_to_urls = data_sources.key_to_urls
     section_data = keys_to_sections.get(key_str)
+
     if len(table) <= table_row_index:
-        table.append(['', '', '', '', '', '', '', '',
-                      '', '', '', '', ''])
+        table.append(['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''])
 
     print(f"keys from  {table_row_index} [{key_str}]")
     key_str = key_str.rstrip(".").strip(' ')
@@ -76,7 +76,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
         table[table_row_index][new_header.index('search_terms')] = key_to_java_objects.get(key_str)
 
         # This function takes a long time
-        a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string = data_sources.handle_java_files_data(key_str)
+        a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = data_sources.handle_java_files_data(   key_str)
 
         table[table_row_index][new_header.index('module')] = test_case_name
         if a_single_test_file_name:
@@ -84,7 +84,11 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
             table[table_row_index][new_header.index('file_name')] = a_single_test_file_name
         if a_method:
             table[table_row_index][new_header.index('method')] = a_method
-        # table[table_row_index][new_header.index('Test Available')] = "Test Available"
+        if matched:
+            table[table_row_index][new_header.index('matched')] = matched
+        if a_found_methods_string:
+            table[table_row_index][new_header.index('methods_string')] = a_found_methods_string
+
 
     else:
         table[table_row_index][new_header.index('key_as_number')] = convert_version_to_number(key_split[0])
@@ -100,7 +104,9 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
     #     table_for_sheet, keys_to_table_indexes = create_populated_table(input_table, keys_from_input_table, input_header )  # Just a smaller table
     if targets == 'append' or targets == 'all':
         # Write Augmented Table
-        updated_table, key_key1, key_key2 = update_table(data_sources.input_table, data_sources.input_table_keys_to_index, data_sources.input_header, table_for_sheet,
+        updated_table, key_key1, key_key2 = update_table(data_sources.input_table,
+                                                         data_sources.input_table_keys_to_index,
+                                                         data_sources.input_header, table_for_sheet,
                                                          keys_to_table_indexes, new_header, merge_header)
         write_table('output/updated_table.csv', updated_table, data_sources.input_header)
 
