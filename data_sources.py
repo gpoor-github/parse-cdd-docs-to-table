@@ -10,7 +10,7 @@ import class_graph
 import persist
 from comparesheets import read_table
 
-CTS_SOURCE_PARENT = " /Volumes/graham-ext/AndroidStudioProjects/"#/home/gpoor/cts-source/"
+CTS_SOURCE_PARENT = "/Volumes/graham-ext/AndroidStudioProjects/"#/home/gpoor/cts-source/"
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + "cts"
 
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
