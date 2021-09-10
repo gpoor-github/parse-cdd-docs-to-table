@@ -158,7 +158,7 @@ def clean_html_anchors(raw_html: str):
 
 
 def handle_java_files_data(key_str):
-    keys_to_files_dict = search_files_for_words(key_str)
+    keys_to_files_dict = search_files_as_strings_for_words(key_str)
     # keys_to_files_dict1 = sorted(keys_to_files_dict.items(), key=lambda x: x[1], reverse=True)
     a_single_test_file_name: str = ""
     test_case_name: str = ""
@@ -194,7 +194,6 @@ def handle_java_files_data(key_str):
                         a_method = get_random_method_name(found_methods_string)
                         a_single_test_file_name = file_name_relative
                         matched = keys_to_files_dict.get(file_name)
-
 
                 class_name_split_src = a_single_test_file_name.split('/src/')
                 # Module
@@ -307,7 +306,8 @@ def make_files_to_string(iterable_file_list: [str]) -> str:
 
 def read_file_to_string(file):
     with open(CTS_SOURCE_PARENT + file, "r") as text_file:
-        file_string = text_file.read()
+        file_string_raw = text_file.read()
+        file_string = re.sub(' Copyright.+limitations under the License', "", file_string_raw, flags=re.DOTALL)
         text_file.close()
         return file_string
 
@@ -369,10 +369,11 @@ def get_file_dependencies():
     return testfile_dependencies_to_words_local
 
 
-def search_string_with_set_of_values(count: int, file_and_path: str, word_set: set, found_words_to_count: dict,
-                                     matching_file_set_out: dict, key: str,
-                                     search_terms: set,
-                                     start_time_file_crawl):
+def diff_set_of_search_values_against_sets_of_words_from_files(count: int, file_and_path: str, word_set: set,
+                                                               found_words_to_count: dict,
+                                                               matching_file_set_out: dict, key: str,
+                                                               search_terms: set,
+                                                               start_time_file_crawl):
     if search_terms:
         result = word_set.intersection(search_terms)
 
@@ -396,6 +397,36 @@ def search_string_with_set_of_values(count: int, file_and_path: str, word_set: s
     return matching_file_set_out
 
 
+def search_files_as_strings_for_words(key: str):
+    search_terms = key_to_java_objects.get(key)
+    count = 0
+    # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
+    start_time_crawl = time.perf_counter()
+    matching_file_set_out = dict()
+    word_to_count = dict()
+
+    row = input_table[input_table_keys_to_index.get(key)]
+    col_idx = list(input_header).index("manual_search_terms")
+    if col_idx >= 0:
+        if row[col_idx]:
+            manual_search_terms = set(row[col_idx].split(' '))
+            search_terms.update(manual_search_terms)
+    for test_file in test_files_to_strings:
+        file_string = test_files_to_strings.get(test_file)
+        match_count = 0
+        match_set = set()
+        if search_terms:
+            for search_term in search_terms:
+                this_terms_match_count = file_string.count(search_term)
+                if this_terms_match_count > 0:
+                    match_set.add(search_term)
+                    match_count += this_terms_match_count
+            if len(match_set) > 0:
+                matching_file_set_out[test_file] = matching_file_set_out
+
+    return matching_file_set_out
+
+
 def search_files_for_words(key: str):
     java_objects = key_to_java_objects.get(key)
     count = 0
@@ -411,19 +442,16 @@ def search_files_for_words(key: str):
             manual_search_terms = set(row[col_idx].split(' '))
             java_objects.update(manual_search_terms)
     for item in files_to_words.items():
-        # words =  ftw.get(test_file)
-        # words = testfile_dependencies_to_words.get(test_file)
-        # words = testfile_dependencies_to_words.get(convert_relative_filekey(test_file))
-        # words = files_to_words.get("/home/gpoor/cts-source/" + test_file)
         words = item[1]
         if words:
-            matching_file_set_out = search_string_with_set_of_values(count=count, file_and_path=item[0],
-                                                                     word_set=words,
-                                                                     found_words_to_count=word_to_count,
-                                                                     matching_file_set_out=matching_file_set_out,
-                                                                     key=key,
-                                                                     search_terms=java_objects,
-                                                                     start_time_file_crawl=start_time_crawl)
+            matching_file_set_out = diff_set_of_search_values_against_sets_of_words_from_files(count=count,
+                                                                                               file_and_path=item[0],
+                                                                                               word_set=words,
+                                                                                               found_words_to_count=word_to_count,
+                                                                                               matching_file_set_out=matching_file_set_out,
+                                                                                               key=key,
+                                                                                               search_terms=java_objects,
+                                                                                               start_time_file_crawl=start_time_crawl)
     return matching_file_set_out
 
 
@@ -595,7 +623,8 @@ class SourceCrawlerReducer:
                     for i in range(len(dependencies)):
                         dependency: str = dependencies[i]
                         file_list.append(dependency)
-                test_files_to_aggregated_dependency_string[test_file] = make_files_to_string(file_list)
+                test_files_to_aggregated_dependency_string[
+                    test_file.replace(CTS_SOURCE_PARENT, '')] = make_files_to_string(file_list)
 
         return test_files_to_aggregated_dependency_string
 
@@ -632,6 +661,8 @@ rx_files_to_method_calls = rx.from_iterable(sorted(files_to_method_calls.items()
 rx_at_test_files_to_methods = rx.from_iterable(
     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
+test_files_to_strings = SourceCrawlerReducer.make_test_file_to_dependency_strings()
+
 
 # rx_search_results = rx.pip(ops.)
 
@@ -654,6 +685,5 @@ if __name__ == '__main__':
     # remove_ubiquitous_words_code(files_to_words)
     test_files_to_strings = scr.make_test_file_to_dependency_strings()
 
-    print(f"\n\nfiles_to_words  [{files_to_words}] \nsize {len(files_to_words)}")
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

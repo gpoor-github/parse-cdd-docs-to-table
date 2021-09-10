@@ -2,7 +2,7 @@ import time
 
 import data_sources
 from comparesheets import read_table
-from table_ops import write_table, update_table, merge_header, new_header, new_row
+from table_ops import write_table, update_table, merge_header, new_header
 
 INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 
