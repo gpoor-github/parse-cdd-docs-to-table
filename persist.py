@@ -1,5 +1,3 @@
-
-
 # define a dictionary with key value pairs
 
 # open file for writing, "w" is writing

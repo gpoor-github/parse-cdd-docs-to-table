@@ -1,8 +1,8 @@
 import time
 
 import data_sources
-from comparesheets import read_table
-from table_ops import write_table, update_table, merge_header, new_header
+import static_data_holder
+from table_ops import write_table, update_table
 
 INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 
@@ -61,37 +61,38 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     print(f"keys from  {table_row_index} [{key_str}]")
     key_str = key_str.rstrip(".").strip(' ')
     key_split = key_str.split('/')
-    table[table_row_index][new_header.index('section_id')] = key_split[0]
+    table[table_row_index][static_data_holder.new_header.index('section_id')] = key_split[0]
 
-    table[table_row_index][new_header.index('full_key')] = key_str
+    table[table_row_index][static_data_holder.new_header.index('full_key')] = key_str
     if section_data:
         section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
-        table[table_row_index][new_header.index('requirement')] = section_data_cleaned
+        table[table_row_index][static_data_holder.new_header.index('requirement')] = section_data_cleaned
 
     if len(key_split) > 1:
-        table[table_row_index][new_header.index('req_id')] = key_split[1]
-        table[table_row_index][new_header.index('key_as_number')] = convert_version_to_number(key_split[0],
-                                                                                              key_split[1])
-        table[table_row_index][new_header.index('urls')] = key_to_urls.get(key_str)
-        table[table_row_index][new_header.index('search_terms')] = key_to_java_objects.get(key_str)
+        table[table_row_index][static_data_holder.new_header.index('req_id')] = key_split[1]
+        table[table_row_index][static_data_holder.new_header.index('key_as_number')] = convert_version_to_number(key_split[0], key_split[1])
+        table[table_row_index][static_data_holder.new_header.index('urls')] = key_to_urls.get(key_str)
+        table[table_row_index][static_data_holder.new_header.index('search_terms')] = key_to_java_objects.get(key_str)
 
         # This function takes a long time
-        a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = data_sources.handle_java_files_data(   key_str)
+        a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = data_sources.handle_java_files_data(
+            key_str)
 
-        table[table_row_index][new_header.index('module')] = test_case_name
+        table[table_row_index][static_data_holder.new_header.index('module')] = test_case_name
         if a_single_test_file_name:
-            table[table_row_index][new_header.index('class_def')] = class_name
-            table[table_row_index][new_header.index('file_name')] = a_single_test_file_name
+            table[table_row_index][static_data_holder.new_header.index('class_def')] = class_name
+            table[table_row_index][static_data_holder.new_header.index('file_name')] = a_single_test_file_name
         if a_method:
-            table[table_row_index][new_header.index('method')] = a_method
-        if matched:
-            table[table_row_index][new_header.index('matched')] = matched
-        if a_found_methods_string:
-            table[table_row_index][new_header.index('methods_string')] = a_found_methods_string
+            table[table_row_index][static_data_holder.new_header.index('method')] = a_method
+            table[table_row_index][static_data_holder.new_header.index('Test Availability')] = "Test Available"
 
+        if matched:
+            table[table_row_index][static_data_holder.new_header.index('matched')] = matched
+        if a_found_methods_string:
+            table[table_row_index][static_data_holder.new_header.index('methods_string')] = a_found_methods_string
 
     else:
-        table[table_row_index][new_header.index('key_as_number')] = convert_version_to_number(key_split[0])
+        table[table_row_index][static_data_holder.new_header.index('key_as_number')] = convert_version_to_number(key_split[0])
         print(f"Only a major key? {key_str}")
 
 
@@ -107,7 +108,7 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
         updated_table, key_key1, key_key2 = update_table(data_sources.input_table,
                                                          data_sources.input_table_keys_to_index,
                                                          data_sources.input_header, table_for_sheet,
-                                                         keys_to_table_indexes, new_header, merge_header)
+                                                         keys_to_table_indexes, static_data_holder.new_header, static_data_holder.merge_header)
         write_table('output/updated_table.csv', updated_table, data_sources.input_header)
 
         print(

@@ -4,14 +4,15 @@ import re
 import time
 
 import rx
+from table_ops import read_table
 from rx import operators as ops
 
 import class_graph
 import persist
-from comparesheets import read_table
 
-CTS_SOURCE_PARENT = "/Volumes/graham-ext/AndroidStudioProjects/"#/home/gpoor/cts-source/"
-CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + "cts"
+CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
+CTS_SOURCE_NAME = 'cts'
+CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
                     'condition',
@@ -110,7 +111,7 @@ def remove_non_determinative_words(set_to_diff: set):
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 
-REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
+REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
 
 
 def find_urls(text_to_scan_urls: str):
@@ -399,11 +400,10 @@ def diff_set_of_search_values_against_sets_of_words_from_files(count: int, file_
 
 def search_files_as_strings_for_words(key: str):
     search_terms = key_to_java_objects.get(key)
-    count = 0
     # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
-    start_time_crawl = time.perf_counter()
     matching_file_set_out = dict()
-    word_to_count = dict()
+    if not search_terms:
+        return matching_file_set_out
 
     row = input_table[input_table_keys_to_index.get(key)]
     col_idx = list(input_header).index("manual_search_terms")
@@ -431,9 +431,11 @@ def search_files_for_words(key: str):
     java_objects = key_to_java_objects.get(key)
     count = 0
     # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
-    start_time_crawl = time.perf_counter()
     matching_file_set_out = dict()
+    if not java_objects:
+        return matching_file_set_out
     word_to_count = dict()
+    start_time_crawl = time.perf_counter()
 
     row = input_table[input_table_keys_to_index.get(key)]
     col_idx = list(input_header).index("manual_search_terms")
@@ -681,7 +683,7 @@ if __name__ == '__main__':
     scr = SourceCrawlerReducer()
     #  scr.clear_cached_crawler_data()
     files_to_words, method_to_words, files_to_method_call = \
-        scr.get_cached_crawler_data(CTS_SOURCE_ROOT)
+        scr.get_cached_crawler_data(CTS_SOURCE_PARENT)
     # remove_ubiquitous_words_code(files_to_words)
     test_files_to_strings = scr.make_test_file_to_dependency_strings()
 
