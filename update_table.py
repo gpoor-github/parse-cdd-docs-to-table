@@ -32,8 +32,8 @@ This will take table1 and update missing values in the specified key_to_index1 a
             for column in columns:
                 column1_idx = header1.index(column)
                 column2_idx = header2.index(column)
-                #if column1_idx in range(0,len(t1_row)) and column2_idx in range(0,len(column)) :
-                 #   if t2_row[column2_idx] and (len(t1_row[column1_idx]) <= 0):
+                # if column1_idx in range(0,len(t1_row)) and column2_idx in range(0,len(column)) :
+                #   if t2_row[column2_idx] and (len(t1_row[column1_idx]) <= 0):
                 t1_row[column1_idx] = t2_row[column2_idx]
 
             if t1_row:
@@ -49,7 +49,7 @@ This will take table1 and update missing values in the specified key_to_index1 a
 
 new_header: [] = (
     ['Section', 'section_id', 'req_id', 'Test Availability', 'class_def', 'method', 'module', 'full_key',
-     'requirement', 'key_as_number', 'search_terms', 'urls', 'file_name'])
+     'requirement', 'key_as_number', 'search_terms', 'urls', 'file_name','manual_search_terms'])
 new_row: [] = (
     ['', '', '', '', '', '', '', '',
      '', '', '', '', ''])
@@ -57,6 +57,14 @@ new_row: [] = (
 default_header: [] = (
     ['Section', 'section_id', 'req_id', 'Test Availability', 'Annotation?', 'New Req for R?',
      'New CTS for R?', 'class_def', 'method', 'module',
+     'Comment(internal) e.g. why a test is not possible ', 'Comment (external)',
+     'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
+     'Test Level',
+     '', 'external section_id', '', '', ''])
+all_header: [] = (
+    ['Section', 'section_id', 'req_id', 'Test Availability', 'Annotation?', 'New Req for R?',
+     'New CTS for R?', 'class_def', 'method', 'module','full_key',
+     'requirement', 'key_as_number', 'search_terms', 'urls', 'file_name','manual_search_terms',
      'Comment(internal) e.g. why a test is not possible ', 'Comment (external)',
      'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
      'Test Level',
@@ -78,7 +86,8 @@ def merge_tables(file1, file2):
 def write_table(file_name: str, table: [[str]], header: [str]):
     with open(file_name, 'w', newline='') as csv_output_file:
         table_writer = csv.writer(csv_output_file)
-        table_writer.writerow(header)
+        if header:
+            table_writer.writerow(header)
         table_writer.writerows(table)
         csv_output_file.close()
 

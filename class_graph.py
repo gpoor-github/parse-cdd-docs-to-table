@@ -105,7 +105,7 @@ def parse_(line_method):
     return class_def, method
 
 
-def parse_dependency_file(file_name_in: str):
+def parse_dependency_file(file_name_in: str = INPUT_DEPENDENCIES_FOR_CTS_TXT):
     # /Volumes/graham-ext/AndroidStudioProjects/cts
     input_file = open(file_name_in, 'r')
     test_classes_to_dependent_classes: dict = dict()

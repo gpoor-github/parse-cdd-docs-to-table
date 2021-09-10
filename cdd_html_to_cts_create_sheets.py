@@ -4,7 +4,7 @@ import data_sources
 from comparesheets import read_table
 from update_table import write_table, update_table, merge_header, new_header
 
-TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
+INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 
 
 def create_populated_table(keys_to_find_and_write):
@@ -64,8 +64,9 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     table[table_row_index][new_header.index('section_id')] = key_split[0]
 
     table[table_row_index][new_header.index('full_key')] = key_str
-    section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
-    table[table_row_index][new_header.index('requirement')] = section_data_cleaned
+    if section_data:
+        section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
+        table[table_row_index][new_header.index('requirement')] = section_data_cleaned
 
     if len(key_split) > 1:
         table[table_row_index][new_header.index('req_id')] = key_split[1]
@@ -73,6 +74,8 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
                                                                                               key_split[1])
         table[table_row_index][new_header.index('urls')] = key_to_urls.get(key_str)
         table[table_row_index][new_header.index('search_terms')] = key_to_java_objects.get(key_str)
+
+        # This function takes a long time
         a_single_test_file_name, test_case_name, a_method, class_name = data_sources.handle_java_files_data(key_str)
 
         table[table_row_index][new_header.index('module')] = test_case_name
@@ -89,19 +92,17 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
 
 
 def cdd_html_to_cts_create_sheets(targets: str = 'all'):
-    table, keys_from_table, header = read_table(TABLE_FILE_NAME)
-    if targets == 'new' or targets == 'all':
-        # Write New Table
-        table_for_sheet, keys_to_table_indexes = create_populated_table(
-            data_sources.key_to_full_requirement_text.keys())
-        write_table('output/created_output.csv', table_for_sheet, new_header)
-    else:
-        table_for_sheet, keys_to_table_indexes = create_populated_table(keys_from_table)  # Just a smaller table
+    # if targets == 'new' or targets == 'all':
+    # Write New Table
+    table_for_sheet, keys_to_table_indexes = create_populated_table(data_sources.input_table_keys_to_index)
+    write_table('output/created_output.csv', table_for_sheet, None)
+    # else:
+    #     table_for_sheet, keys_to_table_indexes = create_populated_table(input_table, keys_from_input_table, input_header )  # Just a smaller table
     if targets == 'append' or targets == 'all':
         # Write Augmented Table
-        updated_table, key_key1, key_key2 = update_table(table, keys_from_table, header, table_for_sheet,
+        updated_table, key_key1, key_key2 = update_table(data_sources.input_table, data_sources.input_table_keys_to_index, data_sources.input_header, table_for_sheet,
                                                          keys_to_table_indexes, new_header, merge_header)
-        write_table('output/updated_table.csv', updated_table, header)
+        write_table('output/updated_table.csv', updated_table, data_sources.input_header)
 
         print(
             f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')

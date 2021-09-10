@@ -17,6 +17,7 @@ def read(file_name: str):
         data = json.load(f)
         return data
 
+
 def writep(adict: dict, file_name: str):
     pickle_out = open(file_name, "wb")
     pickle.dump(adict, pickle_out)

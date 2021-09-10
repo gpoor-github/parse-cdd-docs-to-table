@@ -2,8 +2,8 @@ import csv
 import sys
 
 
-def read_table(file_name: str):
-    """
+def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
+    """],
 
     :rtype: {[[str]],dict,[]}
     """
