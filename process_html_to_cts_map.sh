@@ -1,7 +1,9 @@
 echo This script will scan the source of the CTS tests looking for the @CddTest annotation it will then build
 echo a spreadsheet that shows the  CDD-CTS mapping built from the content and context of the annotation.
 echo This script should be run in the root directory of the CTS source.
-
+echo getting the cdd requirments from  https://source.android.com/compatibility/11/android-11-cdd
+echo overwrite with another version if desired.
+wget -O ./input/cdd.html  https://source.android.com/compatibility/11/android-11-cdd
 #read -p "Clone the CTS source in this directory? " $clone_cts
 #echo value read = $clone_cts
 #if [[ $clone_cts == "Y" ]]
@@ -10,7 +12,7 @@ echo This script should be run in the root directory of the CTS source.
 #    echo Checking out main.
 #    git checkout main
 #fi
-ctsdir='/home/gpoor/cts-source'
+ctsdir='.'#'/home/gpoor/cts-source'
 if [[ $clone_cts != "Y" ]]
   then
       read -p "Enter the path the the CTS root ( . for current dir )" $ctsdir

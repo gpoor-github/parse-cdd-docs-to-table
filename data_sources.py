@@ -10,7 +10,7 @@ import class_graph
 import persist
 from comparesheets import read_table
 
-CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
+CTS_SOURCE_PARENT = " /Volumes/graham-ext/AndroidStudioProjects/"#/home/gpoor/cts-source/"
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + "cts"
 
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
@@ -110,7 +110,7 @@ def remove_non_determinative_words(set_to_diff: set):
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 
-REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
+REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
 
 
 def find_urls(text_to_scan_urls: str):
@@ -681,7 +681,7 @@ if __name__ == '__main__':
     scr = SourceCrawlerReducer()
     #  scr.clear_cached_crawler_data()
     files_to_words, method_to_words, files_to_method_call = \
-        scr.get_cached_crawler_data('/home/gpoor/cts-source')
+        scr.get_cached_crawler_data(CTS_SOURCE_ROOT)
     # remove_ubiquitous_words_code(files_to_words)
     test_files_to_strings = scr.make_test_file_to_dependency_strings()
 
