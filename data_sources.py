@@ -167,7 +167,6 @@ def handle_java_files_data(key_str):
     if keys_to_files_dict:
         # filenames_str = keys_to_files_dict.get(key_str)
         # found_methods = None
-        file_name = None
         a_method = None
         a_found_methods_string = None
         max_matches = -1
@@ -177,20 +176,22 @@ def handle_java_files_data(key_str):
                 file_name_relative = str(file_name).replace(CTS_SOURCE_PARENT,"")
                 a_single_test_file_name = file_name_relative
                 found_methods_string = at_test_files_to_methods.get(file_name_relative)
-                if found_methods_string:
+                if get_random_method_name(found_methods_string):
+                    a_found_methods_string = found_methods_string
+                    a_method = get_random_method_name(found_methods_string)
                     current_matches = len(keys_to_files_dict.get(file_name))
                     if current_matches >= max_matches:
                         a_single_test_file_name = file_name_relative
-                        a_found_methods_string = found_methods_string
                         max_matches = current_matches
                 if max_matches > 1:
+                    found_methods_string = at_test_files_to_methods.get(file_name_relative)
                     print(f'wow got matches  {max_matches}  {a_single_test_file_name}')
-                    if a_found_methods_string:
+                    if get_random_method_name(found_methods_string):
                         # A better single file name :) if it has a method!
+                        a_found_methods_string = found_methods_string
+                        a_method = get_random_method_name(found_methods_string)
                         a_single_test_file_name = file_name_relative
-                        found_methods = a_found_methods_string.split(' ')
-                        if len(found_methods) > 0:
-                            a_method = found_methods[random.randrange(0, len(found_methods))]
+
 
                 class_name_split_src = a_single_test_file_name.split('/src/')
                 # Module
@@ -203,8 +204,17 @@ def handle_java_files_data(key_str):
                 if len(class_name_split_src) > 1:
                     class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
 
-        return a_single_test_file_name, test_case_name, a_method, class_name
-    return None, None, None, None
+        return a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string
+    return None, None, None, None, None
+
+
+def get_random_method_name(a_found_methods_string):
+    a_method = None
+    if a_found_methods_string:
+        found_methods = a_found_methods_string.split(' ')
+        if len(found_methods) > 0:
+            a_method = found_methods[random.randrange(0, len(found_methods))]
+    return a_method
 
 
 def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):

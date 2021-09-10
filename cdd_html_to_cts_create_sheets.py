@@ -76,7 +76,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
         table[table_row_index][new_header.index('search_terms')] = key_to_java_objects.get(key_str)
 
         # This function takes a long time
-        a_single_test_file_name, test_case_name, a_method, class_name = data_sources.handle_java_files_data(key_str)
+        a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string = data_sources.handle_java_files_data(key_str)
 
         table[table_row_index][new_header.index('module')] = test_case_name
         if a_single_test_file_name:

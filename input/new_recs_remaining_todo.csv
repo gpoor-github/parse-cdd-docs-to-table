@@ -88,7 +88,7 @@ Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS 
 ,9.10.,C-0-3,,,Yes,,,,,,,,,,,,,,,,,,
 ,9.10.,C-0-4,,,Yes,,,,,,,,,,,,,,,,,,
 ,9.10.,C-0-5,,,Yes,,,,,,,,,,,,,,,,,,
-9.11.3 Identity Credential,9.11.3,C-0-1,,,Yes,,,,,,,,,,,,,,,,,,
+9.11.3 Identity Credential,9.11.3,C-0-1,,,Yes,,,,,,,,,,,,,,,,IdentityCredentialStore IdentityCredentialStore(,,
 ,9.11.3,C-0-2,,,Yes,,,,,,,,,,,,,,,,,,
 ,9.11.3,C-0-3,,,Yes,,,,,,,,,,,,,,,,,,
 ,9.11.3,C-0-4,,,Yes,,,,,,,,,,,,,,,,,,
