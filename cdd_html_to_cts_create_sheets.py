@@ -4,7 +4,7 @@ import data_sources
 import static_data_holder
 from table_ops import write_table, update_table
 
-INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
+INPUT_TABLE_FILE_NAME = '2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv'
 
 
 def create_populated_table(keys_to_find_and_write):
@@ -99,17 +99,17 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
 def cdd_html_to_cts_create_sheets(targets: str = 'all'):
     # if targets == 'new' or targets == 'all':
     # Write New Table
-    table_for_sheet, keys_to_table_indexes = create_populated_table(data_sources.input_table_keys_to_index)
+    table_for_sheet, keys_to_table_indexes = create_populated_table(data_sources.global_input_table_keys_to_index)
     write_table('output/created_output.csv', table_for_sheet, None)
     # else:
     #     table_for_sheet, keys_to_table_indexes = create_populated_table(input_table, keys_from_input_table, input_header )  # Just a smaller table
     if targets == 'append' or targets == 'all':
         # Write Augmented Table
-        updated_table, key_key1, key_key2 = update_table(data_sources.input_table,
-                                                         data_sources.input_table_keys_to_index,
-                                                         data_sources.input_header, table_for_sheet,
+        updated_table, key_key1, key_key2 = update_table(data_sources.global_input_table,
+                                                         data_sources.global_input_table_keys_to_index,
+                                                         data_sources.global_input_header, table_for_sheet,
                                                          keys_to_table_indexes, static_data_holder.new_header, static_data_holder.merge_header)
-        write_table('output/updated_table.csv', updated_table, data_sources.input_header)
+        write_table('output/updated_table.csv', updated_table, data_sources.global_input_header)
 
         print(
             f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')

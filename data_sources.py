@@ -111,7 +111,7 @@ def remove_non_determinative_words(set_to_diff: set):
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 
-REQUIREMENTS_FROM_HTML_FILE = 'input/Android 11 Compatibility Definition_no_section_13.html'
+REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
 
 
 def find_urls(text_to_scan_urls: str):
@@ -188,7 +188,7 @@ def handle_java_files_data(key_str):
                         max_matches = current_matches
                 if max_matches > 1:
                     found_methods_string = at_test_files_to_methods.get(file_name_relative)
-                    print(f'wow got matches  {max_matches}  {a_single_test_file_name}')
+                    print(f'wow got matches  {max_matches} words [{matched}] {a_single_test_file_name}')
                     if get_random_method_name(found_methods_string):
                         # A better single file name :) if it has a method!
                         a_found_methods_string = found_methods_string
@@ -405,12 +405,18 @@ def search_files_as_strings_for_words(key: str):
     if not search_terms:
         return matching_file_set_out
 
-    row = input_table[input_table_keys_to_index.get(key)]
-    col_idx = list(input_header).index("manual_search_terms")
-    if col_idx >= 0:
-        if row[col_idx]:
-            manual_search_terms = set(row[col_idx].split(' '))
-            search_terms.update(manual_search_terms)
+    row = global_input_table[global_input_table_keys_to_index.get(key)]
+    try:
+        col_idx = list(global_input_header).index("manual_search_terms")
+
+        if col_idx >= 0:
+            if row[col_idx]:
+                manual_search_terms = set(row[col_idx].split(' '))
+                search_terms.update(manual_search_terms)
+    except:
+        print("warning no search manual search terms")
+    pass
+
     for test_file in test_files_to_strings:
         file_string = test_files_to_strings.get(test_file)
         match_count = 0
@@ -423,7 +429,6 @@ def search_files_as_strings_for_words(key: str):
                     match_count += this_terms_match_count
             if len(match_set) > 0:
                 matching_file_set_out[test_file] = matching_file_set_out
-
     return matching_file_set_out
 
 
@@ -437,8 +442,8 @@ def search_files_for_words(key: str):
     word_to_count = dict()
     start_time_crawl = time.perf_counter()
 
-    row = input_table[input_table_keys_to_index.get(key)]
-    col_idx = list(input_header).index("manual_search_terms")
+    row = global_input_table[global_input_table_keys_to_index.get(key)]
+    col_idx = list(global_input_header).index("manual_search_terms")
     if col_idx >= 0:
         if row[col_idx]:
             manual_search_terms = set(row[col_idx].split(' '))
@@ -645,8 +650,10 @@ cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
 java_files = cts_files.pipe(
     ops.map(lambda value: file_transform_to_full_path(value))
 )
+#global_input_file_name = "input/2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv"
+global_input_file_name = "input/new_recs_remaining_todo.csv"
 
-input_table, input_table_keys_to_index, input_header = read_table("input/new_recs_remaining_todo.csv")
+global_input_table, global_input_table_keys_to_index, global_input_header = read_table(global_input_file_name)
 key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string = parse_cdd_html_to_requirements()
 
 #    class DataSources:

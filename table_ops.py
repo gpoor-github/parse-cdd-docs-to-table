@@ -48,7 +48,6 @@ This will take table1 and update missing values in the specified key_to_index1 a
     return table1, missingkeys1, missingkeys1
 
 
-# class RequirementSources:
 def merge_tables(file1, file2):
     table1, key_fields1, header1 = read_table(file1)
     table2, key_fields2, header2 = read_table(file2)
@@ -81,10 +80,10 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
     try:
         with open(file_name) as csv_file:
 
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader_instance = csv.reader(csv_file, delimiter=',')
             line_count = 0
 
-            for row in csv_reader:
+            for row in csv_reader_instance:
                 if line_count == 0:
                     try:
                         section_id_index = row.index("section_id")
@@ -93,12 +92,13 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
                         header = row
                         line_count += 1
                         header_rows = 1
-                        table.append(header)
+                        table.append(row)
                         # Skip the rest of the loop... if there is an exception carry on and get the first row
                         continue
                     except ValueError:
-                        print(
-                            f' Warning: First row NOT header {row} default to section_id = col 1 and req_id col 2. First row of file {csv_file} should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}')
+                        message = f' Error: First row NOT header {row} default to section_id = col 1 and req_id col 2. First row of file {csv_file} should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
+                        print(message)
+                        raise SystemExit(message)
                         # Carry on and get the first row
 
                 print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
@@ -124,40 +124,50 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
     # find urls that may help find the tests for the requirement
 
 
-def compare_tables(file1, file2):
-    table1, key_fields1, header1 = read_table(file1)
-    table2, key_fields2, header2 = read_table(file2)
-    key_set1 = set(key_fields1.keys())
-    key_set2 = set(key_fields2.keys())
-    dif_2_1 = key_set2.difference(key_set1)
+def diff_tables(file1, file2):
+    table1, _key_fields1, header1 = read_table(file1)
+    table2, _key_fields2, header2 = read_table(file2)
+    key_set1 = set(_key_fields1.keys())
+    key_set2 = set(_key_fields2.keys())
+    intersection = key_set1.intersection(key_set2)
     dif_1_2 = key_set1.difference(key_set2)
-    inter_1_2 = key_set1.intersection(key_set2)
-
-    print(f"\n\nIntersection={len(inter_1_2)} 1=[{file1}] ^ 2=[{file2}] intersection = {inter_1_2}")
+    dif_2_1 = key_set2.difference(key_set1)
+    print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}] intersection = {intersection}")
     print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
     print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff= {dif_2_1}")
+    dif_1_2_dict:[str,set] = dict()
+    dif_2_1_dict:[str,set]  = dict()
+    for shared_key_to_table_index in intersection:
+        i1 = _key_fields1.get(shared_key_to_table_index)
+        i2 = _key_fields2.get(shared_key_to_table_index)
+        dif_1_2_at_i1 = set(table1[i1]).difference(set(table2[i2]))
+        if len(dif_1_2_at_i1) > 0 :  dif_1_2_dict[shared_key_to_table_index] = set(dif_1_2_at_i1)
+        dif_2_1_at_i2 = set(table2[i2]).difference(set(table1[i1]))
+        if len(dif_2_1_at_i2) > 0 :  dif_2_1_dict[shared_key_to_table_index] = set(dif_2_1_at_i2)
+    print(f"\n\nf1=[{file1}] ^ f2=[{file2}] Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}")
+    print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict)} diff=[{dif_1_2_dict}]")
+    print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict)} diff= [{dif_2_1_dict}]")
+    return dif_1_2, dif_2_1, intersection, dif_1_2_dict, dif_2_1_dict
 
-    return _dif_1_2, _dif_2_1, _inter_1_2
 
+def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file) -> ([[str]], [str]):
 
-def create_table_subset_for_release() -> ([[str]], [str]):
-    _file1_for_subset = "./input/new_recs_full_todo.csv"
-    _file2_for_subset = "data_files/cdd_generated_table.csv"
-    _dif_1_2_for_subset, _dif_2_1_for_subset, _inter_1_2_for_subset = compare_tables(_file1_for_subset,
-                                                                                     _file2_for_subset)
+    _dif_1_2, _dif_2_1, intersection, dif_1_2_dict, dif_2_1_dict = diff_tables(_file1_for_subset,
+                                                                               _file2_for_subset)
     table2_for_subset, key_fields2_for_subset, header2_for_subset = read_table(_file2_for_subset)
     table_out = list([[str]])
-    for key in _inter_1_2_for_subset:
+    for key in intersection:
         table_out.append(table2_for_subset[key_fields2_for_subset[key]])
 
-    write_table("data_files/ccd_generated_7_rows.csv", table_out, header2_for_subset)
+    write_table(output_file, table_out, header2_for_subset)
     return table_out, header2_for_subset
 
 
-if __name__ == '__main__':
+def merge_table_example():
+
     _file1 = "input/new_recs_remaining_todo.csv"
     _file2 = "data_files/created_output.csv"
-    _table1, _key_fields1, _header1, _table2, _key_fields2, _header2 = merge_tables(_file1, _file2)
+    _table1, _key_fields1, _header1, _table2, _key_fields2, _header2 = merge_tables(_file1 ,_file2)
     _key_set1 = set(_key_fields1.keys())
     _key_set2 = set(_key_fields2.keys())
     _dif_2_1 = _key_set2.difference(_key_set1)
@@ -167,3 +177,13 @@ if __name__ == '__main__':
     print(f"\n\nIntersection={len(_inter_1_2)} 1=[{_file1}] ^ 2=[{_file2}] _intersection = {_inter_1_2}")
     print(f"\nDifference 1st-2nd={len(_dif_1_2)} [{_file1}] - 2=[{_file2}]  diff={_dif_1_2}")
     print(f"\nDifference 2nd-1st={len(_dif_2_1)} [{_file2}] - 1=[{_file1}] diff= {_dif_2_1}")
+
+
+if __name__ == '__main__':
+    _file1_before_g_eddy = "data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.csv"
+    _file1_sachiyo_recent = "data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.csv"
+    _file2_after_g = "data_files/gpoor-updated-sept-11-2021.csv"
+    x_file1_for_subset = "./output/created_output.cvs"
+    x_file2_for_subset = "./input/new_recs_full_todo.csv"
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(_file1_sachiyo_recent, _file2_after_g,)
+    merge_tables(_file1_sachiyo_recent,"output/subset_table")
