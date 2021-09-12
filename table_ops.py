@@ -49,8 +49,8 @@ This will take table1 and update missing values in the specified key_to_index1 a
 
 
 def merge_tables(file1, file2):
-    table1, key_fields1, header1 = read_table(file1)
-    table2, key_fields2, header2 = read_table(file2)
+    table1, key_fields1, header1, duplicate_rows1 = read_table(file1)
+    table2, key_fields2, header2, duplicate_rows2 = read_table(file2)
     updated_table, missingkeys1, missingkeys1 = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
                                                              static_data_holder.merge_header)
     write_table("output/update_test.cvs", updated_table, static_data_holder.default_header)
@@ -66,7 +66,7 @@ def write_table(file_name: str, table: [[str]], header: [str]):
         csv_output_file.close()
 
 
-def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
+def read_table(file_name: str) -> [[[str]], dict[str, int], [str], dict[str, str]]:
     """],
 
     :rtype: {[[str]],dict,[]}
@@ -75,24 +75,25 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
     header = []
     section_id_index = 1
     req_id_index = 2
-    header_rows = 0
     key_fields: dict = dict()
+    duplicate_rows: [str, str] = dict()
+
     try:
         with open(file_name) as csv_file:
 
             csv_reader_instance = csv.reader(csv_file, delimiter=',')
-            line_count = 0
+            table_index = 0
 
             for row in csv_reader_instance:
-                if line_count == 0:
+                if table_index == 0:
                     try:
                         section_id_index = row.index("section_id")
                         req_id_index = row.index("req_id")
                         print(f'Found header for {file_name} names are {", ".join(row)}')
                         header = row
-                        line_count += 1
-                        header_rows = 1
                         table.append(row)
+                        table_index += 1
+
                         # Skip the rest of the loop... if there is an exception carry on and get the first row
                         continue
                     except ValueError:
@@ -102,21 +103,33 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
                         # Carry on and get the first row
 
                 print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
-                table.append(row)
-                table_index = line_count - header_rows
                 # Section,section_id,req_id
+                table.append(row)
                 section_id_value = table[table_index][section_id_index].rstrip('.')
                 req_id_value = table[table_index][req_id_index]
                 if len(req_id_value) > 0:
                     key_value = '{}/{}'.format(section_id_value, req_id_value)
                 elif len(section_id_value) > 0:
                     key_value = section_id_value
+
+                does_key_existing_index = key_fields.get(key_value)
+                if does_key_existing_index:
+                    print(
+                        f" Error duplicate key in table key [{key_value}] row = [{row}] index ={table_index} dup index ={does_key_existing_index}!")
+                    duplicate_rows[key_value] = f"{row}||{table[does_key_existing_index]}"
                 key_fields[key_value] = table_index
-                line_count += 1
-                print(f'Processed {line_count} lines {key_value} ')
-                print(f'For table {line_count}')
+
+                print(f'Processed {table_index} lines {key_value} ')
+                print(f'For table {table_index}')
+                table_index += 1
+
             print("End with file")
-            return table, key_fields, header
+            if len(duplicate_rows) > 0:
+                print(
+                    f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
+            else:
+                duplicate_rows = None
+            return table, key_fields, header, duplicate_rows
     except IOError as e:
         print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
         sys.exit(f"Fatal Error Failed to open file {file_name}")
@@ -125,8 +138,32 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str]]:
 
 
 def diff_tables(file1, file2):
-    table1, _key_fields1, header1 = read_table(file1)
-    table2, _key_fields2, header2 = read_table(file2)
+    table1, _key_fields1, header1, duplicate_rows1 = read_table(file1)
+    table2, _key_fields2, header2, duplicate_rows2 = read_table(file2)
+    if len(duplicate_rows1):
+        print(f"Error duplicates! 1 {file1} has {len(duplicate_rows1)} {duplicate_rows1} ")
+        for duplicate_key1 in duplicate_rows1:
+            lines = duplicate_rows1.get(duplicate_key1).split('||')
+            print("\n".join(lines))
+        print(f"t2 Error duplicates! 1 {file1} has {len(duplicate_rows1)} {duplicate_rows1} ")
+
+        for duplicate_key1 in duplicate_rows1:
+            lines = duplicate_rows1.get(duplicate_key1).split('||')
+            i = 0
+            for line in lines:
+                if line:
+                    i += 1
+                    print(f"{str(line).strip('][')}")
+    if len(duplicate_rows2):
+        for duplicate_key2 in duplicate_rows2:
+            lines = duplicate_rows1.get(duplicate_key2).split('||')
+            print(f"    key={duplicate_key2} ")
+            i = 0
+            for line in lines:
+                if line:
+                    i += 1
+                    print(f"        {i})={line} ")
+        print(f"Error duplicates! 2  {file2} has {len(duplicate_rows2)} {duplicate_rows2} ")
     key_set1 = set(_key_fields1.keys())
     key_set2 = set(_key_fields2.keys())
     intersection = key_set1.intersection(key_set2)
@@ -135,15 +172,21 @@ def diff_tables(file1, file2):
     print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}] intersection = {intersection}")
     print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
     print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff= {dif_2_1}")
-    dif_1_2_dict:[str,set] = dict()
-    dif_2_1_dict:[str,set]  = dict()
+    dif_1_2_dict: [str, set] = dict()
+    dif_2_1_dict: [str, set] = dict()
     for shared_key_to_table_index in intersection:
         i1 = _key_fields1.get(shared_key_to_table_index)
         i2 = _key_fields2.get(shared_key_to_table_index)
         dif_1_2_at_i1 = set(table1[i1]).difference(set(table2[i2]))
-        if len(dif_1_2_at_i1) > 0 :  dif_1_2_dict[shared_key_to_table_index] = set(dif_1_2_at_i1)
+        if len(dif_1_2_at_i1) > 0:  dif_1_2_dict[shared_key_to_table_index] = set(dif_1_2_at_i1)
         dif_2_1_at_i2 = set(table2[i2]).difference(set(table1[i1]))
-        if len(dif_2_1_at_i2) > 0 :  dif_2_1_dict[shared_key_to_table_index] = set(dif_2_1_at_i2)
+        if len(dif_2_1_at_i2) > 0:  dif_2_1_dict[shared_key_to_table_index] = set(dif_2_1_at_i2)
+
+    header_set1 = set(header1)
+    header_set2 = set(header2)
+
+    print(f'Header dif1-2 [{header_set1.difference(header_set2)}] Header dif1-2 [{header_set2.difference(header_set2)}]'
+          f'\nintersection=[{header_set1.intersection(header_set2)}]')
     print(f"\n\nf1=[{file1}] ^ f2=[{file2}] Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}")
     print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict)} diff=[{dif_1_2_dict}]")
     print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict)} diff= [{dif_2_1_dict}]")
@@ -151,10 +194,9 @@ def diff_tables(file1, file2):
 
 
 def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file) -> ([[str]], [str]):
-
     _dif_1_2, _dif_2_1, intersection, dif_1_2_dict, dif_2_1_dict = diff_tables(_file1_for_subset,
                                                                                _file2_for_subset)
-    table2_for_subset, key_fields2_for_subset, header2_for_subset = read_table(_file2_for_subset)
+    table2_for_subset, key_fields2_for_subset, header2_for_subset, duplicate_rows2 = read_table(_file2_for_subset)
     table_out = list([[str]])
     for key in intersection:
         table_out.append(table2_for_subset[key_fields2_for_subset[key]])
@@ -164,10 +206,9 @@ def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output
 
 
 def merge_table_example():
-
     _file1 = "input/new_recs_remaining_todo.csv"
     _file2 = "data_files/created_output.csv"
-    _table1, _key_fields1, _header1, _table2, _key_fields2, _header2 = merge_tables(_file1 ,_file2)
+    _table1, _key_fields1, _header1, _table2, _key_fields2, _header2 = merge_tables(_file1, _file2)
     _key_set1 = set(_key_fields1.keys())
     _key_set2 = set(_key_fields2.keys())
     _dif_2_1 = _key_set2.difference(_key_set1)
@@ -185,5 +226,6 @@ if __name__ == '__main__':
     _file2_after_g = "data_files/gpoor-updated-sept-11-2021.csv"
     x_file1_for_subset = "./output/created_output.cvs"
     x_file2_for_subset = "./input/new_recs_full_todo.csv"
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(_file1_sachiyo_recent, _file2_after_g,)
-    merge_tables(_file1_sachiyo_recent,"output/subset_table")
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(_file1_sachiyo_recent,
+                                                                                       _file1_before_g_eddy)
+# merge_tables(_file1_sachiyo_recent,"output/subset_table")
