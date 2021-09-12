@@ -11,12 +11,18 @@ wget -O ./input/cdd.html  https://source.android.com/compatibility/11/android-11
 #    git clone https://android.googlesource.com/platform/cts
 #    echo Checking out main.
 #    git checkout main
+# echo verify the tag https://source.android.com/compatibility/cts/downloads
+#    git describe --tags --abbrev=0
+#     android-cts-11.0_r5
+
 #fi
 ctsdir='.'#'/home/gpoor/cts-source'
 if [[ $clone_cts != "Y" ]]
   then
       read -p "Enter the path the the CTS root ( . for current dir )" ctsdir
+
 fi
+
 #
 # This script should be run in CTS source directory.
 echo this is what was entered $ctsdir

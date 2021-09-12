@@ -10,7 +10,9 @@ from rx import operators as ops
 import class_graph
 import persist
 
-CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
+#CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
+CTS_SOURCE_PARENT = "//home/gpoor/aosp_platform_source/"
+
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 
@@ -619,7 +621,8 @@ class SourceCrawlerReducer:
         test_files_to_aggregated_dependency_string: dict[str, str] = dict()
         # Have a test files and get all the words for it and it's dependencies
         file_list = list()
-
+        error_cnt =0
+        found_cnt = 0
         for test_file in at_test_files_to_methods:
             test_file = str(test_file)
             if test_file.endswith(".java"):
@@ -630,8 +633,15 @@ class SourceCrawlerReducer:
                     for i in range(len(dependencies)):
                         dependency: str = dependencies[i]
                         file_list.append(dependency)
-                test_files_to_aggregated_dependency_string[
-                    test_file.replace(CTS_SOURCE_PARENT, '')] = make_files_to_string(file_list)
+                try:
+                    test_files_to_aggregated_dependency_string[
+                        test_file.replace(CTS_SOURCE_PARENT, '')] = make_files_to_string(file_list)
+                    found_cnt+=1
+                except FileNotFoundError:
+                    error_cnt += 1
+                    print(f"Warning dependency {test_file} not found. error#={error_cnt} of {found_cnt}")
+                    pass
+        print(f"Dependencies found={len(test_files_to_aggregated_dependency_string)} not found. error#={error_cnt} of {found_cnt}")
 
         return test_files_to_aggregated_dependency_string
 
