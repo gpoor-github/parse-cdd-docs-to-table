@@ -3,14 +3,11 @@ import random
 import re
 import time
 
-import rx
-from table_ops import read_table
-from rx import operators as ops
-
 import class_graph
 import persist
+from table_ops import read_table
 
-#CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
+# CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
 CTS_SOURCE_PARENT = "//home/gpoor/aosp_platform_source/"
 
 CTS_SOURCE_NAME = 'cts'
@@ -180,23 +177,15 @@ def handle_java_files_data(key_str):
                 file_name_relative = str(file_name).replace(CTS_SOURCE_PARENT, "")
                 a_single_test_file_name = file_name_relative
                 found_methods_string = at_test_files_to_methods.get(file_name_relative)
-                if get_random_method_name(found_methods_string):
-                    a_found_methods_string = found_methods_string
-                    a_method = get_random_method_name(found_methods_string)
+                a_method_candidate = get_random_method_name(found_methods_string)
+                if a_method_candidate:
                     matched = keys_to_files_dict.get(file_name)
                     current_matches = len(matched)
                     if current_matches >= max_matches:
                         a_single_test_file_name = file_name_relative
+                        a_method =a_method_candidate
                         max_matches = current_matches
-                if max_matches > 1:
-                    found_methods_string = at_test_files_to_methods.get(file_name_relative)
-                    print(f'wow got matches  {max_matches} words [{matched}] {a_single_test_file_name}')
-                    if get_random_method_name(found_methods_string):
-                        # A better single file name :) if it has a method!
-                        a_found_methods_string = found_methods_string
-                        a_method = get_random_method_name(found_methods_string)
-                        a_single_test_file_name = file_name_relative
-                        matched = keys_to_files_dict.get(file_name)
+
 
                 class_name_split_src = a_single_test_file_name.split('/src/')
                 # Module
@@ -226,6 +215,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
     key_to_full_requirement_text_local = dict()
     key_to_java_objects_local = dict()
     key_to_urls_local = dict()
+    section_to_section_data = dict()
     # Should do key_to_cdd_section = dict()
     # keys_not_found: list = []
     total_requirement_count = 0
@@ -239,9 +229,11 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
         cdd_section_id_search_results = re.search(section_id_re_str, section)
         if not cdd_section_id_search_results:
             continue
+
         cdd_section_id = cdd_section_id_search_results[0]
         cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
         cdd_section_id = cdd_section_id.replace('_', '.')
+        section_to_section_data[cdd_section_id] = str(cdd_section_id_search_results[0]).replace("\"", "")
         if '13' == cdd_section_id:
             # section 13 is "Contact us" and has characters that cause issues at lest for git
             print(f"Warning skipping section 13 {section}")
@@ -274,7 +266,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
             java_objects_temp.add(key_split[1])
         key_to_java_objects_local[key] = java_objects_temp
 
-    return key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string
+    return key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
@@ -415,7 +407,7 @@ def search_files_as_strings_for_words(key: str):
             if row[col_idx]:
                 manual_search_terms = set(row[col_idx].split(' '))
                 search_terms.update(manual_search_terms)
-    except:
+    except ValueError:
         print("warning no search manual search terms")
     pass
 
@@ -621,7 +613,7 @@ class SourceCrawlerReducer:
         test_files_to_aggregated_dependency_string: dict[str, str] = dict()
         # Have a test files and get all the words for it and it's dependencies
         file_list = list()
-        error_cnt =0
+        error_cnt = 0
         found_cnt = 0
         for test_file in at_test_files_to_methods:
             test_file = str(test_file)
@@ -636,35 +628,27 @@ class SourceCrawlerReducer:
                 try:
                     test_files_to_aggregated_dependency_string[
                         test_file.replace(CTS_SOURCE_PARENT, '')] = make_files_to_string(file_list)
-                    found_cnt+=1
+                    found_cnt += 1
                 except FileNotFoundError:
                     error_cnt += 1
                     print(f"Warning dependency {test_file} not found. error#={error_cnt} of {found_cnt}")
                     pass
-        print(f"Dependencies found={len(test_files_to_aggregated_dependency_string)} not found. error#={error_cnt} of {found_cnt}")
+        print(
+            f"Dependencies found={len(test_files_to_aggregated_dependency_string)} not found. error#={error_cnt} of {found_cnt}")
 
         return test_files_to_aggregated_dependency_string
-
-
-def file_transform_to_full_path(value):
-    tvalue: [str, [], []] = value
-    return rx.from_list(tvalue[2])
 
 
 def convert_relative_filekey(local_file: str):
     return '\"{}\"'.format(local_file.replace('cts/', '$PROJECT_DIR$/', 1))
 
 
-cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
-
-java_files = cts_files.pipe(
-    ops.map(lambda value: file_transform_to_full_path(value))
-)
-#global_input_file_name = "input/2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv"
+# global_input_file_name = "input/2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv"
 global_input_file_name = "input/new_recs_remaining_todo.csv"
 
-global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows= read_table(global_input_file_name)
-key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string = parse_cdd_html_to_requirements()
+global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows = read_table(
+    global_input_file_name)
+key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements()
 
 #    class DataSources:
 files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
@@ -673,27 +657,7 @@ at_test_files_to_methods = class_graph.get_cached_grep_of_at_test_files()
 files_to_words, method_to_words, files_to_method_calls = SourceCrawlerReducer().get_cached_crawler_data()
 testfile_dependencies_to_words = get_file_dependencies()
 
-rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
-rx_files_to_words = rx.from_iterable(sorted(files_to_words.items(), key=lambda x: x[1], reverse=True))
-rx_method_to_words = rx.from_iterable(sorted(method_to_words.items(), key=lambda x: x[1], reverse=True))
-rx_files_to_method_calls = rx.from_iterable(sorted(files_to_method_calls.items(), key=lambda x: x[1], reverse=True))
-rx_at_test_files_to_methods = rx.from_iterable(
-    sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
-
 test_files_to_strings = SourceCrawlerReducer.make_test_file_to_dependency_strings()
-
-
-# rx_search_results = rx.pip(ops.)
-
-def my_print(v, f: str = '{}'):
-    print(f.format(v))
-
-
-# if __name__ == '__main__':
-#     start = time.perf_counter()
-#     rx_files_to_words.subscribe(lambda v: my_print(v, "f to w = {}"))
-#     end = time.perf_counter()
-#     print(f'Took time {end - start:0.4f}sec ')
 
 if __name__ == '__main__':
     start = time.perf_counter()

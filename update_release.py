@@ -4,7 +4,8 @@ import static_data_holder
 import table_ops
 
 
-def update_release_table_with_changes(original_sheet_file_name: str, updated_output_file_name:str="output/updated_table.csv"):
+def update_release_table_with_changes(original_sheet_file_name: str,
+                                      updated_output_file_name: str = "output/updated_table.csv"):
     input_table, input_table_keys_to_index, input_header, duplicate_rows = table_ops.read_table(
         original_sheet_file_name)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_input_header, values_to_use_duplicate_rows = table_ops.read_table(
@@ -24,8 +25,7 @@ def update_release_table_with_changes(original_sheet_file_name: str, updated_out
         f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
 
 
-def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, updated_output_file_name:str):
-
+def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, updated_output_file_name: str):
     full_before_gvp_sheet_table, full_before_gvp_sheet_table_keys_to_index, full_before_gvp_sheet_header, duplicate_rows1 = table_ops.read_table(
         original_sheet_file_name)
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # original_sheet_file_name = "sachiyoAugust 23, 2_49 PM - CDD 11.csv"
     original_sheet_file_name = "data_files/version_up_there_sorted.csv"
     updated_output_file_name = 'output/updated_table.csv'
-    update_release_table_with_changes(original_sheet_file_name,updated_output_file_name)
+    update_release_table_with_changes(original_sheet_file_name, updated_output_file_name)
     table_ops.diff_tables(original_sheet_file_name, updated_output_file_name)
 
     end = time.perf_counter()

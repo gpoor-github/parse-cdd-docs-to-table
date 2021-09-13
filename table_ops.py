@@ -60,8 +60,22 @@ def merge_tables(file1, file2):
 def write_table(file_name: str, table: [[str]], header: [str]):
     with open(file_name, 'w', newline='') as csv_output_file:
         table_writer = csv.writer(csv_output_file)
-        if header:
-            table_writer.writerow(header)
+        if table[0]:
+            try:
+                section_id_index = table[0].index("section_id")
+                req_id_index = table[0].index("req_id")
+                print(f'write_table Found header for {file_name} names are {", ".join(table[0])}')
+                if header:
+                    print(f'Warning  overwriting header with {", ".join(header)}')
+                    table[0] = header
+            except ValueError:
+                if header:
+                    table_writer.writerow(header)
+                else:
+                    print(f"Error Table without header being written! {csv_output_file}")
+                    raise SystemExit(f"Error Table without header being written! {csv_output_file}")
+                pass
+
         table_writer.writerows(table)
         csv_output_file.close()
 
@@ -190,14 +204,16 @@ def diff_tables(file1, file2):
 
     header_set1 = set(header1)
     header_set2 = set(header2)
-    if (len(header_set1.difference(header_set2)) + len(header_set2.difference(header_set1)) + len(dif_1_2) + len(dif_2_1)) == 0:
+    if (len(header_set1.difference(header_set2)) + len(header_set2.difference(header_set1)) + len(dif_1_2) + len(
+            dif_2_1)) == 0:
         print(f"No Different keys or headers f1=[{file1}]  f2=[{file2}]\n")
     else:
         print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}] intersection = {intersection}")
         print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
         print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff={dif_2_1}")
-        print(f'Header dif1-2 [{header_set1.difference(header_set2)}] Header dif1-2 [{header_set2.difference(header_set1)}]'
-              f'\nintersection=[{header_set1.intersection(header_set2)}]')
+        print(
+            f'Header dif1-2 [{header_set1.difference(header_set2)}] Header dif1-2 [{header_set2.difference(header_set1)}]'
+            f'\nintersection=[{header_set1.intersection(header_set2)}]')
         print(f"\n\nf1=[{file1}] ^ f2=[{file2}] Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}")
         print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict)} diff=[{dif_1_2_dict}]")
         print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict)} diff= [{dif_2_1_dict}]")
@@ -242,5 +258,5 @@ if __name__ == '__main__':
     x_file2_for_subset = "./input/new_recs_full_todo.csv"
     release = "output/release_updated_table2.csv"
 
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(latest_sheet,   latest_sheet)
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(latest_sheet, latest_sheet)
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")

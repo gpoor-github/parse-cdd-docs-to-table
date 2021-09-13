@@ -94,8 +94,8 @@ def get_cts_root(test_annotated_file_name_absolute_path):
 
 def parse_(line_method):
     method_result = re_method.search(line_method)
-    class_def = ""
-    method = ""
+    class_def = str()
+    method = str()
     if method_result:
         method = method_result.group(0)
     else:

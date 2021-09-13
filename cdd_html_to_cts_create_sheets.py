@@ -44,7 +44,7 @@ def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00')
         else:
             requirement_as_number = f'{requirement_as_number}0{requirement_splits[k]}'
 
-    return f'"{section_as_number}.{requirement_as_number}"'
+    return f'{section_as_number}.{requirement_as_number}'
 
 
 # Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,
@@ -61,6 +61,9 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     print(f"keys from  {table_row_index} [{key_str}]")
     key_str = key_str.rstrip(".").strip(' ')
     key_split = key_str.split('/')
+    table[table_row_index][static_data_holder.new_header.index('Section')] = data_sources.section_to_data.get(
+        key_split[0])
+
     table[table_row_index][static_data_holder.new_header.index('section_id')] = key_split[0]
 
     table[table_row_index][static_data_holder.new_header.index('full_key')] = key_str
@@ -70,7 +73,8 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
 
     if len(key_split) > 1:
         table[table_row_index][static_data_holder.new_header.index('req_id')] = key_split[1]
-        table[table_row_index][static_data_holder.new_header.index('key_as_number')] = convert_version_to_number(key_split[0], key_split[1])
+        table[table_row_index][static_data_holder.new_header.index('key_as_number')] = convert_version_to_number(
+            key_split[0], key_split[1])
         table[table_row_index][static_data_holder.new_header.index('urls')] = key_to_urls.get(key_str)
         table[table_row_index][static_data_holder.new_header.index('search_terms')] = key_to_java_objects.get(key_str)
 
@@ -92,7 +96,8 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
             table[table_row_index][static_data_holder.new_header.index('methods_string')] = a_found_methods_string
 
     else:
-        table[table_row_index][static_data_holder.new_header.index('key_as_number')] = convert_version_to_number(key_split[0])
+        table[table_row_index][static_data_holder.new_header.index('key_as_number')] = convert_version_to_number(
+            key_split[0])
         print(f"Only a major key? {key_str}")
 
 
@@ -100,7 +105,7 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
     # if targets == 'new' or targets == 'all':
     # Write New Table
     table_for_sheet, keys_to_table_indexes = create_populated_table(data_sources.global_input_table_keys_to_index)
-    write_table('output/created_output.csv', table_for_sheet, None)
+    write_table('output/created_output.csv', table_for_sheet, static_data_holder.new_header)
     # else:
     #     table_for_sheet, keys_to_table_indexes = create_populated_table(input_table, keys_from_input_table, input_header )  # Just a smaller table
     if targets == 'append' or targets == 'all':
@@ -108,7 +113,8 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
         updated_table, key_key1, key_key2 = update_table(data_sources.global_input_table,
                                                          data_sources.global_input_table_keys_to_index,
                                                          data_sources.global_input_header, table_for_sheet,
-                                                         keys_to_table_indexes, static_data_holder.new_header, static_data_holder.merge_header)
+                                                         keys_to_table_indexes, static_data_holder.new_header,
+                                                         static_data_holder.merge_header)
         write_table('output/updated_table.csv', updated_table, data_sources.global_input_header)
 
         print(
