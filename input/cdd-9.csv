@@ -1,0 +1,1252 @@
+Section ,id,req_id,status,class_def,method,module,Comment,Bug
+2.2.1 Hardware(HandHeld),7.1.1,H-0-1,Test Available,android.dpi.cts.ConfgurationTest,testScreenConfigurateion,CtsDpiTestCases,,
+2.2.1 Hardware(HandHeld),7.1.4.5,H-1-1,Test Available,android.cts.OpenGlEsVersionTest,testRequiredEglExtensionsForHdrCapableDisplay,CtsOpenGLTestCases,,http://b/120571778
+2.2.1 Hardware(HandHeld),7.2.1,H-0-1,Test Available,android.inputmethodservice.cts.hostside.InputMethodServiceLifeCycleTest,testSwitchIme(),CtsInputMethodServiceHostTestCases,,
+2.2.1 Hardware(HandHeld),7.2.3,H-0-1,Not testable,,,,,http://b/116246255
+2.2.1 Hardware(HandHeld),7.2.3,H-0-2,Test Available,android.view.cts.LongPressBackTest,testAppIsNotDismissed,CtsViewTestCases,,
+2.2.1 Hardware(HandHeld),7.2.4,H-0-1,Not testable,,,,"Although touchscreen feature is defined, handheld feature
+is not exposed so no way to test Ref: SystemFeaturesTest",
+2.2.1 Hardware(HandHeld),7.3.1,H-1-1,Test Available,android.hardware.cts.SingleSensorTests,testAccelerometer_100hz,CtsSensorTestCases,,
+2.2.1 Hardware(HandHeld),7.3.4,H-1-1,Test Available,android.hardware.cts.SingleSensorTests,testGyroscope_100hz,CtsSensorTestCases,,
+2.2.1 Hardware(HandHeld),7.4.7,H-1-1,Test Available,com.android.cts.net.hostside.DataSaverModeTest,public void.*,CtsHostSideNetworkTests,,
+2.2.1 Hardware(HandHeld),7.6.1,H-0-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinSharedDataPartitionSize,CtsHardwareTestCases,In CDD (8.1) id--> 7.6.1/H-10-1,
+2.2.1 Hardware(HandHeld),7.6.1,H-0-2,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-1-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-1-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-2-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-3-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-4-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-5-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-6-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-7-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-8-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory(),CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.6.1,H-9-1,Test Available,android.app.cts.SystemFeaturesTest,testLowRamFeature(),CtsAppTestCases,,
+2.2.1 Hardware(HandHeld),7.6.2,H-0-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinSharedDataPartitionSize,CtsHardwareTestCases,,
+2.2.1 Hardware(HandHeld),7.8.1,H-0-1,Not testable,,,,No API to expose hand-held feature,
+2.2.1 Hardware(HandHeld),7.8.2,H-0-1,Not testable,,,,No API to expose handheld feature,
+2.2.1 Hardware(HandHeld),7.9.1,H-1-1,Test Available,android.vr.cts.VrFeaturesTest,testLackDeprecatedVrModeFeatures,CtsVrTestCases,,
+2.2.1 Hardware(HandHeld),7.9.1,H-1-2,Test Available,com.android.cts.verifier.vr.VrListenerVerifierActivity,com.android.cts.verifier.vr.VrListenerVerifierActivity.*,CtsVerifierVrTestCases,,
+2.2.2 MultiMedia-HandHeld,5.1.1,H-0-1,Test Available,android.media.cts.MediaCodecListTest,"testRequiredMediaCodecList()
+testAMRNBEncoders()",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.1.1,H-0-2,Test Available,android.media.cts.MediaCodecListTest,"testRequiredMediaCodecList()
+testAMRWBEncoders()",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.1.1,H-0-3,Test Available,android.media.cts.MediaCodecListTest,"testRequiredMediaCodecList()
+testAACEncoders()",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.1.1,H-0-4,Test Available,android.media.cts.MediaCodecListTest,"testRequiredMediaCodecList()
+testAACEncoders()",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.1.1,H-0-5,Test Available,android.media.cts.MediaCodecListTest,"testRequiredMediaCodecList()
+testAACEncoders()",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.1.2,H-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.1.2,H-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.2,H-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.2,H-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.3,H-0-1,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testCodecBasicH264",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.3,H-0-2,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testCodecBasicHEVC",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.3,H-0-3,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testCodecBasicMpeg4",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.3,H-0-4,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testCodecBasicVP8",CtsMediaTestCases,,
+2.2.2 MultiMedia-HandHeld,5.3,H-0-5,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testCodecBasicVP9",CtsMediaTestCases,,
+Software-HandHeld,3.2.3.1,H-0-1,Test Available,com.android.cts.documentclient,"testOpenSimple
+testCreateNew
+testGetContent
+testTransferDocument
+testFindDocumentPathInScopedAccess",CtsAppSecurityHostTestCases,,
+Software-HandHeld,3.4.1,H-0-1,Test Available,android.webkit.cts,.*,CtsWebkitTestCases,,
+Software-HandHeld,3.4.2,H-0-1,Not testable,,,,,http://b/110346722
+Software-HandHeld,3.8.3,H-0-1,Test Available,android.app.cts.NotificationManagerTest,testNotify(),CtsAppTestCases,,
+Software-HandHeld,3.8.3,H-0-2,Test Available,android.app.cts.NotificationManagerTest,testMediaStyle(),CtsAppTestCases,,
+Software-HandHeld,3.8.3,H-0-3,Test Available,com.android.notification.functional.HeadsUpNotificationsTests,com.android.notification.functional.HeadsUpNotificationsTests.*,CtsNotificationTestCases,,
+Software-HandHeld,3.8.3,H-0-4,Not testable,,,,Requires manual UI validation,http://b/123031181
+Software-HandHeld,3.8.3,H-0-5,Test Available,android.app.cts.RemoteInputTest," testRemoteInputBuilder_setChoicesOnly
+",CtsAppTestCases,"This is testing the setChoicesApi and not necessarily if its
+displayed
+",
+Software-HandHeld,3.8.10,H-1-1,Not testable,,,,,http://b/77817822
+Software-HandHeld,3.9,H-1-1,Test Available,"com.android.cts.verifier.managedprovisoning.*
+com.android.cts.deviceowner.*
+com.android.cts.devicepolicy.*",.*,CtsDevicePolicyManagerTestCases,,
+Software-HandHeld,3.9,H-1-2,Test Available,com.android.cts.devicepolicy.*,public void *,CtsDevicePolicyManagerTestCases,Device policy test cases are gated by this flag,
+Software-HandHeld,3.10.,H-0-1,Test Available,android.accessibilityservice.cts.*,public void*,CtsAccessibilityTestCases,,
+Software-HandHeld,3.11,H-0-1,Test Available,"android.speech.tts.cts.TextToSpeechServiceTest
+android.speech.tts.cts.TextToSpeechTest","assertContainsEngine()
+testGetEnginesIncludesMock()",CtsSpeechTestCases,,
+Software-HandHeld,3.15,H-1-1,Test Available,com.android.cts.verifier.companion.CompanionDeviceTestActivity,public void.*,CtsVerifierCompanionDeviceTestCase,,
+2.2.4 Performance And Power-HandHeld,8.1,H-0-1,Test Available,com.android.server.cts.GraphicsStatsValidationTest.java,testBasicDrawFrame(),CtsIncidentHostTestCases,,
+2.2.4 Performance And Power-HandHeld,8.1,H-0-2,Test Available,android.ui.cts.ScrollingTest,testFullScrolling(),CtsUiDeviceTestCases,,
+2.2.4 Performance And Power-HandHeld,8.1,H-0-3,Test Available,android.taskswitching.control.cts.TaskSwitchingDeviceTest.java,testMeasureTaskSwitching(),CtsUiHostTestCases,,
+2.2.4 Performance And Power-HandHeld,8.2,H-0-1,Test Available,android.filesystem.cts.SequentialRWTest,testSingleSequentialWrite(),CtsFileSystemTestCases,,
+2.2.4 Performance And Power-HandHeld,8.2,H-0-2,Test Available,android.filesystem.cts.RandomRWTest,testRandomUpdate(),CtsFileSystemTestCases,,
+2.2.4 Performance And Power-HandHeld,8.2,H-0-3,Test Available,android.filesystem.cts.SequentialRWTest,testSingleSequentialRead(),CtsFileSystemTestCases,,
+2.2.4 Performance And Power-HandHeld,8.2,H-0-4,Test Available,android.filesystem.cts.RandomRWTest,testRandomRead(),CtsFileSystemTestCases,,
+2.2.4 Performance And Power-HandHeld,8.3,H-1-1,Manually Testable Missing Test,,,,Can be verified manually with a CTS-V test,http://b/123045487
+2.2.4 Performance And Power-HandHeld,8.3,H-1-2,Test Available,android.systemintents.ctsTestSystemIntents,testSystemIntents,CtsSystemIntentTestCases,,
+2.2.4 Performance And Power-HandHeld,8.4,H-0-1,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+2.2.4 Performance And Power-HandHeld,8.4,H-0-2,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+2.2.4 Performance And Power-HandHeld,8.4,H-0-3,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testThreadCupTimeNanos(),CtsDumpSysHostTestCases,,
+2.2.4 Performance And Power-HandHeld,8.4,H-0-4,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+2.2.4 Performance And Power-HandHeld,8.4,H-1-1,Test Available,android.content.cts.AvailableIntentsTest,testPowerUsageSummarySettings,CtsContentTestCases,,
+2.2.5 Security Model-HandHeld,9.1,H-0-1,Test Available,android.content.cts.AvailableIntentsTest,testUsageAccessSettings,CtsContentTestCases,,http://b/74607925
+2.2.5 Security Model-HandHeld,9.11,H-1-1,Not testable,,,,,http://b/124075563
+2.2.5 Security Model-HandHeld,9.11,H-1-2,Not testable,,,,,http://b/124075563
+2.3.1 Hardware-Television,7.2.2,T-0-1,Test Available,android.hardware.input.cts.tests*,android.hardware.input.cts.tests,CtsHardwareTestCases,,
+2.3.1 Hardware-Television,7.2.3,T-0-1,Not testable,,,,,http://b/116246255
+2.3.1 Hardware-Television,7.2.3,T-0-2,Test Available,android.view.cts.LongPressBackTest,testAppIsNotDismissed(),CtsViewTestCases,,
+2.3.1 Hardware-Television,7.2.6.1,T-0-1,Test Available,android.app.cts.SystemFeaturesTest,testGamepadFeature(),CtsAppTestCases,,http://b/129089802
+2.3.1 Hardware-Television,7.3.4,T-1-1,Test Available,android.hardware.sensor.cts.SingleSensorTests,testGyroscope_100hz,CtsSensorTestCases,,
+2.3.1 Hardware-Television,7.4.3,T-0-1,Test Available,"android.bluetooth.cts.BasicAdapterTest
+android.bluetooth.cts.BluetoothLeScanTest
+android.bluetooth.cts.ScanRecordTest",.*,CtsBluetoothTestCases,,
+2.3.1 Hardware-Television,7.5.3,T-1-1,Not testable,,,,,
+2.3.1 Hardware-Television,7.6.1,T-1-1,Test Available,android.hardware.cts.LowRamDeviceTest,assertMinMemoryMb,CtsHardwareTestCases,,
+2.3.1 Hardware-Television,7.6.1,T-2-1,Test Available,android.hardware.cts.LowRamDeviceTest,asserMinMemoryMb,CtsHardwareTestCases,,
+2.3.1 Hardware-Television,7.8.2,T-0-1,Test Available,android.app.cts.SystemFeaturesTest,testAudioFeature,CtsAppTestCases,,http://b/110952696
+2.3.2 MultiMedia-Television,5.1,T-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.1,T-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.1,T-0-3,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.2,T-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.2,T-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.3.3,T-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,Wrong CDD numbering,http://b/135482497
+2.3.2 MultiMedia-Television,5.3.4,T-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,Wrong CDD numbering,
+2.3.2 MultiMedia-Television,5.3.5,T-0-3,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,Wrong CDD numbering,
+2.3.2 MultiMedia-Television,5.3.6,T-0-4,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,Wrong CDD numbering,
+2.3.2 MultiMedia-Television,5.3.7,T-0-5,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,Wrong CDD numbering,
+2.3.2 MultiMedia-Television,5.3.4.4,T-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testH264DecoderProfileAndLevel(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.3.4.4,T-1-2,Test Available,android.media.cts.DecoderTest,testH264Decode60fps1920x1080tv(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.3.4.4,T-1-3,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testH264DecoderProfileAndLevel(),CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.3.5.4,T-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testH265DecoderProfileAndLevel,CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.3.5.5,T-2-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testH265DecoderProfileAndLevel,CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.3.6.4,T-1-1,Test Available,android.media.cts.DecoderTest,testVp8Decode60fps1920x1080,CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.3.7.4,T-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testVp9DecoderCapabilitiesOnTv,CtsMediaTestCases,,
+,5.3.7.5,T-2-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testVp9DecoderCapabilitiesOnTv,CtsMediaTestCases,,
+2.3.2 MultiMedia-Television,5.5.3,T-0-1,Not testable,,,,,http://b/77143742
+2.3.2 MultiMedia-Television,5.8,T-0-1,Not testable,,,,,http://b/77143742
+2.3.2 MultiMedia-Television,5.8,T-1-1,Not testable,,,,,http://b/77143742
+2.3.2 MultiMedia-Television,5.8,T-2-1,Not testable,,,,,http://b/77143742
+2.3.3 Software-Television,3.4.1,T-0-1,Test Available,android.webkit.cts.*,public void. *,CtsWebkitTestCases,,
+2.3.3 Software-Television,3.8.10,T-1-1,Not testable,,,,,http://b/77143742
+2.3.3 Software-Television,3.10.,T-0-1,Test Available,android.accessibilityservice.cts.*,public void.*,CtsAccessibilityTestCases,,
+2.3.3 Software-Television,3.11,T-1-1,Test Available,"android.speech.tts.cts.TextToSpeechServiceTest
+android.speech.tts.cts.TextToSpeechTest","assertContainsEngine()
+testGetEnginesIncludesMock()",CtsSpeechTestCases,,
+2.3.3 Software-Television,3.12,T-0-1,Test Available,android.media.tv.cts.*,android.media.tv.cts.*,CtsTvTestCases,,
+2.3.4 Performance And Power-Television,8.1,T-0-1,Test Available,com.android.server.cts.GraphicsStatsValidationTest,testBasicDrawFrame(),CtsIncidentHostTestCases,,
+2.3.4 Performance And Power-Television,8.2,T-0-1,Test Available,android.filesystem.cts.SequentialRWTest,testSingleSequentialWrite(),CtsFileSystemTestCases,,
+2.3.4 Performance And Power-Television,8.2,T-0-2,Test Available,android.filesystem.cts.RandomRWTest,testRandomUpdate(),CtsFileSystemTestCases,,
+2.3.4 Performance And Power-Television,8.2,T-0-3,Test Available,android.filesystem.cts.SequentialRWTest,testSingleSequentialRead(),CtsFileSystemTestCases,,
+2.3.4 Performance And Power-Television,8.2,T-0-4,Test Available,android.filesystem.cts.RandomRWTest,testRandomRead(),CtsFileSystemTestCases,,
+2.3.4 Performance And Power-Television,8.3,T-1-1,Manually Testable Missing Test,,,,,http://b/123045487
+2.3.4 Performance And Power-Television,8.3,T-1-2,Test Available,android.systemintents.cts.TestSystemIntents,testSystemInents,CtsSystemIntentTestCases,,http://b/76915946
+2.3.4 Performance And Power-Television,8.4,T-0-1,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+2.3.4 Performance And Power-Television,8.4,T-0-2,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+2.3.4 Performance And Power-Television,8.4,T-0-3,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testThreadCupTimeNanos(),CtsDumpSysHostTestCases,,
+2.3.4 Performance And Power-Television,8.4,T-0-4,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+Hardware-Watch,7.1.1.1,W-0-1,Test Available,android.dpi.cts.ConfigurationTest,testScreenConfiguration(),CtsDpiTestCases,,
+,7.4.3,W-0-1,Test Available,"android.bluetooth.cts.BasicAdapterTest
+android.bluetooth.cts.BluetoothLeScanTest
+android.bluetooth.cts.ScanRecordTest",public void. *,CtsBluetoothTestCases,,
+,7.6.1,W-0-1,Not testable,,,,,http://b/110960466
+,7.8.1,W-0-1,Not testable,,,,"Consider changing the language Must include a microphone
+and declare the android.hardware.microphone feature",
+2.4.3 Software-Watch,3,W-0-1,Not testable,,,,,
+,3,W-0-2,Test Available,android.app.cts.UiModeManagerTest,testUiMode(),CtsAppTestCases,,
+,3.10.,W-1-1,Test Available,android.accessibilityservice.cts.AccessibilityEndToEndTest,public void .*,CtsAccessibilityServiceTestCases,,
+,3.11,W-0-1,Test Available,"android.speech.tts.cts.TextToSpeechServiceTest
+android.speech.tts.cts.TextToSpeechTest",public void .*,CtsSpeechTestCases,,
+,8.4,W-0-1,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,public void .*,CtsDumpsysTestCases,,
+,8.4,W-0-2,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,public void .*,CtsDumpsysTestCases,,
+,8.4,W-0-3,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,public void .*,CtsDumpsysTestCases,,
+,8.4,W-0-4,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+2.5.1 Hardware-Automotive,7.1.1.1,A-0-1,Test Available,android.dpi.cts.ConfigurationTests,testScreenConfiguration,CtsDpiTestCases,,http://b/119305587
+,7.1.1.1,A-0-2,Test Available,android.dpi.cts.ConfigurationTests,testAutomotiveMinimumScreenSize,CtsDpiTestCases,,http://b/77152494
+,7.2.3,A-0-1,Not testable,,,,,http://b/77152494
+,7.2.3,A-0-2,Test Available,android.view.cts.LongPressBackTest,testAppIsNotDismissed(),CtsViewTestCases,,
+,7.3.1,A-1-1,Test Available,android.hardware.cts.SingleSensorTests,testAccelerometer_100hz(),CtsSensorTestCases,,
+,7.3.1,A-1-2,Test Missing,,,,,http://b/77152494
+,7.3.3,A-1-1,Other (see comment),,,,From the bug looks like this is being downgraded,http://b/77152494
+,7.3.4,A-1-1,Test Available,android.hardware.cts.SingleSensorTests,testGyroscope_100hz(),CtsSensorTestCases,,
+,7.3.11,A-0-1,Test Available,android.car.cts.CarSensorManagerTest,testRequiredSensorForDrivingState,CtsCarTestCases,,http://b/77152494
+,7.3.11.2,A-0-1,Test Available,android.car.cts.CarSensorManagerTest,testRequiredSensorForDrivingState,CtsCarTestCases,,http://b/77152494
+,7.3.11.2,A-0-2,Test Missing,,,,,http://b/124132292
+,7.3.11.4,A-0-1,Test Available,android.car.cts.CarSensorManagerTest,testRequiredSensorsForDrivingState,CtsCarTestCases,,
+,7.3.11.5,A-0-1,Test Available,android.car.cts.CarSensorManagerTest,testMustSupportParkingBrake(),CtsCarTestCases,,
+,7.4.3,A-0-1,Test Available,"android.bluetooth.cts.BasicAdapterTest
+android.bluetooth.cts.BluetoothLeScanTest
+android.bluetooth.cts.ScanRecordTest",public void.*,CtsBluetoothTestCases,,
+,7.4.3,A-0-2,Test Missing,,,,,http://b/77152494
+,7.6.1,A-0-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumDataPartitionSize,CtsHardwareTestCases,,
+,7.6.1,A-1-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.6.1,A-1-2,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.6.1,A-1-3,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.6.1,A-1-4,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.6.1,A-2-1,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.6.1,A-2-2,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.6.1,A-2-3,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.6.1,A-2-4,Test Available,android.hardware.cts.LowRamDeviceTest,testMinimumMemory,CtsHardwareTestCases,,
+,7.8.1,A-0-1,Not testable,,,,"Change language to must declare android.h
+ardware.microphone and add a test to System
+FeaturesTest",
+,7.8.2,A-0-2,Test Available,android.app.cts.SystemFeaturesTest,testAudioOutputFeature(),CtsAppTestCases,,http://b/77152494
+2.5.2 MultiMedia (Automotive),5.1,A-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.1,A-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.1,A-0-3,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.2,A-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.2,A-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.3,A-0-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.3,A-0-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.3,A-0-3,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.3,A-0-4,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+2.5.3 Software Automotive,3,A-0-1,Not testable,,,,The feature cannot be tested standalone,
+,3,A-0-3,Test Available,android.app.cts.UiModeManagerTest,testUiMode(),CtsAppTestCases,,
+,3.4.1,A-0-1,Test Available,android.webkit.cts.*,public void.*,CtsWebkitTestCases,,
+,3.8.3,A-0-1,Test Available,,,,Notification.CarExtender APIs are tested. ,http://b/77152494
+,3.8.4,A-1-1,Not testable,,,,,http://b/77152494
+,3.8.4,A-1-1,Not testable,,,,,
+,3.14,A-0-1,Not testable,,,,"Media APis are tested by most CTS/CTS-V and automotive
+tests",
+2.5.4 Performance and Power-Automotive,8.3,A-1-1,Manually Testable Missing Test,,,,,http://b/123045487
+,8.3,A-1-2,Test Missing,,,,,http://b/123045487
+,8.2,A-0-1,Test Missing,,,,,http://b/120863368
+,8.4,A-0-1,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+,8.4,A-0-2,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+,8.4,A-0-3,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testThreadCupTimeNanos(),CtsDumpSysHostTestCases,,
+,8.4,A-0-4,Test Available,android.dumpsys.cts.BatteryStatsDumpSysTest,testBatteryStatsOutput(),CtsDumpSysHostTestCases,,
+2.5.5 Security Model Automotive,9.5,A-1-1,Other (see comment),,,,This requirement is getting an oeverhaul,http://b/77152494
+,9.9.2,A-1-1,Test Available,android.security.cts.EncryptionTest,testEncryption(),CtsSecurityTestCases,,
+,9.14,A-0-1,Not testable,,,,This Doc,http://b/77152494
+,9.14,A-0-2,Not testable,,,,This Doc,http://b/77152494
+3.1 Managed API Compatibility,3.1,C-0-1,Other (see comment),,,,Covered by Most CTS and GTS tests.,
+,3.1,C-0-2,Other (see comment),,,,Covered by Most CTS and GTS tests.,
+,3.1,C-0-3,Other (see comment),,,,Covered by Most CTS and GTS tests.,
+,3.1,C-0-4,Other (see comment),,,,Covered by Most CTS and GTS tests.,
+,3.1,C-0-5,Test Available,android.signature.cts.api.AnnotationTest,android.signature.cts.api.AnnotationTest.*,CtsSystemApiAnnotationTestCases,,
+3.1.1.Android Extensions,3.1.1.1,C-0-1,Test Available,android.os.ctsRequiredComponentTest,"testExtServicesPresent()
+testSharedServicesPresent()",CtsOsTestCases,,
+3.1.2 Android Library,3.1.2,C-0-1,Test Available,android.signature.cts.api.SignatureTest,android.signature.cts.api.SignatureTest.*,CtsApacheHttpLegacy27ApiSignatureTestCases,,
+,3.1.2,C-0-2,Test Available,android.signature.cts.api.SignatureTest,android.signature.cts.api.SignatureTest.*,CtsApacheHttpLegacy27ApiSignatureTestCases,,
+3.2.1 Permissions,3.2.1,C-0-1,Test Available,"android.appsecurity.cts.PermissionHostTest
+android.permission.cts.*",public void.*,"CtsAppSecurityHostTestCases
+CtsPermissionTestCases",,
+3.2.2 Build Parameters,3.2.2,C-0-1,Test Available,android.os.cts.BuildTest,"testBuildConstants
+testBuildFingerprint",CtsOsTestCases,,
+3.2.3.1 Core Application Intents,3.2.3.1,C-0-1,Test Available,android.content.cts.AvailableIntentsTest,public void.*,CtsContentTestCases,,
+,3.2.3.2,C-0-1,Test Missing,,,,,http://b/132176534
+,3.2.3.2,C-0-2,Test Missing,,,,,http://b/132176534
+,3.2.3.2,C-0-3,Manually Testable Missing Test,,,,Requires manual validation. No Settings#action defined,
+,3.2.3.2,C-0-4,Test Available,android.os.cts.OsHostTests,testIntentFilterHostValidation,CtsOsHostTestCases,,
+,3.2.3.2,C-0-5,Test Available,android.os.cts.OsHostTests,testIntentFilterHostValidation,CtsOsHostTestCases,,
+,3.2.3.2,C-0-6,Manually Testable Missing Test,,,,"Requires manual UI validation. OEMS are free to modify 
+settings UI",
+,3.2.3.2,C-0-7,Manually Testable Missing Test,,,,Requires manual validation for all devices,
+,3.2.3.2,C-0-8,Manually Testable Missing Test,,,,Requires manual validation for all devices,
+3.2.3.3 Intent Namespaces,3.2.3.3,C-0-1,Test Available,android.signature.cts.intent.IntentTest,shouldNotFindUnexpectedIntents,CtsIntentSignatureTestCases,,
+,3.2.3.3,C-0-2,Test Available,android.signature.cts.Intent.IntentTest,shouldNotFindUnexpectedIntents,CtsIntentSignatureTestCases,,
+,3.2.3.3,C-0-3,Test Available,"android.content.cts.AvailableIntentsTest
+android.systemintentnts.cts.TestsystemIntents
+android.content.cts.IntentTest
+android.app.cts.PendingIntentTest","android.content.cts.AvailableIntentsTest.*
+android.systemintentnts.cts.TestsystemIntents.*
+android.content.cts.IntentTest.*
+android.app.cts.PendingIntentTest.*","CtsContentTestCases
+CtsSystemIntentTestCases
+CtsAppTestCases",,
+3.2.3.4 Broadcast Intents,3.2.3.4,C-0-1,Test Available,"com.android.cts.intent.receiver.OwnerChangedBroadCastTest
+android.packageinstaller.admin.cts.SessionCommitBroadCastTest
+android.app.cts.WallpaperManagerTest
+android.app.cts.backgroundrestrictions.BroadcastsTest
+android.app.cts.backgroundrestrictions.BroadcastsTest","testOwnerChangedBroadcastReceived
+testBroadcastNotReceivedForDifferentLauncher
+wallPaperChangedBroadCastTest
+testNonSupportedBroadcastsNotDelivered_runtimeReceiver()
+testNonSupportedBroadcastsNotDelivered_manifestReceiver()","CtsDevicePolicyManagerTestCases
+CtsAdminPackageInstallerTestCases
+CtsAppTestCases
+CtsBackgroundRestrictionsTestCases
+CtsBackgroundRestrictionsTestCases",,
+android.systemintents.cts.TestSystemIntents,3.2.3.5,C-1-1,Test Available,android.systemintents.ctsTestSystemIntents,testSystemIntents(),CtsSystemIntentTestCases,,
+,3.2.3.5,C-2-1,Test Available,android.content.cts.AvailableIntentsTest,testChangeDefaultSmsApplication,CtsContentTestCases,,
+,3.2.3.5,C-2-2,Test Available,android.content.cts.AvailableIntentsTest,testChangeDefaultDialer,CtsContentTestCases,,
+,3.2.3.5,C-2-3,Test Available,com.android.cts.verifier.telecom.EnablePhoneAccountTestActivity,com.android.cts.verifier.telecom.EnablePhoneAccountTestActivity.*,CtsTelecomTestCases,,
+,3.2.3.5,C-3-1,Test Available,android.content.cts.AvailableIntentsTest,testTapAndPaySettings,CtsContentTestCases,,
+,3.2.3.5,C-4-1,Test Available,android.content.cts.AvailableIntentsTest,testVoiceInputSettingsIntent,CtsContentTestCases,,http://b/131767657
+3.2.4 Activitites On Secondary Display,3.2.4,C-1-1,Test Available,android.server.cts.ActivityManagerDisplayTests,testMultiDisplayDisabled,CtsServicesHostTestCases,,
+,3.2.4,C-1-2,Test Available,android.server.cts.ActivityManagerDisplayTests,public void.*,CtsServicesHostTestCases,,
+,3.2.4,C-1-3,Test Available,android.server.cts.ActivityManagerDispalyTests,testConsequentLaunchActivity(),CtsServicesHostTestCases,,
+,3.2.4,C-1-4,Test Available,android.server.cts.ActivityManagerDispalyTests,testContentDestroyedOnDisplayRemoved(),CtsServicesHostTestCases,,
+,3.2.4,C-1-5,Test Available,android.server.cts.ActivityManagerDispalyTests,testDisplayResized(),CtsServicesHostTestCases,,
+,3.2.4,C-2-1,Test Available,android.server.cts.ActivityManagerDispalyTests,testLaunchNonResizableActivityfrom(),CtsServicesHostTestCases,,
+,3.2.4,C-3-1,Test Available,android.server.cts.ActivityManagerDispalyTests,testPermissionLaunchFromDifferentApp(),CtsServicesHostTestCases,,
+3.3.1 Application Binary Interfaces,3.3.1,C-0-1,Test Available,android.jni.cts.*,android.jni.cts.*,CtsJniTestCases,,
+,3.3.1,C-0-2,Test Available,"android.jni.cts.JniInstanceTest
+android.jni.cts.JniCppTest
+android.jni.cts.JniStaticTest",public void .*,CtsJniTestCases,,
+,3.3.1,C-0-3,Test Available,CtsDeqpTests,CtsDeqpTests,CtsDeqpTestCases,,
+,3.3.1,C-0-5,Test Available,android.os.cts.BuildTest,testCpuAbi_valuesMatchPermitted(),CtsOsTestCases,,http://b/62059495
+,3.3.1,C-0-6,Test Available,android.os.cts.BuildTest,testCpuAbi_valuesMatchPermitted(),CtsOsTestCases,,http://b/62059495
+,3.3.1,C-0-7,Test Available,android.os.cts.CpuFeaturesTest.,testArmCpuinfo(),CtsOsTestCases,,
+,3.3.1,C-0-8,Test Available,android.jni.cts.JniStaticTest,testLinkerNameSpaces,CtsJniTestCases,,
+,3.3.1,C-0-9,Test Available,android.jni.cts.JniStaticTest,testLinkerNameSpaces,CtsJniTestCases,,
+,3.3.1,C-0-10,Test Available,android.jni.cts.JniStaticTest,testLinkerNameSpaces,CtsJniTestCases,,
+,3.3.1,C-0-11,Test Available,android.jni.cts.JniStaticTest,testLinkerNameSpaces,CtsJniTestCases,,
+,3.3.1,C-0-12,Test Available,CtsDeqpTests,CtsDeqpTests,CtsDeqpTestCases,,
+3.3.2 32-bit Arm Native Code Compatibility,3.3.2,C-3-1,Test Available,android.os.cts.BuildTest,testCpuAbi_valuesMatchPermitted(),CtsOsTestCases,,http://b/62059495
+,3.3.2,C-2-1,Test Available,android.os.cts.CpuFeaturesTest,testArmCpuInfo(),CtsOsTestCases,,
+,3.3.2,C-2-2,Test Available,android.os.cts.CpuInstructionTest,testEmulatedArmCpuFeatures(),CtsOsTestCases,3.3.2/C-1-1 in 8.1 CDD,
+,3.3.2,C-2-3,Test Available,android.os.cts.CpuFeaturesTest.,testArmCpuinfo(),CtsOsTestCases,CtsContentTestCases,
+3.4.1 WebView Compatibility,3.4.1,C-1-1,Not testable,,,,"Not Testable standalone. Webview tests are gated by this
+flag",
+,3.4.1,C-1-2,Not testable,,,,,http://b/110346722
+,3.4.1,C-1-3,Test Available,android.webkit.cts.WebSettingsTest,testUserAgentString_default(),CtsWebkitTestCases,,
+3.4.2 Browser Compatibility,3.4.2,C-1-1,Not testable,,,,,http://b/110346722
+,3.4.2,C-1-2,Not testable,,,,,http://b/110346722
+,3.4.2,C-2-1,Not testable,,,,,http://b/110346722
+3.5 API Behavioral Comaptibility,3.5,C-0-1,Test Available,android.content.cts.IntentTest,public void .*,CtsContentTestCases,,
+,3.5,C-0-2,Test Available,"android.content.cts.ContentProviderTest
+android.app.cts.ServiceTest",public void .*,"CtsContentTestCases
+CtsAppTestCases",,
+,3.5,C-0-3,Test Available,"android.content.cts.IntentTest
+android.content.cts.AvailableIntentTest",public void .*,CtsContentTestCases,,
+,3.5,C-0-4,Test Missing,,,,,http://b/117427007
+,3.5,C-0-5,Test Missing,,,,,http://b/77533746
+,3.5,C-0-6,Test Available,android.app.cts.backgroundrestrictions.BroadcastsTest,"testNonSupportedBroadcastsNotDelivered_runtimeReceiver
+testNonSupportedBroadcastsNotDelivered_manifestReceiver",CtsBackgroundRestrictionsTestCases,,
+,3.5,C-0-7,Test Available,android.app.cts.ActivityManagerProcessStateTest,testBackgroundCheckStopsService(),CtsAppTestCases,,
+,3.5,C-0-8,Test Available,android.os.cts.PowerManagerTests,testCachedProcessReleasesWakeLock(),CtsHostPowerManagerTestApp,,http://b/118399333
+3.5.1 Background Restrictions,3.5.1,C-1-2,Manually Testable Missing Test,,,,"Requires manual UI validation. OEMs are free to modify 
+settings UI",
+,3.5.1,C-1-3,Not Testable,,,,,http://b/123775223
+,3.5,C-0-9,Test Available,libcore.java.security.ProviderTest,testProviderList(),CtsLibcoreTestCases,,http://b/123021803
+,3.5.1,C-1-4,Not testable,,,,,http://b/123775223
+,3.5.1,C-1-5,Not testable,,,,,http://b/123775223
+,3.5.1,C-1-6,Test Available,android.app.cts.ActivityManagerTest,testIsBackgroundRestricted,CtsServicesTestCases,,
+,3.5.1,C-1-7,Test Available,android.app.cts.ActivityManagerProcessStateTest,testBackgroundCheckActivityService,CtsServicesTestCases,,
+,3.5.1,C-1-8,Not testable,,,,,http://b/123775223
+,3.5.1,C-1-9,Test Available,android.app.usage.cts.UsageStatsTest,testOrderedActivityLaunchSequenceInEventLog,CtsUsageStatsTestCases,,
+3.6 API NameSpaces,3.6,C-0-1,Test Available,android.signature.cts.api.SignatureTest,testSignature(),CtsSignatureTestCases,,
+,3.6,C-0-2,Test Available,android.signature.cts.api.SignatureTest,testSignature(),CtsSignatureTestCases,,
+,3.6,C-0-3,Test Available,android.signature.cts.api.SignatureTest,testSignature(),CtsSignatureTestCases,,
+,3.6,C-0-4,Not testable,,,,,http://b/110703502
+,3.6,C-0-5,Not testable,,,,,http://b/110703502
+,3.6,C-0-6,Not testable,,,,,http://b/110703502
+3.7.Runtime Compatibility,3.7,C-0-2,Test Available,android.app.cts.ActivityManagerMemoryClassTest,testGetMemoryClass,CtsAppTestCases,,
+3.8.1.Launcher(Home Screen),3.8.1,C-1-1,Test Available,android.server.cts.*,public void .*,CtsServicesHostTestCases,,
+,3.8.1,C-1-2,Test Available,android.content.pm.cts.shortcutmanager.ShortcutManagerLauncherApiTest,testGetShortcutIconAdaptive,CtsShortcutManagerTestCases,,
+,3.8.1,C-2-1,Test Available,android.content.pm.cts.shortcutmanager.ShortcutManagerRequestPinTest,testRequestPinShortcut,CtsShortcutManagerTestCases,,
+,3.8.1,C-2-2,Test Available,android.content.pm.cts.shortcutmanager.ShortcutManagerRequestPinTest,testRequestPinShortcut,CtsShortcutManagerTestCases,,
+,3.8.1,C-2-3,Test Available,"android.content.pm.cts.shortcutmanager.ShortcutManagerLauncherCallbacktest
+andriod.content.pm.cts.ShortcutManagerMultiLauncherTest
+android.content.pm.cts.ShortcutManagerStartShortcutTest",public void .*,CtsShortcutManagerTestCases,,
+,3.8.1,C-3-1,Test Available,android.content.pm.cts.shortcutmanager.ShortcutManagerRequestPinTest,testRequestPinShortcutSupported,CtsShortcutManagerTestCases,,
+,3.8.1,C-4-1,Test Available,android.content.pm.cts.shortcutmanager.*,public void .*,CtsShortcutManagerTestCases,,
+,3.8.1,C-5-1,Test Available,android.app.cts.NotificationChannelTest,testShowBadge(),CtsAppTestCases,,
+3.8.2 Widgets,3.8.2,C-1-1,Test Available,android.appwidget.cts.*,public void .*,CtsAppWidgetTestCases,,
+,3.8.2,C-1-2,Test Available,com.android.cts.verifier.widget.WidgetTestActivity,com.android.cts.verifier.widget.WidgetTestActivity.*,CtsVerifierWidgetTest,,
+,3.8.2,C-1-3,Test Available,com.android.cts.verifier.widget.WidgetTestActivity,com.android.cts.verifier.widget.WidgetTestActivity.*,CtsVerifierWidgetTest,,
+,3.8.2,C-2-1,Test Available,android.appwidget.cts.RequestPinAppWidgetTest,verifyIsRequestPinAppWidgetSupported,CtsAppWidgetTestCases,,
+,3.8.2,C-2-2,Test Available,android.appwidget.cts.RequestPinAppWidgetTest,"testPinWidget_launcher1()
+testPinWidget_launcher2()",CtsAppWidgetTestCases,,
+3.8.3. Notifications,3.8.3.1,C-1-1,Test Available,android.app.cts.NotificationChannelTest,public void.*,CtsAppTestCases,,
+,3.8.3.1,C-1-2,Not testable,,,,This is covered by existing notification tests,
+,3.8.3.1,C-1-3,Test Available,"android.app.cts.NotificationManagerTest
+android.app.cts.NotificationChannelTest
+android.app.cts.NotificationTest",public void .*,CtsAppTestCases,,
+,8.2,A-0-1,Test Missing,,,,,http://b/120863368
+,3.8.3.1,C-1-4,Test Available,"android.app.cts.NotificationManagerTest
+android.app.cts.NotificationChannelTest
+android.app.cts.NotificationTest",public void.*,CtsAppTestCases,,
+,3.8.3.1,C-1-5,Manually Testable Missing Test,,,,Requires manual validation of UI elements in sysUI,http://b/123031181
+,3.8.3.1,C-1-6,Manually Testable Missing Test,,,,System UI Modifiable by OEMS. ,http://b/123031181
+,3.8.3.1,C-2-1,Test Available,android.app.cts.NotificationTest,testMessagingStyle_historicMessage,CtsAppTestCases,,
+,3.8.3.1,C-3-1,Manually Testable Missing Test,,,,"The API is tested.CTS-V test required to verify the requirement
+as stated",http://b/132272452
+,3.8.3.1,C-3-2,Not testable,,,,The API is tested in NotificationManagerTests,
+3.8.3.2 Notification Listener Service,3.8.3.2,C-1-1,Test Available,com.android.cts.verifier.notifications.NotificationListenerService,com.android.cts.verifier.notifications.NotificationListenerService.*,CTSVerifierNotification,,
+,3.8.3.2,C-1-2,Test Available,com.android.cts.verifier.notifications.NotificationListenerService,com.android.cts.verifier.notifications.NotificationListenerService.*,CTSVerifierNotification,Closest test ,
+,3.8.3.2,C-2-1,Test Available,com.android.cts.verifier.notifications.NotificationListenerService,com.android.cts.verifier.notifications.NotificationListenerService.*,CTSVerifierNotification,,
+,3.8.3.2,C-2-2,Not testable,,,,Requires Manual Validation of UI elements in sysUI,
+3.8.3.3 DND(Do Not Disturb),3.8.3.3,C-1-1,Test Available,android.systemintents.ctsTestSystemIntents,testSystemIntents(),CtsSystemIntentTestCases,,
+,3.8.3.3,C-1-2,Manually Testable Missing Test,,,,,http://b/73775287
+,3.8.3.3,C-1-3,Manually Testable Missing Test,,,,,http://b/73775287
+3.8.4 Search,3.8.4,C-1-1,Test Available,android.app.cts.SearchManagerTest,public void.*,CtsAppTestCases,,
+,3.8.4,C-2-1,Not testable,,,,,
+,3.8.4,C-2-2,Not testable,,,,,
+3.8.5 Alerts and Toasts,3.8.5,C-1-1,Not testable,,,,,
+,3.8.5,C-1-2,Test Available,android.widget.toast.cts.LegacyToastTest,"testAddTwoToastViaTestApisWhenUidFocused
+testAddSingleToastViaAddingWindowApisWhenUidFocused",CtsToastTestCases,,
+3.8.6 Themes,3.8.6 ,C-1-1,Test Available,android.theme.cts.ThemeHostTest,testThemes(),CtsThemeHostTestCases,,
+,3.8.6,C-1-2,Test Available,android.theme.cts.ThemeHostTest,testThemes(),CtsThemeHostTestCases,,
+,3.8.6,C-2-1,Test Available,android.systemui.cts.LightBarTests,testLightStatusBarIcons(),CtsSystemUiTestCases,,
+,3.8.6,C-2-2,Test Available,android.systemui.ctsLIghtBarTests,testLightStatusBarIcons(),CtsSystemUiTestCases,,
+Live Wallpapers,3.8.7,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testLiveWallpaperFeature,CtsAppTestCases,,
+3.8.8 Activity Switching,3.8.8,C-1-1,Other (see comment),,,,Looks like the CDD needs to be changed,http://b/116856436
+,3.8.8,C-1-2,Test Available,com.android.cts.verifier.screenpinning.ScreenPinningTestActivity,.*,CtsVerifierScreenPinning,,
+3.8.9.Input Management,3.8.9,C-1-1,Not testable,,,,,
+,3.8.9,C-1-2,Test Available,android.systemintent.cts.TestSystemIntents,testSystemIntents,CtsSystemIntentTestCases,,
+,3.8.9,C-2-1,Test Available,android.content.cts.AvailableIntentsTest,testRequestSetAutofillServiceIntent,CtsContentTestCases,,
+3.8.12 Location,3.8.12,C-1-2,Manually Testable Missing Test,,,,Likely Not Testable,http://b/123360318
+,3.8.12,C-1-3,Manually Testable Missing Test,,,,Likely Not Testable,http://b/123360318
+3.8.13 Unicode and Font,3.8.13,C-1-1,Test Available,android.text.cts.PlainTest,testHasGlyph(),CtsTextTestCases,,
+,3.8.13,C-1-2,Test Available,android.text.cts.PaintTest,testHasGlyph(),CtsTextTestCases,,
+3.8.14.Multi-windows,3.8.14,C-1-1,Test Available,android.server.am.*,android.server.am.*,CtsActivityManagerDeviceTestCases,,
+,3.8.14,C-1-2,Test Available,com.android.cts.tv.*,com.android.cts.tv.TvInputManagerHostTest.*,CtstvTestCases,,
+,3.8.14,C-1-3,Test Available,android.server.am.ActivityManagerPinnedStackTests,testMinimumDeviceSize,CtsServicesHostTestCases,,
+,3.8.14,C-2-1,Test Missing,,,,,http://b/131847802
+,3.8.14,C-2-2,Not testable,,,,,
+,3.8.14,C-2-3,Test Available,android.server.cts.ActivityAndWindowManagerState,assertValidBounds,"CtsServicesHostTestCases
+CtsWindowManagerDeviceTestCases",,
+,3.8.14,C-3-1,Test Available,android.app.cts.PipActivityTest,testLaunchPipActivity,CtsAppTestCases,,
+,3.8.14,C-3-2,Not testable,,,,,
+,3.8.14,C-3-3,Test Available,android.server.cts.ActivityManagerDockedStackTests,"testEnterPipAspectRatioMin
+testEnterPipAspectRatioMax",CtsServicesHostTestCases,,
+,3.8.14,C-3-4,Test Available,andriod.server.cts.ActivityManagerPinnedStackTests,testWindowButtonEnterPip,CtsServicesHostTestCases,,
+,3.8.14,C-3-5,Not testable,,,,,
+,3.8.14,C-3-6,Test Missing,,,,,http://b/131847802
+3.8.15 Display Cutout,3.8.15,C-1-1,Test Available,android.server.wm.DisplayCutoutTests,android.server.wm.DisplayCutoutTests.*,CtsDisplayTestCases,,
+,3.8.15,C-1-2,Test Available,android.server.wm.DisplayCutoutTests,android.server.wm.DisplayCutoutTests.*,CtsDisplayTestCases,,
+,3.8.15,C-1-3,Test Available,android.server.wm.DisplayCutoutTests,android.server.wm.DisplayCutoutTests.*,CtsDisplayTestCases,,
+,3.8.15,C-1-4,Test Available,android.server.wm.DisplayCutoutTests,android.server.wm.DisplayCutoutTests.*,CtsDisplayTestCases,,
+3.9.1.1 Device Owner Provisioning,3.9.1.1,C-1-3,Not testable,,,,,http://b/80425698
+,3.9.1.1,C-1-4,Test Available,com.android.cts.deviceowner.DeviceOwnerProvisioningTest,testProvisionDeviceOwner(),CtsDevicePolicyManagerTestCases,,
+,3.9.1.1,C-1-5,Not testable,,,,,http://b/80425698
+,3.9.1.1,C-1-6,Test Available,com.android.cts.managedprofile.PreManagedProfileTest,testIsProvisioningAllowedFalse(),CtsDevicePolicyManagerTestCases,,
+,3.9.1.1,C-1-7,Test Available,com.android.cts.devicepolicy.CustomDeviceOwnerTest,testCannotSetDeviceOwnerWhenAccountPresent,CtsDevicePolicyManagerTestCases,,
+,3.9.1.1,C-1-2,Not testable,,,,,
+,3.9.1.1,C-2-1,Not testable,,,,,
+,3.9.1.1,C-2-2,Not testable,,,,,http://b/80425698
+,3.9.1.2,C-1-1,Test Available,com.android.cts.verifier.managedprovisioning.*,com.android.cts.verifier.managedprovisioning.*.*,CtsVerifierManagedProvisioning,,
+,3.9.1.2,C-1-2,Test Available,com.android.cts.verifier.managedprovisioning.*,.*,CtsVerifierManagedProvisioning,,
+,3.9.1.2,C-1-3,Test Available,com.android.cts.verifier.managedprovisioning,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-1,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-2,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-3,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-4,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-5,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-6,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-7,Test Available,com.android.cts.devicepolicy.ManagedProfileTest,runManagedContactsTest(),CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-8,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-9,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.2,C-1-10,Test Available,com.android.cts.verifier.managedprovisioning.,com.android.cts.verifier.managedprovisioning.*,CtsVerifierManagedProvisioning,,
+,3.9.3,C-1-1,Not testable,,,,"This cannot be automated since OEMs have
+freedom to implement it whichever way",
+3.10 Accessibility,3.10.,C-1-1,Test Available,android.accessibilityservice.cts.*,public void .*,CtsAccessibilityServiceTestCases,,
+,3.10.,C-1-2,Test Available,android.accessibilityservice.cts.AccessibilityEndToEndTest,"testTypeNotificationStateChangedAccessibilityEvent
+testTypeViewClickedAccessibilityEvent
+testTypeViewFocusedAccessibilityEvent
+testTypeViewLongClickedAccessibilityEvent
+testTypeViewSelectedAccessibilityEvent
+testTypeViewTextChangedAccessibilityEvent
+testTypeWindowStateChangedAccessibilityEvent",CtsAccessibilityServiceTestCases,,
+,3.10.,C-1-3,Test Available,android.accessibilityservice.cts.AccessibilitySettingsTest,testAccessibilitySettingsIntentHandled,CtsAccessibilityServiceTestCases,,
+,3.10.,C-1-4,Not testable,,,,This requires UI verification,
+,3.10.,C-2-1,Test Missing,,,,,http://b/74204992
+3.11.Text-to-Speech,3.11,C-1-1,Test Available,"android.speech.tts.cts.TextToSpeechServiceTest
+android.speech.tts.cts.TextToSpeechTest","android.speech.tts.cts.TextToSpeechServiceTest.*
+android.speech.tts.cts.TextToSpeechTest.*",CtsSpeechTestCases,,
+,3.11,C-2-1,Manually Testable Missing Test,,,,,http://b/74203864
+3.12 TV Input Framework,3.12,C-1-1,Not testable,,,,"TV test cases are gated by this feature. No way to 
+test standalone",
+,3.12,C-1-2,Test Available,com.android.cts.tv.*,com.android.cts.tv.TvInputManagerHostTest.*,CtsTVtestCases,,
+3.13 Quick Settings,3.13,C-1-1,Test Available,android.host.systemui.TileServiceTest,"testAddTile()
+testRemoveTile()",CtsSystemUiTestCases,,http://b/76170743
+,3.13,C-1-2,Test Available,com.android.cts.verifier.qstiles.TileServiceVerifierActivity,com.android.cts.verifier.qstiles.TileServiceVerifierActivity,CtsVerifierQuickSettingsTestCases,,http://b/76170743
+,3.13,C-1-3,Test Available,com.android.cts.verifier.qstiles.TileServiceVerifierActivity,com.android.cts.verifier.qstiles.TileServiceVerifierActivity,CtsVerifierQuickSettingsTestCases,,http://b/76170743
+,3.9.3,C-1-1,Manually Testable Missing Test,,,,"This cannot be automated since OEMs have
+freedom to implement it whichever way",http://b/73800782
+3.14.Media UI,3.14,C-1-1,Not testable,,,,,http://b/77276371
+,3.14,C-1-2,Not testable,,,,,http://b/77276371
+,3.14,C-1-3,Not testable,,,,,http://b/77276371
+,3.14,C-1-4,Not testable,,,,,http://b/77276371
+,3.14,C-1-5,Test Available,android.media.cts.MediaSessionTest,testCallbackOnMediaButtonEvent,CtsMediaTestCases,,
+3.15 Instant Apps,3.15,C-0-1,Test Available,android.appsecurity.cts.EphemeralTest,"testInstallPermissionNotGranted()
+testInstallPermissionGranted()",CtsAppSecurityHostTestCases,,
+,3.15,C-0-2,Test Available,android.appsecurity.cts.EphemeralTest,"testNormalQuery()
+testNormalStartNormal()
+testNormalStartEphemeral()
+testEphemeralQuery()
+testEphemeralStartNormal()
+testEphemeralStartExposed0*",CtsAppSecurityHostTestCases,,
+,3.15,C-0-3,Test Available,android.appsecurity.cts.EphemeralTest,"testNormalQuery()
+testNormalStartNormal()
+testNormalStartEphemeral()
+testEphemeralQuery()
+testEphemeralStartNormal()
+testExposedSystemActivities()
+testEphemeralStartExposed0*",CtsAppSecurityHostTestCases,,
+,3.15,C-0-4,Test Available,android.appsecurity.cts.EphemeralTest,testPackageInfo(),CtsAppSecurityHostTestCases,,
+3.16 Companion Device Pairing,3.16,C-1-1,Not testable,,,,"Cannot be tested standalone. CompanionTests are gated
+by this flag",
+,3.16,C-1-2,Test Available,com.android.cts.verifier.companion.CompanionDeviceTestActivity,com.android.cts.verifier.companion.CompanionDeviceTestActivity.*,CtsVerifierCompanion,,
+,3.16,C-1-3,Test Available,com.android.cts.verifier.companion.CompanionDeviceTestActivity,com.android.cts.verifier.companion.CompanionDeviceTestActivity.*,CtsVerifierCompanion,,
+3.17.HeavyWeight Apps,3.17,C-1-1,Test Available,android.app.cts.ActivityManagerProcessStateTest,testCantSaveStateLaunchAndSwitch,CtsAppTestCases,,
+,3.17,C-1-2,Test Available,android.app.cts.ActivityManagerProcessStateTest,testCantSaveStateLaunchAndSwitch,CtsAppTestCases,startActivityAndWaitForShow,
+,3.17,C-1-3,Test Available,android.app.cts.ActivityManagerProcessStateTest,testCantSaveStateLaunchAndBackground,CtsAppTestCases,,
+,3.17,C-2-1,Test Available,android.app.cts.ActivityManagerProcessStateTest,public void .*,CtsAppTestCases,,http://b/121164686
+4.Application Packaging Compatibility,4,C-0-1,Test Available,android.appsecurity.cts.SplitTests,android.appsecurity.cts.SplitTests.*,CtsAppSecurityTestCases,,
+,4,C-0-2,Test Available,android.appsecurity.cts.PkgInstallSignatureVerificationTest,testInstallOriginalSucceeds,CtsAppSecurityTestCases,,
+,4,C-0-3,Not testable,,,,,
+,4,C-0-5,Test Available,android.packageinstaller.externalsources.ctsExternalSourcesTest,testManageUnknownSourcesExists,CtsExternalSourcesTestCases,,
+,4,C-0-6,Test Available,android.packageinstaller.externalsources.cts.ExternalSourcesTest,"blockedSourcesTest
+allowedSourcesTest
+defaultSourcesTest",CtsExternalSourcesTestCases,,
+,4,C-0-7,Test Available,android.harmfulappwarning.cts.HarmfulAppWarningTest,"testNormalLaunch
+testLaunchAnyway
+testUninstall
+testDismissDialog",CtsHarmfulAppWarningHostTestCases,,
+5.1.1 Audio Encoding,5.1.1,C-1-1,Test Available,android.media.cts.DecoderTest,testDecodeWav,CtsMediaTestCases,,
+5.1.2 Audio Decoding,5.1.2,C-1-1,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.1.2,C-1-2,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.1.2,C-1-3,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.1.2,C-1-4,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.1.2,C-1-5,Test Available,android.media.cts.MediaCodecListTest,testRequiredMediaCodecList(),CtsMediaTestCases,,
+,5.1.2,C-1-6,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testDecodeMp3Lame()",CtsMediaTestCases,,
+,5.1.2,C-1-7,Not testable,,,,,
+,5.1.2,C-1-8,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testDecodeVorbis()",CtsMediaTestCases,,
+,5.1.2,C-1-9,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testDecodeWav()",CtsMediaTestCases,,
+,5.1.2,C-1-10,Test Available,"android.media.cts.MediaCodecListTest
+android.media.cts.DecoderTest","testRequiredMediaCodecList()
+testDecodeOpus()",CtsMediaTestCases,,
+,5.1.2,C-1-11,Test Available,android.media.cts.DecoderTestXheAac,"testDecodeUsacDrcEffectTypeM4a
+testDecodeUsacStreamSwitchingM4a
+testDecodeUsacSamplingRatesM4a",CtsMediaTestCases,,
+,5.1.2,C-2-1,Test Available,android.media.cts.DecoderTest,"testDecodeAacLcMcM4a()
+testDecodeHeAacMcM4a()
+",CtsMediaTestCases,,
+,5.1.2,C-2-2,Test Available,android.media.cts.DecoderTestAacDrc,"testDecodeAacDrcFullM4a()
+testDecodeAacDrcHalfM4a() 
+testDecodeAacDrcOffM4a()
+testDecodeAacDrcHeavyM4a()
+testDecodeAacDrcClipM4a()",CtsMediaTestCases,,
+,5.1.2,C-3-1,Test Available,android.media.cts.DecoderTestAacDrc,testDecodeUsacLoudnessM4a,CtsMediaTestCases,,
+,5.1.2,C-3-2,Test Available,android.media.cts.DecoderTestXheAac,"testDecodeUsacLoudnessM4a
+testDecodeUsacDrcEffectTypeM4a",CtsMediaTestCases,,
+,5.1.5,C-0-7,Test Available,android.media.cts.MediaMetaDataRetrieverTest,testGetImageAtIndex,CtsMediaTestCases,"This test is skipped if devices dont support HEVC
+decoders",http://b/120630303
+5.1.4.Image Encoding,5.1.4,C-0-1,Test Available,android.graphics.cts.Bitmap_CompressFormatTest,"testValueOf()
+testValues()",CtsGraphicsTestCases,,
+,5.1.4,C-0-2,Test Available,android.graphics.cts.Bitmap_CompressFormatTest,"testValueOf()
+testValues()",CtsGraphicsTestCases,,
+,5.1.4,C-0-3,Test Available,android.graphics.cts.Bitmap_CompressFormatTest,"testValueOf()
+testValues()",CtsGraphicsTestCases,,
+5.1.5.Image Decoding,5.1.5,C-0-1,Test Available,android.graphics.cts.BitmapFactoryTest,testDecodeStream3,CtsGraphicsTestCases,,
+,5.1.5,C-0-2,Test Available,android.graphics.cts.BitmapFactoryTest,testDecodeStream3,CtsGraphicsTestCases,,
+,5.1.5,C-0-3,Test Available,android.graphics.cts.BitmapFactoryTest,testDecodeStream3,CtsGraphicsTestCases,,
+,5.1.5,C-0-4,Test Available,android.graphics.cts.BitmapFactoryTest,testDecodeStream3,CtsGraphicsTestCases,,
+,5.1.5,C-0-5,Test Available,android.graphics.cts.BitmapFactoryTest,testDecodeStream4,CtsGraphicsTestCases,,
+,5.1.5,C-0-6,Test Available,android.graphic.cts.BitmapFactoryTest,testDng,CtsGraphicsTestCases,,http://b/115891835
+,5.1.5,C-0-7,Test Available,android.media.cts.MediaMetadataRetrieverTest,testGetImageAtIndex(),CtsMediaTestCases,,
+5.1.7.Video Codecs,5.1.7,C-1-1,Not testable,,,,,http://b/109769769
+,5.1.7,C-1-2,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testAllNonTunneledVideoCodecs SupportFlexibleYUV,CtsMediaTestCases,,
+,5.1.7,C-2-1,Checking Feature Owner,,,,,http://b/80553720
+,5.1.7,C-3-1,Test Available,android.media.cts.VideoEncoderTest,testGoogH265Flex360pWithIntraRefresh().*,CtsMediaTestCases,,
+5.2.Video Encoding,5.2,C-1-1,Test Available,android.media.cts.MediaCodecListTest,areRequiredCodecTypesSupported,CtsMediaTestCases,,
+,5.2,C-2-1,Test Available,android.meida.cts.VpxEncoderTest,"testDynamicBitrateChangeVP8()
+testDynamicBitrateChangeVP9()",CtsMediaTestCases,"This only covers VP8 and VP9 codecs. HEVC/AVC coverage
+punted to R. Reason not trivial to add tests in a way that passes
+on Pixel devices",http://b/109769769
+5.2.3.H263,5.2.1,C-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testH263EncoderProfileAndLevel,CtsMediaTestCases,,
+5.2.2.H.264,5.2.2,C-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testH264Encoder,CtsMediaTestCases,,
+,5.2.2,C-1-2,Test Available,android.media.cts.VideoEncoderTest,testH264LowQualitySupport(),CtsMediaTestCases,,
+,5.2.2,C-2-1,Test Available,android.media.cts.VideoEncoderTest,"testH264HighQualitySDSupport()
+testH264Surf480p30fps2Mbps()
+testH264Surf720p30fps4Mbps()
+testH264Surf1080p30fps10Mbps()
+testVP8Flex1080p30fps10Mbps()",CtsMediaTestCases,,
+5.2.3.vp8,5.2.3,C-1-1,Test Available,android.media.cts.VideoEncoderTest,"testVp8HighQualitySDSupport()
+testVp8LowQualitySDSupport()",CtsMediaTestCases,,
+,5.2.3,C-2-1,Test Available,android.media.cts.VideoEncoderTest,"testVP8Flex720p30fps4Mbps()
+testVP8Flex1080p30fps10Mbps()",CtsMediaTestCases,,
+5.3.Video Decoding,5.3,C-1-1,Test Available,android.media.cts.AdaptivePlaybackTest,*._adaptiveReconfigDrc(),CtsMediaTestCases,,
+,5.3,C-2-1,Not testable,,,,,http://b/76153374
+,5.3,C-2-2,Not testable,,,,,http://b/76153374
+,5.3,C-2-3,Not testable,,,,,http://b/76153374
+5.3.1 MPEG-2,5.3.1,C-1-1,Test Available,"android.video.cts.VideoEncoderDecoderTest
+android.media.cts.DecoderTest",testMPEG2ColorAspectsTV,CtsMediaTestCases,,
+5.3.2 H263,5.3.2,C-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,"testH263DecoderProfileAndLevel()
+testH263EncoderProfileAndLevel)(",CtsMediaTestCases,,
+5.3.3 MPEG-4,5.3.3,C-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest,testMpeg4DecoderProfileAndLevel,CtsMediaTestCases,,
+5.3.4 H264,5.3.4,C-1-1,Test Available,android.media.cts.MediaCodecCapabilitesTest,testH264DecoderProfileAndLevel(),CtsMediaTestCases,,
+,5.3.4,C-1-2,Test Available,android.media.cts.DecoderTest,"testH264Decode320x240()
+testH264Decode720x480()",CtsMediaTestCases,,
+,5.3.4,C-2-1,Test Available,android.media.cts.DecoderTest,testH264Decode60fps1280x720(),CtsMediaTestCases,,
+,5.3.4,C-2-2,Test Available,android.media.cts.DecoderTest,"testH264Decode60fps1920x1080Tv()
+testH264Decode30fps1920x1080()",CtsMediaTestCases,,
+5.3.5 H265 (HEVC),5.3.5,C-1-1,Test Available,android.media.cts.MediaCodecCapabilitiesTest.,testH265DecoderProfileAndLevel(),CtsMediaTestCases,,
+,5.3.5,C-1-2,Test Available,android.media.cts.DecoderTest,"testHEVCDecode30fps1280x720()
+testHEVCDecode30fps1920x1080Tv()",CtsMediaTestCases,,
+,5.3.5,C-2-1,Test Available,android.media.cts.DecoderTest,testHEVCDecode60fps3840x2160,CtsMediaTestCases,,
+5.3.6 VP8,5.3.6,C-1-1,Test Available,android.media.cts.DecoderTest,testVP8Decode320x180(),CtsMediaTestCases,,
+,5.3.6,C-2-1,Test Available,android.media.cts.DecoderTest,testVP8Decode30fps1280x720(),CtsMediaTestCases,,
+,5.3.6,C-2-2,Test Available,android.media.cts.DecoderTest,"testVP8Decode30fps1920x1080()
+testVP8Decode60fps1920x1080Tv()",CtsMediaTestCases,,
+5.3.7 VP9,5.3.7,C-1-1,Test Available,android.media.cts.DecoderTest,"testVP9Decode320x180()
+testVP9Decode640x360()",CtsMediaTestCases,,
+,5.3.7,C-2-2,Test Available,android.media.cts.DecoderTest,"testVP9Decode30fps1280x720()
+ testVP9Decode60fps1920x1080()",CtsMediaTestCases,,
+,5.3.7,C-3-1,Test Available,android.media.cts.DecoderTest,testVP9Decode60fps3840x2160(),CtsMediaTestCases,,
+5.4.1 Raw Audio Capture,5.4.1,C-1-1,Test Available,android.media.cts.DecoderTest,testVP9Decode60fps3840x2160(),CtsMediaTestCases,,
+,5.4.1,C-1-2,Test Available,android.media.cts.AudioRecord_BufferSizeTest,testGetMinBufferSize,CtsMediaTestCases,,
+,5.4.1,C-1-3,Test Missing,,,,,http://b/109832900
+,5.4.1,C-2-1,Test Missing,,,,,http://b/109832900
+,5.4.1,C-2-2,Test Missing,,,,,http://b/109832900
+5.4.2 Capture for voice Recognition,5.4.2,C-1-1,Test Available,com.android.cts.verifier.audio.AudioFrequencyMicActivity,com.android.cts.verifier.audio.AudioFrequencyMicActivity.*,CtsVerifierAudioTestCases,,
+,5.4.2,C-1-2,Test Missing,,,,,http://b/77554070
+,5.4.2,C-1-3,Test Missing,,,,,http://b/77554070
+,5.4.2,C-2-1,Test Available,android.media.cts.AudioPreProcessingTest,test1_2NsSetEnabledGetEnabled(),CtsMediaTestCases,,
+,5.4.2,C-2-2,Test Available,android.media.cts.AudioEffectTest,test0_0QueryEffects(),CtsMediaTestCases,,
+5.4.3 Capture for Rerouting of Playback,5.4.3 ,C-1-1,Test Available,GTS test,GTS test,GTS test,,
+5.5.1 Raw Audio Playback,5.5.1,C-1-1,Test Missing,,,,,http://b/118635157
+5.5.2 Audio Effects,5.5.2,C-1-1,Test Available,"android.media.cts.AudioEffectTest
+android.media.cts.LoudnessEnhancerTest",public void .*,CtsMediaTestCases,,
+,5.5.2,C-1-2,Test Available,android.media.cts.VisualizerTest,public void .*,CtsMediaTestCases,,
+,5.5.2,C-1-3,Test Available,android.media.cts.DynamicsProcessingTest,public void .*,CtsMediaTestCases,,
+5.7 Network Protocols,5.7,C-1-1,Test Available,android.media.cts.StreamingMediaPlayerTest,public void .*,CtsMediaTestCases,,
+,5.7,C-1-2,Test Available,android.media.cts.StreamingMediaPlayerTest,public void .*,CtsMediaTestCases,,
+,5.7,C-1-3,Test Available,android.media.cts.StreamingMediaPlayerTest,public void .*,CtsMediaTestCases,,
+5.8 Secure Media,5.8,C-1-1,Not testable,,,,,http://b/76153374
+,5.8,C-2-1,Not testable,,,,,http://b/76153374
+,5.8,C-3-1,Not testable,,,,,http://b/76153374
+5.9 MIDI,5.9,C-1-1,Test Missing,,,,,
+,5.9,C-1-2,Test Available,android.midi.cts.MidiEchoTest,"testEchoSmallMessage()
+testEchoMultipleMessages()
+testEchoBadBehavior()",CtsMidiTestCases,,
+5.10 Professional Audio,5.10.,C-1-1,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVeriferProAudioTest,,
+,5.10.,C-1-2,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVerifierProAudioTest,,
+,5.10.,C-1-3,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVerifierProAudioTest,,
+,5.10.,C-1-4,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVerifierProAudioTest,,
+,5.10.,C-1-5,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVerifierProAudioTest,,
+,5.10.,C-3-1,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVerifierProAudioTest,,
+,5.10.,C-3-2,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVerifierProAudioTest,,
+,5.10.,C-4-1,Test Available,com.android.cts.verifier.audio.ProAudioActivity,com.android.cts.verifier.audio.ProAudioActivity.*,CtsVerifierProAudioTest,,
+5.11.Capture for Unprocessed,5.11,C-1-1,Test Available,com.android.cts.verifierAudioFrequencyUnprocessedActivity,com.android.cts.verifierAudioFrequencyUnprocessedActivity.*,CtsVerifierAudio,,
+,5.11,C-1-2,Test Available,com.android.cts.verifier.AudioFrequencyUnprocessedActivity,com.android.cts.verifierAudioFrequencyUnprocessedActivity.*,CtsVerifierAudio,,
+,5.11,C-1-3,Test Available,com.android.cts.verifierAudioFrequencyUnprocessedActivity,com.android.cts.verifierAudioFrequencyUnprocessedActivity.*,CtsVerifierAudio,,
+,5.11,C-1-4,Test Available,com.android.cts.verifier.AudioFrequencyUnprocessedActivity,com.android.cts.verifierAudioFrequencyUnprocessedActivity.*,CtsVerifierAudio,,
+,5.11,C-1-5,Test Available,com.android.cts.verifier.AudioFrequencyUnprocessedActivity,com.android.cts.verifierAudioFrequencyUnprocessedActivity.*,CtsVerifierAudio,,
+,5.11,C-1-6,Test Available,com.android.cts.verifier.AudioFrequencyUnprocessedActivity,com.android.cts.verifierAudioFrequencyUnprocessedActivity.*,CtsVerifierAudio,,
+,5.11,C-1-7,Test Missing,,,,,http://b/119412672
+,5.11,C-1-8,Test Missing,,,,,http://b/119412672
+,5.11,C-1-9,Test Missing,,,,,http://b/119412672
+,5.11,C-2-1,Test Available,com.android.cts.verifier.audio.AudioFrequenceyUnprocessedActivity,supportsUnprocessed,CtsVerifierAudioUnprocessed,Test checks whether the unprocessed is supported,
+6.1 Developer Tools,6.1,C-0-2,Test Available,android.dumpsys.cts.*,android.dumpsys.cts.*.*,CtsDumpsysHostTestCases,,
+,6.1,C-0-3,Test Available,android.dumpsys.cts.*,android.dumpsys.cts.*.*,CtsDumpsysHostTestCases,,
+,6.1,C-0-10,Test Available,libcore.java.security.ProviderTest,testProviderList(),CtsLibcoreTestCases,,http://b/123021803
+,6.1,C-0-4,Not testable,,,,,http://b/135703326
+,6.1,C-0-5,Test Available,android.os.cts.UsbDebuggingTest,testUsbDebugging,CtsOSTestCases,,
+,6.1,C-0-6,Other (see comment),,,,Implicit coverage since CTS requires adb,http://b/135703326
+,6.1,C-0-7,Other (see comment),,,,CTS test harness uses ddmlib(implicit coverage),http://b/135703326
+,6.1,C-0-8,Test Available,com.android.cts.monkey.*,public void .*,CtsMonkeyTestCases,,
+,6.1,C-0-9,Test Available,android.atrace.cts.AtraceHostTest,public void .*,CtsAtraceHostTestCases,,
+,6.1,C-0-10,Test Available,android.cts.statsd.atom.UidAtomTests,public void .*,CtsStatsdHostTestCases,,
+,6.1,C-1-1,Test Available,android.gputools.cts.CtsRootlessGpuDebugTestCases,android.gputools.cts.CtsRootlessGpuDebugTestCases.*,CtsGpuToolsHostTestCases,"Test uses adb to enable disable which covers
+the affordance for developers",
+,6.1,C-1-2,Test Available,android.gputools.cts.CtsRootlessGpuDebugTestCases,"testDebugLayerLoadVulkan
+testDebugNotEnabledVulkan",CtsGpuToolsHostTestCases,,
+6.2 Developer Options,6.2,C-0-1,Test Available,android.systemintents.cts.SystemIntentTest,testSystemIntents,CtsSystemIntentTestCases,,
+,6.2,C-0-2,Manually Testable Missing Test,,,,This would require manual verification for every other device,
+,6.2,C-0-3,Not testable,,,,,
+7.Hardware Compatibility,7,C-0-7,Test Available,android.app.cts.SystemFeaturesTest,public void.*,CtsAppTestCases,,
+7.1.1.1 Screen Size and Shape,7.1.1.1,C-0-1,Test Available,android.dpi.cts.ConfigurationScreenLayoutTest,testScreenLayout,CtsDpiTestCases,,
+,7.1.1.1,C-1-1,Other (see comment),,,,No plans to add tests for these requirement/Not sure if testable,
+7.1.1.2 Screen Aspect Ratio,7.1.1.2,C-0-1,Test Available,android.app.cts.AspectRatioTest,testDeviceAspectRatio,CtsAppTestCases,,
+,7.1.1.2,C-0-2,Test Available,android.app.cts.AspectRatioTest,testDeviceAspectRatio,CtsAppTestCases,,
+7.1.1.3 Screen Density,7.1.1.3,C-0-1,Test Available,android.dpi.cts.ConfigurationTest,testScreenConfiguration,CtsDpiTestCases,,
+,7.1.1.3,C-1-1,Not testable,,,,,http://b/86395322
+,7.1.1.3,C-1-2,Not testable,,,,,http://b/86395322
+7.1.2 Display Metrics,7.1.2,C-1-1,Test Available,android.util.ctsDisplayMetricsTest,testDisplayMetricsOp,CtsUtilTestCases,,
+,7.1.2,C-2-1,Test Available,android.uti.cts.DisplayMetricsTest,testDisplayMetricsOp,CtsUtilTestCases,,
+7.1.3 Screen Orientation,7.1.3,C-0-1,Test Available,android.app.cts.SystemFeaturesTest,testScreenFeatures,CtsAppTestCases,,
+,7.1.3,C-0-2,Test Available,android.dpi.cts.ConfigurationScreenLayoutTest.,testScreenLayout,CtsDpiTestCases,,
+,7.1.3,C-1-1,Test Available,android.server.cts.ActivityManagerAppConfigurationTests,"testFullScreenAppOrientationRequests()
+testNonFullScreenAppOrientationRequests()",CtsServicesHostTestCases,,
+,7.1.3,C-1-2,Test Available,android.dpi.cts.ConfigurationScreenLayoutTest,testScreenLayout,CtsDpiTestCases,,
+7.1.4.1 OpenGL ES,7.1.4.1,C-0-1,Test Available,android.opengl.cts.OpenGlEsVersionTest,testOpenGlEsVersion,CtsOpenGLTestCases,,
+,7.1.4.1,C-0-2,Test Available,CtsDeqpTests,CtsDeqpTests,CtsDeqpTestCases,,
+,7.1.4.1,C-1-1,Test Available,android.opengl.cts.OpenGlEsVersionTest,testOpenGlEsVersion(),CtsOpenGLTestCases,,
+,7.1.4.1,C-2-1,Test Available,android.opengl.cts.OpenGlEsVersionTest,testExtensionPack,CtsOpenGLTestCases,,
+,7.1.4.1,C-2-2,Test Available,android.opengl.cts.OpenGlEsVersionTest,testRequiredExtensions,CtsOpenGLTestCases,,
+,7.1.4.1,C-3-1,Test Available,CtsDeqpTests,CtsDeqpTests,CtsDeqpTestCases,,
+,7.1.4.1,C-4-1,Test Available,android.opengl.cts.OpenGlEsVersionTest,testExtensionPack(),CtsOpenGLTestCases,,
+,7.1.4.1,C-5-1,Test Available,android.opengl.cts.OpenGlEsVersionTest,testExtensionPack(),CtsOpenGLTestCases,,
+,7.1.4.1,C-6-1,Test Available,android.opengl.cts.OpenGlEsVersionTest,testRequiredEglExtensions,CtsOpenGLTestCases,,
+7.1.4.2 Vulkan,7.1.4.2,C-1-1,Test Available,android.graphics.cts.VulkanFeaturesTest,testVulkanHardwareFeatures,CtsGraphicsTestCases,,
+,7.1.4.2,C-1-2,Test Available,android.graphics.cts.VulkanFeaturesTest,testVulkanHardwareFeatures,CtsGraphicsTestCases,,
+,7.1.4.2,C-1-3,Test Available,CtsDeqpTests,CtsDeqpTests,CtsDeqpTestCases,,
+,7.1.4.2,C-1-4,Test Missing,,,,,http://b/135697886
+,7.1.4.2,C-1-5,Not testable,,,,,http://b/135697886
+,7.1.4.2,C-1-6,Test Available,CtsDeqpTests,CtsDeqpTests,CtsDeqpTestCases,,
+,7.1.4.2,C-1-7,Test Available,vkiApiFeatureInfo,checkDeviceExtensions,CtsDeqpTestCases,,
+,7.1.4.2,C-2-1,Test Available,android.graphics.cts.VulkanFeaturesTest,testVulkanHardwareFeatures,CtsGraphicsTestCases,,
+,7.1.4.2,C-2-2,Test Available,android.graphics.cts.VulkanFeaturesTest,testVulkanHardwareFeatures,CtsGraphicsTestCases,,
+,7.1.4.2,C-3-1,Test Available,android.graphics.cts.VulkanFeaturesTest,testVulkan1_1Requirements,CtsGraphicsTestCases,,
+7.1.4.3 RenderScript,7.1.4.3,C-0-1,Test Available,android.rendersrcipt.cts.RenderScriptTest,public void .*,CtsRenderScriptTestCases,,
+7.1.4.4 2d Graphics Acceleration,7.1.4.4,C-0-1,Test Available,android.acceleration.cts.HardwareAccelerationTest,testIsHardwareAccelerated,CtsAccelerationTestCases,,
+,7.1.4.4,C-0-2,Test Available,"android.acceleration.cts.HardwareAccelerationTest
+android.acceleration.cts.SoftwareAccelerationTest
+android.acceleration.cts.WindowFlagHardwareAccelerationTest","testIsHardwareAccelerated
+testNotAttachedView",CtsAccelerationTestCases,,
+,7.1.4.4,C-0-3,Test Available,android.uirendering.cts.testclasses.TextureViewTests,public void .*,CtsUiRenderingTestCases,,
+7.1.4.5 Wide-gamut Displays,7.1.4.5,C-1-1,Not testable,,,,Not testable without external hardware,
+,7.1.4.5,C-1-2,Not testable,,,,Not testable without external hardware,
+,7.1.4.5,C-1-3,Not testable,,,,Not testable without external hardware,
+,7.1.4.5,C-1-4,Test Available,android.opengl.cts.OpenGlEsVersionTest,testRequiredGLESVersion(),CtsOpenGlTestCases,,http://b/122074587
+,7.1.4.5,C-1-5,Test Available,android.opengl.cts.OpenGlEsVersionTest,testRequiredEglExtensionsForWideColorDisplay(),CtsOpenGlTestCases,,http://b/122074587
+,7.1.4.5,C-2-1,Not testable,,,,Not testable without external hardware,
+7.1.6.Screen Technology,7.1.6,C-0-1,Not testable,,,,,
+,7.1.6,C-0-2,Not testable,,,,,
+,7.1.6,C-0-3,Not testable,,,,,
+7.1.7.Secondary Displays,7.1.7,C-1-1,Not testable,,,,,
+7.2.1 Keyboard,7.2.1,C-1-1,Not testable,,,,,
+,7.2.1,C-1-2,Test Available,"android.view.inputmethod.ctsInputMethodManagerTest
+android.inputmethodservice.cts.hostside.InputMethodServiceLifecycleTest",public void.*,"CtsInputMethodTestCases
+CtsInputMethodServiceHostTestCases",,
+,7.2.1,C-1-3,Test Available,android.view.cts.KeyCharacterMapTest,setup(),CtsViewTestCases,,
+7.2.2.Non-touch Navigation,7.2.2,C-0-1,Not testable,,,,,
+,7.2.2,C-1-1,Not testable,,,,,
+7.2.3.Navigation Keys,7.2.3,C-0-1,Not testable,,,,Requires UI validation.Launcher Intent Category is tested,
+,7.2.3,C-1-1,Not testable,,,,,
+,7.2.3,C-1-2,Not testable,,,,,
+,7.2.3,C-2-1,Not testable,,,,,
+,7.2.3,C-2-2,Not testable,,,,,
+,7.2.3,C-5-1,Not testable,,,,,
+,7.2.3,C-5-2,Not testable,,,,,
+,7.2.3,C-5-3,Not testable,,,,,
+7.2.4.Touchscreen Input,7.2.4,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testTouchScreenFeatures,CtsAppTestCases,,
+,7.2.4,C-1-2,Test Available,android.app.cts.SystemFeaturesTest,testTouchScreenFeatures,CtsAppTestCases,,
+,7.2.4,C-2-1,Not testable,,,,,
+,7.2.4,C-3-1,Test Available,android.app.cts.SystemFeaturesTest,testTouchScreenFeatures,CtsAppTestCases,,
+7.2.5.Fake Touch Input,7.2.5,C-1-1,Test Missing,,,,,http://b/110267244
+,7.2.5,C-1-2,Test Missing,,,,,http://b/110267244
+,7.2.5,C-1-3,Test Missing,,,,,http://b/110267244
+,7.2.5,C-1-4,Test Missing,,,,,http://b/110267244
+,7.2.5,C-1-5,Test Missing,,,,,http://b/110267244
+,7.2.5,C-1-6,Test Missing,,,,,http://b/110267244
+,7.2.5,C-1-7,Test Available,android.app.cts.SystemFeaturesTest,testTouchScreenFeatures,CtsAppTestCases,,
+,7.2.5,C-2-1,Test Available,android.app.cts.SystemFeaturesTest,testTouchScreenFeatures,CtsAppTestCases,,
+,7.2.5,C-2-2,Test Missing,,,,Punted to R Reason:Not trivial to add tests,http://b/110267244
+,7.2.5,C-3-1,Test Available,android.app.cts.SystemFeaturesTest,testFaketouchFeatures,CtsAppTestCases,,
+,7.2.5,C-3-2,Test Missing,,,,Punted to R Reason:Not trivial to add tests,http://b/110267244
+7.2.6.Game Controller Support,7.2.6.1,C-1-1,Not testable,,,,,
+,7.2.6.1,C-1-2,Test Available,android.hardware.input.cts.tests.*,public void *,CtsHardwareTestCases,,
+7.3 Sensors,7.3,C-0-1,Test Available,android.app.cts.SystemFeaturesTest,testSensorFeatures(),CtsAppTestCases,,
+,7.3,C-0-2,Test Available,android.app.cts.SystemFeaturesTest,testSensorFeatures(),CtsAppTestCases,,
+,7.3,C-0-3,Test Available,android.hardware.cts.SensorTest,"testRequestTriggerWithNonTriggerSensor()
+testCancelTriggerWithNonTriggerSensor()
+testRegisterWithTriggerSensor()",CtsSensorTestCases,,
+,7.3,C-1-1,Test Available,android.hardware.cts.SensorParameterRangeTest,checkSensorRangeAndFrequency(),CtsSensorTestCases,,
+,7.3,C-1-2,Test Available,android.hardware.cts.SingleSensorTests,"testAccelerometer_.*hz
+testMagneticField_*hz",CtsSensorTestCases,,
+,7.3,C-1-3,Test Available,android.hardware.cts.SingleSensorTests,testAccelerometer_.*hz,CtsSensorTestCases,,
+,7.3,C-1-4,Test Available,android.hardware.cts.SingleSensorTests,"testMagneticField_.*hz
+testGyroscope_.*hz
+testPressure_.*hz",CtsSensorTestCases,,
+,7.3,C-1-5,Test Available,com.android.cts.verifier.sensors.DeviceSuspendTestActivity,"testAPWakeUpWhenReportLatenchExpiresAccel
+testAPWakeUpWhenReportLatencyExpiresGyro
+testesAPWakeUpWhenLatencyExpires.*",CtsVerifierSensorTestCases,,
+,7.3,C-2-1,Test Available,android.hardware.cts.SingleSensorTests,"testGravity1_hz
+testGameRotationVector
+testLinearAcceleration",CtsSensorTestCases,,
+7.3.1.Accelerometer,7.3.1,C-1-1,Test Available,android.hardware.cts.SingleSensorTests,testSensorProperties(),CtsSensorTestCases,,
+,7.3.1,C-1-2,Test Available,"android.app.cts.SystemFeaturesTest
+android.hardware.cts.SensorTests","testSensorFeatures()
+testSensorOperations()","CtsAppTestCases
+CtsSensorTestCases",,
+,7.3.1,C-1-3,Test Available,android.hardware.cts.SingleSensorTests,android.hardware.cts.SensorTests.*,CtsSensorTestCases,,
+,7.3.1,C-1-4,Test Available,android.hardware.cts.SensorParameterRangeTest,testAccelerometerRange,CtsSensorTestCases,,CL
+,7.3.1,C-1-5,Test Available,android.hardware.cts.SensorTests,testSensorOperations(),CtsSensorTestCases,,http://b/77812541
+,7.3.1,C-1-6,Test Available,android.hardware.cts.SingleSensorTests,testAccelerometer_fastest(),CtsSensorTestCases,,
+,7.3.1,C-2-1,Not testable,,,,,http://b/77812541
+,7.3.1,C-3-1,Test Available,android.hardware.cts.SingleSensorTests,"testGravity1_hz
+testLinearAcceleration",CtsSensorTestCases,,
+,7.3.1,C-4-1,Test Available,android.hardware.cts.SingleSensorTests,testGameRotationVector,CtsSensorTestCases,,
+7.3.2.Magnetometer,7.3.2,C-1-1,Test Available,"android.hardware.cts.SingleSensorTests
+android.hardware.cts.SensorTest","testMagneticField_10hz
+testSensorOperations",CtsSensorTestCases,,
+,7.3.2,C-1-2,Test Available,android.hardware.cts.SingleSensorTests,testMagneticField_10hz,CtsSensorTestCases,,
+,7.3.2,C-1-3,Test Available,anroid.hardware.cts.*,android.hardware.cts.SensorTests.*,CtsSensorTestCases,,
+,7.3.2,C-1-4,Test Available,android.hardware.cts.SensorParameterRangeTest,testMaganetometerRange,CtsSensorTestCases,,
+,7.3.2,C-1-5,Test Available,android.hardware.cts.helpers.sensorverification,"testSingleEventVerify()
+testMultipleEventVerify()",CtsSensorTestCases,,
+,7.3.2,C-1-6,Test Available,android.hardware.cts.SensorTests,testSensorOperations(),CtsSensorTestCases,,http://b/77812541
+,7.3.2,C-1-7,Test Available,android.hardware.cts.SensorTests,android.hardware.cts.SensorTests.*,CtsSensorTestCases,Reboot not testable via CTS,
+,7.3.2,C-1-8,Not testable,,,,,http://b/77812541
+,7.3.2,C-1-9,Test Available,com.android.cts.verifier.sensors.MagneticFieldMeasurementTestActivity,testStandardDeviation,CtsSensorTestCases,,
+,7.3.2,C-2-1,Test Available,android.hardware.cts.SingleSensorTests,testGameRotationVector,CtsSensorTestCases,,
+,7.3.2,C-3-1,Not testable,,,,,http://b/77812541
+7.3.3.GPS,7.3.3,C-1-1,Test Available,com.android.cts.verifier.location.GpsTestActivity,com.android.cts.verifier.location.GpsTestActivity.*,CtsVerifierLocationTestCases,,
+,7.3.3,C-1-2,Test Available,android.location.cts.GnssTtffTests,testTtffWithNetwork(),CtsLocationTestCases,,
+,7.3.3,C-1-6,Test Available,android.location.cts.GnssTtffTests,testTtffWithNetwork(),CtsLocationTestCases,,
+,7.3.3,C-1-3,Not testable,,,,,
+,7.3.3,C-1-4,Test Available,android.location.cts.GnssStatusTest,testGnssStatusValues,CtsLocationTestCases,,
+,7.3.3,C-2-1,Test Available,android.location.cts.GnssHardwareInfoTest,"testHardwareYear
+testHardwareModelName",CtsLocationTestCases,,
+,7.3.3,C-2-2,Test Available,android.location.cts.GnssPseudorangeVerificationTest,"testPseudorangeValue()
+testPseudoPosition()",CtsLocationTestCases,,
+,7.3.3,C-3-1,Test Available,"com.android.cts.verifier.location.EmergencyCallGNSSTestsActivity
+android.location.cts.GnssMeasurementValuesTest","com.android.cts.verifier.location.EmergencyCallGNSSTestsActivity.*
+android.location.cts.GnssMeasurementValuesTest","CtsVerifierLocationTestCases
+CtsLocationTestCases",,
+,7.3.3,C-3-2,Test Available,android.location.cts.GnssMeasurementValuesTest,testListenForGnssMeasurements,CtsLocationTestCases,,
+,7.3.3,C-3-3,Test Available,android.location.cts.GnssMeasurementValuesTest,testListenForGnssMeasurements,CtsLocationTestCases,,
+,7.3.3,C-3-4,Test Available,android.location.cts.GnssLocationValuesTest,checkLocationAccuracyFields,CtsSensorTestCases,,http://b/123360318
+,7.3.3,C-4-1,Not testable,,,,,http://b/123360318
+,7.3.3,C-4-2,Not testable,,,,,http://b/123360318
+7.3.4 Gyroscope,7.3.4,C-1-1,Test Available,android.hardware.cts.SingleSensorTest,testGyroscope_Rate50hz(),CtsSensorTestCases,,
+,7.3.4,C-1-2,Test Available,android.hardware.cts.SingleSensorTest,testGyroscope_Rate.*hz(),CtsSensorTestCases,,
+,7.3.4,C-1-3,Test Available,android.hardware.cts.SensorParameterRangeTest,testGyroscope_Range,CtsSensorTestCases,,
+,7.3.4,C-1-4,Test Available,android.hardware.cts.SensorTests,testSesnorOperations(),CtsSensorTestCases,,http://b/77811402
+,7.3.4,C-1-5,Not testable,,,,,http://b/77812541
+,7.3.4,C-1-6,Not testable,,,,Not possible to reboot during CTS,http://b/77812541
+,7.3.4,C-1-7,Test Available,android.hardware.cts.SingleSensorTests,testGyroscope_Rate.*hz(),CtsSensorTestCases,,
+,7.3.4,C-2-1,Test Available,android.hardware.cts.SingleSensorTest,"testRotationVector_fastest()
+testRotationVector_*",CtsSensorTestCases,,
+,7.3.4,C-3-1,Test Available,android.hardware.cts.SingleSensorTest,"testGravity1_hz
+testLinearAcceleration",CtsSensorTestCases,,
+7.3.5 Barometer,7.3.5,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testSensorFeatures(),CtsAppTestCases,,
+,7.3.5,C-1-2,Test Available,android.hardware.cts.SingleSenosrTests,testPressure_5hz(),CtsSensorTestCases,,
+,7.3.5,C-1-3,Not testable,,,,,http://b/77812541
+7.3.6 Thermometer,7.3.6,C-1-1,Test Available,android.hardware.cts.SensorTest,testSensorOperations,CtsSensorTestCases,,http://b/77811402
+,7.3.6,C-1-2,Test Available,android.hardware.cts.SensorTest,testSensorOperations,CtsSensorTestCases,,
+,7.3.6,C-1-3,Not testable,,,,"""No way to verify the sensor is testing the CPU temp""",http://b/77811402
+,7.3.6,C-1-4,Not testable,,,,,http://b/77811402
+7.3.8 Proximity Sensor,7.3.8,C-1-1,Test Missing,,,,,http://b/123357974
+,7.3.8,C-1-2,Test Missing,,,,,http://b/123357974
+7.3.9 High Fidelity Sensors,7.3.9.,C-1-1,Not testable,,,,,
+,7.3.9.,C-2-1,Test Available,android.hardware.cts.SensorParameterRangeTest,testAccelerometerFifoLength(),CtsSensorTestCases,,
+,7.3.9.,C-2-2,Test Available,android.hardware.cts.SensorParameterRangeTest,testAccelerometerRange,CtsSensorTestCases,,
+,7.3.9.,C-2-3,Test Available,android.hardware.cts.SensorParameterRangeTest,testGyroscopeRange(),CtsSensorTestCases,,
+,7.3.9.,C-2-4,Test Available,android.hardware.cts.SensorParameterRangeTest,testGyroscopeRange(),CtsSensorTestCases,,
+,7.3.9.,C-2-5,Test Available,android.hardware.cts.SensorParameterRangeTest,testMagnetometerRange(),CtsSensorTestCases,,
+,7.3.9.,C-2-6,Test Available,android.hardware.cts.SensorParameterRangeTest,testPressureFifoLength(),CtsSensorTestCases,,
+,7.3.9.,C-2-7,Test Available,android.hardware.cts.SensorParameterRangeTest,testPressureRange(),CtsSensorTestCases,,
+,7.3.9.,C-2-8,Test Available,android.hardware.cts.SensorParameterRangeTest,testGameRotationVectorFifoLength(),CtsSensorTestCases,,
+,7.3.9.,C-2-9,Not testable,,,,Cannot measure power with CTS,http://b/77811402
+,7.3.9.,C-2-10,Test Available,android.hardware.cts.SensorParameterRangeTest,testStepDetectorFifoLength(),CtsSensorTestCases,,
+,7.3.9.,C-2-11,Not testable,,,,Cannot measure power with CTS,http://b/77811402
+,7.3.9.,C-2-12,Not testable,,,,Cannot measure power with CTS,http://b/77811402
+,7.3.9.,C-2-13,Not testable,,,,"Reason: ""Not trivial to add tests""",http://b/77811402
+,7.3.9.,C-2-14,Not testable,,,,"Reason: ""Not trivial to add tests""",http://b/77811402
+,7.3.9.,C-2-15,Not testable,,,,"Reason: ""Not trivial to add tests""",http://b/77811402
+,7.3.9.,C-2-16,Not testable,,,,Cannot measure power with CTS,http://b/77811402
+,7.3.9.,C-2-17,Test Available,android.hardware.cts.SensorParameterRangeTest,testProximityFifoLength(),CtsSensorTestCases,,
+,7.3.9.,C-3-1,Test Available,android.hardware.cts.SensorDirectReportTest,"testAccelerometerAshmemNormal()
+testGyroscopeAshmemNormal()
+testMagneticFieldAshmemNormal()",CtsSensorTestCases,,
+,7.3.9,C-3-2,Test Available,andoid.hardware.cts.SensorDirectReportTest,"testAccelerometerAshmemNormal()
+testGyroscopeAshmemNormal()
+testMagneticFieldAshmemNormal()",CtsSensorTestCases,,
+7.3.10.1 Fingerprint Sensors,7.3.10.1,C-1-1,Not testable,,,,,
+,7.3.10.1,C-1-2,Test Available,android.hardware.fingerprint.cts.FingerPrintManagerTest,public void .*,CtsHardwareTestCases,,
+,7.3.10.1,C-1-3,Not testable,,,,,
+,7.3.10.1,C-1-4,Not testable,,,,,
+,7.3.10.1,C-1-5,Not testable,,,,,
+,7.3.10.1,C-1-6,Not testable,,,,,
+,7.3.10.1,C-1-7,Not testable,,,,,
+,7.3.10.1,C-1-8,Not testable,,,,,
+,7.3.10.1,C-1-9,Test Available,android.admin.cts.DevicePolicyManagerTest,testKeyguardDisabledFeatures(),CtsDevicePolicyManagerTestCases,,
+,7.3.10.1,C-1-10,Not testable,,,,,
+,7.3.10.1,C-1-11,Not testable,,,,,
+,7.3.10.1,C-1-12,Not testable,,,,,
+,7.3.10.1,C-1-13,Not testable,,,,,
+7.3.10.2 Other BioMetric Sensors,7.3.10.2,C-1-1,Not testable,,,,,
+,7.3.10.2,C-1-2,Not testable,,,,,
+,7.3.10.2,C-1-3,Not testable,,,,,
+,7.3.10.2,C-1-4,Not testable,,,,,
+,7.3.10.2,C-1-5,Not testable,,,,,
+,7.3.10.2,C-1-6,Not testable,,,,,
+,7.3.10.2,C-1-7,Not testable,,,,,
+,7.3.10.2,C-1-8,Not testable,,,,,
+,7.3.10.2,C-1-9,Not testable,,,,,
+,7.3.10.2,C-1-10,Not testable,,,,,
+7.3.12 Pose Sensor,7.3.12,C-1-1,Test Available,com.android.cts.verifier.sensors.sixdof.Activities.TestActivity,com.android.cts.verifier.sensors.sixdof.Activities.TestActivity.*,CtsVerifierSensorTestCases,,
+,7.3.12,C-1-2,Test Missing,,,,,http://b/117834744
+,7.4.1,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testTelephonyFeatures(),CtsAppTestCases,,
+,7.4.1,C-1-2,Test Available,android.telephony.cts.*,public void .*,CtsTelephonyTestCases,,
+,7.4.1,C-2-1,Test Available,android.telephony.cts.*,public void .*,CtsTelephonyTestCases,"Devices will fail the telephony tests with NoClass
+DefFoundError if all the Apis are not implmented
+as no-ops",
+7.4.1.1 Number Blocking Compatibility,7.4.1.1,C-1-1,Test Available,com.android.cts.numberblocking.hostside.CallBlockingTest,testIncomingCallFromBlockedNumberIsRejected(),CtsHostSideNumberBlockingTestCases,,
+,7.4.1.1,C-1-2,Test Available,android.provider.cts.BlockedNumberContractTest,public void .*,CtsProviderTestCases,,
+,7.4.1.1,C-1-3,Test Available,com.android.cts.numberblocking.hostside.CallBlockingTest,testIncomingCallFromBlockedNumberIsRejected(),CtsProviderTestCases,,
+,7.4.1.1,C-1-4,Test Available,com.android.cts.numberblocking.hostside.CallBlockingTest,testIncomingCallFromBlockedNumberIsRejected(),CtsHostSideNumberBlockingTestCases,,
+,7.4.1.1,C-1-5,Test Missing,,,,,http://b/132189060
+,7.4.1.1,C-1-6,Test Available,android.telecom.cts.TelecomAvailabilityTest,testTelecomCanManageBlockedNumbers(),CtsTelecomTestCases,,
+,7.4.1.1,C-1-7,Test Missing,,,,,http://b/132189060
+7.4.1.2 Telecom API,7.4.1.2,C-1-1,Test Available,android.telecom.cts.*,android.telecom.cts.*.*,CtsTelecomTestCases,,
+,7.4.1.2,C-1-2,Test Available,com.android.cts.verifier.telecom.SelfManagedIncomingCallTestActivity,com.android.cts.verifier.telecom.SelfManagedIncomingCallTestActivity.*,CtsVerifierTelecomTestCases,,
+7.4.2.IEEE 802.1(Wi-Fi),7.4.2,C-1-1,Test Available,android.net.wifi.cts.*,android.net.wifi.cts.*,CtsNetTestCases,,
+,7.4.2,C-1-2,Not testable,,,,,
+,7.4.2,C-1-3,Test Available,android.net.wifi.cts.MulticastLockTest,testMulticastLock(),CtsNetTestCases,,http://b/124017617
+,7.4.2,C-1-4,Not testable,,,,,
+,7.4.2,C-1-5,Test Available,com.android.cts.verifier.net.MultiNetworkConnectivityTestActivity,com.android.cts.verifier.net.MultiNetworkConnectivityTestActivity.*,CtsVerifierNetTestCases,,
+,7.4.2,C-2-1,Test Missing,,,,Can be manually verified with a CTS-Verifier test,http://b/121037698
+7.4.2.1 Wi-Fi Direct,7.4.2.1,C-1-1,Test Available,android.net.wifi.cts.ConcurrencyTest,public void .*,CtsNetTestCases,,
+,7.4.2.1,C-1-2,Not testable,,,,,
+,7.4.2.1,C-1-3,Test Available,android.net.wifi.cts.ConcurrencyTest,testConcurrency,CtsNetTestCases,,
+,7.4.2.1,C-1-4,Test Available,android.net.wifi.cts.ConcurrencyTest,testConcurrency(),CtsnetTestCases,,
+7.4.2.2 Wi-Fi Tunneled Direct Link Setup,7.4.2.2,C-1-1,Not testable,,,,This cannot be tested standalone,
+7.4.2.3 Wi-Fi Aware,7.4.2.3,C-1-1,Test Available,android.net.wifi.aware.cts.SingleDeviceTest,public void .*,CtsNetTestCases,,
+,7.4.2.3,C-1-2,Not testable,,,,,
+,7.4.2.3,C-1-3,Test Available,android.net.wifi.aware.cts.SingleDeviceTests,testAvailabilityStatusChange(),CtsnetTestCases,,
+,7.4.2.3,C-1-4,Test Available,android.net.wifi.aware.cts.SingleDeviceTest,testAttachDiscoveryAddressChanges(),CtsNetTestCases,,
+,7.4.2.3,C-2-1,Test Available,com.android.cts.verifier.wifiaware.testcase.DiscoveryWithRangingTestCase,com.android.cts.verifier.wifiaware.testcase.DiscoveryWithRangingTestCase,CtsVerifierWIfiTestCases,,
+7.4.2.4 Wi-Fi Passpoint,7.4.2.4,C-1-1,Test Available,android.net.wifi.cts.WifiManagerTest,"testAddPasspointConfigWithUserCredential()
+testAddPasspointConfigWithCertCredential()
+testAddPasspointConfigWithSimCredential()",CtsNetTestCases,,
+,7.4.2.4,C-1-2,Test Available,android.net.wifi.cts.WifiManagerTest,"testAddPasspointConfigWithUserCredential()
+testAddPasspointConfigWithCertCredential()
+testAddPasspointConfigWithSimCredential()",CtsNetTestCases,,
+,7.4.2.4,C-2-1,Test Available,android.net.wifi.cts.WifiManagerTest,"testAddPasspointConfigWithUserCredential()
+testAddPasspointConfigWithCertCredential()
+testAddPasspointConfigWithSimCredential()",CtsNetTestCases,,
+7.4.2.5 Wi-Fi Location(Wi-Fi Round Trip Time-RTT,7.4.2.5,C-1-1,Test Available,android.net.wifi.cts.rtt.cts.WifiRttTest,public void .*,CtsNetTestCases,,
+,7.4.2.5,C-1-2,Not testable,,,,"WifiRtttests are gated by the flag. Cannot test just
+the feature flag standalone",
+,7.4.2.5,C-1-3,Not testable,,,,See bug for details,http://b/120556869
+7.4.3 Bluetooth,7.4.3,C-1-1,Not testable,,,,,
+,7.4.3,C-2-1,Not testable,,,,,
+,7.4.3,C-3-1,Not testable,,,,,
+,7.4.3,C-3-3,Not testable,,,,,
+,7.4.3,C-3-4,Not testable,,,,,
+,7.4.3,C-4-1,Test Missing,,,,,http://b/121037698
+7.4.4 Near Field Communications,7.4.4,C-0-1,Test Available,android.ndef.cts.NdefTest,public void .*,CtsNdefTestCases,,
+,7.4.4,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testNfcFeatures(),CtsAppTestCases,,
+,7.4.4,C-1-2,Test Missing,,,,,http://b/109758078
+,7.4.4,C-1-3,Test Available,"com.android.cts.verifier.nfc.NdefPushReceiverActivity
+com.android.cts.verifier.nfc.NdefPushSenderActivity
+com.android.cts.verifier.nfc.LlcpVersionActivity","com.android.cts.verifier.nfc.NdefPushReceiverActivity.*
+com.android.cts.verifier.nfc.NdefPushSenderActivity.*
+com.android.cts.verifier.nfc.LlcpVersionActivity.*",CtsVerifierNfcTestCases,,
+,7.4.4,C-1-4,Test Available,"com.android.cts.verifier.nfc.NdefPushReceiverActivity
+com.android.cts.verifier.nfc.NdefPushSenderActivity","com.android.cts.verifier.nfc.NdefPushReceiverActivity.*
+com.android.cts.verifier.nfc.NdefPushSenderActivity.*",CtsVerifierNfcTestCases,,
+,7.4.4,C-1-5,Test Available,"com.android.cts.verifier.nfc.NdefPushReceiverActivity
+com.android.cts.verifier.nfc.NdefPushSenderActivity","com.android.cts.verifier.nfc.NdefPushReceiverActivity.*
+com.android.cts.verifier.nfc.NdefPushSenderActivity.*",CtsVerifierNfcTestCases,,
+,7.4.4,C-1-6,Other (see comment),,,,Android Beam Deprecated: Req: removed from CDD,
+,7.4.4,C-1-7,Other (see comment),,,,Android Beam Deprecated: Req: removed from CDD,
+,7.4.4,C-1-8,Other (see comment),,,,Android Beam Deprecated: Req: removed from CDD,
+,7.4.4,C-1-9,Other (see comment),,,,Android Beam Deprecated: Req: removed from CDD,
+,7.4.4,C-1-10,Other (see comment),,,,This is being removed in the latest CDD draft,
+,7.4.4,C-1-11,Other (see comment),,,,Android Beam Deprecated: Req: removed from CDD,
+,7.4.4,C-1-12,Other (see comment),,,,Android Beam Deprecated: Req: removed from CDD,
+,7.4.4,C-1-13,Test Missing,,,,,http://b/132281756
+,7.4.4,C-2-1,Test Available,android.app.cts.SystemFeaturesTest,testNfcFeatures(),CtsAppTestCases,,
+,7.4.4,C-2-2,Test Available,com.android.cts.verifier.nfc.hce.*,com.android.cts.verifier.nfc.hce.*,CtsVerifierNFCTestCases,,
+,7.4.4,C-3-1,Not testable,,,,This feature cannot be tested solely on presence of nfcadapter,
+,7.4.4,C-3-2,Test Available,com.android.cts.verifer.nfc.hcef.*,com.android.cts.verifer.nfc.hcef.*,CtsVerifierNfcTestCases,,
+,7.4.4,C-4-1,Test Available,"com.android.cts.verifer.nfc.tech.MifareUltralightTagTester
+com.android.cts.verifier.nfc.TagVerifierActivity","com.android.cts.verifer.nfc.tech.MifareUltralightTagTester.*
+com.android.cts.verifier.nfc.TagVerifierActivity.*",CtsVerifierNfcTestCases,,
+,7.4.4,C-4-2,Not testable,,,,,
+7.4.5. Minimum Network Capability,7.4.5,C-0-1,Test Available,com.android.cts.verifier.net.ConnectivityBackgroundTest,com.android.cts.verifier.net.ConnectivityBackgroundTest.*,CtsVerifierNetTestCases,,
+,7.4.5,C-0-2,Test Available,com.android.cts.verifier.net.ConnectivityBackgroundTest,com.android.cts.verifier.net.ConnectivityBackgroundTest.*,CtsVerifierNetTestCases,,
+,7.4.5,C-0-3,Test Available,com.android.cts.verifier.net.ConnectivityBackgroundTest,com.android.cts.verifier.net.ConnectivityBackgroundTest.*,CtsVerifierNetTestCases,,
+,7.4.5,C-0-4,Test Available,com.android.cts.verifier.net.ConnectivityBackgroundTest,com.android.cts.verifier.net.ConnectivityBackgroundTest.*,CtsVerifierNetTestCases,,
+,7.4.5,C-0-5,Not testable,,,,,
+,7.4.5,C-0-6,Test Available,"android.net.cts.ConnectivityManagerTest
+com.android.cts.net.hostside.VpnTest
+com.android.cts.verifier.net.ConnectivityBackgroundTestActivity",public void.*,CtsNetTestCases,,
+,7.4.5,C-1-1,Checking Feature Owner,,,,,http://b/74071373
+,7.4.5,C-2-1,Checking Feature Owner,,,,,http://b/74071373
+,7.4.5,C-3-1,Checking Feature Owner,,,,,http://b/74071373
+7.4.6 Sync Settings,7.4.6,C-0-1,Not testable,,,,,
+7.4.7 Data Saver,7.4.7,C-1-1,Test Available,com.android.cts.net.hostside.DataSaverModeTest,com.android.cts.net.hostside.DataSaverModeTest.*,CtsHostSideNetworkTestCases,,
+,7.4.7,C-1-2,Test Available,android.systemintents.cts.SystemIntentTest,testSystemIntents,CtsSystemIntentTestCases,,
+,7.4.7,C-2-1,Test Available,com.android.cts.net.DataSaverModeTest.,public void.*,CtsHostSideNetworkTestCases,,
+,7.4.7,C-2-2,Test Available,com.android.cts.net.DataSaverModeTest.,testBroadcastNotSentOnUnsupportedDevices(),CtsHostSideNetworkTestCases,,http://b/114131539
+,7.4.7,C-2-3,Test Available,android.systemintents.cts.SystemIntentTest,testSystemIntents(),CtsSystemIntentTestCases,,
+7.4.8 Secure Elements,7.4.8,C-1-1,Test Available,android.omapit.cts.OmapiTest,testGetReaders,CtsOmapiTestCases,,
+7.5 Cameras,7.5,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testCameraFeatures(),CtsAppTestCases,,
+,7.5,C-1-2,Test Available,android.hardware.camera2.cts.StillCaptureTest,testAllocateBitmap(),CtsCameraTestCases,,
+7.5.1 Rear-Facing Camera,7.5.1,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testCameraFeatures(),CtsAppTestCases,,
+,7.5.1,C-1-2,Test Available,android.hardware.camera2.cts.ExtendedCameraCharcteristicsTest,testAvailableStreamConfigs(),CtsCamera2TestCases,,http://b/117564285
+,7.5.1,C-2-1,Not testable,,,,,
+7.5.2 Front Facing Camera,7.5.2.,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testCameraFeaures(),CtsAppTestCases,,
+,7.5.2.,C-1-2,Test Available,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testAvailableStreamConfigs,CtsCamera2TestCases,,CL
+,7.5.2.,C-1-3,Test Available,android.hardware.cts.CameraTest,testMultipleCameras,CtsCameraTestCases,,
+,7.5.2.,C-1-4,Not testable,,,,Camera 1 API. No ITS to test for camera1 APIS,
+,7.5.2.,C-1-5,Not testable,,,,Camera 1 API. No ITS to test for camera1 APIS,
+,7.5.2.,C-1-6,Not testable,,,,Camera 1 API. No ITS to test for camera1 APIS,
+,7.5.2.,C-2-1,Not testable,,,,Camera 1 API. No ITS to test for camera1 APIS,
+7.5.3 External Camera,7.5.3,C-1-1,Test Available,android.app.cts.SystemFeaturesTest,testCameraFeaures(),CtsAppTestCases,,
+,7.5.3,C-1-2,Other (see comment),,,,"Existing Camera tests cover this requirement for
+external cameras",
+,7.5.3,C-2-1,Not testable,,,,,http://b/123039305
+7.5.4.Camera API Behavior,7.5.4.,C-0-1,Test Available,android.hardware.cts.CameraTest,"testParametersByCamera
+testPreviewCallbackByCamera",CtsCameraTestCases,,
+,7.5.4.,C-0-2,Test Available,android.hardware.cts.CameraTest,"testParametersByCamera
+testPreviewCallbackByCamera",CtsCameraTestCases,,
+,7.5.4.,C-0-3,Test Available,com.android.cts.verifier.camera.formats.CameraFormatsActivity,N/A,CtsVerifierCameraTestCases,,
+,7.5.4.,C-0-4,Test Available,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testStreamConfigurationMap,CtsVerifierCameraTestCases,,
+,7.5.4.,C-0-5,Test Available,android.hardware.cts.CameraTest,testTakePicture,CtsCameraTestCases,,
+,7.5.4.,C-0-6,Test Available,android.hardware.cts.CameraTest,assertParameters,CtsCameraTestCases,,
+,7.5.4.,C-0-7,Test Available,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,expectKeyAvailable,CtsCameraTestCases,,
+,7.5.4.,C-0-8,Test Available,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testStreamConfigurationMap(),CtsCameraTestCases,,
+,7.5.4.,C-0-9,Test Available,com.android.cts.verifier.camera.intents.CameraIntentsActivity,com.android.cts.verifier.camera.intents.CameraIntentsActivity.*,CtsVerifierCameraTestCases,Needs to be updated to check for CameraIntents,
+,7.5.4.,C-0-10,Test Available,com.android.cts.verifier.camera.intents.CameraIntentsActivity,com.android.cts.verifier.camera.intents.CameraIntentsActivity.*,CtsVerifierCameraTestCases,Needs to be updated to check for CameraIntents,
+7.5.5 Camera Orientation,7.5.5,C-1-1,Test Available,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testCameraOrientationAlignedWithDevice,CtsCamera2TestCases,,
+7.6.1 Minimum Memory Storage,7.6.1,C-0-1,Test Available,android.app.cts.DownloadManagerTest,testMinimumDownload(),CtsAppTestCases,,
+7.6.2 Application Shared Storage,7.6.2,C-0-2,Test Available,com.android.cts.externalstorageapp.CommonExternalStorageTest,testExternalStorageMounted,CtsAppSecurityHostTestCases,,
+,7.6.2,C-0-4,Test Available,android.permission.cts.NoSdCardWritePermissionTest,testWriteExternalStorage,CtsPermissionTestCases,,
+,7.6.2,C-1-1,Not testable,,,,,
+,7.6.2,C-1-2,Not testable,,,,,
+,7.6.2,C-2-1,Test Available,com.android.cts.writeexternalstorageapp.WriteExternalStorageTest,testSecondaryMountPointsNotWritable,CtsAppSecurityHostTestCases,,
+7.7.1 USB peripheral mode,7.7.1,C-1-1,Not testable,,,,,
+,7.7.1,C-1-2,Test Available,com.android.cts.usb.TestUsbTest,testUsbSerial(),CtsUsbTests,,
+,7.7.1,C-1-3,Not testable,,,,Cannot be tested without external equipments,
+,7.7.1,C-2-1,Not testable,,,,,
+,7.7.1,C-2-2,Test Missing,,,,,http://b/131906927
+7.7.2 USB Host Mode,7.7.2,C-1-2,Not testable,,,,,
+,7.7.2,C-1-3,Not testable,,,,,
+,7.7.2,C-2-1,Test Missing,,,,,http://b/132078849
+,7.7.2,C-2-2,Test Missing,,,,,http://b/132078849
+,7.7.2,C-3-1,Test Available,"android.appsecurity.cts.DocumentsTest
+android.content.cts.AvailableIntentsTest","testOpenDocumentAny
+testCreateDocument
+testGetContentAny
+android.appsecurity.cts.DocumentsTest.*","CtsAppSecurityTestCases
+CtsContentTestCases",,
+,7.7.2,C-4-1,Not testable,,,,"Host mode is exposed via android.hardware.usb.host but
+don't think type C can be verified unless manually eyeballed",See comment
+7.8.2.1 Analog Audio Ports,7.8.2.1,C-1-1,Test Missing,,,,,http://b/119328806
+,7.8.2.1,C-1-2,Not testable,,,,,
+,7.8.2.1,C-1-3,Not testable,,,,,
+,7.8.2.1,C-1-4,Test Missing,,,,,http://b/119328806
+,7.8.2.1,C-1-5,Not testable,,,,,
+,7.8.2.1,C-1-6,Not testable,,,,,
+,7.8.2.1,C-1-7,Not testable,,,,,
+,7.8.2.1,C-2-1,Test Available,com.android.cts.verifier.audio.AudioOutputDevicesNotificationTest,com.android.cts.verifier.audio.AudioOutputDevicesNotificationTest.*,CtsVerifierAudioTestCases,,
+7.8.3 Near-UltraSound,7.8.3,C-1-1,Test Available,com.android.cts.verifier.audio.HifiUltrasoundSpeakerTestActivity,com.android.cts.verifier.audio.HifiUltrasoundSpeakerTestActivity.*,CtsVerifierAudioTestCases,,
+,7.8.3,C-1-2,Test Available,com.android.cts.verifer.audio.HifiUltrasoundSpeakerTestActivity,com.android.cts.verifer.audio.HifiUltrasoundSpeakerTestActivity.*,CtsVerifierAudioTestCases,,
+,7.8.3,C-2-1,Test Available,com.android.cts.verifier.audioHifiUltrasoundSpeakerTestActivity,com.android.cts.verifier.audioHifiUltrasoundSpeakerTestActivity.*,CtsVerifierAudioTestCases,,
+7.9.2 Virtual Reality Mode - High Performance,7.9.2,C-1-1,Test Available,android.vr.cts.VrCpuTest,testHasAtLeastTwoCores(),CtsVrTestCases,,
+,7.9.2,C-1-2,Test Available,android.vr.cts.VrFeaturesTest,testLacksDeprecatedVrModeFeature(),CtsVrTestCases,,
+,7.9.2,C-1-3,Test Available,android.vr.cts.VrFeaturesTest,testSustainedPerformanceModeSupported(),CtsVrTestCases,,
+,7.9.2,C-1-4,Test Available,android.opengl.cts.OpenGlEsVersionTest,testOpenGlEsVersionForVrHighPerformance,CtsOpenGLTestCases,,
+,7.9.2,C-1-5,Test Available,android.graphics.cts.VulkanFeaturesTest,testVulkanVersionForVrHighPerformance,CtsGraphicsTestCases,,
+,7.9.2,C-1-6,Test Available,"android.opengl.cts.OpenGlEsVersionTest
+android.vr.cts.VrExtensionBehaviorTest","testRequiredExtensionsForVrHighPerformance
+testProtectedContent
+testContextPriorityHigh
+testContextPriorityMedium
+testContextPriorityLow
+testMutableRenderBuffer","CtsOpenGLTestCases
+CtsVrTestCases",,
+,7.9.2,C-1-8,Test Available,"android.opengl.cts.OpenGlEsVersionTest
+android.vr.cts.VrExtensionBehavorTest","testRequiredExtensionsForVrHighPerformance
+testEglImageArray
+testExternalBuffer","CtsOpenGLTestCases
+CtsVrTestCases",,
+,7.9.2,C-1-7,Not testable,,,,,
+,7.9.2,C-1-9,Test Available,AHardwareBufferGLTest,AHardwareBufferGLTest,libahardwarebuggertest,,
+,7.9.2,C-1-10,Test Available,android.hardware.nativehardware.cts.HardwareBufferVrTest,testLayeredBuffersForVr,CtsGraphicsTestCases,,
+,7.9.2,C-1-22,Not testable,,,,,http://b/120853001
+,7.9.2,C-1-23,Test Missing,,,,,http://b/120853001
+,7.9.2,C-1-11,Test Available,android.media.cts.DecoderTest,testVrHighPerformanceH264,CtsMediaTestCases,,
+,7.9.2,C-1-12,Test Available,android.media.cts.DecoderTest,"testVrHighPerformanceHEVC
+testVrHighPerformanceVP9",CtsMediaTestCases,,
+,7.9.2,C-1-13,Test Available,com.android.cts.deviceowner.VrTemperatureTest,testVrTemperatures,CtsDevicePolicyManagerTestCases,,
+,7.9.2,C-1-14,Test Available,android.vr.cts.VrDisplayTest,testDisplayResolution,CtsVrTestCases,,
+,7.9.2,C-1-15,Test Available,android.vr.cts.VrDisplayTest,testRefreshRateIsAtLeast60Hz,CtsVrTestCases,,
+,7.9.2,C-1-17,Not testable,,,,,
+,7.9.2,C-1-18,Not testable,,,,,
+,7.9.2,C-1-19,Test Available,android.hardware.cts.SensorSupportTest,"testSupportsAccelerometer
+testSupportsAccelerometerUncalibrated
+testSupportsGyroscope
+testSupportsGyroscopeUncalibrated
+testSupportsMagneticFieldUncalibrated",CtsSensorTestCases,,
+,7.9.2,C-1-20,Test Available,android.hardware.cts.SensorSupportTest,"testSupportsAccelerometer
+testSupportsAccelerometerUncalibrated
+testSupportsGyroscope
+testSupportsGyroscopeUncalibrated
+testSupportsMagneticFieldUncalibrated",CtsSensorTestCases,,
+,7.9.2,C-1-21,Test Available,android.hardware.cts.SensorParameterRangeTest,android.hardware.cts.SensorParameterRangeTest.*,CtsSensorTestCases,,
+,7.9.2,C-1-22,Test Available,DisplayMotionToPhotonLatencyHostTest,DayDreamTestSuite(DTS),DayDreamTestSuite(DTS),,
+,7.9.2,C-1-23,Test Available,DisplayGhostingHostTest,DayDreamTestSuite(DTS),DayDreamTestSuite(DTS),,
+,7.9.2,C-2-1,Test Missing,,,,,http://b/74412493
+8.3 Power Saving Modes,8.3,C-1-1,Test Available,"android.alarmmanager.cts.*
+android.JobScheduler.cts.*
+android.net.cts.*","android.alarmmanager.cts.*
+android.JobScheduler.cts.*
+android.net.cts.*","CtsAlarmManagerTestCases
+CtsJobSchedulerTestCases
+CtsNetTestCases",,
+,8.3,C-1-2,Test Available,android.alarmmanager.cts.AppStandyTests,android.alarmmanager.cts.AppStandbyTest.*,"CtsAlarmManagerTestCases
+CtsJobSchedulerTestCases
+CtsNetTestCases",,
+,8.3,C-1-3,Test Available,android.app.usage.cts.AppIdleHostTest,"testSetAppStandbyBucket
+testSetAppStandyBucket
+testCantSetOwnStandbyBucket
+testOutofBoundStandbyBucket",CtsUsageTestCases,,
+,8.3,C-1-4,Test Available,android.alarmmanager.cts.AppStandyTests,public void *,CtsAlarmManagerTestCases,,
+,8.3,C-1-5,Test Available,android.os.cts.batterysaving,testActivateBatterySaver,CtsBatterySavingTestCases,,
+,8.3,C-1-1,Not testable,,,,,
+8.5 Consistent Performance,8.5,C-0-1,Test Available,android.sustainedPerformance.cts.SustainedPerformanceHostTest,.*,CtsSustainedPerformanceHostTestCases,,
+,8.5,C-1-1,Test Available,android.sustainedPerformance.cts.SustainedPerformanceHostTest,.*,CtsSustainedPerformanceHostTestCases,,
+,8.5,C-1-2,Test Available,android.sustainedPerformance.cts.SustainedPerformanceHostTest,.*,CtsSustainedPerformanceHostTestCases,,
+,8.5,C-2-1,Test Missing,,,,,http://b/74412493
+,8.5,C-2-2,Test Missing,,,,,http://b/74412493
+9.Security Model Compatibility,9,C-0-1,Test Available,"android.permission2.cts.*
+android.security.cts.*
+android.appsecurity.cts.*
+android.permission.cts.*",public void .*,"CtsPermission2TestCases
+CtsSecurityTestCases
+CtsAppSecurityHostTestCases
+CtsSecurityHostTestCases",,
+9.1.Permissions,9.1,C-0-1,Test Available,android.permission2.cts.PermissionPolicyTest,testPlatformPermissionPolicyUnaltered,CtsPermission2TestCases,,
+,9.1,C-0-2,Test Available,android.permission2.cts.PrivappPermissionTest,testPrivappPermissionEnforcement,CtsPermission2TestCases,,
+,9.1,C-0-3,Test Available,com.android.cts.usepermissionUsesPermissionTest23,testInteractiveGrant(),CtsAppSecurityHostTestCases,,
+,9.1,C-0-4,Not testable,,,,,http://b/109825151
+,9.1,C-0-5,Not testable,,,,,http://b/109825151
+,9.1,C-0-6,Other (see comment),,,,Test in gts (Recoverablekeystore) ,
+,9.1,C-1-1,Test Available,android.content.cts.testUsageAccessSettings,testUsageAccessSettings,CtsAppTestCases,,
+9.3 Filesystem Permissions,9.3,C-0-1,Test Available,android.permission.cts.FileSystemPermissionTest,public void .*,CtsPermissionTestCases,,
+9.4.Alternate Execution Environment,9.4,C-0-1,Not testable,,,,,http://b/109940863
+,9.4,C-0-2,Not testable,,,,,http://b/109940863
+,9.4,C-0-3,Not testable,,,,,http://b/109940863
+,9.4,C-0-4,Not testable,,,,,http://b/109825151
+,9.4,C-0-5,Not testable,,,,,http://b/109825151
+,9.4,C-0-6,Not testable,,,,,http://b/109940863
+,9.4,C-0-7,Not testable,,,,,http://b/109940863
+,9.4,C-0-8,Not testable,,,,,http://b/109940863
+,9.4,C-0-9,Not testable,,,,,http://b/109940863
+,9.4,C-0-10,Not testable,,,,,http://b/109940863
+9.5.Multi-User Support,9.5,C-1-3,Test Available,android.appsecurity.cts.ExternalStorageHostTest,testMultiUserStorageIsolated,CtsAppSecurityHostTestCases,,
+,9.5,C-1-4,Test Available,android.appsecurity.cts.ExternalStorageHostTest,testMultiUserStorageIsolated,CtsAppSecurityHostTestCases,,
+,9.5,C-1-5,Not testable,,,,,
+,9.5,C-2-1,Not testable,,,,,
+,9.5,C-3-1,Not testable,,,,This requires manual UI validation,
+9.6.Premium SMS Warning,9.6,C-1-1,Not testable,,,,,
+9.7.Security Features,9.7,C-0-1,Test Available,com.android.host.security.SELinuxHostTest,com.android.host.security.SELinuxHostTest.*,CtsSecurityTestCases,,
+,9.7,C-0-2,Not testable,,,,,http://b/110207977
+,9.7,C-0-3,Test Available,android.security.cts.SELinuxHostTest,public void *,CtsSecurityTestCases,,
+,9.7,C-0-4,Not testable,,,,"This should be covered by existing SELinux Test but 
+there isn't a specific test to point to which check DA APIs 
+adhere to SE linux policy",http://b/110207977
+,9.7,C-0-5,Test Available,android.os.cts.SeccompTest,"testMediaextractorHasSeccompFilter
+testOmxHalHasSeccompFilter",CtsSecurityHostTestCases,,
+,9.7,C-0-6,Test Available,android.security.cts.SELinuxHostTest,"testMediaextractorHasSeccompFilter
+testOmxHalHasSeccompFilter",CtsSecurityHostTestCases,,
+,9.7,C-0-7,Test Available,android.security.cts.KernelConfigTest,testConfigStackProtectorStrong,CtsSecurityHostTestCases,,
+,9.7,C-0-8,Test Available,android.security.cts.SELinuxHostTest,testConfigROData,CtsSecurityHostTestCases,,
+,9.7,C-0-9,Test Available,android.security.cts.KernelConfigTest,testConfigHardenedUsercopy,CtsSecurityHostTestCases,,
+,9.7,C-0-10,Test Available,android.security.cts.KernelConfigTest,testConfigPAN,CtsSecurityHostTestCases,,
+,9.7,C-0-11,Test Available,android.security.cts.KernelConfigTest,testConfigPAN,CtsSecurityHostTestCases,,
+,9.7,C-0-12,Test Available,android.security.cts.KernelConfigTest,testConfigKTPI,CtsSecurityHostTestCases,,
+,9.7,C-1-2,Test Available,android.security.cts.SELinuxHostTest,testGlobalEnforcing,CtsSecurityHostTestCases,,
+,9.7,C-1-3,Test Available,android.security.cts.SELinuxHostTest,testAllDomainsEnforcing,CtsSecurityHostTestCases,,
+,9.7,C-1-4,Test Available,android.security.cts.SELinuxHostTest,testMLSAttributes(),CtsSecurityHostTestCases,,
+,9.7,C-1-5,Test Available,android.security.SELinuxTargetSdkTest,"testAppDomainContext
+testAppDataContext",CtsSelinuxTargetSdkCurrentTestCases,,
+,9.8.1,C-0-1,Test Available,android.app.usage.cts.UsageStatsTest,public void .*,CtsSecurityHostTestCases,,
+,9.8.1,C-0-2,Checking Feature Owner,,,,"GTS Test Case/Requires android.permission.dump
+which is a system API. Not accessible via CTS",http://b/123719753
+,9.8.1,C-0-3,Checking Feature Owner,,,,,http://b/123719753
+,9.8.2,C-0-1,Not testable,,,,,
+,9.8.2,C-1-1,Manually Testable Missing Test,,,,Cannot be automated with CTS/CTS-V/No API defined,
+,9.8.2,C-2-1,Manually Testable Missing Test,,,,Cannot be automated with CTS/CTS-V/No API defined,
+9.8.3 Connectivity,9.8.3,C-1-1,Manually Testable Missing Test,,,,Maybe manual CTS-V test/Requires UI validation,http://b/119312756
+9.8.4 Network Traffic,9.8.4,C-0-1,Test Available,android.security.cts.CertificateTest,"testNoAddedCertificates
+testBlockCertificates",CtsSecurityTestCases,,
+,9.8.4,C-0-2,Test Available,android.security.cts.CertificateTest,testNoAddedCertificates,CtsUsageStatsTestCases,,
+,9.8.4,C-0-3,Test Available,com.android.cts.verifier.security.CANotifyOnBootActivity,.*,CtsVerifierSecurityTestCases,,
+,9.8.4,C-1-1,Test Missing,,,,,http://b/119312756
+,9.8.4,C-2-1,Not testable,,,,"CONTROL_VPN is a system permission. Not testable
+via CTS",
+,9.8.4,C-3-1,Test Available,com.android.cts.verifiier.security.AlwaysOnVpnUnSupportedTest,testSetUnsupportedVpnAlwaysOn(),CtsVerifierSecurityTestCases,,
+9.9. Data Storage Encryption,9.9,C-1-1,Not testable,,,,,
+,9.9,C-2-1,Test Available,android.security.cts.EncryptionTest,testEncryption,CtsSecurityTestCases,,
+9.9.1 Direct Boot,9.9.1,C-0-1,Test Available,android.appsecurity.cts.DirectBootHostTest,testDirectBootNone,CtsAppSecurityHostTestCases,,
+,9.9.1,C-0-2,Test Available,android.appsecurity.cts.DirectBootHostTest,testDirectBootNone,CtsAppSecurityHostTestCases,,
+9.9.2 File Based Encryption,9.9.2,C-1-1,Test Available,android.appsecurity.cts.DirectBootHostTest,testDirectBootNative,CtsAppSecurityHostTestCases,,
+,9.9.2,C-1-2,Test Available,android.appsecurity.cts.DirectBootHostTest,testDirectBootNative,CtsAppSecurityHostTestCases,,
+,9.9.2,C-1-3,Not testable,,,,,
+,9.9.2,C-1-4,Not testable,,,,,
+,9.9.2,C-1-5,Not testable,,,,,
+,9.9.2,C-1-6,Not testable,,,,,
+,9.9.2,C-1-7,Not testable,,,,,
+,9.9.2,C-1-8,Not testable,,,,,
+,9.9.2,C-1-9,Not testable,,,,,
+,9.9.2,C-1-10,Not testable,,,,,
+,9.9.2,C-1-11,Not testable,,,,,
+9.9.3.Full Disk Encryption,9.9.3,C-1-1,Not testable,,,,Deprecated starting from Q,http://b/117890225
+,9.9.3,C-1-2,Not testable,,,,Deprecated starting from Q,http://b/117890225
+,9.9.3,C-1-3,Not testable,,,,Deprecated starting from Q,http://b/117890225
+,9.9.3,C-1-4,Not testable,,,,Deprecated starting from Q,http://b/117890225
+,9.9.3,C-1-5,Not testable,,,,Deprecated starting from Q,http://b/117890225
+9.10.Device Integrity,9.10.,C-0-1,Other (see comment),,,,System API Not accessible via CTS,
+,9.10.,C-0-2,Test Available,android.security.cts.VerifiedBootTest,testVerifiedBootSupport,CtsSecurityTestCases,,
+,9.10.,C-1-1,Test Available,android.security.cts.VerifiedBootTest,testVerifiedBootSupport,CtsSecurityTestCases,,
+,9.10.,C-1-2,Not testable,,,,,
+,9.10.,C-1-3,Not testable,,,,,
+,9.10.,C-1-4,Not testable,,,,,
+,9.10.,C-1-5,Not testable,,,,,
+,9.10.,C-1-6,Not testable,,,,,
+,9.10.,C-1-7,Not testable,,,,,
+,9.10.,C-1-8,Not testable,,,,,
+,9.10.,C-2-1,Not testable,,,,,
+,9.10.,C-3-1,Not testable,,,,,
+,9.10.,C-3-2,Not testable,,,,,
+,9.10.,C-3-3,Not testable,,,,,
+,9.10.,C-3-1,Not testable,,,,,
+9.10 Device Integrity,9.10.,C-3-2,Not testable,,,,,
+,9.10.,C-3-3,Not testable,,,,,
+9.11.Keys And Credentials,9.11,C-0-1,Test Available,android.keystore.cts.AndroidKeyStoreTest,"testKeyStore_LargeNumberOfKeysSupported_EC
+testKeyStore_LargeNumberOfKeysSupported_AES
+testKeyStore_LargeNumberOfKeysSupported_HMAC",CtsKeyStoreTestCases,,
+,9.11,C-0-2,Not testable,,,,,
+,9.11,C-1-1,Not testable,,,,,
+,9.11,C-1-2,Not testable,,,,,
+,9.11,C-1-3,Not testable,,,,,
+,9.11,C-1-4,Not testable,,,,,
+9.11.1 Secure Lock Screen,9.11.1.,C-2-1,Test Available,com.android.cts.verifier.security.ScreenLockBoundKeysTest,com.android.cts.verifier.security.ScreenLockBoundKeysTest.*,CtsVerifierSecurityTestCases,,
+,9.11.1.,C-2-2,Test Available,com.andriod.cts.verifier.securityScreenLockBoundKeysTest,com.andriod.cts.verifier.securityScreenLockBoundKeysTest.*,CtsVerifierSecurityTestCases,,
+,9.11.1.,C-3-1,Not testable,,,,,
+,9.11.1.,C-3-2,Not testable,,,,,
+,9.11.1.,C-3-3,Not testable,,,,,
+,9.11.1.,C-3-4,Not testable,,,,,
+,9.11.1.,C-4-1,Not testable,,,,,
+,9.11.1.,C-4-2,Not testable,,,,,
+,9.11.1.,C-4-3,Not testable,,,,,
+,9.11.1.,C-5-1,Not testable,,,,,
+,9.11.1,C-5-2,Not testable,,,,,
+,9.11.1,C-5-3,Not testable,,,,,
+,9.11.1,C-5-4,Not testable,,,,,
+,9.11.1,C-6-1,Not testable,,,,,
+,9.11.1,C-6-2,Not testable,,,,,
+,9.11.1,C-6-3,Not testable,,,,,
+,9.11.1,C-6-4,Test Available,android.keystore.cts.KeyGenParameterSpecTest,testSettersReflectedInGetters(),CtsKeyStoreTestCases,,
+9.11.2 Strong Box,9.11.2,C-1-1,Not testable,,,,,
+,9.11.2,C-1-2,Not testable,,,,,
+,9.11.2,C-1-3,Not testable,,,,,
+,9.11.2,C-1-4,Not testable,,,,,
+,9.11.2,C-1-5,Not testable,,,,,
+,9.11.2,C-1-6,Not testable,,,,,
+,9.11.2,C-1-7,Not testable,,,,,
+,9.11.2,C-1-8,Not testable,,,,,
+,9.11.2,C-1-9,Not testable,,,,,
+,9.11.2,C-1-10,Not testable,,,,,
+,9.11.2,C-1-11,Not testable,,,,,
+9.12.Data Deletion,9.12,C-0-1,Not testable,,,,,
+,9.12,C-0-2,Not testable,,,,,
+,9.12,C-0-3,Not testable,,,,,
+,9.12,C-0-4,Not testable,,,,,
+9.13.Safe Boot Mode,9.13,C-1-1,Not testable,,,,,http://b/74547779
+,9.13,C-1-2,Not testable,,,,,http://b/74547779
+9.15.Subscription Plans,9.15,C-0-1,Test Available,android.telephony.cts.SubscriptionManagerTest,testSubscriptionPlans,CtsTelephonyTestCases,,
+,9.15,C-0-2,Not testable,,,,,http://b/74547779
+,9.15,C-0-3,Test Available,android.telephony.cts.SubscriptionManagerTest,testSubscriptionPlansOverrideCongested,CtsTelephonyTestCases,,

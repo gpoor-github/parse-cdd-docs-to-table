@@ -5,112 +5,13 @@ import time
 
 import class_graph
 import persist
+from static_data_holder import CTS_SOURCE_PARENT, all_words_to_skip, REQUIREMENTS_FROM_HTML_FILE, \
+    TEST_FILES_TO_DEPENDENCIES_STORAGE, CTS_SOURCE_ROOT
 from table_ops import read_table
-
-# CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
-CTS_SOURCE_PARENT = "//home/gpoor/aosp_platform_source/"
-
-CTS_SOURCE_NAME = 'cts'
-CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
-
-cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
-                    'condition',
-                    'Condition', 'any', 'unconditional;', '-', 'SR]', 'C:', 'Type', 'Tab:', 'implementation', '1',
-                    'When', 'id=',
-                    'assigned', ':', '2.', 'requirement', '(Requirements', 'consists', '(see', 'This', 'Each',
-                    'ID', 'assigned.', 'Device', '1st', 'section', 'Watch', 'conditional;', 'A:', '<h4',
-                    '(e.g.', 'type.', 'C-0-1).', 'T:', 'condition.', 'increments', 'defined', '0.', 'within',
-                    'below:',
-                    'applied', 'W:''', 'party', 'earlier', 'exempted', 'MUST', 'applications', 'requirement.',
-                    'Devices', ';', 'support', 'document', 'level', 'through', 'logical', 'available',
-                    'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'  "MUST",
-                    "SHOULD",
-                    "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'STRONGLY',
-                    'developer.android.com', 'Test', '@Test', 'app,data'}
-
-common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'using', 'value', 'more' 'open', 'getType',
-                  'getMessage', 'equals', 'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from',
-                  'String', 'HashMap', "None", "no"}
-
-common_english_words = {'the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on',
-                        'are', 'as', 'with', 'his', 'they', 'I', 'at', 'be', 'this', 'have', 'from', 'or', 'one',
-                        'had', 'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can',
-                        'said', 'there', 'use', 'an', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will',
-                        'up', 'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her',
-                        'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go',
-                        'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been',
-                        'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come',
-                        'made', 'may', 'here'}
-
-found_in_java_source = {
-    'all', 'back', 'result', 'check', 'null', 'test', 'end', 'time', 'regular', 'able', 'start', 'Default',
-    'times', 'timestamp', 'should', 'Build', 'Remote',
-    'non', 'name', 'End', 'top', 'stop', 'class', 'Location', 'ID3', 'state', 'create', 'add', 'LOCATION_MODE',
-    '0x00', 'present', 'sent', 'broadcast', 'Callback()',
-    'Mode', 'mode', 'record', 'Method', 'app', 'previous', '800', 'call', 'connected', 'false', 'For', 'run',
-    'batching', '-1000',
-    'getName()', 'clear', 'per', 'under', 'Lock', 'disable', 'enable', 'content', 'size', 'actual', 'verify',
-    'less', 'already', 'extend', 'text)', 'reflect',
-    'signal', 'use', '2.0', 'variable', 'concurrent', 'lit', 'error', 'setting', 'expected', 'method', 'Report',
-    'scanner', 'cases', 'change', 'device)', 'match', 'receive', 'param', 'manager', '180', 'only', 'class);',
-    'Class', '200', 'bit', 'part', '(no', 'Using', 'action', 'devices)', '(generic', 'nor', 'before',
-    'appropriate', 'it;', 'press', 'provide', 'equal', 'Open', 'true', 'except', 'right', 'Project', 'over',
-    'Source', 'read', 'applicable', 'work', 'either', 'specific', 'See', 'language', 'Settings;', 'Package',
-    'limitation', 'required', 'Pack', 'limitations', 'true;', 'context', 'file',
-    'require', '(the', 'package', 'licenses', 'Unless', 'writing', '8000;', '(in', 'Filter;', 'soft', 'text;',
-    'unit', 'New', 'copy', 'types', 'type', 'function', '1000', '100', 'used', '(10', 'determine', 'met',
-    'annotation', 'fail', 'java.util.List', 'link',
-    'first', 'functionalities', 'contains', 'contain', 'All', 'off', 'called', 'list', 'feature', 'whether',
-    'implement', 'supported', 'devices', 'timeout', 'matched', 'com.android', 'tests',
-    'Service;', 'correct', 'Profile;', 'support', 'Number', 'rect', 'parameters', 'parameter', 'matching',
-    'states', 'profile)', 'position', 'begin', '10;', 'Level', 'allowed', 'more', 'Maximum', 'otherwise',
-    'milliseconds', 'Access', 'seconds', 'form', 'hidden', 'invoke', 'array', 'platform', 'Such', 'ONLY', '(by',
-    'class;', 'Simple', 'other', 'put', 'report', 'MAX', 'true);', '0x02', 'protect', 'known',
-    'flags', 'level', "won't", 'unknown', 'cause', 'matches', 'turned', 'returned', 'lose', 'Key', 'behavior',
-    'emulate', 'Can', 'Note', 'does', 'even', 'between', 'random', 'With', 'methods', 'must',
-    'target', 'ID;', 'just', 'naming', 'characters', 'address', 'Generic', 'basic', 'original', 'reported',
-    'running', 'complete', 'full', 'certain', 'based', 'away', 'want', 'once', 'real',
-    'started', 'strong', 'buffer', 'range', 'next', 'base', 'far', 'completely', 'least', 'explicit', 'or;', 'declare',
-    '(for', 'Are', 'source', 'preload', 'key', 'test('}
-
-java_keywords = {'abstract', 'continue', 'for', 'new', 'switch', 'assert', '**', '*default', 'goto', '*', 'package',
-                 'synchronized', 'boolean', 'do', 'if', 'private', 'this', 'break', 'double', 'implements',
-                 'protected', 'throw', 'byte', 'else', 'import', 'public', 'throws', 'case', 'enum', '**', '**',
-                 'instanceof', 'return', 'transient', 'catch', 'extends', 'int', 'short', 'try', 'char', 'final',
-                 'interface', 'static', 'class', 'finally', 'long', 'strictfp', '**', 'volatile', 'const', '*',
-                 'float', 'native', 'super', 'while', 'void', 'include', '#include'}
-
-license_words = {
-    "/** **/ ** Copyright 2020 The Android Open Source Project * * Licensed under the Apache License, Version 2.0 (the  License); "
-    "* you may not use this file except in compliance with the License. * You may obtain a copy of the License at ** "
-    "http://www.apache.org/licenses/LICENSE-2.0 * * Unless required by applicable law or agreed to in writing, software * distributed under the License is distributed on an AS IS"
-    " BASIS, * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. * See the License for the specific language governing permissions and * limitations "
-    "under the License.(C) \"AS IS\" */"}
-
-all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).union(common_english_words) \
-    .union(found_in_java_source) \
-    .union(java_keywords) \
-    .union(license_words)
 
 
 def remove_non_determinative_words(set_to_diff: set):
     return set_to_diff.difference(all_words_to_skip)
-
-
-#
-# def get_cached_keys_to_files(key_to_java_objects):
-#     try:
-#         keys_to_files_dict = persist.read("storage/keys_to_files_dict.csv")
-#     except IOError:
-#         print("Could not open key to file map, recreating ")
-#         keys_to_files_dict: dict = __find_test_files(key_to_java_objects)
-#         persist.write(keys_to_files_dict, "storage/keys_to_files_dict.csv")
-#     return keys_to_files_dict
-
-
-TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
-
-REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
 
 
 def find_urls(text_to_scan_urls: str):
@@ -183,9 +84,8 @@ def handle_java_files_data(key_str):
                     current_matches = len(matched)
                     if current_matches >= max_matches:
                         a_single_test_file_name = file_name_relative
-                        a_method =a_method_candidate
+                        a_method = a_method_candidate
                         max_matches = current_matches
-
 
                 class_name_split_src = a_single_test_file_name.split('/src/')
                 # Module
@@ -221,7 +121,6 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
     total_requirement_count = 0
     with open(cdd_html_file, "r") as text_file:
         cdd_requirements_file_as_string = text_file.read()
-    cdd_requirements_file_as_string = clean_html_anchors(cdd_requirements_file_as_string)
     section_id_re_str: str = '"(?:\d{1,3}_)+'
     cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string, flags=re.DOTALL)
     section_id_count = 0
@@ -272,9 +171,11 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
                     record_id_splits, section_id_count, total_requirement_count):
     record_id_count = 0
+
     for record_id_split in record_id_splits:
         key = record_key_method(key_string_for_re, record_id_split, section_id)
         if key:
+            record_id_split = clean_html_anchors(record_id_split)
             record_id_count += 1
             total_requirement_count += 1
             print(

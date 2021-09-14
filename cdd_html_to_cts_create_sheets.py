@@ -91,7 +91,9 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
             table[table_row_index][static_data_holder.new_header.index('Test Availability')] = "Test Available"
 
         if matched:
-            table[table_row_index][static_data_holder.new_header.index('matched')] = matched
+            table[table_row_index][static_data_holder.new_header.index('matched_files')] = matched
+            table[table_row_index][static_data_holder.new_header.index('matched_terms')] = matched
+
         if a_found_methods_string:
             table[table_row_index][static_data_holder.new_header.index('methods_string')] = a_found_methods_string
 
