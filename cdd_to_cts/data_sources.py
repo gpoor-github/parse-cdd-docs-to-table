@@ -5,6 +5,7 @@ import time
 
 import class_graph
 import persist
+from cdd_to_cts import static_data_holder
 from static_data_holder import CTS_SOURCE_PARENT, all_words_to_skip, REQUIREMENTS_FROM_HTML_FILE, \
     TEST_FILES_TO_DEPENDENCIES_STORAGE, CTS_SOURCE_ROOT
 from table_ops import read_table
@@ -552,7 +553,7 @@ global_input_table, global_input_table_keys_to_index, global_input_header, globa
 key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements()
 
 #    class DataSources:
-files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
+files_to_test_cases = build_test_cases_module_dictionary(static_data_holder.TEST_CASE_MODULES)
 
 files_to_words, method_to_words, files_to_method_calls = SourceCrawlerReducer().get_cached_crawler_data()
 testfile_dependencies_to_words = get_file_dependencies()

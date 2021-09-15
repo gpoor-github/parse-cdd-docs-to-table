@@ -4,9 +4,6 @@ import data_sources
 import static_data_holder
 from table_ops import write_table, update_table
 
-INPUT_TABLE_FILE_NAME = '2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv'
-
-
 def create_populated_table(keys_to_find_and_write):
     table: [[str]] = []
     keys_to_table_index: dict[str, int] = dict()

@@ -1,4 +1,4 @@
-# CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
+import os
 import time
 
 import rx
@@ -8,6 +8,12 @@ CTS_SOURCE_PARENT = "/home/gpoor/aosp_platform_source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
+
+REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
+INPUT_TABLE_FILE_NAME = '2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv'
+TEST_FILES_TXT = "input_scripts/test-files.txt"
+TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
+INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/android_studio_dependencies_for_cts.txt'
 
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
                     'condition',
@@ -90,8 +96,6 @@ all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).uni
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 
-REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
-
 new_header: [] = (
     ['Section', 'section_id', 'req_id', 'Test Availability', 'class_def', 'method', 'module', 'full_key',
      'requirement', 'key_as_number', 'search_terms', 'manual_search_terms', 'matched_terms', 'file_name',
@@ -113,18 +117,13 @@ merge_header: [] = (
 add_keys_only: [] = (
     ['full_key', 'key_as_number'])
 
+def set_cts_path():
+    os.environ['CTS_SOURCE_ROOT'] = CTS_SOURCE_ROOT
+    os.environ['USER_HOME'] = '~/'
+    os.environ['PROJECT_DIR'] = CTS_SOURCE_ROOT
+
 if __name__ == '__main__':
     start = time.perf_counter()
-    # test_rx_at_test_methods()
-    test_list = ["1 2 3", "4 5 6", "2 3 1"]
-    test_key: [int] = [0, 1, 2]
-    # rx.from_iterable(test_list).pipe(ops.to_dict(lambda key_seed: key_seed+'_key')).subscribe( lambda value: print("Received {0}".format(value)))
-    test_dic = dict((sub, test_list[sub]) for sub in test_key)
-    flat_dict_list = list((str(key) + test_dic[key]) for key in test_dic)
-    fd = sorted(test_dic.items(), key=lambda x: x[1], reverse=True)
-    rx.from_iterable(flat_dict_list).pipe(ops.map(lambda item: item)).subscribe(
-        lambda value: print("Received {}".format(value)))
-    # , ops.combine_latest(lambda v: rx.from_iterable(list(v[0])),rx.from_iterable(test_list))
-    # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0"}.format(value)))
+
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

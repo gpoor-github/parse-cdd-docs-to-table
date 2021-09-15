@@ -9,6 +9,7 @@ from rx.subject import ReplaySubject
 from cdd_to_cts.class_graph import get_cts_root, parse_
 
 
+
 def file_transform_to_full_path(value):
     tvalue: [str, [], []] = value
     return rx.from_list(tvalue[2])
@@ -32,7 +33,7 @@ class RxData:
 
     replay_at_test_files_to_methods: ReplaySubject
 
-    def build_replay_of_at_test_files(self, results_grep_at_test: str = "input/test-files.txt"):
+    def build_replay_of_at_test_files(self, results_grep_at_test: str = ("%s" % TEST_FILES_TXT)):
         # test_files_to_methods: {str: str} = dict()
         re_annotations = re.compile('@Test.*?$')
 
@@ -72,7 +73,7 @@ def my_print(v, f: str = '{}'):
 
 def test_rx_files_to_words():
     rd = RxData()
-    rd.rx_files_to_words.subscribe(lambda v: my_print(v, "f to w = {}"))
+    rd.replay_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
 
 
 def test_rx_dictionary():
@@ -80,7 +81,7 @@ def test_rx_dictionary():
     # rs = ReadSpreadSheet()
     result = dict()
     # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
-    rd.rx_at_test_files_to_methods.subscribe(lambda value: print("Received {0".format(value)))
+    rd.replay_at_test_files_to_methods.subscribe(lambda value: print("Received {0".format(value)))
 
 
 def test_rx_at_test_methods():
@@ -95,13 +96,12 @@ def test_rx_at_test_methods():
     at_file_full_path = rd.replay_at_test_files_to_methods.pipe(ops.map(lambda v: str(v).split(" :")[0]),
                                                                 ops.distinct_until_changed(),
                                                                 ops.map(lambda v: my_print(v)))
-    at_file_full_path.subscribe(on_next=lambda value: print("Received3 {0}".format(value)))
-    pipe_methods_for_file.subscribe(lambda value: print("Received4 {0}".format(value)))
-
+    pipe_words_for_file = at_file_full_path.pipe(ops.map(lambda f: f'{f}:{read_file_to_string(f)}'))
+    return pipe_words_for_file
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    test_rx_at_test_methods()
+    test_rx_at_test_methods().subscribe(lambda value: print("Received4 {0}".format(value)))
 
     # rx.pipe () scribe(rx.from_iterable(data_sources.get_cached_grep_of_at_test_files))
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))

@@ -3,7 +3,15 @@ echo a spreadsheet that shows the  CDD-CTS mapping built from the content and co
 echo This script should be run in the root directory of the CTS source.
 echo getting the cdd requirments from  https://source.android.com/compatibility/11/android-11-cdd
 echo overwrite with another version if desired.
-wget -O ./input/cdd.html  https://source.android.com/compatibility/11/android-11-cdd
+cdd_version=n
+read -p "Do you want to download the requirements? enter version number (n) for no. " cdd_version
+if [[ "$cdd_version" != n ]]
+  then
+    echo getting https://source.android.com/compatibility/"$cdd_version"/android-"$cdd_version-cdd"
+    wget -O ./input/cdd.html  https://source.android.com/compatibility/""$cdd_version""/android-"$cdd_version"-cdd
+
+fi
+
 #read -p "Clone the CTS source in this directory? " $clone_cts
 #echo value read = $clone_cts
 #if [[ $clone_cts == "Y" ]]
@@ -14,22 +22,25 @@ wget -O ./input/cdd.html  https://source.android.com/compatibility/11/android-11
 # echo verify the tag https://source.android.com/compatibility/cts/downloads
 #    git describe --tags --abbrev=0
 #     android-cts-11.0_r5
-
 #fi
-ctsdir='.'#'/home/gpoor/cts-source'
-if [[ $clone_cts != "Y" ]]
-  then
-      read -p "Enter the path the the CTS root ( . for current dir )" ctsdir
+python3 ./cdd_to_cts/static_data_holder.py
 
+$ctsdir=$CTS_SOURCE_DIR
+echo Currently CTS source root dir is "$CTS_SOURCE_DIR"
+read -p "Enter the path the the CTS root  (n) for no Note: $CTS_SOURCE_DIR is the current dir, enter n to keep it " ctsdir
+if [[ $ctsdir != "n" ]]
+  then
+      $CTS_SOURCE_DIR=@ctsdir
+      echo now the CTS source root dir is CTS_SOURCE_DIR ="$CTS_SOURCE_DIR"
 fi
 
 #
 # This script should be run in CTS source directory.
 echo this is what was entered $ctsdir
-#/home/gpoor/cts-source/
+#/home/gpoor/aosp_platform_source/cts
 
-echo Will grep -inr -A 2 "@Test" --include \*.java "$ctsdir/*"
-grep -inr -A 2 "@Test" --include \*.java $ctsdir/* > input/test-files.txt
+echo grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/tests/* > input_scripts/test-files.txt
+grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/tests/* > input_scripts/test-files.txt
 
-grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input/testcases-modules.txt
-#python3 cdd_html_to_cts_create_sheets.py
+echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/tests/* > input_scripts/testcases-modules.txt
+grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/tests/* > input_scripts/testcases-modules.txt
