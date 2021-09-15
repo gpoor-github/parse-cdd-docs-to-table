@@ -77,7 +77,7 @@ def handle_java_files_data(key_str):
             for file_name in keys_to_files_dict:
                 file_name_relative = str(file_name).replace(CTS_SOURCE_PARENT, "")
                 a_single_test_file_name = file_name_relative
-                found_methods_string = at_test_files_to_methods.get(file_name_relative)
+                found_methods_string = class_graph.get_cached_grep_of_at_test_files().get(file_name_relative)
                 a_method_candidate = get_random_method_name(found_methods_string)
                 if a_method_candidate:
                     matched = keys_to_files_dict.get(file_name)
@@ -489,7 +489,7 @@ class SourceCrawlerReducer:
 
         test_files_to_aggregated_words: dict[str, set] = dict()
         # Have a test files and get all the words for it and it's dependencies
-        for file in at_test_files_to_methods:
+        for file in class_graph.get_cached_grep_of_at_test_files():
             file = str(file)
             aggregate_words_for_dependencies = set()
             a_files_to_word = files_to_words_inner.get(CTS_SOURCE_PARENT + file)
@@ -516,7 +516,7 @@ class SourceCrawlerReducer:
         file_list = list()
         error_cnt = 0
         found_cnt = 0
-        for test_file in at_test_files_to_methods:
+        for test_file in class_graph.get_cached_grep_of_at_test_files():
             test_file = str(test_file)
             if test_file.endswith(".java"):
                 file_list.clear()
@@ -553,7 +553,6 @@ key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, sect
 
 #    class DataSources:
 files_to_test_cases = build_test_cases_module_dictionary('input/testcases-modules.txt')
-at_test_files_to_methods = class_graph.get_cached_grep_of_at_test_files()
 
 files_to_words, method_to_words, files_to_method_calls = SourceCrawlerReducer().get_cached_crawler_data()
 testfile_dependencies_to_words = get_file_dependencies()

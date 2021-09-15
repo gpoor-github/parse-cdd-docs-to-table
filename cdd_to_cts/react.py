@@ -1,4 +1,3 @@
-import os
 import re
 import time
 
@@ -6,14 +5,13 @@ import rx
 from rx import operators as ops
 from rx.subject import ReplaySubject
 
-#from cdd_to_cts.check_sheet import ReadSpreadSheet
-from cdd_to_cts import static_data_holder
+# from cdd_to_cts.check_sheet import ReadSpreadSheet
 from cdd_to_cts.class_graph import get_cts_root, parse_
+
 
 def file_transform_to_full_path(value):
     tvalue: [str, [], []] = value
     return rx.from_list(tvalue[2])
-
 
 
 def read_file_to_string(file):
@@ -22,6 +20,7 @@ def read_file_to_string(file):
         file_string = re.sub(' Copyright.+limitations under the License', "", file_string_raw, flags=re.DOTALL)
         text_file.close()
         return file_string
+
 
 class RxData:
     # rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
@@ -58,9 +57,11 @@ class RxData:
                         count += 1
                         class_def, method = parse_(line_method)
                     if method:
-                        self.replay_at_test_files_to_methods.on_next('{} :{}'.format(test_annotated_file_name_absolute_path,method.strip(' ') ))
+                        self.replay_at_test_files_to_methods.on_next(
+                            '{} :{}'.format(test_annotated_file_name_absolute_path, method.strip(' ')))
 
             self.replay_at_test_files_to_methods.on_completed()
+
 
 # rx_search_results = rx.pip(ops.)
 
@@ -76,7 +77,7 @@ def test_rx_files_to_words():
 
 def test_rx_dictionary():
     rd = RxData()
-    #rs = ReadSpreadSheet()
+    # rs = ReadSpreadSheet()
     result = dict()
     # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
     rd.rx_at_test_files_to_methods.subscribe(lambda value: print("Received {0".format(value)))
@@ -87,11 +88,13 @@ def test_rx_at_test_methods():
     rd.build_replay_of_at_test_files()
     # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
     rd.replay_at_test_files_to_methods.subscribe(lambda value: print("Received {0}".format(value)))
-    pipe_test_file_dot_method= rd.replay_at_test_files_to_methods.pipe(ops.sum(lambda v: 1 ),ops.map(lambda v: my_print(v)))
+    pipe_test_file_dot_method = rd.replay_at_test_files_to_methods.pipe(ops.sum(lambda v: 1),
+                                                                        ops.map(lambda v: my_print(v)))
     filter_file_name = "cts/PaintTest.java"
-    pipe_methods_for_file =   rd.replay_at_test_files_to_methods.pipe(ops.filter(lambda v: v.find(filter_file_name)>-1 ))
+    pipe_methods_for_file = rd.replay_at_test_files_to_methods.pipe(ops.filter(lambda v: v.find(filter_file_name) > -1))
     at_file_full_path = rd.replay_at_test_files_to_methods.pipe(ops.map(lambda v: str(v).split(" :")[0]),
-                                            ops.distinct_until_changed(),ops.map(lambda v: my_print(v)))
+                                                                ops.distinct_until_changed(),
+                                                                ops.map(lambda v: my_print(v)))
     at_file_full_path.subscribe(on_next=lambda value: print("Received3 {0}".format(value)))
     pipe_methods_for_file.subscribe(lambda value: print("Received4 {0}".format(value)))
 

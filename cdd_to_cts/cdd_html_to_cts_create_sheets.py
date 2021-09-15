@@ -85,7 +85,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
         table[table_row_index][static_data_holder.new_header.index('module')] = test_case_name
         if a_single_test_file_name:
             table[table_row_index][static_data_holder.new_header.index('class_def')] = class_name
-            table[table_row_index][static_data_holder.new_header.index('file_name')] = a_single_test_file_name
+            table[table_row_index][static_data_holder.new_header.index('file_name')] = static_data_holder.CTS_SOURCE_PARENT+a_single_test_file_name
         if a_method:
             table[table_row_index][static_data_holder.new_header.index('method')] = a_method
             table[table_row_index][static_data_holder.new_header.index('Test Availability')] = "Test Available"

@@ -34,20 +34,24 @@ re_class = re.compile('class (\w+)')
 
 
 def get_cached_grep_of_at_test_files(results_grep_at_test: str = FILES_TO_TEST_METHODS_PICKLE):
+    local_tests_files_methods: dict = dict()
     try:
-        test_files_to_methods: dict = persist.read(results_grep_at_test)
+        local_tests_files_methods: dict = persist.read(results_grep_at_test)
     except IOError:
         print("Could not open test_files_to_methods, recreating ")
         test_files_to_methods = __parse_grep_of_at_test_files()
         persist.write(test_files_to_methods, results_grep_at_test)
-    return test_files_to_methods
+
+    return local_tests_files_methods
 
 
 def clear_cached_grep_of_at_test_files():
     try:
+        global_tests_files_methods = None
         os.remove(FILES_TO_TEST_METHODS_PICKLE)
     except IOError:
         pass
+
 
 def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
     test_files_to_methods: {str: str} = dict()
@@ -127,8 +131,5 @@ def parse_dependency_file(file_name_in: str = INPUT_DEPENDENCIES_FOR_CTS_TXT):
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    clear_cached_grep_of_at_test_files()
-    tests_files_methods = get_cached_grep_of_at_test_files()
-    print(tests_files_methods)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

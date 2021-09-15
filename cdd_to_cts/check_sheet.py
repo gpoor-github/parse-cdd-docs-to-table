@@ -5,7 +5,7 @@ import os
 from static_data_holder import CTS_SOURCE_ROOT
 
 
-def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) ->bool:
+def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) -> bool:
     # file_name_from_class = "{}/tests/tests/{}.{}".format(CTS_SOURCE_ROOT,class_def_value.replace(".","/"),'java')
 
     if file_name_from_class:
@@ -83,7 +83,8 @@ class ReadSpreadSheet:
                     method_value = table[table_index][header.index("method")]
                     module_value = table[table_index][header.index("module")]
                     if class_def_value:
-                        is_found = check_for_file_and_method(self.file_dict.get(class_def_value), method_value, self.file_name_to_result)
+                        is_found = check_for_file_and_method(self.file_dict.get(class_def_value), method_value,
+                                                             self.file_name_to_result)
                         if is_found:
                             self.found_count += 1
                         else:
