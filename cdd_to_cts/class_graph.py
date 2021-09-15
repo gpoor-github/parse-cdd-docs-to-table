@@ -49,7 +49,6 @@ def clear_cached_grep_of_at_test_files():
     except IOError:
         pass
 
-
 def __parse_grep_of_at_test_files(results_grep_at_test: str = "input/test-files.txt"):
     test_files_to_methods: {str: str} = dict()
 
