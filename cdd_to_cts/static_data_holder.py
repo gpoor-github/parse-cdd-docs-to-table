@@ -12,6 +12,13 @@ TEST_FILES_TXT = "input_scripts/test-files.txt"
 TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
 INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/cts-deps-from-test-3-trans.txt'
 
+composite_key_string_re = "\s*(?:<li>)?\["
+req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
+java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
+java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
+java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
+find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
                     'condition',
                     'Condition', 'any', 'unconditional;', '-', 'SR]', 'C:', 'Type', 'Tab:', 'implementation', '1',
@@ -126,10 +133,3 @@ if __name__ == '__main__':
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
-composite_key_string_re = "\s*(?:<li>)?\["
-req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
-java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
-java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
-java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
-find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
