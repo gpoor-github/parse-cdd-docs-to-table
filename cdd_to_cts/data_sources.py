@@ -134,7 +134,7 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
     for record_id_split in record_id_splits:
         key = record_key_method(key_string_for_re, record_id_split, section_id)
         if key:
-            record_id_split = clean_html_anchors(record_id_split)
+            record_id_split = helpers.clean_html_anchors(record_id_split)
             record_id_count += 1
             total_requirement_count += 1
             print(
