@@ -169,7 +169,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
                 java_objects_temp.add(key_split[1])
             key_to_java_objects_local[key] = java_objects_temp
     if len(key_to_full_requirement_text_local) < 50:
-        raise SystemExit("Less than 50 requirments!? " + str(key_to_full_requirement_text_local))
+        raise SystemExit("Less than 50 requirements!? " + str(key_to_full_requirement_text_local))
     return key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data
 
 

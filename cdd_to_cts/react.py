@@ -149,6 +149,22 @@ class RxData:
         self.replay_cdd_requirements.on_completed()
         return self.replay_cdd_requirements
 
+
+    def pre_process_section(self, section:str):
+        req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
+
+        total_requirement_count = self.process_section(find_full_key, full_key_string_for_re, cdd_section_id,
+                                                  key_to_full_requirement_text_local, req_id_splits,
+                                                  section_id_count, total_requirement_count)
+        # Only build a key if you can't find any...
+        if len(req_id_splits) < 2:
+            from cdd_to_cts import data_sources
+            req_id_splits = re.split(data_sources.composite_key_string_re, str(section))
+
+            total_requirement_count = self.process_section(build_composite_key, req_id_re_str, cdd_section_id,
+                                                      key_to_full_requirement_text_local, req_id_splits,
+                                                      section_id_count, total_requirement_count)
+
     def process_section(self, record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
                     record_id_splits, section_id_count, total_requirement_count):
         record_id_count = 0

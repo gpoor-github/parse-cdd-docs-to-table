@@ -115,15 +115,13 @@ def parse_dependency_file(file_name_in: str = static_data_holder.INPUT_DEPENDENC
     file_as_string = input_file.read()
     file_splits = file_as_string.split('<file path=')
     for a_file_split in file_splits:
-        if dependencies_file_name.endswith('.java') and dependencies_file_name:
-            target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(
-                0)  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
+        target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0)  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
         dependencies_split = a_file_split.split('<dependency path=')
         dependency_list: [] = list()
         for a_dependencies_split in dependencies_split:
             dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
             if dependencies_file_name.endswith('.java') and dependencies_file_name:
-                dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
+                #dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
                 dependency_list.append(dependencies_file_name)
 
         test_classes_to_dependent_classes[target_file_name] = dependency_list
