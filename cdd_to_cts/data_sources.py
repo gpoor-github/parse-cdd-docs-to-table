@@ -5,52 +5,16 @@ import time
 
 import class_graph
 import persist
-from cdd_to_cts import static_data_holder
-from cdd_to_cts.static_data_holder import composite_key_string_re, req_id_re_str, full_key_string_for_re, \
-    java_methods_re_str, java_object_re_str, java_defines_str, find_url_re_str
-from static_data_holder import CTS_SOURCE_PARENT, all_words_to_skip, CDD_REQUIREMENTS_FROM_HTML_FILE, \
+import helpers
+from cdd_to_cts import static_data
+from cdd_to_cts.helpers import find_urls, find_java_objects, process_requirement_text, remove_non_determinative_words
+from cdd_to_cts.static_data import composite_key_string_re, req_id_re_str, full_key_string_for_re
+from static_data import CTS_SOURCE_PARENT, CDD_REQUIREMENTS_FROM_HTML_FILE, \
     TEST_FILES_TO_DEPENDENCIES_STORAGE, CTS_SOURCE_ROOT
 from table_ops import read_table
 
 
-def remove_non_determinative_words(set_to_diff: set):
-    return set_to_diff.difference(all_words_to_skip)
-
-
-def find_urls(text_to_scan_urls: str):
-    return " ".join(set(re.findall(find_url_re_str, text_to_scan_urls)))
-
-
 # find likely java objects from a text block
-def find_java_objects(text_to_scan_for_java_objects: str) -> set:
-    java_objects = set()
-    #  java_objects.update(cleanhtml(process_requirement_text(text_to_scan_for_java_objects)).split(' '))
-    java_objects.update(re.findall(java_methods_re_str, text_to_scan_for_java_objects))
-    java_objects.update(re.findall(java_object_re_str, text_to_scan_for_java_objects))
-    java_objects.update(re.findall(java_defines_str, text_to_scan_for_java_objects))
-    java_objects = remove_non_determinative_words(java_objects)
-    java_objects.discard(None)
-    return java_objects
-
-
-def process_requirement_text(text_for_requirement_value: str, previous_value: str = None):
-    value = cleanhtml(text_for_requirement_value)
-    value = re.sub("\s\s+", " ", value)
-    value = re.sub(",", ";", value)
-    if previous_value:
-        return '{} | {}'.format(previous_value, value)
-    else:
-        return value
-
-
-def cleanhtml(raw_html):
-    cleanr = re.compile('<.*?>')
-    cleantext = re.sub(cleanr, '', raw_html)
-    return cleantext
-
-
-def clean_html_anchors(raw_html: str):
-    return raw_html.replace("</a>", "")
 
 
 def handle_java_files_data(key_str):
@@ -547,7 +511,7 @@ global_input_table, global_input_table_keys_to_index, global_input_header, globa
 key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements()
 
 #    class DataSources:
-files_to_test_cases = build_test_cases_module_dictionary(static_data_holder.TEST_CASE_MODULES)
+files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
 
 files_to_words, method_to_words, files_to_method_calls = SourceCrawlerReducer().get_cached_crawler_data()
 testfile_dependencies_to_words = get_file_dependencies()

@@ -3,7 +3,7 @@ import re
 import time
 
 import persist
-from cdd_to_cts import static_data_holder
+from cdd_to_cts import static_data
 
 FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
 
@@ -53,7 +53,7 @@ def clear_cached_grep_of_at_test_files():
         pass
 
 
-def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data_holder.TEST_FILES_TXT):
+def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data.TEST_FILES_TXT):
     test_files_to_methods: {str: str} = dict()
 
     re_annotations = re.compile('@Test.*?$')
@@ -108,7 +108,7 @@ def parse_(line_method):
     return class_def, method
 
 
-def parse_dependency_file(file_name_in: str = static_data_holder.INPUT_DEPENDENCIES_FOR_CTS_TXT):
+def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR_CTS_TXT):
     # /Volumes/graham-ext/AndroidStudioProjects/cts
     input_file = open(file_name_in, 'r')
     test_classes_to_dependent_classes: dict = dict()

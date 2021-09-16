@@ -2,7 +2,7 @@ import csv
 import json
 import os
 
-from static_data_holder import CTS_SOURCE_ROOT
+from static_data import CTS_SOURCE_ROOT
 
 
 def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) -> bool:

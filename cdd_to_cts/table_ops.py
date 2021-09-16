@@ -1,7 +1,7 @@
 import csv
 import sys
 
-import static_data_holder
+import static_data
 
 
 def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2: [[str]], key_to_index2: dict,
@@ -52,8 +52,8 @@ def merge_tables(file1, file2):
     table1, key_fields1, header1, duplicate_rows1 = read_table(file1)
     table2, key_fields2, header2, duplicate_rows2 = read_table(file2)
     updated_table, missingkeys1, missingkeys1 = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
-                                                             static_data_holder.merge_header)
-    write_table("output/update_test.cvs", updated_table, static_data_holder.default_header)
+                                                             static_data.merge_header)
+    write_table("output/update_test.cvs", updated_table, static_data.default_header)
     return table1, key_fields1, header1, table2, key_fields2, header2
 
 

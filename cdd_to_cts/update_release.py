@@ -1,6 +1,6 @@
 import time
 
-import static_data_holder
+import static_data
 import table_ops
 
 
@@ -16,7 +16,7 @@ def update_release_table_with_changes(original_sheet_file_name: str,
                                                                input_header, values_to_use_table,
                                                                values_to_use_table_keys_to_index,
                                                                values_to_use_input_header,
-                                                               static_data_holder.merge_header)
+                                                               static_data.merge_header)
 
     # table_ops.compare_tables(updated_table,input_table)
     table_ops.write_table('output/release_updated_table3.csv', updated_table, input_header)
@@ -37,7 +37,7 @@ def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, up
                                                                full_before_gvp_sheet_header, values_to_use_table,
                                                                values_to_use_table_keys_to_index,
                                                                values_to_use_full_before_gvp_sheet_header,
-                                                               static_data_holder.merge_header)
+                                                               static_data.merge_header)
 
     table_ops.write_table(updated_output_file_name, updated_table, full_before_gvp_sheet_header)
 

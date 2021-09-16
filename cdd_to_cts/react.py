@@ -7,12 +7,12 @@ import rx
 from rx import operators as ops
 from rx.subject import ReplaySubject
 
-import static_data_holder
+import static_data
 from cdd_to_cts.class_graph import parse_
 
 composite_key_string_re = "\s*(?:<li>)?\["
 
-FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)*' + static_data_holder.req_id_re_str
+FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)*' + static_data.req_id_re_str
 
 
 def file_transform_to_full_path(value):
@@ -43,7 +43,7 @@ def just_callable(dumymy: [[int], str]) -> str:
 
 
 def build_composite_key_callable(record_id_split: [[int], str]) -> str:
-    record_id_result = re.search(static_data_holder.req_id_re_str, record_id_split.record_id_string.replace("</a>", ""))
+    record_id_result = re.search(static_data.req_id_re_str, record_id_split.record_id_string.replace("</a>", ""))
     section_id =str(record_id_split).split(":",1)[0]
     if record_id_result:
         record_id = record_id_result[0].rstrip(']')
@@ -55,7 +55,7 @@ def process_section(section: str):
     section = section.replace("<a/>", "")
 
     try:
-        req_id_splits = re.split('(?={})'.format(static_data_holder.full_key_string_for_re), section)
+        req_id_splits = re.split('(?={})'.format(static_data.full_key_string_for_re), section)
 
         if req_id_splits and len(req_id_splits) > 1:
             return rx.for_in(req_id_splits, find_full_key_callable)
@@ -65,7 +65,7 @@ def process_section(section: str):
             #                                           section_id_count, total_requirement_count)
             # Only build a key if you can't find any...
         else:
-            req_id_splits = re.split(static_data_holder.composite_key_string_re, str(section))
+            req_id_splits = re.split(static_data.composite_key_string_re, str(section))
             if req_id_splits and len(req_id_splits) > 1:
                 return rx.for_in(req_id_splits, build_composite_key_callable)
 
@@ -93,7 +93,7 @@ class RxData:
         self.replay_at_test_files_to_methods = ReplaySubject(9999)
         self.replay_cdd_requirements = ReplaySubject(2000)
 
-    def build_replay_of_at_test_files(self, results_grep_at_test: str = ("%s" % static_data_holder.TEST_FILES_TXT)):
+    def build_replay_of_at_test_files(self, results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)):
         # test_files_to_methods: {str: str} = dict()
         re_annotations = re.compile('@Test.*?$')
 
@@ -174,7 +174,7 @@ class RxData:
             print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
             sys.exit(f"Fatal Error Failed to open file {file_name}")
 
-    def build_rx_parse_cdd_html_to_requirements(self, cdd_html_file=static_data_holder.CDD_REQUIREMENTS_FROM_HTML_FILE):
+    def build_rx_parse_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE):
 
         with open(cdd_html_file, "r") as text_file:
             cdd_requirements_file_as_string = text_file.read()
@@ -239,18 +239,17 @@ def test_rx_table():
     rd.replay_header.subscribe(lambda v: my_print(v, "header = {}"))
     rd.replay_input_table.subscribe(lambda v: my_print(v, "table = {}"))
 
-    rd.build_replay_read_table(static_data_holder.INPUT_TABLE_FILE_NAME)
+    rd.build_replay_read_table(static_data.INPUT_TABLE_FILE_NAME)
     print("done")
 
 
 def test_rx_cdd_read():
     rd = RxData()
     # rd.replay_cdd_requirements.subscribe(lambda v: my_print(v, "cdd = {}"))
-    rd.build_rx_parse_cdd_html_to_requirements(static_data_holder.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.replay_cdd_requirements.pipe(ops.take(116),
-                                           ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+    rd.build_rx_parse_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
+    return rd.replay_cdd_requirements.pipe(ops.flat_map(lambda section_and_key: process_section(section_and_key)),
                                            ops.map(lambda req: my_print(req, 'req[{}]\n')),
-                                           ops.count(lambda v: True ))
+                                           ops.count(lambda v: True))
 
 
 if __name__ == '__main__':
