@@ -7,10 +7,8 @@ import rx
 from rx import operators as ops
 from rx.subject import ReplaySubject
 
-# from cdd_to_cts.check_sheet import ReadSpreadSheet
 from cdd_to_cts import static_data_holder
 from cdd_to_cts.class_graph import parse_
-from cdd_to_cts.static_data_holder import TEST_FILES_TXT, CDD_REQUIREMENTS_FROM_HTML_FILE
 
 
 def file_transform_to_full_path(value):
@@ -24,6 +22,53 @@ def read_file_to_string(file):
         file_string = re.sub(' Copyright.+limitations under the License', "", file_string_raw, flags=re.DOTALL)
         text_file.close()
         return file_string
+
+
+def find_full_key(key_string_for_re: str, record_id_split: str, section_id: str = None):
+    record_id_result = re.search(key_string_for_re, record_id_split)
+    if record_id_result:
+        record_id_string = record_id_result[0]
+
+        return record_id_string.rstrip(']').lstrip('>')
+    else:
+        return None
+
+
+def test_callable(val: [[int], str]) -> str:
+    from cdd_to_cts.data_sources import clean_html_anchors
+    val = clean_html_anchors(val)
+    val = find_full_key(val)
+
+    return f'ttest_callablel got [{val}]'
+
+
+def process_section(section: str):
+    find_key_re_html = '>(?:[0-9]{1,3}(</a>)?.)*(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+    section = section.replace("<a/>","")
+
+
+    try:
+        req_id_splits = re.split('(?={})'.format(static_data_holder.full_key_string_for_re), section)
+    except:
+        SystemExit("bla")
+
+    if req_id_splits and len(req_id_splits) > 1:
+        return rx.for_in(req_id_splits, test_callable)
+        #
+        # total_requirement_count = self.process_section(find_full_key, full_key_string_for_re, cdd_section_id,
+        #                                           key_to_full_requirement_text_local, req_id_splits,
+        #                                           section_id_count, total_requirement_count)
+        # Only build a key if you can't find any...
+    else:
+        from cdd_to_cts import data_sources
+
+        req_id_splits = re.split(static_data_holder.composite_key_string_re, str(section))
+        return rx.for_in(req_id_splits, test_callable)
+
+    #
+    # total_requirement_count = self.process_section(build_composite_key, req_id_re_str, cdd_section_id,
+    #                                           key_to_full_requirement_text_local, req_id_splits,
+    #                                           section_id_count, total_requirement_count)
 
 
 class RxData:
@@ -42,7 +87,7 @@ class RxData:
         self.replay_at_test_files_to_methods = ReplaySubject(9999)
         self.replay_cdd_requirements = ReplaySubject(2000)
 
-    def build_replay_of_at_test_files(self, results_grep_at_test: str = ("%s" % TEST_FILES_TXT)):
+    def build_replay_of_at_test_files(self, results_grep_at_test: str = ("%s" % static_data_holder.TEST_FILES_TXT)):
         # test_files_to_methods: {str: str} = dict()
         re_annotations = re.compile('@Test.*?$')
 
@@ -123,8 +168,7 @@ class RxData:
             print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
             sys.exit(f"Fatal Error Failed to open file {file_name}")
 
-
-    def build_rx_parse_cdd_html_to_requirements(self, cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE):
+    def build_rx_parse_cdd_html_to_requirements(self, cdd_html_file=static_data_holder.CDD_REQUIREMENTS_FROM_HTML_FILE):
 
         with open(cdd_html_file, "r") as text_file:
             cdd_requirements_file_as_string = text_file.read()
@@ -140,49 +184,31 @@ class RxData:
                 cdd_section_id = cdd_section_id_search_results[0]
                 cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
                 cdd_section_id = cdd_section_id.replace('_', '.')
-                #
                 if '13' == cdd_section_id:
                     # section 13 is "Contact us" and has characters that cause issues at lest for git
                     print(f"Warning skipping section 13 {section}")
                     continue
-            self.replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
+                section = re.sub('\s\s+', ' ', section)
+                self.replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
         self.replay_cdd_requirements.on_completed()
         return self.replay_cdd_requirements
 
-
-    def pre_process_section(self, section:str):
-        req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
-
-        total_requirement_count = self.process_section(find_full_key, full_key_string_for_re, cdd_section_id,
-                                                  key_to_full_requirement_text_local, req_id_splits,
-                                                  section_id_count, total_requirement_count)
-        # Only build a key if you can't find any...
-        if len(req_id_splits) < 2:
-            from cdd_to_cts import data_sources
-            req_id_splits = re.split(data_sources.composite_key_string_re, str(section))
-
-            total_requirement_count = self.process_section(build_composite_key, req_id_re_str, cdd_section_id,
-                                                      key_to_full_requirement_text_local, req_id_splits,
-                                                      section_id_count, total_requirement_count)
-
     def process_section(self, record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count):
+                        record_id_splits, section_id_count, total_requirement_count):
         record_id_count = 0
 
         for record_id_split in record_id_splits:
             key = record_key_method(key_string_for_re, record_id_split, section_id)
             if key:
                 from cdd_to_cts.data_sources import clean_html_anchors
-                record_id_split = clean_html_anchors(record_id_split)
-                record_id_count += 1
-                total_requirement_count += 1
                 print(
                     f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text_param.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
                 from cdd_to_cts import data_sources
                 key_to_full_requirement_text_param[key] = data_sources.process_requirement_text(record_id_split,
-                                                                                   key_to_full_requirement_text_param.get(
-                                                                                       key))
+                                                                                                key_to_full_requirement_text_param.get(
+                                                                                                    key))
         return total_requirement_count
+
 
 def my_print(v, f: str = '{}'):
     print(f.format(v))
@@ -231,12 +257,15 @@ def test_rx_cdd_read():
     rd = RxData()
     rd.replay_cdd_requirements.subscribe(lambda v: my_print(v, "cdd = {}"))
     rd.build_rx_parse_cdd_html_to_requirements(static_data_holder.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.replay_cdd_requirements
+    find_key_re_html = '>(?:[0-9]{1,3}(</a>)?.)*(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+    return rd.replay_cdd_requirements.pipe(ops.take(2),
+                                           ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+                                           ops.map(lambda req: my_print(req, 'req[{}]\n')))
 
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    test_rx_cdd_read().subscribe(lambda value: print("Received4 {0}".format(value)))
+    test_rx_cdd_read().subscribe(lambda value: print("Received this {0}".format(value)))
 
     # rx.pipe () scribe(rx.from_iterable(data_sources.get_cached_grep_of_at_test_files))
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))

@@ -6,13 +6,11 @@ import time
 import class_graph
 import persist
 from cdd_to_cts import static_data_holder
+from cdd_to_cts.static_data_holder import composite_key_string_re, req_id_re_str, full_key_string_for_re, \
+    java_methods_re_str, java_object_re_str, java_defines_str, find_url_re_str
 from static_data_holder import CTS_SOURCE_PARENT, all_words_to_skip, CDD_REQUIREMENTS_FROM_HTML_FILE, \
     TEST_FILES_TO_DEPENDENCIES_STORAGE, CTS_SOURCE_ROOT
 from table_ops import read_table
-
-composite_key_string_re = "\s*(?:<li>)?\["
-req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
 
 
 def remove_non_determinative_words(set_to_diff: set):
@@ -20,24 +18,16 @@ def remove_non_determinative_words(set_to_diff: set):
 
 
 def find_urls(text_to_scan_urls: str):
-    find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
     return " ".join(set(re.findall(find_url_re_str, text_to_scan_urls)))
 
 
 # find likely java objects from a text block
 def find_java_objects(text_to_scan_for_java_objects: str) -> set:
     java_objects = set()
-
     #  java_objects.update(cleanhtml(process_requirement_text(text_to_scan_for_java_objects)).split(' '))
-    java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
     java_objects.update(re.findall(java_methods_re_str, text_to_scan_for_java_objects))
-
-    java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
     java_objects.update(re.findall(java_object_re_str, text_to_scan_for_java_objects))
-
-    java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
     java_objects.update(re.findall(java_defines_str, text_to_scan_for_java_objects))
-
     java_objects = remove_non_determinative_words(java_objects)
     java_objects.discard(None)
     return java_objects

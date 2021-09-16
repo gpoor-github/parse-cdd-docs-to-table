@@ -6,7 +6,7 @@ CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 
-CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
+CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd-11-mod-test.txt'
 INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 TEST_FILES_TXT = "input_scripts/test-files.txt"
 TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
@@ -126,3 +126,10 @@ if __name__ == '__main__':
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
+composite_key_string_re = "\s*(?:<li>)?\["
+req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
+java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
+java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
+java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
+find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
