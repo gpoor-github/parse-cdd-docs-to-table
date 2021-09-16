@@ -8,11 +8,9 @@ from rx import operators as ops
 from rx.subject import ReplaySubject
 
 import static_data
+from cdd_to_cts import helpers
 from cdd_to_cts.class_graph import parse_
-
-composite_key_string_re = "\s*(?:<li>)?\["
-
-FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)*' + static_data.req_id_re_str
+from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
 
 
 def file_transform_to_full_path(value):
@@ -37,45 +35,43 @@ def find_full_key_callable(record_id_split: [[int], str]) -> str:
     return rx.just("")
 
 
-
 def just_callable(dumymy: [[int], str]) -> str:
     return rx.just("")
 
-
 def build_composite_key_callable(record_id_split: [[int], str]) -> str:
-    record_id_result = re.search(static_data.req_id_re_str, record_id_split.record_id_string.replace("</a>", ""))
-    section_id =str(record_id_split).split(":",1)[0]
-    if record_id_result:
+
+    record_id_result = re.search(static_data.req_id_re_str, record_id_split)
+
+    section_id = helpers.find_section_id(record_id_split)
+
+    if section_id != "":
+         last_section_id = section_id
+    if record_id_result and record_id_result[0]:
         record_id = record_id_result[0].rstrip(']')
-        return  rx.just('{}/{}'.format(section_id, record_id))
+        return rx.just('{}/{}'.format(section_id, record_id))
     return rx.just("")
 
 
-def process_section(section: str):
-    section = section.replace("<a/>", "")
-
+def process_section(key_to_section: str):
     try:
+        key_to_section_split = key_to_section.split(':', 1)
+        section_id = key_to_section[0]
+        section = key_to_section_split[1]
         req_id_splits = re.split('(?={})'.format(static_data.full_key_string_for_re), section)
-
         if req_id_splits and len(req_id_splits) > 1:
             return rx.for_in(req_id_splits, find_full_key_callable)
-            #
-            # total_requirement_count = self.process_section(find_full_key, full_key_string_for_re, cdd_section_id,
-            #                                           key_to_full_requirement_text_local, req_id_splits,
-            #                                           section_id_count, total_requirement_count)
-            # Only build a key if you can't find any...
         else:
             req_id_splits = re.split(static_data.composite_key_string_re, str(section))
             if req_id_splits and len(req_id_splits) > 1:
-                return rx.for_in(req_id_splits, build_composite_key_callable)
+                return rx.for_in(req_id_splits, build_composite_key_callable).pipe(
+                    ops.map(lambda req_id: "{}/{}".format(section_id, req_id)))
 
-        #
-        # total_requirement_count = self.process_section(build_composite_key, req_id_re_str, cdd_section_id,
-        #                                           key_to_full_requirement_text_local, req_id_splits,
-        #                                           section_id_count, total_requirement_count)
     except Exception as exception_process:
         SystemExit(f" process_section {exception_process}")
     return rx.for_in("thing", just_callable)
+
+
+
 
 class RxData:
     # rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
@@ -178,24 +174,19 @@ class RxData:
 
         with open(cdd_html_file, "r") as text_file:
             cdd_requirements_file_as_string = text_file.read()
-            section_id_re_str: str = '"(?:\d{1,3}_)+'
+            section_id_re_str: str = SECTION_ID_RE_STR
             cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
                                            flags=re.DOTALL)
             section_id_count = 0
             for section in cdd_sections_splits:
-                cdd_section_id_search_results = re.search(section_id_re_str, section)
-                if not cdd_section_id_search_results:
-                    continue
-
-                cdd_section_id = cdd_section_id_search_results[0]
-                cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
-                cdd_section_id = cdd_section_id.replace('_', '.')
-                if '13' == cdd_section_id:
-                    # section 13 is "Contact us" and has characters that cause issues at lest for git
-                    print(f"Warning skipping section 13 {section}")
-                    continue
-                section = re.sub('\s\s+', ' ', section)
-                self.replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
+                cdd_section_id = helpers.find_section_id(section)
+                if cdd_section_id:
+                    if '13' == cdd_section_id:
+                        # section 13 is "Contact us" and has characters that cause issues at lest for git
+                        print(f"Warning skipping section 13 {section}")
+                        continue
+                    section = re.sub('\s\s+', ' ', section)
+                    self.replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
         self.replay_cdd_requirements.on_completed()
         return self.replay_cdd_requirements
 
@@ -213,7 +204,6 @@ def test_rx_files_to_words():
 def test_rx_dictionary():
     rd = RxData()
     # rs = ReadSpreadSheet()
-    result = dict()
     # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
     rd.replay_at_test_files_to_methods.subscribe(lambda value: print("Received {0".format(value)))
 
@@ -254,9 +244,9 @@ def test_rx_cdd_read():
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    test_rx_cdd_read().subscribe( on_next= lambda value: print("Received {0}".format(value))
-                                  , on_completed= lambda:print("completed")
-                                  , on_error= lambda err2 :print ("error {0}".format(err2)))
+    test_rx_cdd_read().subscribe(on_next=lambda value: print("Received {0}".format(value)),
+                                 on_completed=lambda: print("completed"),
+                                 on_error=lambda err2: print("error {0}".format(err2)))
 
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()

@@ -12,9 +12,11 @@ TEST_FILES_TXT = "input_scripts/test-files.txt"
 TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
 INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/cts-deps-from-test-3-trans.txt'
 
+SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
 composite_key_string_re = "\s*(?:<li>)?\["
 req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
 full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
+FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)*' + req_id_re_str
 java_methods_re_str = '(?:[a-zA-Z]\w+\( ?\w* ?\))'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
 java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
