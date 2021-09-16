@@ -503,11 +503,7 @@ def convert_relative_filekey(local_file: str):
     return '\"{}\"'.format(local_file.replace('cts/', '$PROJECT_DIR$/', 1))
 
 
-# global_input_file_name = "input/2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv"
-global_input_file_name = "input/new_recs_remaining_todo.csv"
-
-global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows = read_table(
-    global_input_file_name)
+global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows = read_table(static_data.INPUT_TABLE_FILE_NAME)
 key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements()
 
 #    class DataSources:
