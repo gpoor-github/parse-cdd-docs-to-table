@@ -6,9 +6,13 @@ import time
 import class_graph
 import persist
 from cdd_to_cts import static_data_holder
-from static_data_holder import CTS_SOURCE_PARENT, all_words_to_skip, REQUIREMENTS_FROM_HTML_FILE, \
+from static_data_holder import CTS_SOURCE_PARENT, all_words_to_skip, CDD_REQUIREMENTS_FROM_HTML_FILE, \
     TEST_FILES_TO_DEPENDENCIES_STORAGE, CTS_SOURCE_ROOT
 from table_ops import read_table
+
+composite_key_string_re = "\s*(?:<li>)?\["
+req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
+full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
 
 
 def remove_non_determinative_words(set_to_diff: set):
@@ -112,7 +116,7 @@ def get_random_method_name(a_found_methods_string):
     return a_method
 
 
-def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
+def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE):
     key_to_full_requirement_text_local = dict()
     key_to_java_objects_local = dict()
     key_to_urls_local = dict()
@@ -122,50 +126,50 @@ def parse_cdd_html_to_requirements(cdd_html_file=REQUIREMENTS_FROM_HTML_FILE):
     total_requirement_count = 0
     with open(cdd_html_file, "r") as text_file:
         cdd_requirements_file_as_string = text_file.read()
-    section_id_re_str: str = '"(?:\d{1,3}_)+'
-    cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string, flags=re.DOTALL)
-    section_id_count = 0
-    for section in cdd_sections_splits:
-        cdd_section_id_search_results = re.search(section_id_re_str, section)
-        if not cdd_section_id_search_results:
-            continue
+        section_id_re_str: str = '"(?:\d{1,3}_)+'
+        cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
+                                       flags=re.DOTALL)
+        section_id_count = 0
+        for section in cdd_sections_splits:
+            cdd_section_id_search_results = re.search(section_id_re_str, section)
+            if not cdd_section_id_search_results:
+                continue
 
-        cdd_section_id = cdd_section_id_search_results[0]
-        cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
-        cdd_section_id = cdd_section_id.replace('_', '.')
-        section_to_section_data[cdd_section_id] = str(cdd_section_id_search_results[0]).replace("\"", "")
-        if '13' == cdd_section_id:
-            # section 13 is "Contact us" and has characters that cause issues at lest for git
-            print(f"Warning skipping section 13 {section}")
-            continue
-        key_to_full_requirement_text_local[cdd_section_id] = process_requirement_text(section, None)
-        composite_key_string_re = "\s*(?:<li>)?\["
-        req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-        full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
-        req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
-        total_requirement_count = process_section(find_full_key, full_key_string_for_re, cdd_section_id,
-                                                  key_to_full_requirement_text_local, req_id_splits,
-                                                  section_id_count, total_requirement_count)
-        # Only build a key if you can't find any...
-        if len(req_id_splits) < 2:
-            req_id_splits = re.split(composite_key_string_re, str(section))
+            cdd_section_id = cdd_section_id_search_results[0]
+            cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
+            cdd_section_id = cdd_section_id.replace('_', '.')
+            section_to_section_data[cdd_section_id] = str(cdd_section_id_search_results[0]).replace("\"", "")
+            if '13' == cdd_section_id:
+                # section 13 is "Contact us" and has characters that cause issues at lest for git
+                print(f"Warning skipping section 13 {section}")
+                continue
+            key_to_full_requirement_text_local[cdd_section_id] = process_requirement_text(section, None)
+            req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
 
-            total_requirement_count = process_section(build_composite_key, req_id_re_str, cdd_section_id,
+            total_requirement_count = process_section(find_full_key, full_key_string_for_re, cdd_section_id,
                                                       key_to_full_requirement_text_local, req_id_splits,
                                                       section_id_count, total_requirement_count)
+            # Only build a key if you can't find any...
+            if len(req_id_splits) < 2:
+                req_id_splits = re.split(composite_key_string_re, str(section))
 
-        section_id_count += 1
-    for key in key_to_full_requirement_text_local:
-        requirement_text = key_to_full_requirement_text_local.get(key)
-        key_to_urls_local[key] = find_urls(requirement_text)
-        key_split = key.split('/')
+                total_requirement_count = process_section(build_composite_key, req_id_re_str, cdd_section_id,
+                                                          key_to_full_requirement_text_local, req_id_splits,
+                                                          section_id_count, total_requirement_count)
 
-        java_objects_temp = find_java_objects(requirement_text)
-        java_objects_temp.add(key_split[0])
-        if len(key_split) > 1:
-            java_objects_temp.add(key_split[1])
-        key_to_java_objects_local[key] = java_objects_temp
+            section_id_count += 1
+        for key in key_to_full_requirement_text_local:
+            requirement_text = key_to_full_requirement_text_local.get(key)
+            key_to_urls_local[key] = find_urls(requirement_text)
+            key_split = key.split('/')
 
+            java_objects_temp = find_java_objects(requirement_text)
+            java_objects_temp.add(key_split[0])
+            if len(key_split) > 1:
+                java_objects_temp.add(key_split[1])
+            key_to_java_objects_local[key] = java_objects_temp
+    if len(key_to_full_requirement_text_local) < 50:
+        raise SystemExit("Less than 50 requirments!? " + str(key_to_full_requirement_text_local))
     return key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data
 
 

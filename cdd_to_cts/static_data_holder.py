@@ -1,16 +1,13 @@
 import os
 import time
 
-import rx
-from rx import operators as ops
-
 CTS_SOURCE_PARENT = "/home/gpoor/aosp_platform_source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 
-REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
-INPUT_TABLE_FILE_NAME = '2021-09-11-CDD-11-Sachiyo-Aug-4-restore.csv'
+CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
+INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 TEST_FILES_TXT = "input_scripts/test-files.txt"
 TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
 INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/android_studio_dependencies_for_cts.txt'
@@ -117,10 +114,12 @@ merge_header: [] = (
 add_keys_only: [] = (
     ['full_key', 'key_as_number'])
 
+
 def set_cts_path():
     os.environ['CTS_SOURCE_ROOT'] = CTS_SOURCE_ROOT
     os.environ['USER_HOME'] = '~/'
     os.environ['PROJECT_DIR'] = CTS_SOURCE_ROOT
+
 
 if __name__ == '__main__':
     start = time.perf_counter()
