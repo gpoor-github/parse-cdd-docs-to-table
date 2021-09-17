@@ -6,7 +6,7 @@ CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 
-CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd-11-mod-test.txt'
+CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
 INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
 TEST_FILES_TXT = "input_scripts/test-files.txt"
 TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"

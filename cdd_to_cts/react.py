@@ -7,8 +7,7 @@ import rx
 from rx import operators as ops
 from rx.subject import ReplaySubject
 
-import static_data
-from cdd_to_cts import helpers
+from cdd_to_cts import helpers, static_data
 from cdd_to_cts.class_graph import parse_
 from cdd_to_cts.helpers import find_java_objects
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
@@ -201,38 +200,37 @@ class RxData:
             print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
             sys.exit(f"Fatal Error Failed to open file {file_name}")
 
-    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE):
-
-        if self.__replay_cdd_requirements:
-            return self.__replay_cdd_requirements
-        else:
-            self.__replay_cdd_requirements = ReplaySubject(2000)
-
-        with open(cdd_html_file, "r") as text_file:
-            cdd_requirements_file_as_string = text_file.read()
-            section_id_re_str: str = SECTION_ID_RE_STR
-            cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
-                                           flags=re.DOTALL)
-            section_id_count = 0
-            for section in cdd_sections_splits:
-                cdd_section_id = helpers.find_section_id(section)
-                if cdd_section_id:
-                    if '13' == cdd_section_id:
-                        # section 13 is "Contact us" and has characters that cause issues at lest for git
-                        print(f"Warning skipping section 13 {section}")
-                        continue
-                    section = re.sub('\s\s+', ' ', section)
-                    self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
-        self.__replay_cdd_requirements.on_completed()
-        return self.__replay_cdd_requirements
-
     def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
                                   cdd_requirments_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) -> rx.Observable:
 
         table_dic = observable_to_dict(self.get_replay_read_table(input_table_file)[0])
-        return self.get_cdd_html_to_requirements(cdd_requirments_file). \
-            pipe(ops.flat_map(lambda section_and_key: process_section(section_and_key)),
-                 ops.filter(lambda v: table_dic.get(str(v).split(':', 1)[0])))
+        return self.get_cdd_html_to_requirements(cdd_requirments_file)\
+            .pipe(ops.filter(lambda v: table_dic.get(str(v).split(':', 1)[0])))
+
+    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE):
+
+        if not self.__replay_cdd_requirements:
+            self.__replay_cdd_requirements = ReplaySubject(2000)
+
+            with open(cdd_html_file, "r") as text_file:
+                cdd_requirements_file_as_string = text_file.read()
+                section_id_re_str: str = SECTION_ID_RE_STR
+                cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
+                                               flags=re.DOTALL)
+                section_id_count = 0
+                for section in cdd_sections_splits:
+                    cdd_section_id = helpers.find_section_id(section)
+                    if cdd_section_id:
+                        if '13' == cdd_section_id:
+                            # section 13 is "Contact us" and has characters that cause issues at lest for git
+                            print(f"Warning skipping section 13 {section}")
+                            continue
+                        section = re.sub('\s\s+', ' ', section)
+                        self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
+            self.__replay_cdd_requirements.on_completed()
+            # if all ready read, just return it.
+        return self.__replay_cdd_requirements.pipe(
+            ops.flat_map(lambda section_and_key: process_section(section_and_key)))
 
 
 def my_print(v, f: str = '{}'):
@@ -269,23 +267,23 @@ def test_rx_at_test_methods():
     return pipe_words_for_file
 
 
-def test_rx_cdd_read():
+def do_search():
     rd = RxData()
     rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.get_filtered_cdd_by_table().pipe(ops.take(1),
+    return rd.get_filtered_cdd_by_table().pipe(ops.take(200),
                                                ops.flat_map(lambda section_and_key: process_section(section_and_key)),
                                                ops.map(lambda req: my_print(req, 'req[{}]')),
                                                ops.map(lambda key_requirement_as_text: get_search_terms(
                                                    key_requirement_as_text)),
-                                               ops.map(lambda req: my_print(req, 'searchy[{}]')),
+                                               ops.map(lambda req: my_print(req, 'searchy[{}]\n')),
                                                ops.count(lambda v: True))
 
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    test_rx_cdd_read().subscribe(on_next=lambda value: print("Received {0}".format(value)),
-                                 on_completed=lambda: print("completed"),
-                                 on_error=lambda err2: print("error {0}".format(err2)))
+    do_search().subscribe(on_next=lambda value: print("Received {0}".format(value)),
+                          on_completed=lambda: print("completed"),
+                          on_error=lambda err2: print("error {0}".format(err2)))
 
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()

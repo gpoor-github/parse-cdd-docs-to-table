@@ -2,7 +2,7 @@ import os
 import re
 import time
 
-import persist
+from cdd_to_cts import persist
 from cdd_to_cts import static_data
 
 FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"

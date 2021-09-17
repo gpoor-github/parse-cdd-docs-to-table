@@ -28,14 +28,24 @@ class MyTestCase(unittest.TestCase):
         # r = react.find_full_key(static_data.full_key_string_for_re, spit_val)
         # self.assertEqual(True, False)  # add assertion here
 
-    def test_rx_table(self, ):
-        RxData().get_filtered_cdd_by_table("../"+static_data.INPUT_TABLE_FILE_NAME,"../"+static_data.CDD_REQUIREMENTS_FROM_HTML_FILE).pipe(
+    def test_filtered_cdd_by_table(self, ):
+        RxData().get_filtered_cdd_by_table(static_data.INPUT_TABLE_FILE_NAME,"input/cdd.html").pipe(
             ops.map(lambda v: my_print(v)),
-            ops.count()). \
-            subscribe(lambda v: my_print(v, "matching row count = {}"))
+            ops.count(),
+            ops.map(lambda count: my_print(count,"count ={}"))). \
+            subscribe(lambda count: self.assertEqual(count, 97))
 
         print("done")
 
+
+    def test_cdd_html_to_requirements(self, ):
+        RxData().get_cdd_html_to_requirements("../input/cdd-11-mod-test.txt").pipe(
+            ops.map(lambda v: my_print(v)),
+            ops.count(),
+            ops.map(lambda count: my_print(count,"count ={}"))). \
+            subscribe(lambda count: self.assertEqual(count, 1317))
+
+        print("done")
 
 if __name__ == '__main__':
     unittest.main()

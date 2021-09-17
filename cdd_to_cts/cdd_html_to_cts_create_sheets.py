@@ -122,8 +122,14 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
             f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
 
 
+def create_full_table_from_cdd():
+    table_for_sheet, keys_to_table_indexes = create_populated_table(data_sources.key_to_full_requirement_text)
+    write_table('output/full_cdd.csv', table_for_sheet, static_data.new_header)
+
 if __name__ == '__main__':
     start = time.perf_counter()
+    create_full_table_from_cdd()
     cdd_html_to_cts_create_sheets('all')
+
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

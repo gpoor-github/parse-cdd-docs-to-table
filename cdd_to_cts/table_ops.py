@@ -154,12 +154,61 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str], dict[str, str
 def diff_tables(file1, file2):
     table1, _key_fields1, header1, duplicate_rows1 = read_table(file1)
     table2, _key_fields2, header2, duplicate_rows2 = read_table(file2)
+
+    key_set1 = set(_key_fields1.keys())
+    key_set2 = set(_key_fields2.keys())
+    intersection = key_set1.intersection(key_set2)
+    dif_1_2 = key_set1.difference(key_set2)
+    dif_2_1 = key_set2.difference(key_set1)
+    dif_1_2_dict_content: [str, set] = dict()
+    dif_2_1_dict_content: [str, set] = dict()
+
+    for shared_key_to_table_index in intersection:
+        i1 = _key_fields1.get(shared_key_to_table_index)
+        i2 = _key_fields2.get(shared_key_to_table_index)
+        dif_1_2_at_i1 = set(table1[i1]).difference(set(table2[i2]))
+        if len(dif_1_2_at_i1) > 0:
+            dif_1_2_dict_content[shared_key_to_table_index] = set(dif_1_2_at_i1)
+        dif_2_1_at_i2 = set(table2[i2]).difference(set(table1[i1]))
+        if len(dif_2_1_at_i2) > 0:
+            dif_2_1_dict_content[shared_key_to_table_index] = set(dif_2_1_at_i2)
+
+    print("\nDifferences in shared rows starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print(f"\n\nSee block below f1=[{file1}] ^ f2=[{file2}] Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}")
+    print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict_content)} diff=[{dif_1_2_dict_content}]")
+    print(f"Differences 1st-2nd={len(dif_1_2_dict_content)} above  f1=[{file1}] ^ f2=[{file2}] . can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n")
+
+    print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict_content)} diff= [{dif_2_1_dict_content}]")
+    print(f"See block above Difference  2st-1nd={len(dif_2_1)}  f2=[{file2}] 1st f1=[{file1}]")
+    print("Differences in shared rows ends... can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n\n")
+
+    print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}] intersection = {intersection}")
+    print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
+    print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff={dif_2_1}\n")
+    header_set1 = set(header1)
+    header_set2 = set(header2)
+    if (len(header_set1.difference(header_set2)) + len(header_set2.difference(header_set1)) + len(dif_1_2) + len(
+            dif_2_1)) == 0:
+        print(f"No Different keys or headers f1=[{file1}]  f2=[{file2}]\n")
+    else:
+        print(
+            f'Header dif1-2 [{header_set1.difference(header_set2)}] Header dif1-2 [{header_set2.difference(header_set1)}]'
+            f'\nintersection=[{header_set1.intersection(header_set2)}]\n')
+    handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2)
+    print(f"\nSize of table1={len(_key_fields1)} table2={len(_key_fields2)} f1=[{file1}] ^ f2=[{file2}] ")
+    print(f"Intersection of {len(intersection)}  content differs 1-2 {len(dif_1_2_dict_content)} and 2-1 {len(dif_2_1_dict_content)}  rows")
+    print(f"Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}  ")
+
+    return dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content
+
+
+def handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2):
     if duplicate_rows1 and len(duplicate_rows1) > 0:
         print(f"Error duplicates! 1 {file1} has {len(duplicate_rows1)} {duplicate_rows1} ")
         for duplicate_key1 in duplicate_rows1:
             lines = duplicate_rows1.get(duplicate_key1).split('||')
             print("\n".join(lines))
-        print(f"t2 Error duplicates! 1 {file1} has {len(duplicate_rows1)} {duplicate_rows1} ")
+        print(f"Error duplicates! 1 {file1} has {len(duplicate_rows1)} {duplicate_rows1} ")
 
         for duplicate_key1 in duplicate_rows1:
             lines = duplicate_rows1.get(duplicate_key1).split('||')
@@ -169,8 +218,7 @@ def diff_tables(file1, file2):
                     i += 1
                     print(f"{str(line).strip('][')}")
     else:
-        print(f"\n\nNo difference content for common lines 1={file1} and 2={file2}")
-
+        print(f"No duplicates for 1={file1}")
     if duplicate_rows2 and len(duplicate_rows2) > 0:
         for duplicate_key2 in duplicate_rows2:
             lines = duplicate_rows2.get(duplicate_key2).split('||')
@@ -182,42 +230,7 @@ def diff_tables(file1, file2):
                     print(f"        {i})={line} ")
         print(f"Error duplicates! 2  {file2} has {len(duplicate_rows2)} {duplicate_rows2} ")
     else:
-        print(f"No difference content for common lines 2={file2} and 1={file1}\n")
-
-    key_set1 = set(_key_fields1.keys())
-    key_set2 = set(_key_fields2.keys())
-    intersection = key_set1.intersection(key_set2)
-    dif_1_2 = key_set1.difference(key_set2)
-    dif_2_1 = key_set2.difference(key_set1)
-    dif_1_2_dict: [str, set] = dict()
-    dif_2_1_dict: [str, set] = dict()
-
-    for shared_key_to_table_index in intersection:
-        i1 = _key_fields1.get(shared_key_to_table_index)
-        i2 = _key_fields2.get(shared_key_to_table_index)
-        dif_1_2_at_i1 = set(table1[i1]).difference(set(table2[i2]))
-        if len(dif_1_2_at_i1) > 0:
-            dif_1_2_dict[shared_key_to_table_index] = set(dif_1_2_at_i1)
-        dif_2_1_at_i2 = set(table2[i2]).difference(set(table1[i1]))
-        if len(dif_2_1_at_i2) > 0:
-            dif_2_1_dict[shared_key_to_table_index] = set(dif_2_1_at_i2)
-
-    header_set1 = set(header1)
-    header_set2 = set(header2)
-    if (len(header_set1.difference(header_set2)) + len(header_set2.difference(header_set1)) + len(dif_1_2) + len(
-            dif_2_1)) == 0:
-        print(f"No Different keys or headers f1=[{file1}]  f2=[{file2}]\n")
-    else:
-        print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}] intersection = {intersection}")
-        print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
-        print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff={dif_2_1}")
-        print(
-            f'Header dif1-2 [{header_set1.difference(header_set2)}] Header dif1-2 [{header_set2.difference(header_set1)}]'
-            f'\nintersection=[{header_set1.intersection(header_set2)}]')
-        print(f"\n\nf1=[{file1}] ^ f2=[{file2}] Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}")
-        print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict)} diff=[{dif_1_2_dict}]")
-        print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict)} diff= [{dif_2_1_dict}]")
-    return dif_1_2, dif_2_1, intersection, dif_1_2_dict, dif_2_1_dict
+        print(f"No duplicates for  2={file2}")
 
 
 def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file) -> ([[str]], [str]):
@@ -248,15 +261,17 @@ def merge_table_example():
 
 
 if __name__ == '__main__':
-    _file1_before_g_eddy = "data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.csv"
-    _file1_sachiyo_recent = "data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.csv"
-    _file2_after_g = "data_files/gpoor-updated-sept-11-2021.csv"
-    before_graham = "data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.csv"
-    latest_sheet = "data_files/dups_removed.csv"
-    latest2 = "data_files/version_up_there_sorted.csv"
-    x_file1_for_subset = "./output/created_output.cvs"
-    x_file2_for_subset = "./input/new_recs_full_todo.csv"
-    release = "output/release_updated_table2.csv"
+    _file1_before_g_eddy="../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.csv"
+    _file1_sachiyo_recent="../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.csv"
+    _file2_after_g="../data_files/gpoor-updated-sept-11-2021.csv"
+    before_graham="../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.csv"
+    latest_sheet = "../data_files/dups_removed.csv"
+    latest2="../data_files/version_up_there_sorted.csv"
+    x_file1_for_subset="../output/created_output.cvs"
+    x_file2_for_subset="../input/new_recs_full_todo.csv"
+    release="../output/release_updated_table2.csv"
+    from_more_recent_cdd_html ="../data_files/cdd_full_from_more_recent_worse_version.csv"
+    from_less_recent_cdd_html ="../data_files/cdd_full_from_less_recent_better_version.csv"
 
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(latest_sheet, latest_sheet)
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(from_more_recent_cdd_html, from_less_recent_cdd_html)
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")

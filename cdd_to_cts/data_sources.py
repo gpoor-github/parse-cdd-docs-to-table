@@ -4,8 +4,8 @@ import re
 import time
 
 import class_graph
-import persist
 import helpers
+import persist
 from cdd_to_cts import static_data
 from cdd_to_cts.helpers import find_urls, find_java_objects, process_requirement_text, remove_non_determinative_words
 from cdd_to_cts.static_data import composite_key_string_re, req_id_re_str, full_key_string_for_re
@@ -259,7 +259,11 @@ def search_files_as_strings_for_words(key: str):
     if not search_terms:
         return matching_file_set_out
 
-    row = global_input_table[global_input_table_keys_to_index.get(key)]
+    try:
+        row = global_input_table[global_input_table_keys_to_index.get(key)]
+    except:
+        return matching_file_set_out
+
     try:
         col_idx = list(global_input_header).index("manual_search_terms")
 
@@ -503,7 +507,8 @@ def convert_relative_filekey(local_file: str):
     return '\"{}\"'.format(local_file.replace('cts/', '$PROJECT_DIR$/', 1))
 
 
-global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows = read_table(static_data.INPUT_TABLE_FILE_NAME)
+global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows = read_table(
+    static_data.INPUT_TABLE_FILE_NAME)
 key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements()
 
 #    class DataSources:
