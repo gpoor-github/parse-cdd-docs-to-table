@@ -10,7 +10,7 @@ from rx.subject import ReplaySubject
 import static_data
 from cdd_to_cts import helpers
 from cdd_to_cts.class_graph import parse_
-from cdd_to_cts.helpers import find_urls, find_java_objects
+from cdd_to_cts.helpers import find_java_objects
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
 
 
@@ -52,6 +52,17 @@ def list_map(section_id: str, record_splits: list) -> list:
     return dict_list
 
 
+def add_to_dic(data: str, a_dic: dict):
+    splits = data.split(':', 1)
+    a_dic[splits[0]] = splits[1]
+
+
+def observable_to_dict(obs: rx.Observable) -> dict:
+    a_dic = dict()
+    obs.subscribe(on_next=lambda table_line: add_to_dic(table_line, a_dic))
+    return a_dic
+
+
 def process_section(key_to_section: str):
     try:
         key_to_section_split = key_to_section.split(':', 1)
@@ -69,8 +80,7 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
-def get_search_terms(requirement_text: str) ->  str:
-
+def get_search_terms(requirement_text: str) -> str:
     java_objects = find_java_objects(requirement_text)
     req_split = requirement_text.split(':', 1)
     key_split = req_split[0].split(':')
@@ -88,16 +98,22 @@ class RxData:
     # rx_at_test_files_to_methods = rx.from_iterable(
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
-    replay_at_test_files_to_methods: ReplaySubject
+    __replay_at_test_files_to_methods: ReplaySubject
 
     def __init__(self):
-        self.replay_input_table = ReplaySubject(9999)
-        self.replay_header = ReplaySubject(1)
-        self.replay_at_test_files_to_methods = ReplaySubject(9999)
-        self.replay_cdd_requirements = ReplaySubject(2000)
+        self.__replay_input_table = None
+        self.__replay_header = None
+        self.__replay_at_test_files_to_methods = None
+        self.__replay_cdd_requirements = None
 
-    def build_replay_of_at_test_files(self, results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)):
-        # test_files_to_methods: {str: str} = dict()
+    def get_replay_of_at_test_files(self,
+                                    results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> ReplaySubject:
+
+        if self.__replay_at_test_files_to_methods:
+            return self.__replay_at_test_files_to_methods
+        else:
+            self.__replay_at_test_files_to_methods = ReplaySubject(9999)
+
         re_annotations = re.compile('@Test.*?$')
 
         with open(results_grep_at_test, "r") as grep_of_test_files:
@@ -120,12 +136,20 @@ class RxData:
                         count += 1
                         class_def, method = parse_(line_method)
                     if method:
-                        self.replay_at_test_files_to_methods.on_next(
+                        self.__replay_at_test_files_to_methods.on_next(
                             '{} :{}'.format(test_annotated_file_name_absolute_path, method.strip(' ')))
 
-            self.replay_at_test_files_to_methods.on_completed()
+            self.__replay_at_test_files_to_methods.on_completed()
+            return self.__replay_at_test_files_to_methods
 
-    def build_replay_read_table(self, file_name:str  = static_data.INPUT_TABLE_FILE_NAME):
+    def get_replay_read_table(self, file_name: str = static_data.INPUT_TABLE_FILE_NAME) -> [ReplaySubject,
+                                                                                            ReplaySubject]:
+
+        if self.__replay_input_table and self.__replay_header:
+            return self.__replay_input_table, self.__replay_header
+        else:
+            self.__replay_input_table = ReplaySubject(1500)
+            self.__replay_header = ReplaySubject(50)
 
         section_id_index = 1
         req_id_index = 2
@@ -143,8 +167,8 @@ class RxData:
                             section_id_index = row.index("section_id")
                             req_id_index = row.index("req_id")
                             print(f'Found header for {file_name} names are {", ".join(row)}')
-                            self.replay_header.on_next(row)
-                            self.replay_header.on_completed()
+                            self.__replay_header.on_next(row)
+                            self.__replay_header.on_completed()
                             table_index += 1
 
                             # Skip the rest of the loop... if there is an exception carry on and get the first row
@@ -163,21 +187,26 @@ class RxData:
                     elif len(section_id_value) > 0:
                         key_value = section_id_value
 
-                    self.replay_input_table.on_next(f'{key_value}:{row}')
+                    self.__replay_input_table.on_next(f'{key_value}:{row}')
 
                 if len(duplicate_rows) > 0:
                     print(
                         f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
                 else:
                     duplicate_rows = None
-            self.replay_input_table.on_completed()
+            self.__replay_input_table.on_completed()
 
-            return self.replay_input_table, self.replay_header
+            return self.__replay_input_table, self.__replay_header
         except IOError as e:
             print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
             sys.exit(f"Fatal Error Failed to open file {file_name}")
 
-    def build_rx_parse_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE):
+    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE):
+
+        if self.__replay_cdd_requirements:
+            return self.__replay_cdd_requirements
+        else:
+            self.__replay_cdd_requirements = ReplaySubject(2000)
 
         with open(cdd_html_file, "r") as text_file:
             cdd_requirements_file_as_string = text_file.read()
@@ -193,9 +222,17 @@ class RxData:
                         print(f"Warning skipping section 13 {section}")
                         continue
                     section = re.sub('\s\s+', ' ', section)
-                    self.replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
-        self.replay_cdd_requirements.on_completed()
-        return self.replay_cdd_requirements
+                    self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
+        self.__replay_cdd_requirements.on_completed()
+        return self.__replay_cdd_requirements
+
+    def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+                                  cdd_requirments_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) -> rx.Observable:
+
+        table_dic = observable_to_dict(self.get_replay_read_table(input_table_file)[0])
+        return self.get_cdd_html_to_requirements(cdd_requirments_file). \
+            pipe(ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+                 ops.filter(lambda v: table_dic.get(str(v).split(':', 1)[0])))
 
 
 def my_print(v, f: str = '{}'):
@@ -205,41 +242,43 @@ def my_print(v, f: str = '{}'):
 
 def test_rx_files_to_words():
     rd = RxData()
-    rd.replay_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
+    rd.get_replay_of_at_test_files().subscribe(lambda v: my_print(v, "f to w = {}"))
 
 
 def test_rx_dictionary():
     rd = RxData()
     # rs = ReadSpreadSheet()
     # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
-    rd.replay_at_test_files_to_methods.subscribe(lambda value: print("Received {0".format(value)))
+    rd.get_replay_of_at_test_files().subscribe(lambda value: print("Received {0".format(value)))
 
 
 def test_rx_at_test_methods():
     rd = RxData()
-    rd.build_replay_of_at_test_files()
+    rd.get_replay_of_at_test_files()
     # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
-    rd.replay_at_test_files_to_methods.subscribe(lambda value: print("Received {0}".format(value)))
-    pipe_test_file_dot_method = rd.replay_at_test_files_to_methods.pipe(ops.sum(lambda v: 1),
-                                                                        ops.map(lambda v: my_print(v)))
+    rd.get_replay_of_at_test_files().subscribe(lambda value: print("Received {0}".format(value)))
+    pipe_test_file_dot_method = rd.get_replay_of_at_test_files().pipe(ops.sum(lambda v: 1),
+                                                                      ops.map(lambda v: my_print(v)))
     filter_file_name = "cts/PaintTest.java"
-    pipe_methods_for_file = rd.replay_at_test_files_to_methods.pipe(ops.filter(lambda v: v.find(filter_file_name) > -1))
-    at_file_full_path = rd.replay_at_test_files_to_methods.pipe(ops.map(lambda v: str(v).split(" :")[0]),
-                                                                ops.distinct_until_changed(),
-                                                                ops.map(lambda v: my_print(v)))
+    pipe_methods_for_file = rd.get_replay_of_at_test_files().pipe(
+        ops.filter(lambda v: v.find(filter_file_name) > -1))
+    at_file_full_path = rd.get_replay_of_at_test_files().pipe(ops.map(lambda v: str(v).split(" :")[0]),
+                                                              ops.distinct_until_changed(),
+                                                              ops.map(lambda v: my_print(v)))
     pipe_words_for_file = at_file_full_path.pipe(ops.map(lambda f: f'{f}:{read_file_to_string(f)}'))
     return pipe_words_for_file
 
 
 def test_rx_cdd_read():
     rd = RxData()
-    rd.build_rx_parse_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.replay_cdd_requirements.pipe(ops.take(1),
-                                           ops.flat_map(lambda section_and_key: process_section(section_and_key)),
-                                           ops.map(lambda req: my_print(req, 'req[{}]')),
-                                           ops.map(lambda key_requirement_as_text: get_search_terms(key_requirement_as_text)),
-                                           ops.map(lambda req: my_print(req, 'searchy[{}]')),
-                                           ops.count(lambda v: True))
+    rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
+    return rd.get_filtered_cdd_by_table().pipe(ops.take(1),
+                                               ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+                                               ops.map(lambda req: my_print(req, 'req[{}]')),
+                                               ops.map(lambda key_requirement_as_text: get_search_terms(
+                                                   key_requirement_as_text)),
+                                               ops.map(lambda req: my_print(req, 'searchy[{}]')),
+                                               ops.count(lambda v: True))
 
 
 if __name__ == '__main__':
