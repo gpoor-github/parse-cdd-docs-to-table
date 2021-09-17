@@ -31,7 +31,7 @@ def find_full_key_callable(record_id_split: [[int], str]) -> str:
     if record_id_result:
         record_id_string = record_id_result[0]
         record_id_string = record_id_string.replace("</a>", "")
-        return rx.just(record_id_string.rstrip(']').lstrip('>'))
+        return rx.just("{}:{}".format(record_id_string.rstrip(']').lstrip('>'),record_id_split))
     return rx.just("")
 
 
@@ -46,7 +46,7 @@ def list_map(section_id: str, record_splits: list) -> list:
         record_id_result = re.search(static_data.req_id_re_str, record_split)
         if record_id_result and record_id_result[0]:
             record_id = record_id_result[0].rstrip(']')
-            dict_list.append('Ya!{}/{}'.format(section_id, record_id))
+            dict_list.append('{}/{}:{}'.format(section_id, record_id,record_split))
 
     return dict_list
 
@@ -232,10 +232,9 @@ def test_rx_cdd_read():
     rd = RxData()
     # rd.replay_cdd_requirements.subscribe(lambda v: my_print(v, "cdd = {}"))
     rd.build_rx_parse_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.replay_cdd_requirements.pipe(ops.take(35),ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+    return rd.replay_cdd_requirements.pipe(ops.take(1535),ops.flat_map(lambda section_and_key: process_section(section_and_key)),
                                            ops.map(lambda req: my_print(req, 'req[{}]\n')),
                                            ops.count(lambda v: True))
-
 
 if __name__ == '__main__':
     start = time.perf_counter()
