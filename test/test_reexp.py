@@ -1,6 +1,7 @@
 import os
 import unittest
 
+import rx
 from rx import operators as ops
 
 from cdd_to_cts import static_data
@@ -29,23 +30,45 @@ class MyTestCase(unittest.TestCase):
         # self.assertEqual(True, False)  # add assertion here
 
     def test_filtered_cdd_by_table(self, ):
-        RxData().get_filtered_cdd_by_table(static_data.INPUT_TABLE_FILE_NAME,"input/cdd.html").pipe(
+        RxData().get_filtered_cdd_by_table("../" + static_data.INPUT_TABLE_FILE_NAME, "input/cdd.html").pipe(
             ops.map(lambda v: my_print(v)),
             ops.count(),
-            ops.map(lambda count: my_print(count,"count ={}"))). \
-            subscribe(lambda count: self.assertEqual(count, 97))
+            ops.map(lambda count: my_print(count, "count ={}"))). \
+            subscribe(lambda count: self.assertEqual(count, 80))
 
         print("done")
 
+    def test_rx_at_test_methods_to_words(self, ):
+        RxData().get_at_test_method_words("../" + static_data.TEST_FILES_TXT). \
+            pipe(ops.map(lambda v: my_print(v)),
+                 ops.count()). \
+            subscribe(lambda count: self.assertEqual(count, 1370))
+
+    def test_search_terms(self, ):
+        RxData().get_search_terms("../" + static_data.CDD_REQUIREMENTS_FROM_HTML_FILE). \
+            pipe(ops.map(lambda req: my_print(req, 'search in test[{}]\n'))).subscribe()
+
+    def does_match(self, target: str, search_terms: rx.Observable) -> rx.Observable:
+        return search_terms.pipe(ops.find(lambda item: self.does_match_item(target, item)))
+
+    def does_match_item(self, target: str, term: str) -> bool:
+        return target.find(term) > -1
+
+    def test_search(self, ):
+        RxData().get_at_test_method_words("../" + static_data.TEST_FILES_TXT).pipe(
+            ops.map(lambda method_words: self.does_match(method_words, RxData().get_search_terms(
+                "../" + static_data.CDD_REQUIREMENTS_FROM_HTML_FILE))),
+            ops.map(lambda req: my_print(req, 'search result[{}]\n'))).subscribe()
 
     def test_cdd_html_to_requirements(self, ):
         RxData().get_cdd_html_to_requirements("../input/cdd-11-mod-test.txt").pipe(
             ops.map(lambda v: my_print(v)),
             ops.count(),
-            ops.map(lambda count: my_print(count,"count ={}"))). \
-            subscribe(lambda count: self.assertEqual(count, 1317))
+            ops.map(lambda count: my_print(count, "count ={}"))). \
+            subscribe(lambda count: self.assertEqual(count, 1370))
 
         print("done")
+
 
 if __name__ == '__main__':
     unittest.main()

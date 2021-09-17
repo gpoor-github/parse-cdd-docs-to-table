@@ -10,20 +10,7 @@ from rx.subject import ReplaySubject
 from cdd_to_cts import helpers, static_data
 from cdd_to_cts.class_graph import parse_
 from cdd_to_cts.helpers import find_java_objects
-from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
-
-
-def file_transform_to_full_path(value):
-    tvalue: [str, [], []] = value
-    return rx.from_list(tvalue[2])
-
-
-def read_file_to_string(file):
-    with open(file, "r") as text_file:
-        file_string_raw = text_file.read()
-        file_string = re.sub(' Copyright.+limitations under the License', "", file_string_raw, flags=re.DOTALL)
-        text_file.close()
-        return file_string
+from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, CTS_SOURCE_PARENT
 
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
@@ -204,7 +191,7 @@ class RxData:
                                   cdd_requirments_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) -> rx.Observable:
 
         table_dic = observable_to_dict(self.get_replay_read_table(input_table_file)[0])
-        return self.get_cdd_html_to_requirements(cdd_requirments_file)\
+        return self.get_cdd_html_to_requirements(cdd_requirments_file) \
             .pipe(ops.filter(lambda v: table_dic.get(str(v).split(':', 1)[0])))
 
     def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE):
@@ -232,6 +219,17 @@ class RxData:
         return self.__replay_cdd_requirements.pipe(
             ops.flat_map(lambda section_and_key: process_section(section_and_key)))
 
+    def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT):
+        return self.get_replay_of_at_test_files(test_file_grep_results).pipe(ops.map(lambda v: str(v).split(" :")[0]),
+                                                                             ops.distinct_until_changed(),
+                                                                             ops.map(lambda v: my_print(v)),
+                                                                             ops.map(lambda
+                                                                                         f: f'{f}:{helpers.read_file_to_string(f)}'))
+
+    def get_search_terms(self, html_req_file:str=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)-> rx.Observable:
+        return self.get_cdd_html_to_requirements(html_req_file).pipe(
+                                                   ops.map(lambda key_requirement_as_text: get_search_terms(
+                                                       key_requirement_as_text)))
 
 def my_print(v, f: str = '{}'):
     print(f.format(v))
@@ -250,33 +248,6 @@ def test_rx_dictionary():
     rd.get_replay_of_at_test_files().subscribe(lambda value: print("Received {0".format(value)))
 
 
-def test_rx_at_test_methods():
-    rd = RxData()
-    rd.get_replay_of_at_test_files()
-    # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
-    rd.get_replay_of_at_test_files().subscribe(lambda value: print("Received {0}".format(value)))
-    pipe_test_file_dot_method = rd.get_replay_of_at_test_files().pipe(ops.sum(lambda v: 1),
-                                                                      ops.map(lambda v: my_print(v)))
-    filter_file_name = "cts/PaintTest.java"
-    pipe_methods_for_file = rd.get_replay_of_at_test_files().pipe(
-        ops.filter(lambda v: v.find(filter_file_name) > -1))
-    at_file_full_path = rd.get_replay_of_at_test_files().pipe(ops.map(lambda v: str(v).split(" :")[0]),
-                                                              ops.distinct_until_changed(),
-                                                              ops.map(lambda v: my_print(v)))
-    pipe_words_for_file = at_file_full_path.pipe(ops.map(lambda f: f'{f}:{read_file_to_string(f)}'))
-    return pipe_words_for_file
-
-
-def do_search():
-    rd = RxData()
-    rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.get_filtered_cdd_by_table().pipe(ops.take(200),
-                                               ops.flat_map(lambda section_and_key: process_section(section_and_key)),
-                                               ops.map(lambda req: my_print(req, 'req[{}]')),
-                                               ops.map(lambda key_requirement_as_text: get_search_terms(
-                                                   key_requirement_as_text)),
-                                               ops.map(lambda req: my_print(req, 'searchy[{}]\n')),
-                                               ops.count(lambda v: True))
 
 
 if __name__ == '__main__':
