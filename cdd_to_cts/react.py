@@ -35,21 +35,20 @@ def find_full_key_callable(record_id_split: [[int], str]) -> str:
     return rx.just("")
 
 
-def just_callable(dumymy: [[int], str]) -> str:
-    return rx.just("")
+def list_map(section_id: str, record_splits: list) -> list:
+    # mysubject = ReplaySubject()
+    dict_list = list()
+    for record_split in record_splits:
+        record_id = ""
+        test_section_id = helpers.find_section_id(record_split)
+        if test_section_id and len(test_section_id) > 0:
+            section_id = test_section_id
+        record_id_result = re.search(static_data.req_id_re_str, record_split)
+        if record_id_result and record_id_result[0]:
+            record_id = record_id_result[0].rstrip(']')
+            dict_list.append('Ya!{}/{}'.format(section_id, record_id))
 
-def build_composite_key_callable(record_id_split: [[int], str]) -> str:
-
-    record_id_result = re.search(static_data.req_id_re_str, record_id_split)
-
-    section_id = helpers.find_section_id(record_id_split)
-
-    if section_id != "":
-         last_section_id = section_id
-    if record_id_result and record_id_result[0]:
-        record_id = record_id_result[0].rstrip(']')
-        return rx.just('{}/{}'.format(section_id, record_id))
-    return rx.just("")
+    return dict_list
 
 
 def process_section(key_to_section: str):
@@ -63,14 +62,10 @@ def process_section(key_to_section: str):
         else:
             req_id_splits = re.split(static_data.composite_key_string_re, str(section))
             if req_id_splits and len(req_id_splits) > 1:
-                return rx.for_in(req_id_splits, build_composite_key_callable).pipe(
-                    ops.map(lambda req_id: "{}/{}".format(section_id, req_id)))
-
+                return rx.from_list(list_map(section_id,req_id_splits))# build_composite_key_callable).pipe()
     except Exception as exception_process:
         SystemExit(f" process_section {exception_process}")
-    return rx.for_in("thing", just_callable)
-
-
+    return rx.empty()
 
 
 class RxData:
@@ -237,7 +232,7 @@ def test_rx_cdd_read():
     rd = RxData()
     # rd.replay_cdd_requirements.subscribe(lambda v: my_print(v, "cdd = {}"))
     rd.build_rx_parse_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.replay_cdd_requirements.pipe(ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+    return rd.replay_cdd_requirements.pipe(ops.take(35),ops.flat_map(lambda section_and_key: process_section(section_and_key)),
                                            ops.map(lambda req: my_print(req, 'req[{}]\n')),
                                            ops.count(lambda v: True))
 
