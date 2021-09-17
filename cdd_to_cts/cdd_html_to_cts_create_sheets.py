@@ -124,7 +124,7 @@ def cdd_html_to_cts_create_sheets(targets: str = 'all'):
 
 def create_full_table_from_cdd():
     table_for_sheet, keys_to_table_indexes = create_populated_table(data_sources.key_to_full_requirement_text)
-    write_table('output/full_cdd.csv', table_for_sheet, static_data.new_header)
+    write_table('output/full_cdd.csv', table_for_sheet, static_data.cdd_info_only_header)
 
 if __name__ == '__main__':
     start = time.perf_counter()
