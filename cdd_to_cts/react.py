@@ -10,6 +10,7 @@ from rx.subject import ReplaySubject
 import static_data
 from cdd_to_cts import helpers
 from cdd_to_cts.class_graph import parse_
+from cdd_to_cts.helpers import find_urls, find_java_objects
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
 
 
@@ -31,7 +32,7 @@ def find_full_key_callable(record_id_split: [[int], str]) -> str:
     if record_id_result:
         record_id_string = record_id_result[0]
         record_id_string = record_id_string.replace("</a>", "")
-        return rx.just("{}:{}".format(record_id_string.rstrip(']').lstrip('>'),record_id_split))
+        return rx.just("{}:{}".format(record_id_string.rstrip(']').lstrip('>'), record_id_split))
     return rx.just("")
 
 
@@ -46,7 +47,7 @@ def list_map(section_id: str, record_splits: list) -> list:
         record_id_result = re.search(static_data.req_id_re_str, record_split)
         if record_id_result and record_id_result[0]:
             record_id = record_id_result[0].rstrip(']')
-            dict_list.append('{}/{}:{}'.format(section_id, record_id,record_split))
+            dict_list.append('{}/{}:{}'.format(section_id, record_id, record_split))
 
     return dict_list
 
@@ -62,10 +63,21 @@ def process_section(key_to_section: str):
         else:
             req_id_splits = re.split(static_data.composite_key_string_re, str(section))
             if req_id_splits and len(req_id_splits) > 1:
-                return rx.from_list(list_map(section_id,req_id_splits))# build_composite_key_callable).pipe()
+                return rx.from_list(list_map(section_id, req_id_splits))  # build_composite_key_callable).pipe()
     except Exception as exception_process:
         SystemExit(f" process_section {exception_process}")
     return rx.empty()
+
+
+def get_search_terms(requirement_text: str) ->  str:
+
+    java_objects = find_java_objects(requirement_text)
+    req_split = requirement_text.split(':', 1)
+    key_split = req_split[0].split(':')
+    java_objects.add(key_split[0])
+    if len(key_split) > 1:
+        java_objects.add(key_split[1])
+    return ' '.join(java_objects)
 
 
 class RxData:
@@ -113,7 +125,7 @@ class RxData:
 
             self.replay_at_test_files_to_methods.on_completed()
 
-    def build_replay_read_table(self, file_name: str):
+    def build_replay_read_table(self, file_name:str  = static_data.INPUT_TABLE_FILE_NAME):
 
         section_id_index = 1
         req_id_index = 2
@@ -219,22 +231,16 @@ def test_rx_at_test_methods():
     return pipe_words_for_file
 
 
-def test_rx_table():
-    rd = RxData()
-    rd.replay_header.subscribe(lambda v: my_print(v, "header = {}"))
-    rd.replay_input_table.subscribe(lambda v: my_print(v, "table = {}"))
-
-    rd.build_replay_read_table(static_data.INPUT_TABLE_FILE_NAME)
-    print("done")
-
-
 def test_rx_cdd_read():
     rd = RxData()
-    # rd.replay_cdd_requirements.subscribe(lambda v: my_print(v, "cdd = {}"))
     rd.build_rx_parse_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.replay_cdd_requirements.pipe(ops.take(1535),ops.flat_map(lambda section_and_key: process_section(section_and_key)),
-                                           ops.map(lambda req: my_print(req, 'req[{}]\n')),
+    return rd.replay_cdd_requirements.pipe(ops.take(1),
+                                           ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+                                           ops.map(lambda req: my_print(req, 'req[{}]')),
+                                           ops.map(lambda key_requirement_as_text: get_search_terms(key_requirement_as_text)),
+                                           ops.map(lambda req: my_print(req, 'searchy[{}]')),
                                            ops.count(lambda v: True))
+
 
 if __name__ == '__main__':
     start = time.perf_counter()
