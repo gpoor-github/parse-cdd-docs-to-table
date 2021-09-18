@@ -10,7 +10,7 @@ from rx.subject import ReplaySubject
 from cdd_to_cts import helpers, static_data
 from cdd_to_cts.class_graph import parse_
 from cdd_to_cts.helpers import find_java_objects
-from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, CTS_SOURCE_PARENT
+from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
 
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
@@ -26,7 +26,6 @@ def list_map(section_id: str, record_splits: list) -> list:
     # mysubject = ReplaySubject()
     dict_list = list()
     for record_split in record_splits:
-        record_id = ""
         test_section_id = helpers.find_section_id(record_split)
         if test_section_id and len(test_section_id) > 0:
             section_id = test_section_id
@@ -84,8 +83,6 @@ class RxData:
     # rx_at_test_files_to_methods = rx.from_iterable(
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
-    __replay_at_test_files_to_methods: ReplaySubject
-
     def __init__(self):
         self.__replay_input_table = None
         self.__replay_header = None
@@ -114,6 +111,7 @@ class RxData:
                     test_annotated_file_name_absolute_path = line.split(":")[0]
                     # test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
                     # requirement = result.group(0)
+                    # noinspection DuplicatedCode
                     line_method = file_content.pop()
                     count += 1
                     class_def, method = parse_(line_method)
@@ -178,8 +176,7 @@ class RxData:
                 if len(duplicate_rows) > 0:
                     print(
                         f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
-                else:
-                    duplicate_rows = None
+
             self.__replay_input_table.on_completed()
 
             return self.__replay_input_table, self.__replay_header
@@ -204,7 +201,6 @@ class RxData:
                 section_id_re_str: str = SECTION_ID_RE_STR
                 cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
                                                flags=re.DOTALL)
-                section_id_count = 0
                 for section in cdd_sections_splits:
                     cdd_section_id = helpers.find_section_id(section)
                     if cdd_section_id:
@@ -223,13 +219,13 @@ class RxData:
         return self.get_replay_of_at_test_files(test_file_grep_results).pipe(ops.map(lambda v: str(v).split(" :")[0]),
                                                                              ops.distinct_until_changed(),
                                                                              ops.map(lambda v: my_print(v)),
-                                                                             ops.map(lambda
-                                                                                         f: f'{f}:{helpers.read_file_to_string(f)}'))
+                                                                             ops.map(lambda f: f'{f}:{helpers.read_file_to_string(f)}'))
 
-    def get_search_terms(self, html_req_file:str=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)-> rx.Observable:
+    def get_search_terms(self, html_req_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) -> rx.Observable:
         return self.get_cdd_html_to_requirements(html_req_file).pipe(
-                                                   ops.map(lambda key_requirement_as_text: get_search_terms(
-                                                       key_requirement_as_text)))
+            ops.map(lambda key_requirement_as_text: get_search_terms(
+                key_requirement_as_text)))
+
 
 def my_print(v, f: str = '{}'):
     print(f.format(v))
@@ -248,6 +244,16 @@ def test_rx_dictionary():
     rd.get_replay_of_at_test_files().subscribe(lambda value: print("Received {0".format(value)))
 
 
+def do_search():
+    rd = RxData()
+    rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
+    return rd.get_filtered_cdd_by_table().pipe(ops.take(200),
+                                               ops.flat_map(lambda section_and_key: process_section(section_and_key)),
+                                               ops.map(lambda req: my_print(req, 'req[{}]')),
+                                               ops.map(lambda key_requirement_as_text: get_search_terms(
+                                                   key_requirement_as_text)),
+                                               ops.map(lambda req: my_print(req, 'searchy[{}]\n')),
+                                               ops.count(lambda v: True))
 
 
 if __name__ == '__main__':
