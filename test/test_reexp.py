@@ -1,12 +1,27 @@
 import os
+import time
 import unittest
 
 import rx
 from rx import operators as ops
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.react import RxData, my_print
+from cdd_to_cts.react import RxData, my_print, get_observable_at_test_files_only
 
+
+def predicate3( target, i,source) -> bool:
+    print("predicate 3 " + str(target))
+
+    return True
+
+def predicate2( target, i,source) -> bool:
+    print("predicate 2 " + str(target))
+    file_name = target.split(' :')[0]
+    thing_to_search = helpers.read_file_to_string(file_name)
+    is_found = False
+    isMatch= rx.Observable(source).pipe(ops.find(predicate=predicate3)).run()
+
+    return isMatch
 
 def my_map_dict(key: str, m_list: list) -> list:
     # mysubject = ReplaySubject()
@@ -37,7 +52,7 @@ class MyTestCase(unittest.TestCase):
             subscribe(lambda count: self.assertEqual(count, 964))
 
     def test_search_terms(self, ):
-        RxData().get_search_terms( static_data.CDD_REQUIREMENTS_FROM_HTML_FILE). \
+        RxData().get_search_terms(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE). \
             pipe(ops.map(lambda req: my_print(req, 'search in test[{}]\n'))).subscribe()
 
     # Callable[[TState, T1], TState]
@@ -45,28 +60,18 @@ class MyTestCase(unittest.TestCase):
         print(f'{term} {target}')
         return target.split(":")[0]
 
-    def predicate(self,  target)-> bool:
-        print("hey "+ str(target))
-        terms = str(target[0]).split(' ')
-
-        thing_to_search = helpers.read_file_to_string(target[1].split(' :')[0])
-        is_found=False
-        for term in terms:
-            term.strip(')')
-            is_found = thing_to_search.find(term) > -1
-            if is_found:
-                break
-        return is_found
 
     def does_match(self, target: str, search_terms: rx.Observable) -> rx.Observable:
         return search_terms.pipe(ops.reduce(lambda term: self.reduce_find(term, target)))
         # return search_terms.pipe(ops.find(lambda item: self.does_match_item(target,search_terms)))
+
     match = False
-    def does_match_item(self, target: str, o_term:rx.Observable) -> bool:
+
+    def does_match_item(self, target: str, o_term: rx.Observable) -> bool:
         # val = term.lock
         val = True
-        o_term.pipe(ops.map(lambda v: my_print(v,"a{}")),ops.to_list(),ops.map(lambda v: my_print(v,"b{}")),
-                           ops.filter(lambda term: self.predicate(term)), ops.flat_map(rx.just(False)))
+        o_term.pipe(ops.map(lambda v: my_print(v, "a{}")), ops.to_list(), ops.map(lambda v: my_print(v, "b{}")),
+                    ops.filter(lambda term: RxData().predicate(term)), ops.flat_map(rx.just(False)))
         return self.match
         # term = o_term.pipe(ops.first(),o
 
@@ -88,29 +93,55 @@ class MyTestCase(unittest.TestCase):
             ops.map(lambda count: my_print(count, "count ={}"))). \
             subscribe(lambda count: self.assertEqual(count, 1370))
 
+    def test_rx_find(self, ):
+        rd = RxData()
+        rd.get_replay_of_at_test_files().pipe(ops.find(predicate2)).subscribe()
+
+    def test_replay_simple_at_test_file_only(self,):
+        start = time.perf_counter()
+        rd = RxData()
+        for i in range(0, 10):
+            rd.get_replay_of_at_test_files_only().pipe(ops.count()).subscribe(on_next=lambda result: my_print(result, "test_replay_simple_at_test_file_only  ={}"))
+        end = time.perf_counter()
+        print(f'Took time {end - start:0.4f}sec ')
+
+    def test_simple_at_test_file_only(self,):
+        start = time.perf_counter()
+        for i in range(0, 10):
+            get_observable_at_test_files_only().pipe(ops.count()).subscribe(on_next=lambda result: my_print(result, "took test_simple_at_test_file_only  ={}"))
+
+        end = time.perf_counter()
+        print(f'Took time {end - start:0.4f}sec ')
+
+
     def test_search(self, ):
         rd = RxData()
+        rd.result_subject.subscribe(on_next=lambda result: my_print(result,"Result subject ={}"))
         rd.get_search_terms(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE).pipe(
-            ops.take(100),
-            ops.combine_latest(rd.get_replay_of_at_test_files()),
-           # ops.map(lambda req: my_print(req, 'search combine_latest[{}]')),
-            ops.filter(lambda tuple1 : self.predicate(tuple1) ),
-            ops.map(lambda req: my_print(req, 'Matched !!combine_latest[{}]')),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 1370))
+            ops.take(900),
+            ops.combine_latest(get_observable_at_test_files_only()),
+           # ops.map(lambda req: my_print(req, 'Combine_latest[{}]')),
 
-    def test_search2(self, ):
-        rd = RxData()
-        rd.get_at_test_method_words( static_data.TEST_FILES_TXT).pipe(
-            ops.take(50),
-            ops.flat_map(lambda method_words: self.does_match(method_words, RxData().get_search_terms(
-                 static_data.CDD_REQUIREMENTS_FROM_HTML_FILE))),
-            ops.count()).subscribe(lambda count: self.assertGreater(count, 2, f" Count {count}"))
+            ops.map(lambda req: rd.find_search_result(req)),
+            ops.filter(lambda result: result),
+            ops.map(lambda req: my_print(req, 'find_search_result[{}]')),
 
+            ops.map(lambda v: my_print(v)),
+            #ops.filter(lambda tuple1 : rd.predicate(tuple1) ),
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 408))
+        #
+        # def test_search2(self, ):
+        #     rd = RxData()
+        #     rd.get_at_test_method_words(static_data.TEST_FILES_TXT).pipe(
+        #         ops.take(50),
+        #         ops.flat_map(lambda method_words: self.does_match(method_words, RxData().get_search_terms(
+        #              static_data.CDD_REQUIREMENTS_FROM_HTML_FILE))),
+        #         ops.count()).subscribe(lambda count: self.assertGreater(count, 2, f" Count {count}"))
 
-if __name__ == '__main__':
-    unittest.main()
+        if __name__ == '__main__':
+            unittest.main()
 
-    print(os.path.join(os.path.dirname(__file__),
-                       '..',
-                       'resources'
-                       'datafile1.txt'))
+        print(os.path.join(os.path.dirname(__file__),
+                           '..',
+                           'resources'
+                           'datafile1.txt'))
