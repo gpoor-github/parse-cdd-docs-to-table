@@ -6,11 +6,11 @@ CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 
-CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd-11.html'
-INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
-TEST_FILES_TXT = "input_scripts/test-files.txt"
-TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
-INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/cts-deps-from-static_code_analysis.txt'
+CDD_REQUIREMENTS_FROM_HTML_FILE = '../input/cdd-11.html'
+INPUT_TABLE_FILE_NAME = '../input/new_recs_remaining_todo.csv'
+TEST_FILES_TXT = "../input_scripts/test-files.txt"
+TEST_CASE_MODULES = "../input_scripts/testcases-modules.txt"
+INPUT_DEPENDENCIES_FOR_CTS_TXT = '../input_scripts/cts-deps-from-static_code_analysis.txt'
 
 SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
 composite_key_string_re = "\s*(?:<li>)?\["

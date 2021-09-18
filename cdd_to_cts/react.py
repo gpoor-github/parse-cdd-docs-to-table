@@ -218,7 +218,6 @@ class RxData:
     def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT):
         return self.get_replay_of_at_test_files(test_file_grep_results).pipe(ops.map(lambda v: str(v).split(" :")[0]),
                                                                              ops.distinct_until_changed(),
-                                                                             ops.map(lambda v: my_print(v)),
                                                                              ops.map(lambda f: f'{f}:{helpers.read_file_to_string(f)}'))
 
     def get_search_terms(self, html_req_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) -> rx.Observable:
@@ -247,7 +246,7 @@ def test_rx_dictionary():
 def do_search():
     rd = RxData()
     rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return rd.get_filtered_cdd_by_table().pipe(ops.take(200),
+    return  RxData().get_filtered_cdd_by_table().pipe(ops.take(200),
                                                ops.flat_map(lambda section_and_key: process_section(section_and_key)),
                                                ops.map(lambda req: my_print(req, 'req[{}]')),
                                                ops.map(lambda key_requirement_as_text: get_search_terms(
