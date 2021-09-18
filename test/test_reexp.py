@@ -40,8 +40,14 @@ class MyTestCase(unittest.TestCase):
         RxData().get_search_terms("../" + static_data.CDD_REQUIREMENTS_FROM_HTML_FILE). \
             pipe(ops.map(lambda req: my_print(req, 'search in test[{}]\n'))).subscribe()
 
+    # Callable[[TState, T1], TState]
+    def reduce_find(self, term, target):
+        print(f'{term} {target}')
+        return target.split(":")[0]
+
     def does_match(self, target: str, search_terms: rx.Observable) -> rx.Observable:
-        return search_terms.pipe(ops.find(lambda item: self.does_match_item(target,search_terms)))
+        return search_terms.pipe(ops.reduce(lambda term: self.reduce_find(term, target)))
+        # return search_terms.pipe(ops.find(lambda item: self.does_match_item(target,search_terms)))
 
     def does_match_item(self, target: str, term: rx.Observable) -> bool:
         print(f"does_match_item term {term}")
@@ -56,20 +62,18 @@ class MyTestCase(unittest.TestCase):
 
     def test_search(self, ):
         RxData().get_at_test_method_words("../" + static_data.TEST_FILES_TXT).pipe(
-                 ops.flat_map(lambda method_words: self.does_match(method_words,
-                                                                   RxData().get_search_terms(
-                                                                       "../" + static_data.CDD_REQUIREMENTS_FROM_HTML_FILE))),
-                 ops.map(lambda req: my_print(req, 'search result[{}]\n')),
-                 ops.count()). \
-            subscribe(lambda count: self.assertLess(count, 2, f" Count {count}"))
-
+            ops.take(10),
+            ops.combine_latest(RxData().get_search_terms("../" + static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)),
+            ops.map(lambda req: my_print(req, 'search combine_latest[{}]\n')),
+            ops.count()).subscribe(lambda count: self.assertLess(count, 2, f" Count {count}"))
 
     def test_search2(self, ):
         RxData().get_at_test_method_words("../" + static_data.TEST_FILES_TXT).pipe(
             ops.take(50),
             ops.flat_map(lambda method_words: self.does_match(method_words, RxData().get_search_terms(
                 "../" + static_data.CDD_REQUIREMENTS_FROM_HTML_FILE))),
-                    ops.count()).subscribe(lambda count: self.assertGreater(count, 2,f" Count {count}"))
+            ops.count()).subscribe(lambda count: self.assertGreater(count, 2, f" Count {count}"))
+
 
 if __name__ == '__main__':
     unittest.main()
