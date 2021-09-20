@@ -71,11 +71,11 @@ def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data.TEST_F
                 # requirement = result.group(0)
                 line_method = file_content.pop()
                 count += 1
-                class_def, method = parse_(line_method)
+                class_def, method = parse_class_or_method(line_method)
                 if class_def == "" and method == "":
                     line_method = file_content.pop()
                     count += 1
-                    class_def, method = parse_(line_method)
+                    class_def, method = parse_class_or_method(line_method)
                 if method:
                     if test_files_to_methods.get(test_annotated_file_name):
                         test_files_to_methods[
@@ -95,7 +95,7 @@ def get_cts_root(test_annotated_file_name_absolute_path):
     return test_annotated_file_name
 
 
-def parse_(line_method):
+def parse_class_or_method(line_method):
     method_result = re_method.search(line_method)
     class_def = str()
     method = str()

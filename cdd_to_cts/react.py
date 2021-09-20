@@ -8,9 +8,9 @@ import rx
 from rx import operators as ops
 from rx.subject import ReplaySubject, BehaviorSubject
 
-from cdd_to_cts import helpers, static_data, table_ops
-from cdd_to_cts.class_graph import parse_
-from cdd_to_cts.helpers import find_java_objects
+from cdd_to_cts import helpers, static_data, table_ops, class_graph
+from cdd_to_cts.class_graph import parse_class_or_method
+from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
 
 
@@ -65,6 +65,23 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
+def find_search_terms(requirement_text: str) -> str:
+    java_objects = find_java_objects(requirement_text)
+    req_split = requirement_text.split(':', 1)
+    key_split = req_split[0].split('/')
+    java_objects.add(key_split[0])
+    if len(key_split) > 1:
+        java_objects.add(key_split[1])
+    # try:
+    #     manual_values = self.get_manual_search_terms(req_split[0])
+    #     if manual_values and len(manual_values) > 0:
+    #         java_objects.update(manual_values)
+    # except:
+    #     pass
+
+    return ' '.join(java_objects)
+
+
 class RxData:
     # rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
     # rx_files_to_words = rx.from_iterable(sorted(files_to_words.items(), key=lambda x: x[1], reverse=True))
@@ -74,6 +91,8 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self):
+        self.__test_case_dict = None
+
         self.__input_table = None
         self.__input_header = None
         self.__input_table_keys = None
@@ -84,6 +103,12 @@ class RxData:
         self.__replay_header = None
         self.__replay_at_test_files_to_methods = None
         self.__replay_cdd_requirements = None
+
+    def get_test_case_dict(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
+        # input_table, input_table_keys_to_index, input_header, duplicate_rows =
+        if not self.__test_case_dict:
+            self.__test_case_dict = build_test_cases_module_dictionary(table_dict_file)
+        return self.__test_case_dict
 
     def get_input_table(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
@@ -107,11 +132,11 @@ class RxData:
             return True
         return False
 
-    def find_search_result(self, target) -> Any:
+    @staticmethod
+    def find_search_result(target) -> Any:
         # print("predicate " + str(target))
         result_dict = None
         terms = str(target[0]).split(' ')
-        result = None
         thing_to_search = helpers.read_file_to_string(target[1])
         for term in terms:
             term.strip(')')
@@ -121,13 +146,12 @@ class RxData:
                 for method_text in thing_to_search.split("@Test"):
                     mi = method_text.find(term)
                     if mi > -1:
-                        method_text = method_text.replace('\n',' ')
+                        method_text = method_text.replace('\n', ' ')
                         result_dict = dict()
                         result_dict['target'] = target
-                        result_dict['match'] = [term,mi,method_text]
-                        result = f'["{term}",["{mi}":"{method_text}"]]'
-                        print(f"\nmatched: {result}")
-                result_dict
+                        result_dict['match'] = [term, mi, method_text]
+                        # result = f'["{term}",["{mi}":"{method_text}"]]'
+                        # print(f"\nmatched: {result}")
 
         return result_dict
 
@@ -165,11 +189,11 @@ class RxData:
                     # noinspection DuplicatedCode
                     line_method = file_content.pop()
                     count += 1
-                    class_def, method = parse_(line_method)
+                    class_def, method = parse_class_or_method(line_method)
                     if class_def == "" and method == "":
                         line_method = file_content.pop()
                         count += 1
-                        class_def, method = parse_(line_method)
+                        class_def, method = parse_class_or_method(line_method)
                     if method:
                         self.__replay_at_test_files_to_methods.on_next(
                             '{} :{}'.format(test_annotated_file_name_absolute_path, method.strip(' ')))
@@ -236,16 +260,18 @@ class RxData:
             sys.exit(f"Fatal Error Failed to open file {file_name}")
 
     def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                                  cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, scheduler: rx.typing.Scheduler = None) -> rx.Observable:
+                                  cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                                  scheduler: rx.typing.Scheduler = None) -> rx.Observable:
 
         table_dic = observable_to_dict(self.get_replay_read_table(input_table_file)[0])
-        return self.get_cdd_html_to_requirements(cdd_requirements_file,scheduler) \
+        return self.get_cdd_html_to_requirements(cdd_requirements_file, scheduler) \
             .pipe(ops.filter(lambda v: table_dic.get(str(v).split(':', 1)[0])))
 
-    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, scheduler: rx.typing.Scheduler = None):
+    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                                     scheduler: rx.typing.Scheduler = None):
 
         if not self.__replay_cdd_requirements:
-            self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000,scheduler=scheduler)
+            self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
 
             with open(cdd_html_file, "r") as text_file:
                 cdd_requirements_file_as_string = text_file.read()
@@ -274,43 +300,52 @@ class RxData:
                                                                              ops.map(lambda f:
                                                                                      f'{f}:{helpers.read_file_to_string(f)}'))
 
-    def find_search_terms(self, requirement_text: str) -> str:
-        java_objects = find_java_objects(requirement_text)
-        req_split = requirement_text.split(':', 1)
-        key_split = req_split[0].split('/')
-        java_objects.add(key_split[0])
-        if len(key_split) > 1:
-            java_objects.add(key_split[1])
-        # try:
-        #     manual_values = self.get_manual_search_terms(req_split[0])
-        #     if manual_values and len(manual_values) > 0:
-        #         java_objects.update(manual_values)
-        # except:
-        #     pass
-
-        return ' '.join(java_objects)
-
-    def get_search_terms(self, get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
+    @staticmethod
+    def get_search_terms(get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
         return get_cdd_html_to_requirements.pipe(
-            ops.map(lambda key_requirement_as_text: self.find_search_terms(
+            ops.map(lambda key_requirement_as_text: find_search_terms(
                 key_requirement_as_text)))
 
-    def test_do_search(self, ):
-        return self.get_search_terms(
-            self.get_filtered_cdd_by_table(static_data.INPUT_TABLE_FILE_NAME, "input/cdd.html")).pipe(
-            ops.combine_latest(self.get_replay_of_at_test_files_only()),
-            ops.map(lambda req: self.find_search_result(req)),
-            ops.filter(lambda result: result != None))
-
     def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                                  cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, scheduler: rx.typing.Scheduler = None ):
-        return self.get_search_terms(
-            self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file,scheduler).pipe(
+                  cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                  scheduler: rx.typing.Scheduler = None):
+        return self.get_search_terms(self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file)).pipe(
             ops.combine_latest(self.get_replay_of_at_test_files_only()),
             ops.map(lambda req: self.find_search_result(req)),
-            ops.filter(lambda result: result )))
+            ops.filter(lambda result: result))
 
-def my_print(v, f: str = '{}'):
+    def create_csv_line_from_results(self, result: Any) -> Any:
+        target = result.get('target')
+        result = result.get('result')
+        method_text = result[2]
+        key_split = target[0].split('/')
+        file_name = target[1]
+        row_dict: dict = dict()
+        # ,class_def,method,module
+        row_dict['section_id'] = key_split[0]
+        if len(key_split) > 0:
+            row_dict['req_id'] = key_split[1]
+            # class_graph.parse_class_or_method(line_method):
+        method = class_graph.parse_class_or_method(method_text)
+
+        class_name_split_src = file_name.split('/src/')
+        # Module
+        if len(class_name_split_src) > 0:
+            test_case_key = str(class_name_split_src[0]).replace('cts/tests/', '')
+            if len(test_case_key) > 1:
+                project_root = str(test_case_key).replace("/", ".")
+                test_case_name = class_graph.test_case_name(project_root, self.get_test_case_dict())
+                row_dict['module'] = test_case_name
+
+        if len(class_name_split_src) > 1:
+            class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
+            row_dict['class_def'] = class_name
+
+        row_dict['method'] = method
+        return row_dict
+
+
+def my_print(v, f: Any = '{}'):
     print(f.format(v))
     return v
 

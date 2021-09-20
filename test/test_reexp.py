@@ -1,16 +1,16 @@
-import json
 import time
 import unittest
+from typing import Any
 
 import rx
 from rx import operators as ops
 from rx.testing import TestScheduler
 
-from cdd_to_cts import static_data, helpers
+from cdd_to_cts import static_data, helpers, react
 from cdd_to_cts.react import RxData, my_print
 
 
-def my_print2(v, f: str = '{}'):
+def my_print2(v: Any, f: Any = '{}'):
     print(f.format(v))
     return v
 
@@ -80,7 +80,9 @@ class MyTestCase(unittest.TestCase):
     def test_search_terms(self, ):
         rd = RxData()
         rd.get_search_terms(rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)) \
-            .subscribe(lambda terms: my_print(terms, "search terms=[{}]"))
+            .pipe(ops.map(lambda v: my_print(v)),
+                  ops.count()). \
+            subscribe(lambda count: self.assertEqual(count, 1317))
 
     # Callable[[TState, T1], TState]
     def reduce_find(self, term, target):
@@ -124,7 +126,8 @@ class MyTestCase(unittest.TestCase):
         key = "7.2.3/C-3-1"
         rd = RxData()
         rd.get_search_terms(rd.get_filtered_cdd_by_table("./input/test_manual_search.csv", "input/cdd.html")).pipe(
-            ops.map(lambda req: rd.find_search_terms(req))).subscribe(lambda terms: my_print(terms, "manual_search {}"))
+            ops.map(lambda req: react.find_search_terms(req))).subscribe(
+            lambda terms: my_print(terms, "manual_search {}"))
 
     def test_search(self, ):
         rd = RxData()
@@ -136,28 +139,63 @@ class MyTestCase(unittest.TestCase):
             ops.filter(lambda result: result),
             ops.map(lambda req: my_print(req, "find_search_result[{}]")),
 
-            ops.map(lambda v: my_print(v)),
+            ops.map(lambda v: my_print2(v, "find_downstream_search_result[{}]")),
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
+
+    def test_do_search3(self, ):
+        rd = RxData()
+        rd.do_search("input/new_recs_remaining_todo.csv", "input/cdd.html").pipe(
+            ops.map(lambda req: my_print(req, "test_do_search[{}]")),
             ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
 
     def test_do_search(self, ):
         rd = RxData()
-        rd.do_search().pipe(
+        rd.do_seatestrch().pipe(
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
             ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
 
-    def test_search_results(self, ):
+    def test_handle_search_results(self, ):
         rd = RxData()
         rd.do_search("input/full_cdd.csv", "input/cdd.html"). \
             pipe(
-            ops.map(lambda v: my_print(v, "after do_search[{}]"))).subscribe()
-        #  ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
+            ops.map(ops.map(lambda result_dic: rd.create_csv_line_from_results(result_dic))),
+            ops.map(lambda v: my_print2(v, "create_csv2_line_from_results[{}]"))).subscribe()
 
-    sample_result2 = "['VIEW', ['1279': '     public void testUnhideView_receiveSubtreeEvent()"
-    sample_result = '["VIEW",{"1279":" public void test UnhideView_receiveSubtreeEvent() throws Throwable  final View "}]'
+    def test_handle_search_results_simplest(self, ):
+        tdict = dict()
+        rd = RxData()
 
-    def test_handle_results(self):
-        # result_dict
-        pass
+        rx.just(tdict).pipe(
+            ops.map(lambda result_dic: rd.create_csv_line_from_results(result_dic)),
+            ops.map(lambda v: my_print2(v, "create_csv_line_from_results[{}]"))).subscribe()
+
+    def test_handle_search_results_debug(self, ):
+        scheduler = TestScheduler()
+        rd = RxData()
+        composed = rd.do_search("input/full_cdd.csv", "input/cdd.html", scheduler=scheduler). \
+            pipe(
+            ops.map(ops.flat_map(lambda result_dic: rd.create_csv_line_from_results(result_dic))),
+            ops.map(lambda v: my_print2(v, "create_csv_line_from_results[{}]"))).subscribe()
+
+
+        # composed.subscribe()
+
+        def create():
+            return composed
+
+        subscribed = 300
+        disposed = 1400
+        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
+        print(results.messages)
+        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-4-1")
+        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-6-1")
+
+        print("done")
+
+
+def bla(thing):
+    print(thing)
+    return thing
 
 
 if __name__ == "__main__":
