@@ -79,7 +79,7 @@ def make_files_to_string(iterable_file_list: [str]) -> str:
     return " ".join(flist)
 
 
-def read_file_to_string(file:str, prepend_path_if_needed: str = CTS_SOURCE_PARENT):
+def read_file_to_string(file: str, prepend_path_if_needed: str = CTS_SOURCE_PARENT):
     full_path = file
     if file.find(prepend_path_if_needed) == -1:
         full_path = prepend_path_if_needed + file

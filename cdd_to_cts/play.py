@@ -11,4 +11,4 @@ fd = sorted(test_dic.items(), key=lambda x: x[1], reverse=True)
 rx.from_iterable(flat_dict_list).pipe(ops.map(lambda item: item)).subscribe(
     lambda value: print("Received {}".format(value)))
 # , ops.combine_latest(lambda v: rx.from_iterable(list(v[0])),rx.from_iterable(test_list))
-# rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0"}.format(value)))
+# rx.from_iterable

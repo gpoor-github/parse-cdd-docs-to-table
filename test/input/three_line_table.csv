@@ -1,0 +1,4 @@
+,Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,Comment(internal) e.g. why a test is not possible ,Comment (external) ,New vs Updated(Q),CTS Bug Id ,CDD Bug Id,CDD CL,Area,Shortened,Test Level,,external version,,,
+,7.3.6,C-2-1,,,Yes,,,,,,,,,,,,,,,,,,
+7.3.10 LockScreen and biometrics,7.3.10,C-4-1,,,Yes,,,,,,,,,,,,,,,,,,
+,7.3.10,C-4-2,,,Yes,,,,,,,,,,,,,,,,,,

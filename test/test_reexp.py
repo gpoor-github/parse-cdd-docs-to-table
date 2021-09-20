@@ -1,47 +1,73 @@
-import os
+import json
 import time
 import unittest
 
 import rx
 from rx import operators as ops
+from rx.testing import TestScheduler
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.react import RxData, my_print, get_observable_at_test_files_only
+from cdd_to_cts.react import RxData, my_print
 
 
-def predicate3( target, i,source) -> bool:
+def my_print2(v, f: str = '{}'):
+    print(f.format(v))
+    return v
+
+
+def predicate3(target, i, source) -> bool:
     print("predicate 3 " + str(target))
 
     return True
 
-def predicate2( target, i,source) -> bool:
+
+def predicate2(target, i, source) -> bool:
     print("predicate 2 " + str(target))
-    file_name = target.split(' :')[0]
+    file_name = target.split(" :")[0]
     thing_to_search = helpers.read_file_to_string(file_name)
     is_found = False
-    isMatch= rx.Observable(source).pipe(ops.find(predicate=predicate3)).run()
+    isMatch = rx.Observable(source).pipe(ops.find(predicate=predicate3)).run()
 
     return isMatch
+
 
 def my_map_dict(key: str, m_list: list) -> list:
     # mysubject = ReplaySubject()
     dict_list = list()
     for item in m_list:
-        if ord(item[0]) > ord('a'):
+        if ord(item[0]) > ord("a"):
             key = item
         else:
-            dict_list.append('[{}:{}]'.format(key, item))
+            dict_list.append("[{}:{}]".format(key, item))
     return dict_list
 
 
 class MyTestCase(unittest.TestCase):
 
-    def test_filtered_cdd_by_table(self, ):
-        RxData().get_filtered_cdd_by_table(static_data.INPUT_TABLE_FILE_NAME, "input/cdd.html").pipe(
+    def test_cdd_html_to_requirements(self, ):
+        RxData().get_cdd_html_to_requirements("../input/cdd.html").pipe(
             ops.map(lambda v: my_print(v)),
             ops.count(),
             ops.map(lambda count: my_print(count, "count ={}"))). \
-            subscribe(lambda count: self.assertEqual(count, 80))
+            subscribe(lambda count: self.assertEqual(count, 1317))
+
+    def test_filtered_cdd_by_table(self, ):
+        scheduler = TestScheduler()
+        rd = RxData()
+        composed = rd.get_filtered_cdd_by_table("./input/four_line_sparse.csv", "./input/short_cdd_html_3-2-4-5.html",
+                                                scheduler=scheduler)
+
+        # composed.subscribe()
+
+        def create():
+            return composed
+
+        subscribed = 300
+        disposed = 1400
+        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
+        print(results.messages)
+        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-4-1")
+        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-6-1")
 
         print("done")
 
@@ -52,14 +78,14 @@ class MyTestCase(unittest.TestCase):
             subscribe(lambda count: self.assertEqual(count, 964))
 
     def test_search_terms(self, ):
-        RxData().get_search_terms(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE). \
-            pipe(ops.map(lambda req: my_print(req, 'search in test[{}]\n'))).subscribe()
+        rd = RxData()
+        rd.get_search_terms(rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)) \
+            .subscribe(lambda terms: my_print(terms, "search terms=[{}]"))
 
     # Callable[[TState, T1], TState]
     def reduce_find(self, term, target):
-        print(f'{term} {target}')
+        print(f"{term} {target}")
         return target.split(":")[0]
-
 
     def does_match(self, target: str, search_terms: rx.Observable) -> rx.Observable:
         return search_terms.pipe(ops.reduce(lambda term: self.reduce_find(term, target)))
@@ -81,67 +107,58 @@ class MyTestCase(unittest.TestCase):
         # else:
         #     return rx.empty()
 
-    def do_manual_search(self, target: str, search_terms: rx.Observable) -> rx.Observable:
-        return search_terms.pipe(ops.do_while(lambda term: self.does_match_item(target, term)),
-                                 ops.to_list())
-        # return search_terms.pipe(ops.find(lambda item: self.does_match_item(target,search_terms)))
+    # def test_rx_find(self, ):
+    #     rd = RxData()
+    #     rd.get_replay_of_at_test_files().pipe(ops.find(predicate2)).subscribe()
 
-    def test_cdd_html_to_requirements(self, ):
-        RxData().get_cdd_html_to_requirements("../input/cdd-11-mod-test.txt").pipe(
-            ops.map(lambda v: my_print(v)),
-            ops.count(),
-            ops.map(lambda count: my_print(count, "count ={}"))). \
-            subscribe(lambda count: self.assertEqual(count, 1370))
-
-    def test_rx_find(self, ):
-        rd = RxData()
-        rd.get_replay_of_at_test_files().pipe(ops.find(predicate2)).subscribe()
-
-    def test_replay_simple_at_test_file_only(self,):
+    def test_replay_simple_at_test_file_only(self, ):
         start = time.perf_counter()
         rd = RxData()
-        for i in range(0, 10):
-            rd.get_replay_of_at_test_files_only().pipe(ops.count()).subscribe(on_next=lambda result: my_print(result, "test_replay_simple_at_test_file_only  ={}"))
+        for i in range(0, 2):
+            rd.get_replay_of_at_test_files_only().pipe(ops.count()).subscribe(
+                on_next=lambda result: my_print(result, "test_replay_simple_at_test_file_only  ={}"))
         end = time.perf_counter()
-        print(f'Took time {end - start:0.4f}sec ')
+        print(f"Took time {end - start:0.4f}sec ")
 
-    def test_simple_at_test_file_only(self,):
-        start = time.perf_counter()
-        for i in range(0, 10):
-            get_observable_at_test_files_only().pipe(ops.count()).subscribe(on_next=lambda result: my_print(result, "took test_simple_at_test_file_only  ={}"))
-
-        end = time.perf_counter()
-        print(f'Took time {end - start:0.4f}sec ')
-
+    def test_manual_search_terms(self, ):
+        key = "7.2.3/C-3-1"
+        rd = RxData()
+        rd.get_search_terms(rd.get_filtered_cdd_by_table("./input/test_manual_search.csv", "input/cdd.html")).pipe(
+            ops.map(lambda req: rd.find_search_terms(req))).subscribe(lambda terms: my_print(terms, "manual_search {}"))
 
     def test_search(self, ):
         rd = RxData()
-        rd.result_subject.subscribe(on_next=lambda result: my_print(result,"Result subject ={}"))
-        rd.get_search_terms(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE).pipe(
-            ops.take(900),
-            ops.combine_latest(get_observable_at_test_files_only()),
-           # ops.map(lambda req: my_print(req, 'Combine_latest[{}]')),
+        rd.get_search_terms(rd.get_filtered_cdd_by_table("input/new_recs_remaining_todo.csv", "input/cdd.html")).pipe(
+            ops.map(lambda req: my_print(req, "find_search_terms[{}]")),
+            ops.combine_latest(rd.get_replay_of_at_test_files_only()),
 
             ops.map(lambda req: rd.find_search_result(req)),
             ops.filter(lambda result: result),
-            ops.map(lambda req: my_print(req, 'find_search_result[{}]')),
+            ops.map(lambda req: my_print(req, "find_search_result[{}]")),
 
             ops.map(lambda v: my_print(v)),
-            #ops.filter(lambda tuple1 : rd.predicate(tuple1) ),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 408))
-        #
-        # def test_search2(self, ):
-        #     rd = RxData()
-        #     rd.get_at_test_method_words(static_data.TEST_FILES_TXT).pipe(
-        #         ops.take(50),
-        #         ops.flat_map(lambda method_words: self.does_match(method_words, RxData().get_search_terms(
-        #              static_data.CDD_REQUIREMENTS_FROM_HTML_FILE))),
-        #         ops.count()).subscribe(lambda count: self.assertGreater(count, 2, f" Count {count}"))
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
 
-        if __name__ == '__main__':
-            unittest.main()
+    def test_do_search(self, ):
+        rd = RxData()
+        rd.do_search().pipe(
+            ops.map(lambda req: my_print(req, "test_do_search[{}]")),
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
 
-        print(os.path.join(os.path.dirname(__file__),
-                           '..',
-                           'resources'
-                           'datafile1.txt'))
+    def test_search_results(self, ):
+        rd = RxData()
+        rd.do_search("input/full_cdd.csv", "input/cdd.html"). \
+            pipe(
+            ops.map(lambda v: my_print(v, "after do_search[{}]"))).subscribe()
+        #  ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
+
+    sample_result2 = "['VIEW', ['1279': '     public void testUnhideView_receiveSubtreeEvent()"
+    sample_result = '["VIEW",{"1279":" public void test UnhideView_receiveSubtreeEvent() throws Throwable  final View "}]'
+
+    def test_handle_results(self):
+        # result_dict
+        pass
+
+
+if __name__ == "__main__":
+    unittest.main()

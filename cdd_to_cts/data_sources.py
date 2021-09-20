@@ -1,6 +1,7 @@
 import os
 import random
 import re
+import tarfile
 import time
 
 import class_graph
@@ -460,6 +461,5 @@ if __name__ == '__main__':
         scr.get_cached_crawler_data(CTS_SOURCE_PARENT)
     # remove_ubiquitous_words_code(files_to_words)
     test_files_to_strings = scr.make_test_file_to_dependency_strings()
-
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

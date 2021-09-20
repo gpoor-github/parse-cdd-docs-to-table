@@ -6,43 +6,12 @@ from typing import Any
 
 import rx
 from rx import operators as ops
-from rx.core.typing import Scheduler, Observer, Disposable
 from rx.subject import ReplaySubject, BehaviorSubject
 
-from cdd_to_cts import helpers, static_data
+from cdd_to_cts import helpers, static_data, table_ops
 from cdd_to_cts.class_graph import parse_
 from cdd_to_cts.helpers import find_java_objects
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
-
-
-class MyDisposable (Disposable):
-    def dispose(self) -> None:
-        print("my dispose called ")
-
-
-def observable_at_test_files_only(observer: Observer, scheduler: Scheduler) -> Disposable:
-    re_annotations = re.compile('@Test.*?$')
-
-    try:
-        with open(static_data.TEST_FILES_TXT, "r") as grep_of_test_files:
-            file_content = grep_of_test_files.readlines()
-            count = 0
-            while count < len(file_content):
-                line = file_content[count]
-                count += 1
-                result = re_annotations.search(line)
-                # Skip lines without annotations
-                if result:
-                    test_annotated_file_name_absolute_path = line.split(":")[0]
-                    observer.on_next(test_annotated_file_name_absolute_path)
-    except Exception as es:
-        observer.on_error(es)
-    observer.on_completed()
-    return MyDisposable()
-
-
-def get_observable_at_test_files_only() ->rx.Observable:
-    return rx.create(observable_at_test_files_only).pipe(ops.distinct())
 
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
@@ -55,7 +24,6 @@ def find_full_key_callable(record_id_split: [[int], str]) -> str:
 
 
 def list_map(section_id: str, record_splits: list) -> list:
-    # mysubject = ReplaySubject()
     dict_list = list()
     for record_split in record_splits:
         test_section_id = helpers.find_section_id(record_split)
@@ -97,16 +65,6 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
-def get_search_terms(requirement_text: str) -> str:
-    java_objects = find_java_objects(requirement_text)
-    req_split = requirement_text.split(':', 1)
-    key_split = req_split[0].split('/')
-    java_objects.add(key_split[0])
-    if len(key_split) > 1:
-        java_objects.add(key_split[1])
-    return ' '.join(java_objects)
-
-
 class RxData:
     # rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
     # rx_files_to_words = rx.from_iterable(sorted(files_to_words.items(), key=lambda x: x[1], reverse=True))
@@ -116,12 +74,30 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self):
-        self.result_subject = BehaviorSubject("0:" + str(static_data.new_header))
+        self.__input_table = None
+        self.__input_header = None
+        self.__input_table_keys = None
 
+        self.result_subject = BehaviorSubject("0:" + str(static_data.new_header))
         self.__replay_input_table = None
+
         self.__replay_header = None
         self.__replay_at_test_files_to_methods = None
         self.__replay_cdd_requirements = None
+
+    def get_input_table(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
+        # input_table, input_table_keys_to_index, input_header, duplicate_rows =
+        if not self.__input_header:
+            self.__input_table, self.__input_table_keys, self.__input_header, duplicate_row = table_ops.read_table(
+                table_dict_file)
+        return self.__input_table, self.__input_table_keys, self.__input_header
+
+    def get_manual_search_terms(self, key: str, manual_search_terms="../manual/manual.csv"):
+        table, key_fields, header = self.get_input_table(manual_search_terms)
+        row = table[key_fields[key]]
+        mst_idx = header.index("manual_search_terms")
+        manual_search_terms = row[mst_idx]
+        return set(manual_search_terms.split(' '))
 
     def predicate(self, target) -> bool:
         # print("predicate " + str(target))
@@ -133,10 +109,10 @@ class RxData:
 
     def find_search_result(self, target) -> Any:
         # print("predicate " + str(target))
+        result_dict = None
         terms = str(target[0]).split(' ')
         result = None
         thing_to_search = helpers.read_file_to_string(target[1])
-        is_found = False
         for term in terms:
             term.strip(')')
             si = thing_to_search.find(term)
@@ -145,21 +121,29 @@ class RxData:
                 for method_text in thing_to_search.split("@Test"):
                     mi = method_text.find(term)
                     if mi > -1:
-                        result = f"['{term}':[{mi}:'{method_text}']]"
-                        print("matched " + method_text)
-                break
-        return result
+                        method_text = method_text.replace('\n',' ')
+                        result_dict = dict()
+                        result_dict['target'] = target
+                        result_dict['match'] = [term,mi,method_text]
+                        result = f'["{term}",["{mi}":"{method_text}"]]'
+                        print(f"\nmatched: {result}")
+                result_dict
+
+        return result_dict
 
     def get_replay_of_at_test_files_only(self,
-                                    results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> rx.Observable:
+                                         results_grep_at_test: str = (
+                                                 "%s" % static_data.TEST_FILES_TXT)) -> rx.Observable:
 
-        return self.get_replay_of_at_test_files(results_grep_at_test).pipe(ops.map(lambda target: target.split(' :')[0]),ops.distinct())
+        return self.get_replay_of_at_test_files(results_grep_at_test).pipe(
+            ops.map(lambda target: target.split(' :')[0]), ops.distinct())
 
     def get_replay_of_at_test_files(self,
                                     results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> ReplaySubject:
 
         if self.__replay_at_test_files_to_methods:
-            print(f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
+            print(
+                f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
             return self.__replay_at_test_files_to_methods
         else:
             self.__replay_at_test_files_to_methods = ReplaySubject(9999)
@@ -252,28 +236,30 @@ class RxData:
             sys.exit(f"Fatal Error Failed to open file {file_name}")
 
     def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                                  cdd_requirments_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) -> rx.Observable:
+                                  cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, scheduler: rx.typing.Scheduler = None) -> rx.Observable:
 
         table_dic = observable_to_dict(self.get_replay_read_table(input_table_file)[0])
-        return self.get_cdd_html_to_requirements(cdd_requirments_file) \
+        return self.get_cdd_html_to_requirements(cdd_requirements_file,scheduler) \
             .pipe(ops.filter(lambda v: table_dic.get(str(v).split(':', 1)[0])))
 
-    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE):
+    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, scheduler: rx.typing.Scheduler = None):
 
         if not self.__replay_cdd_requirements:
-            self.__replay_cdd_requirements = ReplaySubject(2000)
+            self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000,scheduler=scheduler)
 
             with open(cdd_html_file, "r") as text_file:
                 cdd_requirements_file_as_string = text_file.read()
                 section_id_re_str: str = SECTION_ID_RE_STR
                 cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
                                                flags=re.DOTALL)
-                for section in cdd_sections_splits:
+                # Start at 0 to don't skip for tests and unknown input
+                for i in range(0, len(cdd_sections_splits)):
+                    section = cdd_sections_splits[i]
                     cdd_section_id = helpers.find_section_id(section)
                     if cdd_section_id:
                         if '13' == cdd_section_id:
                             # section 13 is "Contact us" and has characters that cause issues at lest for git
-                            print(f"Warning skipping section 13 {section}")
+                            print(f"Warning skipping section 13 just the end no requirments")
                             continue
                         section = re.sub('\s\s+', ' ', section)
                         self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
@@ -288,47 +274,53 @@ class RxData:
                                                                              ops.map(lambda f:
                                                                                      f'{f}:{helpers.read_file_to_string(f)}'))
 
-    def get_search_terms(self, html_req_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) -> rx.Observable:
-        return self.get_cdd_html_to_requirements(html_req_file).pipe(
-            ops.map(lambda key_requirement_as_text: get_search_terms(
+    def find_search_terms(self, requirement_text: str) -> str:
+        java_objects = find_java_objects(requirement_text)
+        req_split = requirement_text.split(':', 1)
+        key_split = req_split[0].split('/')
+        java_objects.add(key_split[0])
+        if len(key_split) > 1:
+            java_objects.add(key_split[1])
+        # try:
+        #     manual_values = self.get_manual_search_terms(req_split[0])
+        #     if manual_values and len(manual_values) > 0:
+        #         java_objects.update(manual_values)
+        # except:
+        #     pass
+
+        return ' '.join(java_objects)
+
+    def get_search_terms(self, get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
+        return get_cdd_html_to_requirements.pipe(
+            ops.map(lambda key_requirement_as_text: self.find_search_terms(
                 key_requirement_as_text)))
 
+    def test_do_search(self, ):
+        return self.get_search_terms(
+            self.get_filtered_cdd_by_table(static_data.INPUT_TABLE_FILE_NAME, "input/cdd.html")).pipe(
+            ops.combine_latest(self.get_replay_of_at_test_files_only()),
+            ops.map(lambda req: self.find_search_result(req)),
+            ops.filter(lambda result: result != None))
+
+    def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+                                  cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, scheduler: rx.typing.Scheduler = None ):
+        return self.get_search_terms(
+            self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file,scheduler).pipe(
+            ops.combine_latest(self.get_replay_of_at_test_files_only()),
+            ops.map(lambda req: self.find_search_result(req)),
+            ops.filter(lambda result: result )))
 
 def my_print(v, f: str = '{}'):
     print(f.format(v))
     return v
 
 
-def test_rx_files_to_words():
-    rd = RxData()
-    rd.get_replay_of_at_test_files().subscribe(lambda v: my_print(v, "f to w = {}"))
-
-
-def test_rx_dictionary():
-    rd = RxData()
-    # rs = ReadSpreadSheet()
-    # rd.rx_at_test_files_to_methods.subscribe(lambda v: my_print(v, "f to w = {}"))
-    rd.get_replay_of_at_test_files().subscribe(lambda value: print("Received {0}".format(value)))
-
-
-def do_search():
-    rd = RxData()
-    rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)
-    return RxData().get_filtered_cdd_by_table().pipe(ops.take(200),
-                                                     ops.flat_map(
-                                                         lambda section_and_key: process_section(section_and_key)),
-                                                     ops.map(lambda req: my_print(req, 'req[{}]')),
-                                                     ops.map(lambda key_requirement_as_text: get_search_terms(
-                                                         key_requirement_as_text)),
-                                                     ops.map(lambda req: my_print(req, 'searchy[{}]\n')),
-                                                     ops.count(lambda v: True))
-
-
 if __name__ == '__main__':
     start = time.perf_counter()
-    do_search().subscribe(on_next=lambda value: print("Received {0}".format(value)),
-                          on_completed=lambda: print("completed"),
-                          on_error=lambda err2: print("error {0}".format(err2)))
+    rd = RxData()
+    rd.do_search().subscribe(on_next=lambda value: print("Received {0}".format(value)),
+                             on_completed=lambda: print("completed"),
+                             on_error=lambda err2: print("error {0}".format(err2)))
 
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()

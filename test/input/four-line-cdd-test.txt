@@ -1,0 +1,20 @@
+   </p>
+    <ul>
+      <li>[<a href="#7_1_display_and_graphics">7.1</a>.5/H-0-1] MUST include support for legacy application compatibility mode as implemented by the upstream Android open source code. That is, device implementations MUST NOT alter the triggers or thresholds at which compatibility mode is activated, and MUST NOT alter the behavior of the compatibility mode itself.
+      </li>
+      <li>[<a href="#7_2_input_devices">7.2</a>.1/H-0-1] MUST include support for third-party Input Method Editor (IME) applications.
+      </li>
+      <li>[<a href="#7_2_input_devices">7.2</a>.3/H-0-3] MUST provide the Home function on all the Android-compatible displays that provide the home screen.
+      </li>
+      <li>[<a href="#7_2_input_devices">7.2</a>.3/H-0-4] MUST provide the Back function on all the Android-compatible displays and the Recents function on at least one of the Android-compatible displays.
+      </li>
+      <li>[<a href="#7_2_input_devices">7.2</a>.3/H-0-2] MUST send both the normal and long press event of the Back function (<a href="http://developer.android.com/reference/android/view/KeyEvent.html#KEYCODE_BACK"><code translate="no" dir="ltr">KEYCODE_BACK</code></a>) to the foreground application. These events MUST NOT be consumed by the system and CAN be triggered by outside of the Android device (e.g. external hardware keyboard connected to the Android device).
+      </li>
+      <li>[<a href="#7_2_input_devices">7.2</a>.4/H-0-1] MUST support touchscreen input.
+      </li>
+      <li>[<a href="#7_2_input_devices">7.2</a>.4/H-SR] Are STRONGLY RECOMMENDED to launch the user-selected assist app, in other words the app that implements VoiceInteractionService, or an activity handling the <a href="https://developer.android.com/reference/android/content/Intent#ACTION_ASSIST"><code translate="no" dir="ltr">ACTION_ASSIST</code></a> on long-press of <a href="https://developer.android.com/reference/android/view/KeyEvent#KEYCODE_MEDIA_PLAY_PAUSE"><code translate="no" dir="ltr">KEYCODE_MEDIA_PLAY_PAUSE</code></a> or <a href="https://developer.android.com/reference/android/view/KeyEvent#KEYCODE_HEADSETHOOK"><code translate="no" dir="ltr">KEYCODE_HEADSETHOOK</code></a> if the foreground activity does not handle those long-press events.
+      </li>
+      <li>[<a href="#7_3_sensors">7.3</a>.1/H-SR] Are STRONGLY RECOMMENDED to include a 3-axis accelerometer.
+      </li>
+    </ul>
+    <p>

@@ -1,7 +1,7 @@
 import csv
 import sys
 
-import static_data
+from cdd_to_cts import static_data
 
 
 def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2: [[str]], key_to_index2: dict,
@@ -80,7 +80,7 @@ def write_table(file_name: str, table: [[str]], header: [str]):
         csv_output_file.close()
 
 
-def read_table(file_name: str) -> [[[str]], dict[str, int], [str], dict[str, str]]:
+def read_table(file_name: str,logging:bool=False) -> [[[str]], dict[str, int], [str], dict[str, str]]:
     """],
 
     :rtype: {[[str]],dict,[]}
@@ -103,7 +103,7 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str], dict[str, str
                     try:
                         section_id_index = row.index("section_id")
                         req_id_index = row.index("req_id")
-                        print(f'Found header for {file_name} names are {", ".join(row)}')
+                        if logging:  print(f'Found header for {file_name} names are {", ".join(row)}')
                         header = row
                         table.append(row)
                         table_index += 1
@@ -116,7 +116,7 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str], dict[str, str
                         raise SystemExit(message)
                         # Carry on and get the first row
 
-                print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
+                if logging: print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
                 # Section,section_id,req_id
                 table.append(row)
                 section_id_value = table[table_index][section_id_index].rstrip('.')
@@ -128,16 +128,16 @@ def read_table(file_name: str) -> [[[str]], dict[str, int], [str], dict[str, str
 
                 does_key_existing_index = key_fields.get(key_value)
                 if does_key_existing_index:
-                    print(
+                    if logging: print(
                         f" Error duplicate key in table key [{key_value}] row = [{row}] index ={table_index} dup index ={does_key_existing_index}!")
                     duplicate_rows[key_value] = f"{row}||{table[does_key_existing_index]}"
                 key_fields[key_value] = table_index
 
-                print(f'Processed {table_index} lines {key_value} ')
-                print(f'For table {table_index}')
+                if logging: print(f'Processed {table_index} lines {key_value} ')
+                if logging: print(f'For table {table_index}')
                 table_index += 1
 
-            print("End with file")
+            if logging: print("End with file")
             if len(duplicate_rows) > 0:
                 print(
                     f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
@@ -176,7 +176,8 @@ def diff_tables(file1, file2):
     print("\nDifferences in shared rows starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     print(f"\n\nSee block below f1=[{file1}] ^ f2=[{file2}] Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}")
     print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict_content)} diff=[{dif_1_2_dict_content}]")
-    print(f"Differences 1st-2nd={len(dif_1_2_dict_content)} above  f1=[{file1}] ^ f2=[{file2}] . can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n")
+    print(
+        f"Differences 1st-2nd={len(dif_1_2_dict_content)} above  f1=[{file1}] ^ f2=[{file2}] . can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n")
 
     print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict_content)} diff= [{dif_2_1_dict_content}]")
     print(f"See block above Difference  2st-1nd={len(dif_2_1)}  f2=[{file2}] 1st f1=[{file1}]")
@@ -196,7 +197,8 @@ def diff_tables(file1, file2):
             f'\nintersection=[{header_set1.intersection(header_set2)}]\n')
     handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2)
     print(f"\nSize of table1={len(_key_fields1)} table2={len(_key_fields2)} f1=[{file1}] ^ f2=[{file2}] ")
-    print(f"Intersection of {len(intersection)}  content differs 1-2 {len(dif_1_2_dict_content)} and 2-1 {len(dif_2_1_dict_content)}  rows")
+    print(
+        f"Intersection of {len(intersection)}  content differs 1-2 {len(dif_1_2_dict_content)} and 2-1 {len(dif_2_1_dict_content)}  rows")
     print(f"Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}  ")
 
     return dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content
@@ -261,17 +263,18 @@ def merge_table_example():
 
 
 if __name__ == '__main__':
-    _file1_before_g_eddy="../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.csv"
-    _file1_sachiyo_recent="../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.csv"
-    _file2_after_g="../data_files/gpoor-updated-sept-11-2021.csv"
-    before_graham="../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.csv"
+    _file1_before_g_eddy = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.csv"
+    _file1_sachiyo_recent = "../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.csv"
+    _file2_after_g = "../data_files/gpoor-updated-sept-11-2021.csv"
+    before_graham = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.csv"
     latest_sheet = "../data_files/dups_removed.csv"
-    latest2="../data_files/version_up_there_sorted.csv"
-    x_file1_for_subset="../output/created_output.cvs"
-    x_file2_for_subset="../input/new_recs_full_todo.csv"
-    release="../output/release_updated_table2.csv"
-    from_more_recent_cdd_html ="../data_files/cdd_full_from_more_recent_worse_version.csv"
-    from_less_recent_cdd_html ="../data_files/cdd_full_from_less_recent_better_version.csv"
+    latest2 = "../data_files/version_up_there_sorted.csv"
+    x_file1_for_subset = "../output/created_output.cvs"
+    x_file2_for_subset = "../input/new_recs_full_todo.csv"
+    release = "../output/release_updated_table2.csv"
+    from_more_recent_cdd_html = "../data_files/cdd_full_from_more_recent_worse_version.csv"
+    from_less_recent_cdd_html = "../data_files/cdd_full_from_less_recent_better_version.csv"
 
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(from_more_recent_cdd_html, from_less_recent_cdd_html)
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(from_more_recent_cdd_html,
+                                                                                       from_less_recent_cdd_html)
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")
