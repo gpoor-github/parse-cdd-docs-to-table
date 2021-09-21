@@ -423,9 +423,7 @@ class RxData:
 
 def my_print(v, f: Any = '{}'):
     print(f.format(v))
-    t =dict(v).get(SEARCH_RESULT)
-    if t:
-        print(f" Got result{dict(v).get(SEARCH_RESULT)} ")
+
     return v
 
 from rx import create

@@ -12,7 +12,6 @@ from cdd_to_cts.react import RxData, my_print, build_row, SEARCH_RESULT
 
 def my_print2(v: Any, f: Any = '{}'):
     print(f.format(v))
-    print(len(v[1]))
     return v
 
 
@@ -148,14 +147,14 @@ class MyTestCase(unittest.TestCase):
         rd = RxData()
         rd.do_search("input/new_recs_remaining_todo.csv", "input/cdd.html").pipe(
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 80))
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 1029))
 
     def test_do_search(self, ):
         rd = RxData()
         rd.do_search("./input/full_cdd.csv", "./input/cdd.html").pipe(
             ops.filter(lambda result: dict(result).get("search_result")),
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 21))
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 950))
 
     def test_handle_search_results(self, ):
         rd = RxData()
@@ -165,16 +164,8 @@ class MyTestCase(unittest.TestCase):
 
             ops.count(),
             ops.map(lambda count: my_print(count, "test_handle_search_results count[{}]")),
-            ops.map(lambda count: self.assertEqual(count, 1316, " count for handle search results")),
+            ops.map(lambda count: self.assertEqual(count, 2278, " count for handle search results")),
         ).run()
-
-    def test_handle_search_results_simplest(self, ):
-        tdict = dict()
-        rd = RxData()
-
-        rx.just(tdict).pipe(
-            ops.map(lambda result_dic: rd.find_data_for_csv_dict(result_dic)),
-            ops.map(lambda v: my_print2(v, "find_data_for_csv_dict[{}]"))).subscribe()
 
     def test_handle_search_results_debug(self, ):
         scheduler = TestScheduler()
@@ -193,35 +184,40 @@ class MyTestCase(unittest.TestCase):
         self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-4-1")
 
         print("done")
+
     def test_handle_search_results_to_csv(self, ):
         scheduler = TestScheduler()
         rd = RxData()
 
         # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.new_header)), ops.to_list(),
         #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[])))
-        composed = rd.do_search("./input/full_cdd.csv", "./input/cdd.html",scheduler=scheduler).pipe(
-            ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
-            ops.map(lambda results: rd.find_data_for_csv_dict(results)),
+        composed = rd.do_search("./input/full_cdd.csv", "./input/cdd.html", scheduler=scheduler).pipe(
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
-            ops.map(lambda search_info: build_row(search_info,header=static_data.new_header)),
-            ops.to_list())\
-            #.pipe(ops.multicast(mapper=lambda value:value,subject=rd.result_subject, scheduler=scheduler))
 
-        composed.subscribe(lambda table: table_ops.write_table("output/try_table1.csv",table,header=static_data.new_header))
+            ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
+            ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
+            ops.map(lambda results: rd.find_data_for_csv_dict(results)),
+            ops.map(lambda search_info: build_row(search_info, header=static_data.new_header)),
+            ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
+            ops.to_list()) \
+            # .pipe(ops.multicast(mapper=lambda value:value,subject=rd.result_subject, scheduler=scheduler))
 
-        def create():
-            return composed
+        composed.subscribe(
+            lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.new_header))
 
-        subscribed = 300
-        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=None)
-        print(results.messages)
+        # def create():
+        #     return composed
+        #
+        # subscribed = 300
+        # results = scheduler.start(create, created=1, subscribed=subscribed, disposed=None)
+        # print(results.messages)
 
         print("done")
+
     def test_handle_search_results_to_csv_2(self, ):
         rd = RxData()
-        rd.result_subject.pipe(ops.to_list()).subscribe(lambda v: my_print( v,"value is {}"))
+        rd.result_subject.pipe(ops.to_list()).subscribe(lambda v: my_print(v, "value is {}"))
         rd.do_publish_search_results_to_csv("./input/full_cdd.csv", "./input/cdd.html").run()
-
 
     def test_reducer(self, ):
         rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: acc + list(a), seed=[])
@@ -232,7 +228,7 @@ class MyTestCase(unittest.TestCase):
                                          ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
 
 
-def accum(acc:list, a):
+def accum(acc: list, a):
     return list(acc).append(a)
 
 
