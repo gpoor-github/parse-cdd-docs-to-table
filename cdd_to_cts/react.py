@@ -376,11 +376,11 @@ class RxData:
         try:
             for i in range(len(row)):
                 row[i] = ''
-            search_result = search_result_dict.get('search_result')
+            search_result = search_result_dict.get(SEARCH_RESULT)
 
             if search_result:
-                if len(search_result) == 0:
-                    for key in search_result:
+                if len(search_result) > 0:
+                    for key in header:
                         index = header.index(key)
                         if index > -1:
                             value: str = search_result.get(key)
