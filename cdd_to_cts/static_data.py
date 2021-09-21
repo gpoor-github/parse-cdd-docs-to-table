@@ -1,16 +1,18 @@
 import os
 import time
 
-CTS_SOURCE_PARENT = "/home/gpoor/cts-source/"
+USER_HOME  ="/home/gpoor/"
+
+CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 
-CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
-INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
-TEST_FILES_TXT = "input_scripts/test-files.txt"
-TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
-INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/cts-deps-from-static_code_analysis.txt'
+CDD_REQUIREMENTS_FROM_HTML_FILE = '../input/cdd.html'
+INPUT_TABLE_FILE_NAME = '../input/new_recs_remaining_todo.csv'
+TEST_FILES_TXT = "../input_scripts/test-files.txt"
+TEST_CASE_MODULES = "../input_scripts/testcases-modules.txt"
+INPUT_DEPENDENCIES_FOR_CTS_TXT = '../input_scripts/cts-deps-from-static_code_analysis.txt'
 
 SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
 composite_key_string_re = "\s*(?:<li>)?\["
@@ -101,26 +103,28 @@ all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).uni
     .union(license_words)
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
+REQ_ID = 'req_id'
+SECTION_ID = 'section_id'
 
 new_header: [] = (
-    ['Section', 'section_id', 'req_id', 'Test Availability', 'class_def', 'method', 'module', 'full_key',
+    ['Section', SECTION_ID, REQ_ID, 'Test Availability', 'class_def', 'method', 'module', 'full_key',
      'requirement', 'key_as_number', 'search_terms', 'manual_search_terms', 'matched_terms', 'file_name',
      'matched_files', 'methods_string',
      'urls'])
 # Wow why doesn't that work ?: [] = (['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''])
 
 default_header: [] = (
-    ['Section', 'section_id', 'req_id', 'Test Availability', 'Annotation?', 'New Req for R?', 'New CTS for R?',
+    ['Section', SECTION_ID, 'req_id', 'Test Availability', 'Annotation?', 'New Req for R?', 'New CTS for R?',
      'class_def', 'method', 'module',
      'Comment(internal) e.g. why a test is not possible ',
      'Comment (external)', 'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
      'Test Level',
      '', 'external version', '', '', ''])
 cdd_info_generated_header: [] = (
-    ['Section', 'section_id', 'req_id', 'key_as_number', 'full_key', 'requirement', 'search_terms', 'urls', '', '', '',
+    ['Section', SECTION_ID, 'req_id', 'key_as_number', 'full_key', 'requirement', 'search_terms', 'urls', '', '', '',
      '', '', '', '', '', ''])
 cdd_info_only_header: [] = (
-    ['Section', 'section_id', 'req_id', 'key_as_number', 'full_key', 'requirement', '', '', '', '', '', '', '', '', '',
+    ['Section', SECTION_ID, 'req_id', 'key_as_number', 'full_key', 'requirement', '', '', '', '', '', '', '', '', '',
      '', ''])
 merge_header: [] = (
     ['Test Availability', 'class_def', 'method', 'module'])

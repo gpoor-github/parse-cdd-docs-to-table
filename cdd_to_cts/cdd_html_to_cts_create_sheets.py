@@ -46,7 +46,7 @@ def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00')
 
 
 # Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,
-# ['Section', 'section_id', 'req_id', 'Test Availability','class_def', 'method', 'module','full_key','requirement', 'key_as_number','search_terms','urls','file_name'])
+# ['Section', SECTION_ID, 'req_id', 'Test Availability','class_def', 'method', 'module','full_key','requirement', 'key_as_number','search_terms','urls','file_name'])
 
 def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int):
     key_to_java_objects = data_sources.key_to_java_objects
@@ -62,7 +62,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     table[table_row_index][static_data.new_header.index('Section')] = data_sources.section_to_data.get(
         key_split[0])
 
-    table[table_row_index][static_data.new_header.index('section_id')] = key_split[0]
+    table[table_row_index][static_data.new_header.index(SECTION_ID)] = key_split[0]
 
     table[table_row_index][static_data.new_header.index('full_key')] = key_str
     if section_data:

@@ -195,8 +195,9 @@ def search_files_as_strings_for_words(key: str):
 
     try:
         row = global_input_table[global_input_table_keys_to_index.get(key)]
-    except:
-        return matching_file_set_out
+    except Exception as err:
+        helpers.raise_error(f" matching_file_set_out issue {matching_file_set_out}", err)
+    return matching_file_set_out
 
     try:
         col_idx = list(global_input_header).index("manual_search_terms")

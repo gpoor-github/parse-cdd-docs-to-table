@@ -6,12 +6,13 @@ import rx
 from rx import operators as ops
 from rx.testing import TestScheduler
 
-from cdd_to_cts import static_data, helpers, react
+from cdd_to_cts import static_data, helpers, react, table_ops
 from cdd_to_cts.react import RxData, my_print
 
 
 def my_print2(v: Any, f: Any = '{}'):
     print(f.format(v))
+    print(len(v[1]))
     return v
 
 
@@ -123,10 +124,9 @@ class MyTestCase(unittest.TestCase):
         print(f"Took time {end - start:0.4f}sec ")
 
     def test_manual_search_terms(self, ):
-        key = "7.2.3/C-3-1"
         rd = RxData()
         rd.get_search_terms(rd.get_filtered_cdd_by_table("./input/test_manual_search.csv", "input/cdd.html")).pipe(
-            ops.map(lambda req: react.find_search_terms(req))).subscribe(
+            ops.map(lambda req: react.get_search_terms(req))).subscribe(
             lambda terms: my_print(terms, "manual_search {}"))
 
     def test_search(self, ):
@@ -135,48 +135,48 @@ class MyTestCase(unittest.TestCase):
             ops.map(lambda req: my_print(req, "find_search_terms[{}]")),
             ops.combine_latest(rd.get_replay_of_at_test_files_only()),
 
-            ops.map(lambda req: rd.find_search_result(req)),
-            ops.filter(lambda result: result),
+            ops.filter(lambda result: dict(result).get("search_result")),
             ops.map(lambda req: my_print(req, "find_search_result[{}]")),
 
             ops.map(lambda v: my_print2(v, "find_downstream_search_result[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 32))
 
-    def test_do_search3(self, ):
+    def test_do_search_unfiltered_on_results(self, ):
         rd = RxData()
         rd.do_search("input/new_recs_remaining_todo.csv", "input/cdd.html").pipe(
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 80))
 
     def test_do_search(self, ):
         rd = RxData()
-        rd.do_seatestrch().pipe(
+        rd.do_search("./input/full_cdd.csv", "./input/cdd.html").pipe(
+            ops.filter(lambda result: dict(result).get("search_result")),
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 29))
+            ops.count()).subscribe(lambda count: self.assertEqual(count, 21))
 
     def test_handle_search_results(self, ):
         rd = RxData()
-        rd.do_search("input/full_cdd.csv", "input/cdd.html"). \
-            pipe(
-            ops.map(ops.map(lambda result_dic: rd.create_csv_line_from_results(result_dic))),
-            ops.map(lambda v: my_print2(v, "create_csv2_line_from_results[{}]"))).subscribe()
+        rd.do_search("input/full_cdd.csv", "input/cdd.html").pipe(
+            ops.map(lambda result_dic: rd.find_data_for_csv_dict(result_dic)),
+            ops.map(lambda v: my_print2(v, "test_handle_search_results[{}]")),
+
+            ops.count(),
+            ops.map(lambda count: my_print(count, "test_handle_search_results count[{}]")),
+            ops.map(lambda count: self.assertEqual(count, 1316, " count for handle search results")),
+        ).run()
 
     def test_handle_search_results_simplest(self, ):
         tdict = dict()
         rd = RxData()
 
         rx.just(tdict).pipe(
-            ops.map(lambda result_dic: rd.create_csv_line_from_results(result_dic)),
-            ops.map(lambda v: my_print2(v, "create_csv_line_from_results[{}]"))).subscribe()
+            ops.map(lambda result_dic: rd.find_data_for_csv_dict(result_dic)),
+            ops.map(lambda v: my_print2(v, "find_data_for_csv_dict[{}]"))).subscribe()
 
     def test_handle_search_results_debug(self, ):
         scheduler = TestScheduler()
         rd = RxData()
-        composed = rd.do_search("input/full_cdd.csv", "input/cdd.html", scheduler=scheduler). \
-            pipe(
-            ops.map(ops.flat_map(lambda result_dic: rd.create_csv_line_from_results(result_dic))),
-            ops.map(lambda v: my_print2(v, "create_csv_line_from_results[{}]"))).subscribe()
-
+        composed = rd.do_search("input/full_cdd.csv", "input/cdd.html", scheduler=scheduler)
 
         # composed.subscribe()
 
@@ -188,9 +188,51 @@ class MyTestCase(unittest.TestCase):
         results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
         print(results.messages)
         self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-4-1")
-        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-6-1")
 
         print("done")
+
+    def test_handle_search_results_to_csv7(self, ):
+        rd = RxData()
+        rd.test_handle_search_results_to_csv("./input/full_cdd.csv", "./input/cdd.html"). \
+            pipe(
+            #ops.filter(lambda ag_results: len(ag_results[1])>1),
+            ops.map(lambda v: my_print2(v, "test_handle_search_results_to_csv2[{}]"))).run()
+
+    def test_handle_search_results_to_csv(self, ):
+        rd = RxData()
+        rd.test_handle_search_results_to_csv("./input/full_cdd.csv", "./input/cdd.html") \
+            .subscribe(
+            on_next=lambda table: table_ops.write_table("./output/rx_try3.csv", table, static_data.new_header))
+        # .pipe(
+        # ops.map(lambda result_dic: rd.find_data_for_csv_dict(result_dic)),
+        #   ops.filter(lambda result: dict(result).get("search_result")),
+        # ops.map(lambda result_dic: react.publish_results(result_dic, static_data.new_header)),
+        #  ops.to_list(),
+        # ops.map(lambda v: my_print2(v, "after tolist[{}]"))) \
+
+        #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[]))).\
+        #  subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
+
+    def test_reducer(self, ):
+        rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: acc + list(a), seed=[])
+                                         ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
+
+    def test_reducer2(self, ):
+        rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: accum(acc, a), seed=[])
+                                         ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
+
+
+def accum(acc, a):
+    return acc + [a]
+
+
+def accum2(acc, a):
+    return acc
+
+
+def my_write(v: Any, f: Any = '{}'):
+    print(f.format(v))
+    return v
 
 
 def bla(thing):

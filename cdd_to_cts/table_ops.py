@@ -2,6 +2,7 @@ import csv
 import sys
 
 from cdd_to_cts import static_data
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID
 
 
 def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2: [[str]], key_to_index2: dict,
@@ -59,28 +60,33 @@ def merge_tables(file1, file2):
 
 def write_table(file_name: str, table: [[str]], header: [str]):
     with open(file_name, 'w', newline='') as csv_output_file:
+        section_id_index = static_data.default_header.index(SECTION_ID)
+        req_id_index = static_data.default_header.index(REQ_ID)
         table_writer = csv.writer(csv_output_file)
-        if table[0]:
-            try:
-                section_id_index = table[0].index("section_id")
-                req_id_index = table[0].index("req_id")
-                print(f'write_table Found header for {file_name} names are {", ".join(table[0])}')
-                if header:
-                    print(f'Warning  overwriting header with {", ".join(header)}')
-                    table[0] = header
-            except ValueError:
-                if header:
-                    table_writer.writerow(header)
-                else:
-                    print(f"Error Table without header being written! {csv_output_file}")
-                    raise SystemExit(f"Error Table without header being written! {csv_output_file}")
-                pass
-
-        table_writer.writerows(table)
+        try:
+            section_id_index = table[0].index(SECTION_ID)
+            req_id_index = table[0].index(REQ_ID)
+            print(f'write_table Found header for {file_name} names are {", ".join(table[0])}')
+            if header:
+                print(f'Warning  overwriting header with {", ".join(header)}')
+                table[0] = header
+        except ValueError:
+            if header:
+                section_id_index = header.index(SECTION_ID)
+                req_id_index = header.index(REQ_ID)
+                table_writer.writerow(header)
+            else:
+                print(f"error handling finding header for table{file_name}  first row")
+        # get rid of bad rows
+        for i in range(len(table)):
+            row = table[i]
+            if len(row) > req_id_index:
+                if len(row[section_id_index]) > 1:
+                    table_writer.writerow(row)
         csv_output_file.close()
 
 
-def read_table(file_name: str,logging:bool=False) -> [[[str]], dict[str, int], [str], dict[str, str]]:
+def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int], [str], dict[str, str]]:
     """],
 
     :rtype: {[[str]],dict,[]}
@@ -101,9 +107,9 @@ def read_table(file_name: str,logging:bool=False) -> [[[str]], dict[str, int], [
             for row in csv_reader_instance:
                 if table_index == 0:
                     try:
-                        section_id_index = row.index("section_id")
-                        req_id_index = row.index("req_id")
-                        if logging:  print(f'Found header for {file_name} names are {", ".join(row)}')
+                        section_id_index = row.index(SECTION_ID)
+                        req_id_index = row.index(REQ_ID)
+                        if logging: print(f'Found header for {file_name} names are {", ".join(row)}')
                         header = row
                         table.append(row)
                         table_index += 1

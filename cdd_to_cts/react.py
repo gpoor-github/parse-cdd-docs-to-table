@@ -2,6 +2,7 @@ import csv
 import re
 import sys
 import time
+import traceback
 from typing import Any
 
 import rx
@@ -10,8 +11,10 @@ from rx.subject import ReplaySubject, BehaviorSubject
 
 from cdd_to_cts import helpers, static_data, table_ops, class_graph
 from cdd_to_cts.class_graph import parse_class_or_method
-from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary
-from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR
+from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error
+from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID
+
+SEARCH_RESULT = 'search_result'
 
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
@@ -52,7 +55,7 @@ def process_section(key_to_section: str):
     try:
         key_to_section_split = key_to_section.split(':', 1)
         section_id = key_to_section[0]
-        section = key_to_section_split[1]
+        section = helpers.remove_n_spaces_and_commas(key_to_section_split[1])
         req_id_splits = re.split('(?={})'.format(static_data.full_key_string_for_re), section)
         if req_id_splits and len(req_id_splits) > 1:
             return rx.for_in(req_id_splits, find_full_key_callable)
@@ -61,14 +64,17 @@ def process_section(key_to_section: str):
             if req_id_splits and len(req_id_splits) > 1:
                 return rx.from_list(list_map(section_id, req_id_splits))  # build_composite_key_callable).pipe()
     except Exception as exception_process:
-        SystemExit(f" process_section {exception_process}")
+        helpers.raise_error(f" process_section {exception_process}", exception_process)
     return rx.empty()
 
 
-def find_search_terms(requirement_text: str) -> str:
+def get_search_terms(requirement_text: str) -> dict:
+    search_info = dict()
     java_objects = find_java_objects(requirement_text)
     req_split = requirement_text.split(':', 1)
-    key_split = req_split[0].split('/')
+    full_key = req_split[0]
+    search_info["key"] = full_key
+    key_split = full_key.split('/')
     java_objects.add(key_split[0])
     if len(key_split) > 1:
         java_objects.add(key_split[1])
@@ -78,8 +84,9 @@ def find_search_terms(requirement_text: str) -> str:
     #         java_objects.update(manual_values)
     # except:
     #     pass
+    search_info["search_terms"] = java_objects
 
-    return ' '.join(java_objects)
+    return search_info
 
 
 class RxData:
@@ -104,7 +111,7 @@ class RxData:
         self.__replay_at_test_files_to_methods = None
         self.__replay_cdd_requirements = None
 
-    def get_test_case_dict(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
+    def get_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__test_case_dict:
             self.__test_case_dict = build_test_cases_module_dictionary(table_dict_file)
@@ -126,34 +133,82 @@ class RxData:
 
     def predicate(self, target) -> bool:
         # print("predicate " + str(target))
-        result = self.find_search_result(target)
+        result = self.search_file_for_terms(target)
         if result:
             self.result_subject.on_next(result)
             return True
         return False
 
     @staticmethod
-    def find_search_result(target) -> Any:
+    def search_file_for_terms(search_info_and_file_tuple: tuple) -> dict:
         # print("predicate " + str(target))
-        result_dict = None
-        terms = str(target[0]).split(' ')
-        thing_to_search = helpers.read_file_to_string(target[1])
-        for term in terms:
-            term.strip(')')
-            si = thing_to_search.find(term)
-            is_found = si > 1
-            if is_found:
-                for method_text in thing_to_search.split("@Test"):
-                    mi = method_text.find(term)
-                    if mi > -1:
-                        method_text = method_text.replace('\n', ' ')
-                        result_dict = dict()
-                        result_dict['target'] = target
-                        result_dict['match'] = [term, mi, method_text]
-                        # result = f'["{term}",["{mi}":"{method_text}"]]'
-                        # print(f"\nmatched: {result}")
+        # rx give us a tuple from combine latest, we want to bind them in one object that will get info in the stream and provide our result
+        search_info:dict = search_info_and_file_tuple[0]
 
-        return result_dict
+        try:
+            # Get rid of tuple, change to a dict
+            search_info['file_name'] = search_info_and_file_tuple[1]
+            key = search_info['key']
+            search_terms = search_info.get('search_terms')
+            test_file_test = helpers.read_file_to_string(search_info['file_name'])
+            for term in search_terms:
+                term.strip(')')
+                si = test_file_test.find(term)
+                is_found = si > 1
+                if is_found:
+                    for method_text in test_file_test.split("@Test"):
+                        mi = method_text.find(term)
+                        if mi > -1:
+                            method_text = method_text.replace('\n', ' ')
+                            search_result = dict()
+                            search_info[SEARCH_RESULT] = search_result
+                            search_result['key'] = key
+                            search_result['term'] = term
+                            search_result['index'] = mi
+                            search_result['method_text'] = method_text
+                            # result = f'["{term}",["{mi}":"{method_text}"]]'
+                            # print(f"\nmatched: {result}")
+        except Exception as err:
+            raise_error("search_file_for_terms", err)
+
+        return search_info
+
+    def find_data_for_csv_dict(self, search_info: dict) -> dict:
+        key = "0/0"
+        try:
+
+            # search_terms = search_info.get('search_terms')
+            file_name = search_info.get('file_name')
+            key = search_info.get('key')
+            search_result = search_info.get(SEARCH_RESULT)
+            if search_result:
+
+                key_split = key.split('/')
+                search_result[SECTION_ID] = key_split[0]
+                if len(key_split) > 0:
+                    search_result[REQ_ID] = key_split[1]
+                try:
+                    method_text = search_result.get('method_text')
+                    method = class_graph.re_method.search(method_text, 1).group(0)
+                    search_result['method'] = method
+                except Exception as err:
+                    print(" exception find_data_for_csv_dict " + str(err))
+                    pass
+                class_name_split_src = file_name.split('/src/')
+                # Module
+                if len(class_name_split_src) > 0:
+                    test_case_name = class_graph.test_case_name(class_name_split_src[0],
+                                                                self.get_test_case_dict())
+                    search_result['module'] = test_case_name
+
+                if len(class_name_split_src) > 1:
+                    class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
+                    search_result['class_def'] = class_name
+
+        except Exception as e:
+            helpers.raise_error(f"find_data_for_csv_dict at {key}", e)
+
+        return search_info
 
     def get_replay_of_at_test_files_only(self,
                                          results_grep_at_test: str = (
@@ -173,33 +228,35 @@ class RxData:
             self.__replay_at_test_files_to_methods = ReplaySubject(9999)
 
         re_annotations = re.compile('@Test.*?$')
-
-        with open(results_grep_at_test, "r") as grep_of_test_files:
-            file_content = grep_of_test_files.readlines()
-            count = 0
-            while count < len(file_content):
-                line = file_content[count]
-                count += 1
-                result = re_annotations.search(line)
-                # Skip lines without annotations
-                if result:
-                    test_annotated_file_name_absolute_path = line.split(":")[0]
-                    # test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
-                    # requirement = result.group(0)
-                    # noinspection DuplicatedCode
-                    line_method = file_content.pop()
+        try:
+            with open(results_grep_at_test, "r") as grep_of_test_files:
+                file_content = grep_of_test_files.readlines()
+                count = 0
+                while count < len(file_content):
+                    line = file_content[count]
                     count += 1
-                    class_def, method = parse_class_or_method(line_method)
-                    if class_def == "" and method == "":
+                    result = re_annotations.search(line)
+                    # Skip lines without annotations
+                    if result:
+                        test_annotated_file_name_absolute_path = line.split(":")[0]
+                        # test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
+                        # requirement = result.group(0)
+                        # noinspection DuplicatedCode
                         line_method = file_content.pop()
                         count += 1
                         class_def, method = parse_class_or_method(line_method)
-                    if method:
-                        self.__replay_at_test_files_to_methods.on_next(
-                            '{} :{}'.format(test_annotated_file_name_absolute_path, method.strip(' ')))
+                        if class_def == "" and method == "":
+                            line_method = file_content.pop()
+                            count += 1
+                            class_def, method = parse_class_or_method(line_method)
+                        if method:
+                            self.__replay_at_test_files_to_methods.on_next(
+                                '{} :{}'.format(test_annotated_file_name_absolute_path, method.strip(' ')))
 
-            self.__replay_at_test_files_to_methods.on_completed()
-            return self.__replay_at_test_files_to_methods
+                    self.__replay_at_test_files_to_methods.on_completed()
+                    return self.__replay_at_test_files_to_methods
+        except FileNotFoundError as e:
+            raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
 
     def get_replay_read_table(self, file_name: str = static_data.INPUT_TABLE_FILE_NAME) -> [ReplaySubject,
                                                                                             ReplaySubject]:
@@ -223,8 +280,8 @@ class RxData:
                 for row in csv_reader_instance:
                     if table_index == 0:
                         try:
-                            section_id_index = row.index("section_id")
-                            req_id_index = row.index("req_id")
+                            section_id_index = row.index(SECTION_ID)
+                            req_id_index = row.index(REQ_ID)
                             print(f'Found header for {file_name} names are {", ".join(row)}')
                             self.__replay_header.on_next(row)
                             self.__replay_header.on_completed()
@@ -303,46 +360,47 @@ class RxData:
     @staticmethod
     def get_search_terms(get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
         return get_cdd_html_to_requirements.pipe(
-            ops.map(lambda key_requirement_as_text: find_search_terms(
+            ops.map(lambda key_requirement_as_text: get_search_terms(
                 key_requirement_as_text)))
 
     def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
                   cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                   scheduler: rx.typing.Scheduler = None):
-        return self.get_search_terms(self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file)).pipe(
+        return self.get_search_terms(
+            self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file, scheduler)).pipe(
             ops.combine_latest(self.get_replay_of_at_test_files_only()),
-            ops.map(lambda req: self.find_search_result(req)),
-            ops.filter(lambda result: result))
+            ops.map(lambda req: self.search_file_for_terms(req)))
 
-    def create_csv_line_from_results(self, result: Any) -> Any:
-        target = result.get('target')
-        result = result.get('result')
-        method_text = result[2]
-        key_split = target[0].split('/')
-        file_name = target[1]
-        row_dict: dict = dict()
-        # ,class_def,method,module
-        row_dict['section_id'] = key_split[0]
-        if len(key_split) > 0:
-            row_dict['req_id'] = key_split[1]
-            # class_graph.parse_class_or_method(line_method):
-        method = class_graph.parse_class_or_method(method_text)
+    def publish_results(self, search_result_dict: dict, header: [str]):
+        row: [str] = list(header)
+        try:
+            for i in range(len(row)):
+                row[i] = ''
+            search_result = search_result_dict.get('search_result')
 
-        class_name_split_src = file_name.split('/src/')
-        # Module
-        if len(class_name_split_src) > 0:
-            test_case_key = str(class_name_split_src[0]).replace('cts/tests/', '')
-            if len(test_case_key) > 1:
-                project_root = str(test_case_key).replace("/", ".")
-                test_case_name = class_graph.test_case_name(project_root, self.get_test_case_dict())
-                row_dict['module'] = test_case_name
+            if search_result:
+                if len(search_result) == 0:
+                    for key in search_result:
+                        index = header.index(key)
+                        if index > -1:
+                            value: str = search_result.get(key)
+                            if value:
+                                row[index] = value
+                                self.result_subject.on_next(row)
+        except ValueError as err:
+            traceback.print_exc()
+            raise_error("ValueError publish_results", err)
+        except IndexError as err2:
+            raise_error("IndexError publish_results", err2)
+        except Exception as err3:
+            raise_error("Exception publish_results", err3)
 
-        if len(class_name_split_src) > 1:
-            class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
-            row_dict['class_def'] = class_name
-
-        row_dict['method'] = method
-        return row_dict
+    def test_handle_search_results_to_csv(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+                                          cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                                          scheduler: rx.typing.Scheduler = None):
+        return self.do_search(input_table_file, cdd_requirements_file, scheduler).pipe(
+            ops.map(lambda result_dic: self.find_data_for_csv_dict(result_dic)),
+            ops.map(lambda result_dic: self.publish_results(result_dic, static_data.new_header)))
 
 
 def my_print(v, f: Any = '{}'):
@@ -353,9 +411,11 @@ def my_print(v, f: Any = '{}'):
 if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
-    rd.do_search().subscribe(on_next=lambda value: print("Received {0}".format(value)),
-                             on_completed=lambda: print("completed"),
-                             on_error=lambda err2: print("error {0}".format(err2)))
+    rd.test_handle_search_results_to_csv().subscribe(
+        # on_next=lambda table: table_ops.write_table("../output/rx_try11.csv", table, static_data.new_header),
+        on_completed=lambda: print("completed"),
+        on_error=lambda err: helpers.raise_error("in main", err))
+    rd.result_subject.subscribe(on_next=lambda result: my_print(f"My results{result}"))
 
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()

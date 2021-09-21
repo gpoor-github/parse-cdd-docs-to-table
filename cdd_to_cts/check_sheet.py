@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import sys
 
 from static_data import CTS_SOURCE_ROOT
 
@@ -24,8 +25,8 @@ def check_for_file_and_method(file_name_from_class: str, method_value: str, file
                 else:
                     file_name_to_result[file_name_from_class] = method_value + " Failed reason: Method not found"
 
-        except:
-            print(" Could not open " + file_name_from_class)
+        except Exception as err:
+            print(" Could not open " + file_name_from_class + str(err), file=sys.stderr)
             file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found"
     return False
 
@@ -62,6 +63,7 @@ class ReadSpreadSheet:
         table = []
         header = []
         self.crawl()
+
         with open(ccd_csv_file_name) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             line_count = 0
@@ -77,8 +79,8 @@ class ReadSpreadSheet:
                     table_index = line_count - 1
                     # Section,section_id,req_id
                     section_value = table[table_index][header.index("Section")]
-                    section_id_value = table[table_index][header.index("section_id")]
-                    req_id_value = table[table_index][header.index("req_id")]
+                    section_id_value = table[table_index][header.index(SECTION_ID)]
+                    req_id_value = table[table_index][header.index(REQ_ID)]
                     class_def_value = table[table_index][header.index("class_def")]
                     method_value = table[table_index][header.index("method")]
                     module_value = table[table_index][header.index("module")]
