@@ -7,7 +7,7 @@ from rx import operators as ops
 from rx.testing import TestScheduler
 
 from cdd_to_cts import static_data, helpers, react, table_ops
-from cdd_to_cts.react import RxData, my_print
+from cdd_to_cts.react import RxData, my_print, build_row, SEARCH_RESULT
 
 
 def my_print2(v: Any, f: Any = '{}'):
@@ -113,6 +113,9 @@ class MyTestCase(unittest.TestCase):
     # def test_rx_find(self, ):
     #     rd = RxData()
     #     rd.get_replay_of_at_test_files().pipe(ops.find(predicate2)).subscribe()
+    def test_get_replay_of_at_test_files(self, ):
+        rd = RxData()
+        rd.get_replay_of_at_test_files().subscribe()
 
     def test_replay_simple_at_test_file_only(self, ):
         start = time.perf_counter()
@@ -190,44 +193,47 @@ class MyTestCase(unittest.TestCase):
         self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-4-1")
 
         print("done")
-
-    def test_handle_search_results_to_csv7(self, ):
-        rd = RxData()
-        rd.test_handle_search_results_to_csv("./input/full_cdd.csv", "./input/cdd.html"). \
-            pipe(
-            #ops.filter(lambda ag_results: len(ag_results[1])>1),
-            ops.map(lambda v: my_print2(v, "test_handle_search_results_to_csv2[{}]"))).run()
-
     def test_handle_search_results_to_csv(self, ):
+        scheduler = TestScheduler()
         rd = RxData()
-        rd.test_handle_search_results_to_csv("./input/full_cdd.csv", "./input/cdd.html") \
-            .subscribe(
-            on_next=lambda table: table_ops.write_table("./output/rx_try3.csv", table, static_data.new_header))
-        # .pipe(
-        # ops.map(lambda result_dic: rd.find_data_for_csv_dict(result_dic)),
-        #   ops.filter(lambda result: dict(result).get("search_result")),
-        # ops.map(lambda result_dic: react.publish_results(result_dic, static_data.new_header)),
-        #  ops.to_list(),
-        # ops.map(lambda v: my_print2(v, "after tolist[{}]"))) \
 
-        #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[]))).\
-        #  subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
+        # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.new_header)), ops.to_list(),
+        #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[])))
+        composed = rd.do_search("./input/full_cdd.csv", "./input/cdd.html",scheduler=scheduler).pipe(
+            ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
+            ops.map(lambda results: rd.find_data_for_csv_dict(results)),
+            ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
+            ops.map(lambda search_info: build_row(search_info,header=static_data.new_header)),
+            ops.to_list())\
+            #.pipe(ops.multicast(mapper=lambda value:value,subject=rd.result_subject, scheduler=scheduler))
+
+        composed.subscribe(lambda table: table_ops.write_table("output/try_table1.csv",table,header=static_data.new_header))
+
+        def create():
+            return composed
+
+        subscribed = 300
+        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=None)
+        print(results.messages)
+
+        print("done")
+    def test_handle_search_results_to_csv_2(self, ):
+        rd = RxData()
+        rd.result_subject.pipe(ops.to_list()).subscribe(lambda v: my_print( v,"value is {}"))
+        rd.do_publish_search_results_to_csv("./input/full_cdd.csv", "./input/cdd.html").run()
+
 
     def test_reducer(self, ):
         rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: acc + list(a), seed=[])
                                          ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
 
     def test_reducer2(self, ):
-        rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: accum(acc, a), seed=[])
+        rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: accum(acc, a), seed=list)
                                          ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
 
 
-def accum(acc, a):
-    return acc + [a]
-
-
-def accum2(acc, a):
-    return acc
+def accum(acc:list, a):
+    return list(acc).append(a)
 
 
 def my_write(v: Any, f: Any = '{}'):

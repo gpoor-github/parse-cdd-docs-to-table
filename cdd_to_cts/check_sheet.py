@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-from static_data import CTS_SOURCE_ROOT
+from static_data import CTS_SOURCE_ROOT, SECTION_ID, REQ_ID
 
 
 def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) -> bool:

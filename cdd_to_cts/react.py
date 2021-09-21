@@ -17,6 +17,31 @@ from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, R
 SEARCH_RESULT = 'search_result'
 
 
+def build_row(search_result_dict: dict, header: [str]=static_data.merge_header, do_log:bool=False):
+    row: [str] = list(header)
+    try:
+        for i in range(len(row)):
+            row[i] = ''
+        search_result = search_result_dict.get(SEARCH_RESULT)
+        if search_result:
+            if len(search_result) > 0:
+                for key in header:
+                    try:
+                        index = header.index(key)
+                        if index > -1:
+                            value: str = search_result.get(key)
+                            if value:
+                                row[index] = value
+                                return row
+                    except ValueError as err:
+                        if do_log: print("ValueError building row, expected sometimes header and data mismatch", err)
+                    except IndexError as err2:
+                        if do_log: print("IndexError building row, expected sometimes", err2)
+    except Exception as err3:
+        traceback.print_exc()
+        raise_error("Exception publish_results", err3)
+    return None
+
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
     record_id_result = re.search(FULL_KEY_RE_WITH_ANCHOR, record_id_split)
     if record_id_result:
@@ -133,17 +158,17 @@ class RxData:
 
     def predicate(self, target) -> bool:
         # print("predicate " + str(target))
-        result = self.search_file_for_terms(target)
-        if result:
+        result = self.get_search_results(target)
+        if result.get(SEARCH_RESULT):
             self.result_subject.on_next(result)
             return True
         return False
 
     @staticmethod
-    def search_file_for_terms(search_info_and_file_tuple: tuple) -> dict:
+    def get_search_results(search_info_and_file_tuple: tuple) -> dict:
         # print("predicate " + str(target))
         # rx give us a tuple from combine latest, we want to bind them in one object that will get info in the stream and provide our result
-        search_info:dict = search_info_and_file_tuple[0]
+        search_info: dict = search_info_and_file_tuple[0]
 
         try:
             # Get rid of tuple, change to a dict
@@ -169,7 +194,7 @@ class RxData:
                             # result = f'["{term}",["{mi}":"{method_text}"]]'
                             # print(f"\nmatched: {result}")
         except Exception as err:
-            raise_error("search_file_for_terms", err)
+            raise_error("get_search_results", err)
 
         return search_info
 
@@ -212,20 +237,22 @@ class RxData:
 
     def get_replay_of_at_test_files_only(self,
                                          results_grep_at_test: str = (
-                                                 "%s" % static_data.TEST_FILES_TXT)) -> rx.Observable:
+                                                 "%s" % static_data.TEST_FILES_TXT),
+                                         scheduler: rx.typing.Scheduler = None) -> rx.Observable:
 
-        return self.get_replay_of_at_test_files(results_grep_at_test).pipe(
+        return self.get_replay_of_at_test_files(results_grep_at_test, scheduler).pipe(
             ops.map(lambda target: target.split(' :')[0]), ops.distinct())
 
     def get_replay_of_at_test_files(self,
-                                    results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> ReplaySubject:
+                                    results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT),
+                                    scheduler: rx.typing.Scheduler = None) -> ReplaySubject:
 
         if self.__replay_at_test_files_to_methods:
             print(
                 f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
             return self.__replay_at_test_files_to_methods
         else:
-            self.__replay_at_test_files_to_methods = ReplaySubject(9999)
+            self.__replay_at_test_files_to_methods = ReplaySubject(9999, scheduler=scheduler)
 
         re_annotations = re.compile('@Test.*?$')
         try:
@@ -253,8 +280,8 @@ class RxData:
                             self.__replay_at_test_files_to_methods.on_next(
                                 '{} :{}'.format(test_annotated_file_name_absolute_path, method.strip(' ')))
 
-                    self.__replay_at_test_files_to_methods.on_completed()
-                    return self.__replay_at_test_files_to_methods
+                self.__replay_at_test_files_to_methods.on_completed()
+                return self.__replay_at_test_files_to_methods
         except FileNotFoundError as e:
             raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
 
@@ -351,11 +378,13 @@ class RxData:
         return self.__replay_cdd_requirements.pipe(
             ops.flat_map(lambda section_and_key: process_section(section_and_key)))
 
-    def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT):
-        return self.get_replay_of_at_test_files(test_file_grep_results).pipe(ops.map(lambda v: str(v).split(" :")[0]),
-                                                                             ops.distinct_until_changed(),
-                                                                             ops.map(lambda f:
-                                                                                     f'{f}:{helpers.read_file_to_string(f)}'))
+    def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT,
+                                 scheduler: rx.typing.Scheduler = None):
+        return self.get_replay_of_at_test_files(test_file_grep_results, scheduler).pipe(
+            ops.map(lambda v: str(v).split(" :")[0]),
+            ops.distinct_until_changed(),
+            ops.map(lambda f:
+                    f'{f}:{helpers.read_file_to_string(f)}'))
 
     @staticmethod
     def get_search_terms(get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
@@ -369,35 +398,24 @@ class RxData:
         return self.get_search_terms(
             self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file, scheduler)).pipe(
             ops.combine_latest(self.get_replay_of_at_test_files_only()),
-            ops.map(lambda req: self.search_file_for_terms(req)))
+            ops.map(lambda req: self.get_search_results(req)))
+
+
 
     def publish_results(self, search_result_dict: dict, header: [str]):
-        row: [str] = list(header)
         try:
-            for i in range(len(row)):
-                row[i] = ''
-            search_result = search_result_dict.get(SEARCH_RESULT)
-
-            if search_result:
-                if len(search_result) > 0:
-                    for key in header:
-                        index = header.index(key)
-                        if index > -1:
-                            value: str = search_result.get(key)
-                            if value:
-                                row[index] = value
-                                self.result_subject.on_next(row)
+            row = build_row(search_result_dict, header)
+            if row:
+                self.result_subject.on_next(row)
         except ValueError as err:
             traceback.print_exc()
             raise_error("ValueError publish_results", err)
         except IndexError as err2:
             raise_error("IndexError publish_results", err2)
-        except Exception as err3:
-            raise_error("Exception publish_results", err3)
 
-    def test_handle_search_results_to_csv(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                                          cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-                                          scheduler: rx.typing.Scheduler = None):
+    def do_publish_search_results_to_csv(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+                                         cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                                         scheduler: rx.typing.Scheduler = None):
         return self.do_search(input_table_file, cdd_requirements_file, scheduler).pipe(
             ops.map(lambda result_dic: self.find_data_for_csv_dict(result_dic)),
             ops.map(lambda result_dic: self.publish_results(result_dic, static_data.new_header)))
@@ -405,17 +423,24 @@ class RxData:
 
 def my_print(v, f: Any = '{}'):
     print(f.format(v))
+    t =dict(v).get(SEARCH_RESULT)
+    if t:
+        print(f" Got result{dict(v).get(SEARCH_RESULT)} ")
     return v
+
+from rx import create
 
 
 if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
-    rd.test_handle_search_results_to_csv().subscribe(
+    result_table = [[str]]
+    rd.result_subject.subscribe(on_next=lambda result: my_print(f"My results{result}"))
+
+    rd.do_publish_search_results_to_csv().subscribe(
         # on_next=lambda table: table_ops.write_table("../output/rx_try11.csv", table, static_data.new_header),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
-    rd.result_subject.subscribe(on_next=lambda result: my_print(f"My results{result}"))
 
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()
