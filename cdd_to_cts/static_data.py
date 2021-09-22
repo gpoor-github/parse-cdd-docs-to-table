@@ -1,18 +1,19 @@
 import os
 import time
 
-USER_HOME  ="/home/gpoor/"
+USER_HOME = "/home/gpoor/"
 
 CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
+WORKING_ROOT = "/home/gpoor/IdeaProjects/parse-cdd-html-to-source/"
 
-CDD_REQUIREMENTS_FROM_HTML_FILE = '../input/cdd.html'
-INPUT_TABLE_FILE_NAME = '../input/new_recs_remaining_todo.csv'
-TEST_FILES_TXT = "../input_scripts/test-files.txt"
-TEST_CASE_MODULES = "../input_scripts/testcases-modules.txt"
-INPUT_DEPENDENCIES_FOR_CTS_TXT = '../input_scripts/cts-deps-from-static_code_analysis.txt'
+CDD_REQUIREMENTS_FROM_HTML_FILE = WORKING_ROOT + 'input/cdd.html'
+INPUT_TABLE_FILE_NAME = WORKING_ROOT + 'input/new_recs_remaining_todo.csv'
+TEST_FILES_TXT = WORKING_ROOT + "input_scripts/test-files.txt"
+TEST_CASE_MODULES = WORKING_ROOT + "input_scripts/testcases-modules.txt"
+INPUT_DEPENDENCIES_FOR_CTS_TXT = WORKING_ROOT + 'input_scripts/cts-deps-from-static_code_analysis.txt'
 
 SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
 composite_key_string_re = "\s*(?:<li>)?\["

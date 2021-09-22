@@ -7,9 +7,9 @@ import table_ops
 def update_release_table_with_changes(original_sheet_file_name: str,
                                       updated_output_file_name: str = "output/updated_table.csv"):
     input_table, input_table_keys_to_index, input_header, duplicate_rows = table_ops.read_table(
-        original_sheet_file_name)
+        static_data.WORKING_ROOT+original_sheet_file_name)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_input_header, values_to_use_duplicate_rows = table_ops.read_table(
-        updated_output_file_name)
+        static_data.WORKING_ROOT+updated_output_file_name)
 
     updated_table, key_key1, key_key2 = table_ops.update_table(input_table,
                                                                input_table_keys_to_index,
@@ -19,7 +19,7 @@ def update_release_table_with_changes(original_sheet_file_name: str,
                                                                static_data.merge_header)
 
     # table_ops.compare_tables(updated_table,input_table)
-    table_ops.write_table('output/release_updated_table3.csv', updated_table, input_header)
+    table_ops.write_table(static_data.WORKING_ROOT+'output/release_updated_table3.csv', updated_table, input_header)
 
     print(
         f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')

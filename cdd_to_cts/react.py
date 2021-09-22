@@ -1,6 +1,5 @@
 import csv
 import re
-import sys
 import time
 import traceback
 from typing import Any
@@ -347,8 +346,7 @@ class RxData:
 
             return self.__replay_input_table, self.__replay_header
         except IOError as e:
-            print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
-            sys.exit(f"Fatal Error Failed to open file {file_name}")
+            helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
 
     def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
                                   cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
@@ -425,13 +423,12 @@ class RxData:
             ops.map(lambda result_dic: self.find_data_for_csv_dict(result_dic)),
             ops.map(lambda result_dic: self.publish_results(result_dic, static_data.new_header)))
 
-
-def get_pipe_create_results_table():
-    return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
-                ops.map(lambda results: rd.find_data_for_csv_dict(results)),
-                ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
-                ops.to_list()
-                )
+    def get_pipe_create_results_table(self, ):
+        return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
+                    ops.map(lambda results: self.find_data_for_csv_dict(results)),
+                    ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
+                    ops.to_list()
+                    )
 
 
 def my_print(v, f: Any = '{}'):
@@ -443,8 +440,8 @@ if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.do_search().pipe(get_pipe_create_results_table()).subscribe(
-        on_next=lambda table: table_ops.write_table("../output/rx_try11.csv", table, static_data.new_header),
+    rd.do_search(f"{static_data.WORKING_ROOT}input/cdd-11.csv", f"{static_data.WORKING_ROOT}input/cdd.html").pipe(rd.get_pipe_create_results_table()).subscribe(
+        on_next=lambda table: table_ops.write_table(f"{static_data.WORKING_ROOT}output/rx_try14.csv", table, static_data.new_header),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
 

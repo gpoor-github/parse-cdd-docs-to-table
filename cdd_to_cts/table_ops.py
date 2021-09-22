@@ -1,7 +1,6 @@
 import csv
-import sys
 
-from cdd_to_cts import static_data
+from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID
 
 
@@ -59,6 +58,9 @@ def merge_tables(file1, file2):
 
 
 def write_table(file_name: str, table: [[str]], header: [str]):
+    if file_name.find(static_data.WORKING_ROOT) == -1:
+        file_name = static_data.WORKING_ROOT + file_name
+
     with open(file_name, 'w', newline='') as csv_output_file:
         section_id_index = static_data.default_header.index(SECTION_ID)
         req_id_index = static_data.default_header.index(REQ_ID)
@@ -97,6 +99,8 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
     req_id_index = 2
     key_fields: dict = dict()
     duplicate_rows: [str, str] = dict()
+    if file_name.find(static_data.WORKING_ROOT) == -1:
+        file_name = static_data.WORKING_ROOT + file_name
 
     try:
         with open(file_name) as csv_file:
@@ -151,8 +155,7 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
                 duplicate_rows = None
             return table, key_fields, header, duplicate_rows
     except IOError as e:
-        print(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
-        sys.exit(f"Fatal Error Failed to open file {file_name}")
+        helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
 
     # find urls that may help find the tests for the requirement
 

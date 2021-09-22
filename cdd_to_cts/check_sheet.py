@@ -3,6 +3,7 @@ import json
 import os
 import sys
 
+from cdd_to_cts import static_data
 from static_data import CTS_SOURCE_ROOT, SECTION_ID, REQ_ID
 
 
@@ -103,5 +104,5 @@ class ReadSpreadSheet:
 
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
-    result: dict = rs.parse_data('input/created_output.csv')
+    result: dict = rs.parse_data(f'{static_data.WORKING_ROOT}input/created_output.csv')
     print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))

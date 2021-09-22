@@ -140,6 +140,5 @@ def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_C
                 test_cases_to_path[path] = test_case_name
 
     except Exception as e:
-        print(f"Error build_test_cases_module_dictionary {e}")
-        pass
+        raise_error(f"Error open file {testcases_grep_results}", e)
     return test_cases_to_path

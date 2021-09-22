@@ -1,6 +1,5 @@
 import os
 import re
-import time
 
 from cdd_to_cts import persist, helpers
 from cdd_to_cts import static_data
@@ -130,9 +129,3 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
     except Exception as err:
         helpers.raise_error(f" Maybe couldn't open {file_name_in}", err)
     return test_classes_to_dependent_classes
-
-
-if __name__ == '__main__':
-    start = time.perf_counter()
-    end = time.perf_counter()
-    print(f'Took time {end - start:0.4f}sec ')

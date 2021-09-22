@@ -1,7 +1,6 @@
 import os
 import random
 import re
-import tarfile
 import time
 
 import class_graph
@@ -197,7 +196,6 @@ def search_files_as_strings_for_words(key: str):
         row = global_input_table[global_input_table_keys_to_index.get(key)]
     except Exception as err:
         helpers.raise_error(f" matching_file_set_out issue {matching_file_set_out}", err)
-    return matching_file_set_out
 
     try:
         col_idx = list(global_input_header).index("manual_search_terms")
@@ -443,11 +441,11 @@ def convert_relative_filekey(local_file: str):
 
 
 global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows = read_table(
-    static_data.INPUT_TABLE_FILE_NAME)
-key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements()
+    static_data.INPUT_TABLE_FILE_NAME.replace('../',''))
+key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements(CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../',''))
 
 #    class DataSources:
-files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
+files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES.replace('../',''))
 
 files_to_words, method_to_words, files_to_method_calls = SourceCrawlerReducer().get_cached_crawler_data()
 testfile_dependencies_to_words = get_file_dependencies()
