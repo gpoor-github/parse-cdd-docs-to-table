@@ -197,20 +197,19 @@ class MyTestCase(unittest.TestCase):
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results: rd.find_data_for_csv_dict(results)),
-            ops.map(lambda search_info: build_row(search_info, header=static_data.new_header)),
-            ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
+            ops.map(lambda search_info: build_row(search_info, header=static_data.new_header,do_log=True)),
             ops.to_list()) \
             # .pipe(ops.multicast(mapper=lambda value:value,subject=rd.result_subject, scheduler=scheduler))
 
-        composed.subscribe(
-            lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.new_header))
+       # composed.subscribe(
+          #  lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.new_header))
 
-        # def create():
-        #     return composed
-        #
-        # subscribed = 300
-        # results = scheduler.start(create, created=1, subscribed=subscribed, disposed=None)
-        # print(results.messages)
+        def create():
+            return composed
+
+        subscribed = 300
+        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=None)
+        print(results.messages)
 
         print("done")
 

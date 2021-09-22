@@ -6,7 +6,7 @@ import traceback
 from typing import Any
 
 import rx
-from rx import operators as ops
+from rx import operators as ops, pipe
 from rx.subject import ReplaySubject, BehaviorSubject
 
 from cdd_to_cts import helpers, static_data, table_ops, class_graph
@@ -17,7 +17,7 @@ from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, R
 SEARCH_RESULT = 'search_result'
 
 
-def build_row(search_result_dict: dict, header: [str]=static_data.merge_header, do_log:bool=False):
+def build_row(search_result_dict: dict, header: [str] = static_data.merge_header, do_log: bool = False):
     row: [str] = list(header)
     try:
         for i in range(len(row)):
@@ -32,15 +32,22 @@ def build_row(search_result_dict: dict, header: [str]=static_data.merge_header, 
                             value: str = search_result.get(key)
                             if value:
                                 row[index] = value
-                                return row
                     except ValueError as err:
-                        if do_log: print("ValueError building row, expected sometimes header and data mismatch", err)
+                        if do_log: print(
+                            f"build_row: ValueError building row, expected when header and data mismatch {search_result} vs {search_result}",
+                            err)
                     except IndexError as err2:
-                        if do_log: print("IndexError building row, expected sometimes", err2)
+                        if do_log: print(
+                            f"build_row: IndexError building row, expected when header and data mismatch {search_result} vs {search_result}",
+                            err2)
+                # After for loop for header row is built
+                return row
+
     except Exception as err3:
         traceback.print_exc()
-        raise_error("Exception publish_results", err3)
+        raise_error("build_row: Exception publish_results", err3)
     return None
+
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
     record_id_result = re.search(FULL_KEY_RE_WITH_ANCHOR, record_id_split)
@@ -400,8 +407,6 @@ class RxData:
             ops.combine_latest(self.get_replay_of_at_test_files_only()),
             ops.map(lambda req: self.get_search_results(req)))
 
-
-
     def publish_results(self, search_result_dict: dict, header: [str]):
         try:
             row = build_row(search_result_dict, header)
@@ -421,22 +426,25 @@ class RxData:
             ops.map(lambda result_dic: self.publish_results(result_dic, static_data.new_header)))
 
 
+def get_pipe_create_results_table():
+    return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
+                ops.map(lambda results: rd.find_data_for_csv_dict(results)),
+                ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
+                ops.to_list()
+                )
+
+
 def my_print(v, f: Any = '{}'):
     print(f.format(v))
-
     return v
-
-from rx import create
 
 
 if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.result_subject.subscribe(on_next=lambda result: my_print(f"My results{result}"))
-
-    rd.do_publish_search_results_to_csv().subscribe(
-        # on_next=lambda table: table_ops.write_table("../output/rx_try11.csv", table, static_data.new_header),
+    rd.do_search().pipe(get_pipe_create_results_table()).subscribe(
+        on_next=lambda table: table_ops.write_table("../output/rx_try11.csv", table, static_data.new_header),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
 
