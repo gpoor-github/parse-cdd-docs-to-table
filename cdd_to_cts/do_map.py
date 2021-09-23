@@ -1,8 +1,11 @@
+import json
 import time
 
-from cdd_to_cts import static_data, helpers
+from cdd_to_cts import static_data, helpers, table_ops
 from cdd_to_cts.cdd_html_to_cts_create_sheets import create_full_table_from_cdd, do_cdd_html_to_cts_create_sheets
+from cdd_to_cts.check_sheet import ReadSpreadSheet
 from cdd_to_cts.react import RxData, my_print
+from cdd_to_cts.update_release import update_release_table_with_changes
 
 if __name__ == '__main__':
     start = time.perf_counter()
@@ -12,12 +15,24 @@ if __name__ == '__main__':
                                      static_data.cdd_to_cts_app_header)
     rd = RxData()
     result_table = [[str]]
-    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/created_output.csv",
-                            f"{static_data.WORKING_ROOT}output/built_from_created2.csv") \
+    final_output_file = "output/built_from_created2.csv"
+    rd.main_do_create_table("input/created_output.csv",
+                            final_output_file) \
         .subscribe(
         on_next=lambda table: my_print(table, "that's all folks!{} "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
+
+    print(" Now check final output")
+    rs = ReadSpreadSheet()
+    result: dict = rs.parse_data(final_output_file)
+    print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
+
+    original_sheet_file_name1 = "data_files/version_up_there_sorted.csv"
+    # values_to_use_table_file1 = 'output/final_output_file.csv'
+    new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
+    update_release_table_with_changes(original_sheet_file_name1, final_output_file, new_updated_table_file1)
+    table_ops.diff_tables(original_sheet_file_name1, new_updated_table_file1)
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

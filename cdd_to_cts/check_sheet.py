@@ -27,7 +27,7 @@ def check_for_file_and_method(file_name_from_class: str, method_value: str, file
                     file_name_to_result[file_name_from_class] = method_value + " Failed reason: Method not found"
 
         except Exception as err:
-            print(" Could not open " + file_name_from_class + str(err), file=sys.stderr)
+            print(" Could not open " + file_name_from_class )
             file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found"
     return False
 
@@ -64,8 +64,11 @@ class ReadSpreadSheet:
         table = []
         header = []
         self.crawl()
+        if ccd_csv_file_name.find(static_data.WORKING_ROOT) == -1:
+            ccd_csv_file_name = static_data.WORKING_ROOT + ccd_csv_file_name
 
         with open(ccd_csv_file_name) as csv_file:
+            print(f"Openned {ccd_csv_file_name}")
             csv_reader = csv.reader(csv_file, delimiter=',')
             line_count = 0
 
@@ -104,5 +107,5 @@ class ReadSpreadSheet:
 
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
-    result: dict = rs.parse_data(f'{static_data.WORKING_ROOT}data_files/CDD-11-2021-07-14-before-gpoor.csv')
+    result: dict = rs.parse_data('output/built_from_created2.csv')
     print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
