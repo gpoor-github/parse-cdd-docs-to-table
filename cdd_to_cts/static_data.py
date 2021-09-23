@@ -123,10 +123,9 @@ MATCHED_TERMS = 'matched_terms'
 
 FULL_KEY = 'full_key'
 new_header: [] = (
-    [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, FULL_KEY,
+    [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, METHOD_TEXT, FULL_KEY,
      REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS, MATCHED_TERMS, FILE_NAME,
-     'matched_files', 'methods_string',
-     'urls'])
+     'matched_files', 'methods_string','urls'])
 # Wow why doesn't that work ?: [] = (['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''])
 
 default_header: [] = (
@@ -139,11 +138,6 @@ default_header: [] = (
 cdd_info_generated_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, SEARCH_TERMS, 'urls', '', '', '',
      '', '', '', '', '', ''])
-build_row_header: [] = (
-    [SECTION, SECTION_ID, REQ_ID, MATCHED_TERMS, CLASS_DEF, METHOD, MODULE, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
-     FILE_NAME, 'matched_files', 'methods_string', 'urls', REQUIREMENT, KEY_AS_NUMBER, FULL_KEY, METHOD_TEXT])
-
-
 cdd_info_only_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
      '', ''])

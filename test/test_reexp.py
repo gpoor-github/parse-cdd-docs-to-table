@@ -8,6 +8,7 @@ from rx.testing import TestScheduler
 
 from cdd_to_cts import static_data, helpers, react
 from cdd_to_cts.react import RxData, my_print, build_row, SEARCH_RESULT
+from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY
 
 
 def my_print2(v: Any, f: Any = '{}'):
@@ -130,35 +131,36 @@ class MyTestCase(unittest.TestCase):
         rd = RxData()
         search_info_in = dict()
         search_info_in['full_key'] = '9.16/C-1-1'
-        expected = "secure screen lock verification"
+        expected = {'secure', 'screen', 'lock', 'verification'}
         search_info = rd.get_manual_search_terms(search_info_in, "test/input/test_manual_search.csv")
-        self.assertEqual(search_info.get("manual_search_terms"), expected)
+        self.assertEqual(expected,search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
     def test_manual_search_terms_bad_key(self, ):
         rd = RxData()
         search_info_in = dict()
         search_info_in['full_key'] = '99.16/x-1-1'
         search_info = rd.get_manual_search_terms(search_info_in, "test/input/test_manual_search.csv")
-        self.assertEqual(search_info.get("manual_search_terms"), None)
+        self.assertEqual( None,search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
     def test_auto_search_terms(self, ):
-        rd = RxData()
-        search_info_in = dict()
-        search_info_in['full_key'] = '9.16/C-1-1'
-        expected = {'AccessibilityServiceInfo.FLAG', 'FBUTTON', 'AccessibilityServiceInfo.html', 'FREQUEST', 'FACCESSIBILITY', 'C-1-4', '3.10', 'FLAG_REQUEST_ACCESSIBILITY_BUTTON', 'FLAG'}
-        #react.get_search_terms_from_requirements_and_key(req))
+        key_req = "2.2.1/H-7-11:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
+        expected = {'2.2.1', 'FHD', 'WSXGA', 'H-7-11'}
+        search_info = react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)
+        self.assertEqual(expected,search_info.get(SEARCH_TERMS))
+        self.assertEqual("2.2.1/H-7-11",search_info.get(FULL_KEY))
+
 
     def test_all_search_terms(self, ):
         rd = RxData()
-        search_info_in = dict()
-        search_info_in['full_key'] = '9.16/C-1-1'
-        expected = "secure screen lock verification"
-        rx.just(search_info_in).pipe(
-            ops.map(lambda req: react.get_search_terms_from_requirements_and_key(req)),
-            ops.map(rd.get_manual_search_terms(search_info_in, "test/input/test_manual_search.csv")),
-            ops.map(
-                lambda search_info: my_print(search_info.get("manual_search_terms"), "manual_search {}"))).subscribe(
-            lambda search_info: self.assertEqual(search_info.get("manual_search_terms"), expected))
+        key_req = "9.16/C-1-1:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
+        expected = {'9.16', 'FHD', 'WSXGA', 'C-1-1'}
+        #search_info = react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)
+        expected_manual = {'secure', 'screen', 'lock', 'verification'}
+        rx.just(key_req).pipe(
+            ops.map(lambda req: react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)),
+            ops.map(lambda search_info: rd.get_manual_search_terms(search_info, "test/input/test_manual_search.csv")),
+            ops.map( lambda search_info: self.assertEqual(expected_manual,search_info.get(static_data.MANUAL_SEARCH_TERMS)))).subscribe(
+            lambda search_info: self.assertEqual(expected_manual,search_info.get(static_data.SEARCH_TERMS)))
 
     def test_search(self, ):
         rd = RxData()
@@ -225,6 +227,7 @@ class MyTestCase(unittest.TestCase):
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
+            ops.map(lambda search_info: rd.get_manual_search_terms(search_info, "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results_local: rd.find_data_for_csv_dict(results_local)),
             ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),

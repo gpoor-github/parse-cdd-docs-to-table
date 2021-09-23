@@ -164,6 +164,15 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
     # find urls that may help find the tests for the requirement
 
 
+def read_table_to_dictionary(file_name: str, logging: bool = False) -> dict:
+    table_dictionary = dict()
+    table, key_fields, header, duplicate_rows = read_table(file_name, logging)
+    for key in key_fields:
+        table_dictionary[key] = table[key_fields[key]]
+
+    return table_dictionary
+
+
 def diff_tables(file1, file2):
     table1, _key_fields1, header1, duplicate_rows1 = read_table(file1)
     table2, _key_fields2, header2, duplicate_rows2 = read_table(file2)

@@ -11,13 +11,13 @@ from rx.subject import ReplaySubject, BehaviorSubject
 from cdd_to_cts import helpers, static_data, table_ops, class_graph
 from cdd_to_cts.class_graph import parse_class_or_method
 from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
-    convert_version_to_number, convert_version_to_number_from_full_key
+  convert_version_to_number_from_full_key
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT
 
 SEARCH_RESULT = 'search_result'
 
 
-def build_row(search_info_dict: dict, header: [str] = static_data.build_row_header, do_log: bool = True):
+def build_row(search_info_dict: dict, header: [str] = static_data.new_header, do_log: bool = True):
     row: [str] = list(header)
     try:
         for i in range(len(row)):
@@ -104,13 +104,13 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
-def get_search_terms_from_requirements_and_key(requirement: str) -> dict:
+def get_search_terms_from_requirements_and_key_create_result_dictionary(requirement: str) -> dict:
     search_info = dict()
     search_info[REQUIREMENT] = requirement
     java_objects = find_java_objects(requirement)
     req_split = requirement.split(':', 1)
     full_key = req_split[0]
-    search_info['full_key'] = full_key
+    search_info[static_data.FULL_KEY] = full_key
     search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
     key_split = full_key.split('/')
     java_objects.add(key_split[0])
@@ -163,20 +163,24 @@ class RxData:
         return self.__input_table, self.__input_table_keys, self.__input_header
 
     def get_manual_search_terms(self, search_info: dict, manual_search_terms_sheet_file="manual/manual.csv",
-                                logging=False):
-        table, key_fields, header = self.get_input_table(manual_search_terms_sheet_file)
-        full_key = search_info.get('full_key')
-        if full_key:
-            row_index = key_fields.get(full_key)
-            if row_index in range(len(table)):
-                row = table[row_index]
-                mst_idx = header.index("manual_search_terms")
-                manual_search_terms = row[mst_idx]
-                if manual_search_terms_sheet_file != '':
-                    search_info['manual_search_terms'] = manual_search_terms
-            else:
-                if logging: print(
-                    f"Error get_manual_search_terms key not found {full_key} in {manual_search_terms_sheet_file}")
+                                logging=False) -> dict:
+        try:
+            table, key_fields, header = self.get_input_table(manual_search_terms_sheet_file)
+            full_key = search_info.get('full_key')
+            if full_key:
+                row_index = key_fields.get(full_key)
+                if row_index in range(len(table)):
+                    row = table[row_index]
+                    mst_idx = header.index("manual_search_terms")
+                    manual_search_terms = row[mst_idx]
+                    if manual_search_terms_sheet_file != '':
+                        terms = manual_search_terms.split(' ')
+                        search_info['manual_search_terms'] = set(terms)
+                else:
+                    if logging: print(
+                        f"Error get_manual_search_terms key not found {full_key} in {manual_search_terms_sheet_file}")
+        except Exception as err:
+            print("error .. broad catch here, but this shouldn't be fatal " + str(err))
         return search_info
 
     def predicate(self, target) -> bool:
@@ -411,18 +415,17 @@ class RxData:
             ops.map(lambda f:
                     f'{f}:{helpers.read_file_to_string(f)}'))
 
-    def get_all_search_terms(self, get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
+    def get_all_search_terms(self, get_cdd_html_to_requirements: rx.Observable, table_for_manual_search="test/input/test_manual_search.csv") -> rx.Observable:
         return get_cdd_html_to_requirements.pipe(
-            ops.map(lambda key_requirement_as_text: get_search_terms_from_requirements_and_key(
-                key_requirement_as_text))
-            #    ,ops.map(lambda search_info: self.get_manual_search_terms(search_info))
-        )
+            ops.map(lambda key_requirement_as_text: get_search_terms_from_requirements_and_key_create_result_dictionary(
+                key_requirement_as_text)),
+            ops.map(lambda search_info: self.get_manual_search_terms(search_info, table_for_manual_search)))
 
     def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
                   cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                   scheduler: rx.typing.Scheduler = None):
         return self.get_all_search_terms(
-            self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file, scheduler)).pipe(
+            self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file, scheduler),input_table_file).pipe(
             ops.combine_latest(self.get_replay_of_at_test_files_only()),
             ops.map(lambda req: self.get_search_results(req)))
 
@@ -470,8 +473,8 @@ if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/cdd-11.csv", f"{static_data.WORKING_ROOT}input/cdd.html",
-                        "output/out_test2.csv")\
+    rd.main_do_create_table(f"{static_data.WORKING_ROOT}output/out_test3.csv", f"{static_data.WORKING_ROOT}input/cdd.html",
+                            "output/out_test4.csv") \
         .subscribe(
         on_next=lambda table: my_print(table, "that's all folks! {}"),
         on_completed=lambda: print("completed"),
