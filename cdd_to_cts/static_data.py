@@ -126,30 +126,29 @@ MATCHED_TERMS = 'a_list_item'
 QUALIFIED_METHOD = 'qualified_method'
 
 FULL_KEY = 'full_key'
-new_header: [] = (
+# Contains all the fields that are used to review and iterate on mappings.
+cdd_to_cts_app_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, METHOD_TEXT, FULL_KEY,
      REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, QUALIFIED_METHOD, MANUAL_SEARCH_TERMS, MATCHED_TERMS, FILE_NAME,
      'matched_files', 'methods_string','urls'])
-# Wow why doesn't that work ?: [] = (['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''])
 
-default_header: [] = (
+# Used in merge_tables to populate missing fields in the the target release sheets.
+current_cdd_11_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, 'Annotation?', 'New Req for R?', 'New CTS for R?',
      CLASS_DEF, METHOD, MODULE,
      'Comment(internal) e.g. why a test is not possible ',
      'Comment (external)', 'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
      'Test Level',
      '', 'external version', '', '', ''])
-cdd_info_generated_header: [] = (
-    [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, SEARCH_TERMS, 'urls', '', '', '',
-     '', '', '', '', '', ''])
+
+#  Used in create_full_table_from_cdd create a full table from the CDD, containing all the information from the CDD but not doing any processing (besides to the keys)
 cdd_info_only_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
      '', ''])
+
+# Used in several methods that take data from a table cdd_to_cts_app_header header and copy just those columns for release.
 merge_header: [] = (
     [TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE])
-
-add_keys_only: [] = (
-    [FULL_KEY, KEY_AS_NUMBER])
 
 
 def set_cts_path():

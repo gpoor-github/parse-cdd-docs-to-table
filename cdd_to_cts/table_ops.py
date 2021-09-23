@@ -1,4 +1,5 @@
 import csv
+import sys
 
 from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
@@ -53,7 +54,7 @@ def merge_tables(file1, file2):
     table2, key_fields2, header2, duplicate_rows2 = read_table(file2)
     updated_table, missingkeys1, missingkeys1 = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
                                                              static_data.merge_header)
-    write_table("output/update_test.cvs", updated_table, static_data.default_header)
+    write_table("output/update_test.cvs", updated_table, static_data.current_cdd_11_header)
     return table1, key_fields1, header1, table2, key_fields2, header2
 
 
@@ -62,8 +63,6 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
         file_name = static_data.WORKING_ROOT + file_name
 
     with open(file_name, 'w', newline='') as csv_output_file:
-        section_id_index = static_data.default_header.index(SECTION_ID)
-        req_id_index = static_data.default_header.index(REQ_ID)
         table_writer = csv.writer(csv_output_file)
         try:
             section_id_index = table[0].index(SECTION_ID)
@@ -78,7 +77,7 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
                 req_id_index = header.index(REQ_ID)
                 table_writer.writerow(header)
             else:
-                print(f"error handling finding header for table{file_name}  first row")
+                print(f"error handling finding header for table{file_name}  first row",file=sys.stderr)
         # get rid of bad rows
         for i in range(len(table)):
             row = table[i]

@@ -18,7 +18,7 @@ from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, R
 SEARCH_RESULT = 'a_dict'
 
 
-def build_row(search_info_dict: dict, header: [str] = static_data.new_header, do_log: bool = True):
+def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app_header, do_log: bool = True):
     full_key = search_info_dict[FULL_KEY]
     key_split = full_key.split('/')
     search_info_dict[SECTION_ID] = key_split[0]
@@ -161,7 +161,7 @@ class RxData:
         self.__input_header = None
         self.__input_table_keys = None
 
-        self.result_subject = BehaviorSubject("0:" + str(static_data.new_header))
+        self.result_subject = BehaviorSubject("0:" + str(static_data.cdd_to_cts_app_header))
         self.__replay_input_table = None
 
         self.__replay_header = None
@@ -507,14 +507,14 @@ class RxData:
 
     def get_pipe_create_results_table(self, ):
         return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
-                    ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
+                    ops.map(lambda search_info: build_row(search_info, header=static_data.cdd_to_cts_app_header, do_log=True)),
                     ops.to_list()
                     )
 
     def main_do_create_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                            # cdd_requirements_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                             # cdd_requirements_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                              output_file: str = "output/output_built_table.csv",
-                             output_header: str = static_data.new_header,
+                             output_header: str = static_data.cdd_to_cts_app_header,
                              scheduler: rx.typing.Scheduler = None):
         return self.do_search2(input_table_file, scheduler).pipe(
             self.get_pipe_create_results_table(),
@@ -561,9 +561,9 @@ if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/full_cdd.csv",
+    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/created_output.csv",
                           #  f"{static_data.WORKING_ROOT}input/cdd.html",
-                            f"{static_data.WORKING_ROOT}output/built2.csv") \
+                            f"{static_data.WORKING_ROOT}output/built_from_created2.csv") \
         .subscribe(
         on_next=lambda table: my_print(table, "that's all folks!{} "),
         on_completed=lambda: print("completed"),

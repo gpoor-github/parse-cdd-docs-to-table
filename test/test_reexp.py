@@ -229,7 +229,7 @@ class MyTestCase(unittest.TestCase):
         scheduler = TestScheduler()
         rd = RxData()
 
-        # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.new_header)), ops.to_list(),
+        # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.cdd_to_cts_app_header)), ops.to_list(),
         #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[])))
         composed = rd.do_search("./input/full_cdd.csv", "./input/cdd.html", scheduler=scheduler).pipe(
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
@@ -238,12 +238,12 @@ class MyTestCase(unittest.TestCase):
             ops.map(lambda search_info: rd.get_manual_search_terms(search_info, "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results_local: rd.find_data_for_csv_dict()),
-            ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
+            ops.map(lambda search_info: build_row(search_info, header=static_data.cdd_to_cts_app_header, do_log=True)),
             ops.to_list()) \
             # .pipe(ops.multicast(mapper=lambda value:value,subject=rd.result_subject, scheduler=scheduler))
 
         # composed.subscribe(
-        #  lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.new_header))
+        #  lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.cdd_to_cts_app_header))
 
         def create():
             return composed
