@@ -9,7 +9,7 @@ import persist
 from cdd_to_cts import static_data
 from cdd_to_cts.helpers import find_urls, find_java_objects, process_requirement_text, remove_non_determinative_words, \
     bag_from_text, make_files_to_string, build_composite_key, find_full_key, build_test_cases_module_dictionary
-from cdd_to_cts.static_data import composite_key_string_re, req_id_re_str, full_key_string_for_re
+from cdd_to_cts.static_data import composite_key_string_re, req_id_re_str, full_key_string_for_re, MANUAL_SEARCH_TERMS
 from static_data import CTS_SOURCE_PARENT, CDD_REQUIREMENTS_FROM_HTML_FILE, \
     TEST_FILES_TO_DEPENDENCIES_STORAGE, CTS_SOURCE_ROOT
 from table_ops import read_table
@@ -80,6 +80,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
     # keys_not_found: list = []
     total_requirement_count = 0
     with open(cdd_html_file, "r") as text_file:
+        print(f"CDD HTML to csv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()
         section_id_re_str: str = '"(?:\d{1,3}_)+'
         cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
@@ -189,37 +190,36 @@ def search_files_as_strings_for_words(key: str):
     search_terms = key_to_java_objects.get(key)
     # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
     matching_file_set_out = dict()
-    if not search_terms:
-        return matching_file_set_out
+    if search_terms:
+        row = list()
+        try:
+            row = global_input_table[global_input_table_keys_to_index.get(key)]
+        except Exception as err:
+            helpers.raise_error(f" matching_file_set_out issue {matching_file_set_out}", err)
 
-    try:
-        row = global_input_table[global_input_table_keys_to_index.get(key)]
-    except Exception as err:
-        helpers.raise_error(f" matching_file_set_out issue {matching_file_set_out}", err)
+        try:
+            col_idx = list(global_input_header).index(MANUAL_SEARCH_TERMS)
 
-    try:
-        col_idx = list(global_input_header).index("manual_search_terms")
+            if col_idx >= 0:
+                if row[col_idx]:
+                    manual_search_terms = set(row[col_idx].split(' '))
+                    search_terms.update(manual_search_terms)
+        except ValueError:
+            print("warning no search manual search terms")
+        pass
 
-        if col_idx >= 0:
-            if row[col_idx]:
-                manual_search_terms = set(row[col_idx].split(' '))
-                search_terms.update(manual_search_terms)
-    except ValueError:
-        print("warning no search manual search terms")
-    pass
-
-    for test_file in test_files_to_strings:
-        file_string = test_files_to_strings.get(test_file)
-        match_count = 0
-        match_set = set()
-        if search_terms:
-            for search_term in search_terms:
-                this_terms_match_count = file_string.count(search_term)
-                if this_terms_match_count > 0:
-                    match_set.add(search_term)
-                    match_count += this_terms_match_count
-            if len(match_set) > 0:
-                matching_file_set_out[test_file] = matching_file_set_out
+        for test_file in test_files_to_strings:
+            file_string = test_files_to_strings.get(test_file)
+            match_count = 0
+            match_set = set()
+            if search_terms:
+                for search_term in search_terms:
+                    this_terms_match_count = file_string.count(search_term)
+                    if this_terms_match_count > 0:
+                        match_set.add(search_term)
+                        match_count += this_terms_match_count
+                if len(match_set) > 0:
+                    matching_file_set_out[test_file] = matching_file_set_out
     return matching_file_set_out
 
 
@@ -441,8 +441,9 @@ def convert_relative_filekey(local_file: str):
 
 
 global_input_table, global_input_table_keys_to_index, global_input_header, global_duplicate_rows = read_table(
-    static_data.INPUT_TABLE_FILE_NAME.replace('../',''))
-key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements(CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../',''))
+    static_data.INPUT_TABLE_FILE_NAME.replace('../', ''))
+key_to_full_requirement_text, key_to_java_objects, key_to_urls, cdd_string, section_to_data = parse_cdd_html_to_requirements(
+    CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''))
 
 #    class DataSources:
 files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
