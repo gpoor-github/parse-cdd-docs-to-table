@@ -13,7 +13,7 @@ from cdd_to_cts.class_graph import parse_class_or_method
 from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
     convert_version_to_number_from_full_key, add_list_to_dict
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
-    FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD
+    FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY
 
 SEARCH_RESULT = 'a_dict'
 
@@ -154,6 +154,8 @@ class RxData:
 
         self.__input_table_keyed = None
         self.__input_header_keyed = None
+
+        self.__list_of_at_test_files:set= set()
 
         self.__input_table = None
         self.__input_header = None
@@ -340,6 +342,43 @@ class RxData:
         except FileNotFoundError as e:
             raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
 
+    def get_list_of_at_test_files(self,
+                                    results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:
+
+        if len(self.__list_of_at_test_files) > 0:
+            print(
+                f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
+            return self.__list_of_at_test_files
+        else:
+            re_annotations = re.compile('@Test.*?$')
+            try:
+                with open(results_grep_at_test, "r") as grep_of_test_files:
+                    file_content = grep_of_test_files.readlines()
+                    count = 0
+                    while count < len(file_content):
+                        line = file_content[count]
+                        count += 1
+                        result = re_annotations.search(line)
+                        # Skip lines without annotations
+                        if result:
+                            test_annotated_file_name_absolute_path = line.split(":")[0]
+                            # test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
+                            # requirement = result.group(0)
+                            # noinspection DuplicatedCode
+                            line_method = file_content.pop()
+                            count += 1
+                            class_def, method = parse_class_or_method(line_method)
+                            if class_def == "" and method == "":
+                                line_method = file_content.pop()
+                                count += 1
+                                class_def, method = parse_class_or_method(line_method)
+                            if method:
+                                self.__list_of_at_test_files.add(format(test_annotated_file_name_absolute_path))
+
+                    return self.__list_of_at_test_files
+            except FileNotFoundError as e:
+                raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
+
     def get_replay_read_table(self, file_name: str = static_data.INPUT_TABLE_FILE_NAME) -> [ReplaySubject,
                                                                                             ReplaySubject]:
 
@@ -466,13 +505,6 @@ class RxData:
         except IndexError as err2:
             raise_error("IndexError publish_results", err2)
 
-    def do_publish_search_results_to_csv(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                                         cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-                                         scheduler: rx.typing.Scheduler = None):
-        return self.do_search(input_table_file, cdd_requirements_file, scheduler).pipe(
-            ops.map(lambda result_dic: self.find_data_for_csv_dict()),
-            ops.map(lambda result_dic: self.publish_results(result_dic, static_data.new_header)))
-
     def get_pipe_create_results_table(self, ):
         return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
                     ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
@@ -480,11 +512,11 @@ class RxData:
                     )
 
     def main_do_create_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                             cdd_requirements_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                            # cdd_requirements_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                              output_file: str = "output/output_built_table.csv",
                              output_header: str = static_data.new_header,
                              scheduler: rx.typing.Scheduler = None):
-        return self.do_search(input_table_file, cdd_requirements_file, scheduler).pipe(
+        return self.do_search2(input_table_file, scheduler).pipe(
             self.get_pipe_create_results_table(),
             ops.map(lambda table: table_ops.write_table(output_file, table, output_header)))
 
@@ -494,9 +526,8 @@ class RxData:
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
                                                             ops.map(lambda
                                                                         full_key_row: self.get_search_terms_from_key_create_result_dictionary(
-                                                                full_key_row, header))).pipe(
-            ops.combine_latest(self.get_replay_of_at_test_files_only()),
-            ops.map(lambda req: self.get_search_results(req)))
+                                                                full_key_row, header)),
+                                                            ops.map(lambda search_info: self.search_on_files(search_info)))
 
     def get_search_terms_from_key_create_result_dictionary(self, full_key_row: [], header: []):
         search_info = dict()
@@ -504,6 +535,7 @@ class RxData:
         row = full_key_row[1]
         requirement = row[header.index(REQUIREMENT)]
         java_objects = find_java_objects(requirement)
+        search_info[HEADER_KEY] = header
         search_info[static_data.FULL_KEY] = full_key
         search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
         key_split = full_key.split('/')
@@ -515,9 +547,10 @@ class RxData:
         return search_info
 
     def search_on_files(self, search_info):
-        return self.get_replay_of_at_test_files_only().pipe(ops.map(lambda file_name: self.get_search_results((search_info,file_name))))
-
-
+        list_of_test_files = self.get_list_of_at_test_files()
+        for file_name in list_of_test_files:
+            self.get_search_results((search_info,file_name))
+        return search_info
 
 def my_print(v, f: Any = '{}'):
     print(f.format(v))
@@ -528,11 +561,11 @@ if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/new_recs_remaining_todo.csv",
-                            f"{static_data.WORKING_ROOT}input/cdd.html",
-                            "output/built.csv") \
+    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/full_cdd.csv",
+                          #  f"{static_data.WORKING_ROOT}input/cdd.html",
+                            f"{static_data.WORKING_ROOT}output/built2.csv") \
         .subscribe(
-        on_next=lambda table: my_print(table, "that's all folks! "),
+        on_next=lambda table: my_print(table, "that's all folks!{} "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
 

@@ -48,6 +48,9 @@ def my_map_dict(key: str, m_list: list) -> list:
     return dict_list
 
 
+
+
+
 class MyTestCase(unittest.TestCase):
 
     def test_cdd_html_to_requirements(self, ):
@@ -251,11 +254,6 @@ class MyTestCase(unittest.TestCase):
 
         print("done")
 
-    def test_handle_search_results_to_csv_2(self, ):
-        rd = RxData()
-        rd.result_subject.pipe(ops.to_list()).subscribe(lambda v: my_print(v, "value is {}"))
-        rd.do_publish_search_results_to_csv("./input/full_cdd.csv", "./input/cdd.html").run()
-
     def test_reducer(self, ):
         rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: acc + list(a), seed=[])
                                          ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
@@ -306,7 +304,12 @@ class MyTestCase(unittest.TestCase):
         rd= RxData()
         search_info = dict()
         search_info[static_data.SEARCH_TERMS] = "for  while public".split(' ')
-        rd.search_on_files(search_info).run()
+        rd.search_on_files(search_info)
+
+    def test_get_replay_of_at_test_files(self, ):
+        rd = RxData()
+        req = "a b c d e f g h i j".split(" ")
+        rx.from_list(req).pipe(ops.map(lambda search_info: rd.search_on_files(search_info)))
 
     def test_search2(self, ):
         scheduler = TestScheduler()
