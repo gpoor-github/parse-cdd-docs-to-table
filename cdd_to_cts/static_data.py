@@ -64,7 +64,7 @@ found_in_java_source = {
     'batching', '-1000',
     'getName()', 'clear', 'per', 'under', 'Lock', 'disable', 'enable', 'content', 'size', 'actual', 'verify',
     'less', 'already', 'extend', 'text)', 'reflect',
-    'signal', 'use', '2.0', 'variable', 'concurrent', 'lit', 'error', 'setting', 'expected', METHOD, 'Report',
+    'signal', 'use', '2.0', 'variable', 'concurrent', 'lit', 'error', 'setting', 'expected', 'method', 'Report',
     'scanner', 'cases', 'change', 'device)', 'match', 'receive', 'param', 'manager', '180', 'only', 'class);',
     'Class', '200', 'bit', 'part', '(no', 'Using', 'action', 'devices)', '(generic', 'nor', 'before',
     'appropriate', 'it;', 'press', 'provide', 'equal', 'Open', 'true', 'except', 'right', 'Project', 'over',

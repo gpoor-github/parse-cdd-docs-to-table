@@ -3,6 +3,7 @@ import time
 import data_sources
 import static_data
 from cdd_to_cts import table_ops, helpers
+from cdd_to_cts.helpers import convert_version_to_number
 from cdd_to_cts.react import RxData
 from table_ops import write_table, update_table
 
@@ -19,32 +20,6 @@ def create_populated_table(keys_to_find_and_write):
         keys_to_table_index[key_str] = table_row_index
         table_row_index += 1
     return table, keys_to_table_index
-
-
-def convert_version_to_number(section_id: str, requirement_id: str = '\0-00-00'):
-    section_splits = section_id.split(".")
-    section_as_number = ''
-    for i in range(4):
-        if i < len(section_splits):
-            idx = 0
-            for j in range(1, -1, -1):
-                if j >= len(section_splits[i]):
-                    section_as_number += '0'
-                else:
-                    section_as_number += section_splits[i][idx]
-                    idx += 1
-        else:
-            section_as_number += "00"
-
-    requirement_splits = requirement_id.split("-")
-    requirement_as_number = f'{ord(requirement_splits[0][-1])}'
-    for k in range(1, len(requirement_splits)):
-        if len(requirement_splits[k]) > 1:
-            requirement_as_number = f'{requirement_as_number}{requirement_splits[k]}'
-        else:
-            requirement_as_number = f'{requirement_as_number}0{requirement_splits[k]}'
-
-    return f'{section_as_number}.{requirement_as_number}'
 
 
 # Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,
@@ -69,11 +44,11 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     table[table_row_index][static_data.new_header.index('full_key')] = key_str
     if section_data:
         section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
-        table[table_row_index][static_data.new_header.index(requirement)] = section_data_cleaned
+        table[table_row_index][static_data.new_header.index(static_data.REQUIREMENT)] = section_data_cleaned
 
     if len(key_split) > 1:
         table[table_row_index][static_data.new_header.index(static_data.REQ_ID)] = key_split[1]
-        table[table_row_index][static_data.new_header.index('key_as_number')] = convert_version_to_number(
+        table[table_row_index][static_data.new_header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number(
             key_split[0], key_split[1])
         table[table_row_index][static_data.new_header.index('urls')] = key_to_urls.get(key_str)
         table[table_row_index][static_data.new_header.index('search_terms')] = key_to_java_objects.get(key_str)
@@ -99,12 +74,14 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
             table[table_row_index][static_data.new_header.index('methods_string')] = a_found_methods_string
 
     else:
-        table[table_row_index][static_data.new_header.index('key_as_number')] = convert_version_to_number(
+        table[table_row_index][static_data.new_header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number(
             key_split[0])
         print(f"Only a major key? {key_str}")
 
 
-def cdd_html_to_cts_create_sheets(targets: str = 'all',created_table_file=static_data.WORKING_ROOT+"output/created_table.csv",update_table_file=static_data.WORKING_ROOT+"output/updated_table.csv"):
+def cdd_html_to_cts_create_sheets(targets: str = 'all',
+                                  created_table_file=static_data.WORKING_ROOT + "output/created_table.csv",
+                                  update_table_file=static_data.WORKING_ROOT + "output/updated_table.csv"):
     # if targets == 'new' or targets == 'all':
     # Write New Table
     table_for_sheet, keys_to_table_indexes = create_populated_table(data_sources.global_input_table_keys_to_index)

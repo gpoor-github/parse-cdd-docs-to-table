@@ -10,7 +10,8 @@ from rx.subject import ReplaySubject, BehaviorSubject
 
 from cdd_to_cts import helpers, static_data, table_ops, class_graph
 from cdd_to_cts.class_graph import parse_class_or_method
-from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error
+from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
+    convert_version_to_number, convert_version_to_number_from_full_key
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT
 
 SEARCH_RESULT = 'search_result'
@@ -27,7 +28,7 @@ def build_row(search_info_dict: dict, header: [str] = static_data.build_row_head
         search_result = search_info_dict.get(SEARCH_RESULT)
         if search_result:
             if len(search_result) > 0:
-                dictionary_to_row(search_result,  header, row, do_log)
+                dictionary_to_row(search_result, header, row, do_log)
                 # After for loop for header row is built
                 return row
 
@@ -47,7 +48,7 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
                     row[index] = value
         except (ValueError, IndexError) as err:
             if do_log: print(
-                f"build_row: ValueError building row, expected when header and data mismatch {search_result} vs {search_result}",
+                f"build_row: ValueError building row, expected when header and data mismatch {header_as_keys} vs {row_values}",
                 err)
     return row
 
@@ -110,7 +111,7 @@ def get_search_terms_from_requirements_and_key(requirement: str) -> dict:
     req_split = requirement.split(':', 1)
     full_key = req_split[0]
     search_info['full_key'] = full_key
-    search_info['key']
+    search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
     key_split = full_key.split('/')
     java_objects.add(key_split[0])
     if len(key_split) > 1:
@@ -212,7 +213,7 @@ class RxData:
                             search_result['full_key'] = full_key
                             search_result['matched_terms'] = matched_terms
                             search_result['index'] = mi
-                            search_result['method_text'] = method_text
+                            search_result[static_data.METHOD_TEXT] = method_text
                             search_result['search_terms'] = search_terms
                             # result = f'["{matched_terms}",["{mi}":"{method_text}"]]'
                             # print(f"\nmatched: {result}")
@@ -450,6 +451,15 @@ class RxData:
                     ops.to_list()
                     )
 
+    def main_do_create_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+                             cdd_requirements_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                             output_file: str = "output/output_built_table.csv",
+                             output_header: str = static_data.new_header,
+                             scheduler: rx.typing.Scheduler = None):
+        return self.do_search(input_table_file, cdd_requirements_file, scheduler).pipe(
+            self.get_pipe_create_results_table(),
+            ops.map(lambda table: table_ops.write_table(output_file, table, output_header)))
+
 
 def my_print(v, f: Any = '{}'):
     print(f.format(v))
@@ -460,10 +470,10 @@ if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.do_search(f"{static_data.WORKING_ROOT}input/cdd-11.csv", f"{static_data.WORKING_ROOT}input/cdd.html").pipe(
-        rd.get_pipe_create_results_table()).subscribe(
-        on_next=lambda table: table_ops.write_table(f"{static_data.WORKING_ROOT}output/rx_try15.csv", table,
-                                                    static_data.new_header),
+    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/cdd-11.csv", f"{static_data.WORKING_ROOT}input/cdd.html",
+                        "output/out_test2.csv")\
+        .subscribe(
+        on_next=lambda table: my_print(table, "that's all folks! {}"),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
 

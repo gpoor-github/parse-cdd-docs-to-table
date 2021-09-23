@@ -8,6 +8,40 @@ from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_ob
     all_words_to_skip, CTS_SOURCE_PARENT
 
 
+def convert_version_to_number_from_full_key(full_key: str):
+    key_split = full_key.split('/')
+    if len(key_split) == 1:
+        return convert_version_to_number(key_split[0], '0.0.0')
+    else:
+        return convert_version_to_number(key_split[0], key_split[1])
+
+
+def convert_version_to_number(section_id: str, requirement_id: str):
+    section_splits = section_id.split(".")
+    section_as_number = ''
+    for i in range(4):
+        if i < len(section_splits):
+            idx = 0
+            for j in range(1, -1, -1):
+                if j >= len(section_splits[i]):
+                    section_as_number += '0'
+                else:
+                    section_as_number += section_splits[i][idx]
+                    idx += 1
+        else:
+            section_as_number += "00"
+
+    requirement_splits = requirement_id.split("-")
+    requirement_as_number = f'{ord(requirement_splits[0][-1])}'
+    for k in range(1, len(requirement_splits)):
+        if len(requirement_splits[k]) > 1:
+            requirement_as_number = f'{requirement_as_number}{requirement_splits[k]}'
+        else:
+            requirement_as_number = f'{requirement_as_number}0{requirement_splits[k]}'
+
+    return f'{section_as_number}.{requirement_as_number}'
+
+
 def raise_error(message: str = "ERROR.. default cdd parser message.", a_exception: BaseException = None):
     print(message, file=sys.stderr)
     if a_exception:

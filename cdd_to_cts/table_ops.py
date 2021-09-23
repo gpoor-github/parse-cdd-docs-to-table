@@ -57,7 +57,7 @@ def merge_tables(file1, file2):
     return table1, key_fields1, header1, table2, key_fields2, header2
 
 
-def write_table(file_name: str, table: [[str]], header: [str]):
+def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
     if file_name.find(static_data.WORKING_ROOT) == -1:
         file_name = static_data.WORKING_ROOT + file_name
 
@@ -86,6 +86,7 @@ def write_table(file_name: str, table: [[str]], header: [str]):
                 if len(row[section_id_index]) > 1:
                     table_writer.writerow(row)
         csv_output_file.close()
+    return table
 
 
 def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int], [str], dict[str, str]]:
