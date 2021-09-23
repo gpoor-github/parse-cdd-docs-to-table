@@ -93,12 +93,7 @@ class MyTestCase(unittest.TestCase):
             subscribe(lambda count: self.assertEqual(count, 1317))
     def test_get_cdd_html_to_requirements_table(self, ):
         rd = RxData()
-        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)\
-            .pipe(ops.map(lambda v: my_print(v)),
-                  ops.map(lambda key_req: build_dict(key_req)),
-                  ops.map(lambda v: build_row(v)),
-                  ops.to_list(),
-                  ops.map(lambda table: table_ops.write_table("output/html_to_table.csv",table,static_data.cdd_info_only_header))).subscribe(lambda v: my_print(v))
+        rd.cdd_html_to_requirements_csv().subscribe(lambda v: my_print(v))
 
     def test_get_cdd_html_to_requirements_dict(self, ):
         rd = RxData()

@@ -104,5 +104,5 @@ class ReadSpreadSheet:
 
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
-    result: dict = rs.parse_data(f'{static_data.WORKING_ROOT}input/created_output.csv')
+    result: dict = rs.parse_data(f'{static_data.WORKING_ROOT}output/created_table.csv')
     print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))

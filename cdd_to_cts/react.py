@@ -19,12 +19,13 @@ from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, R
 SEARCH_RESULT = 'a_dict'
 
 
-def build_dict(key_req:str):
-    row_dict =dict()
-    key_req_spits = key_req.split(':',1)
-    row_dict[FULL_KEY]=key_req_spits[0]
+def build_dict(key_req: str):
+    row_dict = dict()
+    key_req_spits = key_req.split(':', 1)
+    row_dict[FULL_KEY] = key_req_spits[0]
     row_dict[REQUIREMENT] = remove_n_spaces_and_commas(key_req_spits[1])
     return row_dict
+
 
 def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app_header, do_log: bool = True):
     full_key = search_info_dict[FULL_KEY]
@@ -176,12 +177,15 @@ class RxData:
         self.__replay_at_test_files_to_methods = None
         self.__replay_cdd_requirements = None
 
-    def cdd_html_to_requirements_csv(self, html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, output_file="output/htm_to_cdd.csv")->rx.Observable:
-        return self.get_cdd_html_to_requirements(html_file).pipe(ops.map(lambda v: my_print(v)),
-              ops.map(lambda key_req: build_dict(key_req)),
-              ops.map(lambda v: build_row(v)),
-              ops.to_list(),
-              ops.map(lambda table: table_ops.write_table(output_file, table, static_data.cdd_info_only_header)))
+    def cdd_html_to_requirements_csv(self, html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                                     output_file="output/htm_to_cdd.csv") -> rx.Observable:
+        return self.get_cdd_html_to_requirements(html_file).pipe(ops.map(lambda key_req: build_dict(key_req)),
+                                                                 ops.map(lambda v: build_row(v,static_data.cdd_info_only_header)),
+                                                                 ops.to_list(),
+                                                                 ops.map(
+                                                                     lambda table: table_ops.write_table(output_file,
+                                                                                                         table,
+                                                                                                         static_data.cdd_info_only_header)))
 
     def get_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
@@ -220,8 +224,8 @@ class RxData:
             search_info[FILE_NAME] = search_info_and_file_tuple[1]
             full_key = search_info.get(FULL_KEY)
             search_terms = search_info.get(SEARCH_TERMS)
-            manual_search_terms =str(search_info.get(MANUAL_SEARCH_TERMS)).split(" ")
-            if len (manual_search_terms) > 0 and len(manual_search_terms[0]) > 1:
+            manual_search_terms = str(search_info.get(MANUAL_SEARCH_TERMS)).split(" ")
+            if len(manual_search_terms) > 0 and len(manual_search_terms[0]) > 1:
                 set(search_terms).update(set(manual_search_terms))
             test_file_test = helpers.read_file_to_string(search_info[FILE_NAME])
             for matched_terms in search_terms:
@@ -477,7 +481,6 @@ class RxData:
             ops.distinct_until_changed(),
             ops.map(lambda f:
                     f'{f}:{helpers.read_file_to_string(f)}'))
-
 
     def get_pipe_create_results_table(self, ):
         return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
