@@ -11,13 +11,20 @@ from rx.subject import ReplaySubject, BehaviorSubject
 from cdd_to_cts import helpers, static_data, table_ops, class_graph
 from cdd_to_cts.class_graph import parse_class_or_method
 from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
-    convert_version_to_number_from_full_key, add_list_to_dict
+    convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES
 
 SEARCH_RESULT = 'a_dict'
 
+
+def build_dict(key_req:str):
+    row_dict =dict()
+    key_req_spits = key_req.split(':',1)
+    row_dict[FULL_KEY]=key_req_spits[0]
+    row_dict[REQUIREMENT] = remove_n_spaces_and_commas(key_req_spits[1])
+    return row_dict
 
 def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app_header, do_log: bool = True):
     full_key = search_info_dict[FULL_KEY]
@@ -168,6 +175,13 @@ class RxData:
         self.__replay_header = None
         self.__replay_at_test_files_to_methods = None
         self.__replay_cdd_requirements = None
+
+    def cdd_html_to_requirements_csv(self, html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, output_file="output/htm_to_cdd.csv")->rx.Observable:
+        return self.get_cdd_html_to_requirements(html_file).pipe(ops.map(lambda v: my_print(v)),
+              ops.map(lambda key_req: build_dict(key_req)),
+              ops.map(lambda v: build_row(v)),
+              ops.to_list(),
+              ops.map(lambda table: table_ops.write_table(output_file, table, static_data.cdd_info_only_header)))
 
     def get_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =

@@ -6,9 +6,10 @@ import rx
 from rx import operators as ops
 from rx.testing import TestScheduler, ReactiveTest
 
-from cdd_to_cts import static_data, helpers, react
-from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT
-from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY
+from cdd_to_cts import static_data, helpers, react, table_ops
+from cdd_to_cts.helpers import remove_n_spaces_and_commas
+from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict
+from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY,REQUIREMENT, ROW, SECTION_ID, REQ_ID
 
 
 def my_print(v: Any, f: Any = '{}'):
@@ -49,8 +50,6 @@ def my_map_dict(key: str, m_list: list) -> list:
 
 
 
-
-
 class MyTestCase(unittest.TestCase):
 
     def test_cdd_html_to_requirements(self, ):
@@ -86,13 +85,29 @@ class MyTestCase(unittest.TestCase):
                  ops.count()). \
             subscribe(lambda count: self.assertEqual(count, 964))
 
-    def test_search_terms(self, ):
+    def test_get_cdd_html_to_requirements(self, ):
         rd = RxData()
-        rd.get_all_search_terms(rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)) \
+        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)\
             .pipe(ops.map(lambda v: my_print(v)),
                   ops.count()). \
             subscribe(lambda count: self.assertEqual(count, 1317))
+    def test_get_cdd_html_to_requirements_table(self, ):
+        rd = RxData()
+        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)\
+            .pipe(ops.map(lambda v: my_print(v)),
+                  ops.map(lambda key_req: build_dict(key_req)),
+                  ops.map(lambda v: build_row(v)),
+                  ops.to_list(),
+                  ops.map(lambda table: table_ops.write_table("output/html_to_table.csv",table,static_data.cdd_info_only_header))).subscribe(lambda v: my_print(v))
 
+    def test_get_cdd_html_to_requirements_dict(self, ):
+        rd = RxData()
+        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)\
+            .pipe(ops.map(lambda v: my_print(v)),
+                  ops.to_dict( key_mapper=lambda key_req: key_req.split(':')[0], element_mapper=lambda key_req: build_dict(key_req)),
+                  ops.map(lambda v: my_print2(v)),
+                  ops.count()). \
+            subscribe(lambda count: self.assertEqual(count, 1317))
     # Callable[[TState, T1], TState]
     @staticmethod
     def reduce_find(term, target):
