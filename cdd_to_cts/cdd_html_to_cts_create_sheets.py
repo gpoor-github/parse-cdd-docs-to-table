@@ -68,7 +68,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
 
         if matched:
             table[table_row_index][static_data.new_header.index('matched_files')] = matched
-            table[table_row_index][static_data.new_header.index('matched_terms')] = matched
+            table[table_row_index][static_data.new_header.index('a_list_item')] = matched
 
         if a_found_methods_string:
             table[table_row_index][static_data.new_header.index('methods_string')] = a_found_methods_string

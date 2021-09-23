@@ -11,13 +11,20 @@ from rx.subject import ReplaySubject, BehaviorSubject
 from cdd_to_cts import helpers, static_data, table_ops, class_graph
 from cdd_to_cts.class_graph import parse_class_or_method
 from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
-  convert_version_to_number_from_full_key
-from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT
+    convert_version_to_number_from_full_key, add_list_to_dict
+from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
+    FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD
 
-SEARCH_RESULT = 'search_result'
+SEARCH_RESULT = 'a_dict'
 
 
 def build_row(search_info_dict: dict, header: [str] = static_data.new_header, do_log: bool = True):
+    full_key = search_info_dict[FULL_KEY]
+    key_split = full_key.split('/')
+    search_info_dict[SECTION_ID] = key_split[0]
+    if len(key_split) > 0:
+        search_info_dict[REQ_ID] = key_split[1]
+
     row: [str] = list(header)
     try:
         for i in range(len(row)):
@@ -43,9 +50,14 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
         try:
             index = header_as_keys.index(key)
             if index > -1:
-                value: str = row_values.get(key)
+                value = row_values.get(key)
                 if value:
-                    row[index] = value
+                    if type(value) is str:
+                        row[index] = value
+                    elif type(value) is set or type(value) is list:
+                        row[index] = " ".join(value)
+                    else:
+                        row[index] = str(value)
         except (ValueError, IndexError) as err:
             if do_log: print(
                 f"build_row: ValueError building row, expected when header and data mismatch {header_as_keys} vs {row_values}",
@@ -116,13 +128,15 @@ def get_search_terms_from_requirements_and_key_create_result_dictionary(requirem
     java_objects.add(key_split[0])
     if len(key_split) > 1:
         java_objects.add(key_split[1])
+
+    search_info[static_data.SEARCH_TERMS] = java_objects
+
     # try:
     #     manual_values = self.get_manual_search_terms(req_split[0])
     #     if manual_values and len(manual_values) > 0:
     #         java_objects.update(manual_values)
     # except:
     #     pass
-    search_info['search_terms'] = java_objects
 
     return search_info
 
@@ -137,6 +151,9 @@ class RxData:
 
     def __init__(self):
         self.__test_case_dict = None
+
+        self.__input_table_keyed = None
+        self.__input_header_keyed = None
 
         self.__input_table = None
         self.__input_header = None
@@ -162,6 +179,12 @@ class RxData:
                 table_dict_file)
         return self.__input_table, self.__input_table_keys, self.__input_header
 
+    def get_input_table_keyed(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
+        # input_table, input_table_keys_to_index, input_header, duplicate_rows =
+        if not self.__input_table_keyed:
+            self.__input_table_keyed, self.__input_header_keyed = table_ops.read_table_to_dictionary(table_dict_file)
+        return self.__input_table_keyed, self.__input_header_keyed
+
     def get_manual_search_terms(self, search_info: dict, manual_search_terms_sheet_file="manual/manual.csv",
                                 logging=False) -> dict:
         try:
@@ -173,7 +196,7 @@ class RxData:
                     row = table[row_index]
                     mst_idx = header.index("manual_search_terms")
                     manual_search_terms = row[mst_idx]
-                    if manual_search_terms_sheet_file != '':
+                    if manual_search_terms != '':
                         terms = manual_search_terms.split(' ')
                         search_info['manual_search_terms'] = set(terms)
                 else:
@@ -191,18 +214,17 @@ class RxData:
             return True
         return False
 
-    @staticmethod
-    def get_search_results(search_info_and_file_tuple: tuple) -> dict:
+    def get_search_results(self, search_info_and_file_tuple: tuple) -> dict:
         # print("predicate " + str(target))
         # rx give us a tuple from combine latest, we want to bind them in one object that will get info in the stream and provide our result
         search_info: dict = search_info_and_file_tuple[0]
 
         try:
             # Get rid of tuple, change to a dict
-            search_info['file_name'] = search_info_and_file_tuple[1]
-            full_key = search_info['full_key']
-            search_terms = search_info.get('search_terms')
-            test_file_test = helpers.read_file_to_string(search_info['file_name'])
+            search_info[FILE_NAME] = search_info_and_file_tuple[1]
+            full_key = search_info.get(FULL_KEY)
+            search_terms = search_info.get(SEARCH_TERMS)
+            test_file_test = helpers.read_file_to_string(search_info[FILE_NAME])
             for matched_terms in search_terms:
                 matched_terms.strip(')')
                 si = test_file_test.find(matched_terms)
@@ -215,21 +237,24 @@ class RxData:
                             search_result = dict()
                             search_info[SEARCH_RESULT] = search_result
                             search_result['full_key'] = full_key
-                            search_result['matched_terms'] = matched_terms
                             search_result['index'] = mi
                             search_result[static_data.METHOD_TEXT] = method_text
-                            search_result['search_terms'] = search_terms
-                            # result = f'["{matched_terms}",["{mi}":"{method_text}"]]'
+                            add_list_to_dict(matched_terms, search_result, MATCHED_TERMS)
+                            self.find_data_for_csv_dict(search_info)
+                            # result = f'["{a_list_item}",["{mi}":"{method_text}"]]'
                             # print(f"\nmatched: {result}")
         except Exception as err:
             raise_error("get_search_results", err)
 
         return search_info
 
-    def find_data_for_csv_dict(self, search_info: dict, logging: bool = False) -> dict:
+    def find_data_for_csv_dict( self, search_info: dict, logging: bool = False) -> dict:
 
         full_key = "0/0"
         method_text = ''
+        test_case_name = ""
+        method = ""
+
         try:
 
             # search_terms = search_info.get('search_terms')
@@ -238,14 +263,11 @@ class RxData:
             search_result = search_info.get(SEARCH_RESULT)
             if search_result:
 
-                key_split = full_key.split('/')
-                search_result[SECTION_ID] = key_split[0]
-                if len(key_split) > 0:
-                    search_result[REQ_ID] = key_split[1]
                 try:
                     method_text = search_result.get('method_text')
                     method = class_graph.re_method.search(method_text, 1).group(0)
-                    search_result['method'] = method
+                    add_list_to_dict(method,search_result,METHOD)
+
                 except Exception as err:
                     print("Not fatal but should improve exception find_data_for_csv_dict " + str(err))
                     if logging: print(f'Could not find {static_data.METHOD_RE} in text [{method_text}]')
@@ -254,11 +276,14 @@ class RxData:
                 if len(class_name_split_src) > 0:
                     test_case_name = class_graph.test_case_name(class_name_split_src[0],
                                                                 self.get_test_case_dict())
-                    search_result['module'] = test_case_name
+                    add_list_to_dict(test_case_name,search_result,MODULE)
 
                 if len(class_name_split_src) > 1:
                     class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
-                    search_result['class_def'] = class_name
+                    add_list_to_dict(class_name,search_result,CLASS_DEF)
+                    qualified_method = f"Test[{test_case_name}]:[{class_name}:{method}]"
+                    add_list_to_dict(qualified_method,search_result, QUALIFIED_METHOD)
+
 
         except Exception as e:
             helpers.raise_error(f"find_data_for_csv_dict at {full_key}", e)
@@ -415,7 +440,8 @@ class RxData:
             ops.map(lambda f:
                     f'{f}:{helpers.read_file_to_string(f)}'))
 
-    def get_all_search_terms(self, get_cdd_html_to_requirements: rx.Observable, table_for_manual_search="test/input/test_manual_search.csv") -> rx.Observable:
+    def get_all_search_terms(self, get_cdd_html_to_requirements: rx.Observable,
+                             table_for_manual_search="output/built.csv") -> rx.Observable:
         return get_cdd_html_to_requirements.pipe(
             ops.map(lambda key_requirement_as_text: get_search_terms_from_requirements_and_key_create_result_dictionary(
                 key_requirement_as_text)),
@@ -425,7 +451,7 @@ class RxData:
                   cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                   scheduler: rx.typing.Scheduler = None):
         return self.get_all_search_terms(
-            self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file, scheduler),input_table_file).pipe(
+            self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file, scheduler), input_table_file).pipe(
             ops.combine_latest(self.get_replay_of_at_test_files_only()),
             ops.map(lambda req: self.get_search_results(req)))
 
@@ -444,12 +470,11 @@ class RxData:
                                          cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                                          scheduler: rx.typing.Scheduler = None):
         return self.do_search(input_table_file, cdd_requirements_file, scheduler).pipe(
-            ops.map(lambda result_dic: self.find_data_for_csv_dict(result_dic)),
+            ops.map(lambda result_dic: self.find_data_for_csv_dict()),
             ops.map(lambda result_dic: self.publish_results(result_dic, static_data.new_header)))
 
     def get_pipe_create_results_table(self, ):
         return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
-                    ops.map(lambda results: self.find_data_for_csv_dict(results)),
                     ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
                     ops.to_list()
                     )
@@ -463,6 +488,36 @@ class RxData:
             self.get_pipe_create_results_table(),
             ops.map(lambda table: table_ops.write_table(output_file, table, output_header)))
 
+    def do_search2(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+                   scheduler: rx.typing.Scheduler = None):
+        table_dict, header = self.get_input_table_keyed(input_table_file)
+        return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
+                                                            ops.map(lambda
+                                                                        full_key_row: self.get_search_terms_from_key_create_result_dictionary(
+                                                                full_key_row, header))).pipe(
+            ops.combine_latest(self.get_replay_of_at_test_files_only()),
+            ops.map(lambda req: self.get_search_results(req)))
+
+    def get_search_terms_from_key_create_result_dictionary(self, full_key_row: [], header: []):
+        search_info = dict()
+        full_key = full_key_row[0]
+        row = full_key_row[1]
+        requirement = row[header.index(REQUIREMENT)]
+        java_objects = find_java_objects(requirement)
+        search_info[static_data.FULL_KEY] = full_key
+        search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
+        key_split = full_key.split('/')
+        java_objects.add(key_split[0])
+        if len(key_split) > 1:
+            java_objects.add(key_split[1])
+        search_info[static_data.SEARCH_TERMS] = java_objects
+        search_info[ROW] = row
+        return search_info
+
+    def search_on_files(self, search_info):
+        return self.get_replay_of_at_test_files_only().pipe(ops.map(lambda file_name: self.get_search_results((search_info,file_name))))
+
+
 
 def my_print(v, f: Any = '{}'):
     print(f.format(v))
@@ -473,10 +528,11 @@ if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.main_do_create_table(f"{static_data.WORKING_ROOT}output/out_test3.csv", f"{static_data.WORKING_ROOT}input/cdd.html",
-                            "output/out_test4.csv") \
+    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/new_recs_remaining_todo.csv",
+                            f"{static_data.WORKING_ROOT}input/cdd.html",
+                            "output/built.csv") \
         .subscribe(
-        on_next=lambda table: my_print(table, "that's all folks! {}"),
+        on_next=lambda table: my_print(table, "that's all folks! "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
 

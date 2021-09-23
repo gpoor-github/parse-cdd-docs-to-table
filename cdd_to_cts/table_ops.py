@@ -1,7 +1,7 @@
 import csv
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
 
 
 def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2: [[str]], key_to_index2: dict,
@@ -103,8 +103,6 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
     req_id_index = 2
     key_fields: dict = dict()
     duplicate_rows: [str, str] = dict()
-    if file_name.find(static_data.WORKING_ROOT) == -1:
-        file_name = static_data.WORKING_ROOT + file_name
 
     try:
         with open(file_name) as csv_file:
@@ -157,20 +155,22 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
                     f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
             else:
                 duplicate_rows = None
+            csv_file.close()
             return table, key_fields, header, duplicate_rows
+
     except IOError as e:
         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
 
     # find urls that may help find the tests for the requirement
 
 
-def read_table_to_dictionary(file_name: str, logging: bool = False) -> dict:
+def read_table_to_dictionary(file_name: str, logging: bool = False) -> (dict,[]):
     table_dictionary = dict()
     table, key_fields, header, duplicate_rows = read_table(file_name, logging)
     for key in key_fields:
         table_dictionary[key] = table[key_fields[key]]
 
-    return table_dictionary
+    return table_dictionary, header
 
 
 def diff_tables(file1, file2):

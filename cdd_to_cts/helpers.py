@@ -5,7 +5,7 @@ import traceback
 
 from cdd_to_cts import static_data
 from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_object_re_str, java_defines_str, \
-    all_words_to_skip, CTS_SOURCE_PARENT
+    all_words_to_skip, CTS_SOURCE_PARENT, MATCHED_TERMS
 
 
 def convert_version_to_number_from_full_key(full_key: str):
@@ -57,6 +57,13 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
     else:
         return value
 
+
+def add_list_to_dict(a_list_item:str, a_dict:dict, key:str)-> dict:
+    if a_dict.get(key):
+        a_dict[key] = f'{a_list_item} {a_dict.get(key)}'
+    else:
+        a_dict[key] = a_list_item
+    return a_dict
 
 def find_urls(text_to_scan_urls: str):
     return " ".join(set(re.findall(find_url_re_str, text_to_scan_urls)))

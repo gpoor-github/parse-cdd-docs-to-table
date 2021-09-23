@@ -106,6 +106,9 @@ all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).uni
     .union(license_words)
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
+HEADER_KEY = 'HEADER_KEY'
+ROW = "ROW"
+
 REQ_ID = 'req_id'
 SECTION_ID = 'section_id'
 REQUIREMENT = 'requirement'
@@ -119,12 +122,13 @@ SEARCH_TERMS = 'search_terms'
 MODULE = 'module'
 METHOD = 'method'
 CLASS_DEF = 'class_def'
-MATCHED_TERMS = 'matched_terms'
+MATCHED_TERMS = 'a_list_item'
+QUALIFIED_METHOD = 'qualified_method'
 
 FULL_KEY = 'full_key'
 new_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, METHOD_TEXT, FULL_KEY,
-     REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS, MATCHED_TERMS, FILE_NAME,
+     REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, QUALIFIED_METHOD, MANUAL_SEARCH_TERMS, MATCHED_TERMS, FILE_NAME,
      'matched_files', 'methods_string','urls'])
 # Wow why doesn't that work ?: [] = (['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''])
 
