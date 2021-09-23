@@ -1,6 +1,7 @@
 import os
 import time
 
+
 USER_HOME = "/home/gpoor/"
 
 CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
@@ -20,6 +21,7 @@ composite_key_string_re = "\s*(?:<li>)?\["
 req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
 full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
 FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)*' + req_id_re_str
+METHOD_RE = '(\w+?)\(\)'
 java_methods_re_str = '(?:[a-zA-Z]\w+\() ?\w* ?\)'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
 java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
@@ -62,7 +64,7 @@ found_in_java_source = {
     'batching', '-1000',
     'getName()', 'clear', 'per', 'under', 'Lock', 'disable', 'enable', 'content', 'size', 'actual', 'verify',
     'less', 'already', 'extend', 'text)', 'reflect',
-    'signal', 'use', '2.0', 'variable', 'concurrent', 'lit', 'error', 'setting', 'expected', 'method', 'Report',
+    'signal', 'use', '2.0', 'variable', 'concurrent', 'lit', 'error', 'setting', 'expected', METHOD, 'Report',
     'scanner', 'cases', 'change', 'device)', 'match', 'receive', 'param', 'manager', '180', 'only', 'class);',
     'Class', '200', 'bit', 'part', '(no', 'Using', 'action', 'devices)', '(generic', 'nor', 'before',
     'appropriate', 'it;', 'press', 'provide', 'equal', 'Open', 'true', 'except', 'right', 'Project', 'over',
@@ -106,32 +108,50 @@ all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).uni
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 REQ_ID = 'req_id'
 SECTION_ID = 'section_id'
+REQUIREMENT = 'requirement'
+KEY_AS_NUMBER = 'key_as_number'
+TEST_AVAILABILITY = 'Test Availability'
+FILE_NAME = 'file_name'
+SECTION = 'Section'
+METHOD_TEXT = 'method_text'
+MANUAL_SEARCH_TERMS = 'manual_search_terms'
+SEARCH_TERMS = 'search_terms'
+MODULE = 'module'
+METHOD = 'method'
+CLASS_DEF = 'class_def'
+MATCHED_TERMS = 'matched_terms'
 
+FULL_KEY = 'full_key'
 new_header: [] = (
-    ['Section', SECTION_ID, REQ_ID, 'Test Availability', 'class_def', 'method', 'module', 'full_key',
-     'requirement', 'key_as_number', 'search_terms', 'manual_search_terms', 'matched_terms', 'file_name',
+    [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, FULL_KEY,
+     REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS, MATCHED_TERMS, FILE_NAME,
      'matched_files', 'methods_string',
      'urls'])
 # Wow why doesn't that work ?: [] = (['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''])
 
 default_header: [] = (
-    ['Section', SECTION_ID, 'req_id', 'Test Availability', 'Annotation?', 'New Req for R?', 'New CTS for R?',
-     'class_def', 'method', 'module',
+    [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, 'Annotation?', 'New Req for R?', 'New CTS for R?',
+     CLASS_DEF, METHOD, MODULE,
      'Comment(internal) e.g. why a test is not possible ',
      'Comment (external)', 'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
      'Test Level',
      '', 'external version', '', '', ''])
 cdd_info_generated_header: [] = (
-    ['Section', SECTION_ID, 'req_id', 'key_as_number', 'full_key', 'requirement', 'search_terms', 'urls', '', '', '',
+    [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, SEARCH_TERMS, 'urls', '', '', '',
      '', '', '', '', '', ''])
+build_row_header: [] = (
+    [SECTION, SECTION_ID, REQ_ID, MATCHED_TERMS, CLASS_DEF, METHOD, MODULE, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
+     FILE_NAME, 'matched_files', 'methods_string', 'urls', REQUIREMENT, KEY_AS_NUMBER, FULL_KEY, METHOD_TEXT])
+
+
 cdd_info_only_header: [] = (
-    ['Section', SECTION_ID, 'req_id', 'key_as_number', 'full_key', 'requirement', '', '', '', '', '', '', '', '', '',
+    [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
      '', ''])
 merge_header: [] = (
-    ['Test Availability', 'class_def', 'method', 'module'])
+    [TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE])
 
 add_keys_only: [] = (
-    ['full_key', 'key_as_number'])
+    [FULL_KEY, KEY_AS_NUMBER])
 
 
 def set_cts_path():

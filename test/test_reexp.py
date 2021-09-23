@@ -6,7 +6,7 @@ import rx
 from rx import operators as ops
 from rx.testing import TestScheduler
 
-from cdd_to_cts import static_data, helpers, react, table_ops
+from cdd_to_cts import static_data, helpers, react
 from cdd_to_cts.react import RxData, my_print, build_row, SEARCH_RESULT
 
 
@@ -15,13 +15,13 @@ def my_print2(v: Any, f: Any = '{}'):
     return v
 
 
-def predicate3(target, i, source) -> bool:
+def predicate3(target, i) -> bool:
     print("predicate 3 " + str(target))
 
     return True
 
 
-def predicate2(target, i, source) -> bool:
+def predicate2(target, source) -> bool:
     print("predicate 2 " + str(target))
     file_name = target.split(" :")[0]
     thing_to_search = helpers.read_file_to_string(file_name)
@@ -79,13 +79,14 @@ class MyTestCase(unittest.TestCase):
 
     def test_search_terms(self, ):
         rd = RxData()
-        rd.get_search_terms(rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)) \
+        rd.get_all_search_terms(rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE)) \
             .pipe(ops.map(lambda v: my_print(v)),
                   ops.count()). \
             subscribe(lambda count: self.assertEqual(count, 1317))
 
     # Callable[[TState, T1], TState]
-    def reduce_find(self, term, target):
+    @staticmethod
+    def reduce_find(term, target):
         print(f"{term} {target}")
         return target.split(":")[0]
 
@@ -127,13 +128,42 @@ class MyTestCase(unittest.TestCase):
 
     def test_manual_search_terms(self, ):
         rd = RxData()
-        rd.get_search_terms(rd.get_filtered_cdd_by_table("./input/test_manual_search.csv", "input/cdd.html")).pipe(
-            ops.map(lambda req: react.get_search_terms(req))).subscribe(
-            lambda terms: my_print(terms, "manual_search {}"))
+        search_info_in = dict()
+        search_info_in['full_key'] = '9.16/C-1-1'
+        expected = "secure screen lock verification"
+        search_info = rd.get_manual_search_terms(search_info_in, "test/input/test_manual_search.csv")
+        self.assertEqual(search_info.get("manual_search_terms"), expected)
+
+    def test_manual_search_terms_bad_key(self, ):
+        rd = RxData()
+        search_info_in = dict()
+        search_info_in['full_key'] = '99.16/x-1-1'
+        search_info = rd.get_manual_search_terms(search_info_in, "test/input/test_manual_search.csv")
+        self.assertEqual(search_info.get("manual_search_terms"), None)
+
+    def test_auto_search_terms(self, ):
+        rd = RxData()
+        search_info_in = dict()
+        search_info_in['full_key'] = '9.16/C-1-1'
+        expected = {'AccessibilityServiceInfo.FLAG', 'FBUTTON', 'AccessibilityServiceInfo.html', 'FREQUEST', 'FACCESSIBILITY', 'C-1-4', '3.10', 'FLAG_REQUEST_ACCESSIBILITY_BUTTON', 'FLAG'}
+        #react.get_search_terms_from_requirements_and_key(req))
+
+    def test_all_search_terms(self, ):
+        rd = RxData()
+        search_info_in = dict()
+        search_info_in['full_key'] = '9.16/C-1-1'
+        expected = "secure screen lock verification"
+        rx.just(search_info_in).pipe(
+            ops.map(lambda req: react.get_search_terms_from_requirements_and_key(req)),
+            ops.map(rd.get_manual_search_terms(search_info_in, "test/input/test_manual_search.csv")),
+            ops.map(
+                lambda search_info: my_print(search_info.get("manual_search_terms"), "manual_search {}"))).subscribe(
+            lambda search_info: self.assertEqual(search_info.get("manual_search_terms"), expected))
 
     def test_search(self, ):
         rd = RxData()
-        rd.get_search_terms(rd.get_filtered_cdd_by_table("input/new_recs_remaining_todo.csv", "input/cdd.html")).pipe(
+        rd.get_all_search_terms(
+            rd.get_filtered_cdd_by_table("input/new_recs_remaining_todo.csv", "input/cdd.html")).pipe(
             ops.map(lambda req: my_print(req, "find_search_terms[{}]")),
             ops.combine_latest(rd.get_replay_of_at_test_files_only()),
 
@@ -164,7 +194,7 @@ class MyTestCase(unittest.TestCase):
 
             ops.count(),
             ops.map(lambda count: my_print(count, "test_handle_search_results count[{}]")),
-            ops.map(lambda count: self.assertEqual(count, 2278, " count for handle search results")),
+            ops.map(lambda count: self.assertEqual(count, 2278, " count for handle search results_local")),
         ).run()
 
     def test_handle_search_results_debug(self, ):
@@ -196,13 +226,13 @@ class MyTestCase(unittest.TestCase):
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
-            ops.map(lambda results: rd.find_data_for_csv_dict(results)),
-            ops.map(lambda search_info: build_row(search_info, header=static_data.new_header,do_log=True)),
+            ops.map(lambda results_local: rd.find_data_for_csv_dict(results_local)),
+            ops.map(lambda search_info: build_row(search_info, header=static_data.new_header, do_log=True)),
             ops.to_list()) \
             # .pipe(ops.multicast(mapper=lambda value:value,subject=rd.result_subject, scheduler=scheduler))
 
-       # composed.subscribe(
-          #  lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.new_header))
+        # composed.subscribe(
+        #  lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.new_header))
 
         def create():
             return composed

@@ -11,34 +11,23 @@ from rx.subject import ReplaySubject, BehaviorSubject
 from cdd_to_cts import helpers, static_data, table_ops, class_graph
 from cdd_to_cts.class_graph import parse_class_or_method
 from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error
-from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID
+from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT
 
 SEARCH_RESULT = 'search_result'
 
 
-def build_row(search_result_dict: dict, header: [str] = static_data.merge_header, do_log: bool = False):
+def build_row(search_info_dict: dict, header: [str] = static_data.build_row_header, do_log: bool = True):
     row: [str] = list(header)
     try:
         for i in range(len(row)):
             row[i] = ''
-        search_result = search_result_dict.get(SEARCH_RESULT)
+        # Add any fields that are in the search
+        row = dictionary_to_row(search_info_dict, header, row, do_log)
+
+        search_result = search_info_dict.get(SEARCH_RESULT)
         if search_result:
             if len(search_result) > 0:
-                for key in header:
-                    try:
-                        index = header.index(key)
-                        if index > -1:
-                            value: str = search_result.get(key)
-                            if value:
-                                row[index] = value
-                    except ValueError as err:
-                        if do_log: print(
-                            f"build_row: ValueError building row, expected when header and data mismatch {search_result} vs {search_result}",
-                            err)
-                    except IndexError as err2:
-                        if do_log: print(
-                            f"build_row: IndexError building row, expected when header and data mismatch {search_result} vs {search_result}",
-                            err2)
+                dictionary_to_row(search_result,  header, row, do_log)
                 # After for loop for header row is built
                 return row
 
@@ -46,6 +35,21 @@ def build_row(search_result_dict: dict, header: [str] = static_data.merge_header
         traceback.print_exc()
         raise_error("build_row: Exception publish_results", err3)
     return None
+
+
+def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_log=False):
+    for key in header_as_keys:
+        try:
+            index = header_as_keys.index(key)
+            if index > -1:
+                value: str = row_values.get(key)
+                if value:
+                    row[index] = value
+        except (ValueError, IndexError) as err:
+            if do_log: print(
+                f"build_row: ValueError building row, expected when header and data mismatch {search_result} vs {search_result}",
+                err)
+    return row
 
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
@@ -99,12 +103,14 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
-def get_search_terms(requirement_text: str) -> dict:
+def get_search_terms_from_requirements_and_key(requirement: str) -> dict:
     search_info = dict()
-    java_objects = find_java_objects(requirement_text)
-    req_split = requirement_text.split(':', 1)
+    search_info[REQUIREMENT] = requirement
+    java_objects = find_java_objects(requirement)
+    req_split = requirement.split(':', 1)
     full_key = req_split[0]
-    search_info["key"] = full_key
+    search_info['full_key'] = full_key
+    search_info['key']
     key_split = full_key.split('/')
     java_objects.add(key_split[0])
     if len(key_split) > 1:
@@ -115,7 +121,7 @@ def get_search_terms(requirement_text: str) -> dict:
     #         java_objects.update(manual_values)
     # except:
     #     pass
-    search_info["search_terms"] = java_objects
+    search_info['search_terms'] = java_objects
 
     return search_info
 
@@ -155,12 +161,22 @@ class RxData:
                 table_dict_file)
         return self.__input_table, self.__input_table_keys, self.__input_header
 
-    def get_manual_search_terms(self, key: str, manual_search_terms="../manual/manual.csv"):
-        table, key_fields, header = self.get_input_table(manual_search_terms)
-        row = table[key_fields[key]]
-        mst_idx = header.index("manual_search_terms")
-        manual_search_terms = row[mst_idx]
-        return set(manual_search_terms.split(' '))
+    def get_manual_search_terms(self, search_info: dict, manual_search_terms_sheet_file="manual/manual.csv",
+                                logging=False):
+        table, key_fields, header = self.get_input_table(manual_search_terms_sheet_file)
+        full_key = search_info.get('full_key')
+        if full_key:
+            row_index = key_fields.get(full_key)
+            if row_index in range(len(table)):
+                row = table[row_index]
+                mst_idx = header.index("manual_search_terms")
+                manual_search_terms = row[mst_idx]
+                if manual_search_terms_sheet_file != '':
+                    search_info['manual_search_terms'] = manual_search_terms
+            else:
+                if logging: print(
+                    f"Error get_manual_search_terms key not found {full_key} in {manual_search_terms_sheet_file}")
+        return search_info
 
     def predicate(self, target) -> bool:
         # print("predicate " + str(target))
@@ -179,42 +195,45 @@ class RxData:
         try:
             # Get rid of tuple, change to a dict
             search_info['file_name'] = search_info_and_file_tuple[1]
-            key = search_info['key']
+            full_key = search_info['full_key']
             search_terms = search_info.get('search_terms')
             test_file_test = helpers.read_file_to_string(search_info['file_name'])
-            for term in search_terms:
-                term.strip(')')
-                si = test_file_test.find(term)
+            for matched_terms in search_terms:
+                matched_terms.strip(')')
+                si = test_file_test.find(matched_terms)
                 is_found = si > 1
                 if is_found:
                     for method_text in test_file_test.split("@Test"):
-                        mi = method_text.find(term)
+                        mi = method_text.find(matched_terms)
                         if mi > -1:
                             method_text = method_text.replace('\n', ' ')
                             search_result = dict()
                             search_info[SEARCH_RESULT] = search_result
-                            search_result['key'] = key
-                            search_result['term'] = term
+                            search_result['full_key'] = full_key
+                            search_result['matched_terms'] = matched_terms
                             search_result['index'] = mi
                             search_result['method_text'] = method_text
-                            # result = f'["{term}",["{mi}":"{method_text}"]]'
+                            search_result['search_terms'] = search_terms
+                            # result = f'["{matched_terms}",["{mi}":"{method_text}"]]'
                             # print(f"\nmatched: {result}")
         except Exception as err:
             raise_error("get_search_results", err)
 
         return search_info
 
-    def find_data_for_csv_dict(self, search_info: dict) -> dict:
-        key = "0/0"
+    def find_data_for_csv_dict(self, search_info: dict, logging: bool = False) -> dict:
+
+        full_key = "0/0"
+        method_text = ''
         try:
 
             # search_terms = search_info.get('search_terms')
             file_name = search_info.get('file_name')
-            key = search_info.get('key')
+            full_key = search_info.get('full_key')
             search_result = search_info.get(SEARCH_RESULT)
             if search_result:
 
-                key_split = key.split('/')
+                key_split = full_key.split('/')
                 search_result[SECTION_ID] = key_split[0]
                 if len(key_split) > 0:
                     search_result[REQ_ID] = key_split[1]
@@ -223,8 +242,8 @@ class RxData:
                     method = class_graph.re_method.search(method_text, 1).group(0)
                     search_result['method'] = method
                 except Exception as err:
-                    print(" exception find_data_for_csv_dict " + str(err))
-                    pass
+                    print("Not fatal but should improve exception find_data_for_csv_dict " + str(err))
+                    if logging: print(f'Could not find {static_data.METHOD_RE} in text [{method_text}]')
                 class_name_split_src = file_name.split('/src/')
                 # Module
                 if len(class_name_split_src) > 0:
@@ -237,7 +256,7 @@ class RxData:
                     search_result['class_def'] = class_name
 
         except Exception as e:
-            helpers.raise_error(f"find_data_for_csv_dict at {key}", e)
+            helpers.raise_error(f"find_data_for_csv_dict at {full_key}", e)
 
         return search_info
 
@@ -391,16 +410,17 @@ class RxData:
             ops.map(lambda f:
                     f'{f}:{helpers.read_file_to_string(f)}'))
 
-    @staticmethod
-    def get_search_terms(get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
+    def get_all_search_terms(self, get_cdd_html_to_requirements: rx.Observable) -> rx.Observable:
         return get_cdd_html_to_requirements.pipe(
-            ops.map(lambda key_requirement_as_text: get_search_terms(
-                key_requirement_as_text)))
+            ops.map(lambda key_requirement_as_text: get_search_terms_from_requirements_and_key(
+                key_requirement_as_text))
+            #    ,ops.map(lambda search_info: self.get_manual_search_terms(search_info))
+        )
 
     def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
                   cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                   scheduler: rx.typing.Scheduler = None):
-        return self.get_search_terms(
+        return self.get_all_search_terms(
             self.get_filtered_cdd_by_table(input_table_file, cdd_requirements_file, scheduler)).pipe(
             ops.combine_latest(self.get_replay_of_at_test_files_only()),
             ops.map(lambda req: self.get_search_results(req)))
@@ -440,8 +460,10 @@ if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    rd.do_search(f"{static_data.WORKING_ROOT}input/cdd-11.csv", f"{static_data.WORKING_ROOT}input/cdd.html").pipe(rd.get_pipe_create_results_table()).subscribe(
-        on_next=lambda table: table_ops.write_table(f"{static_data.WORKING_ROOT}output/rx_try14.csv", table, static_data.new_header),
+    rd.do_search(f"{static_data.WORKING_ROOT}input/cdd-11.csv", f"{static_data.WORKING_ROOT}input/cdd.html").pipe(
+        rd.get_pipe_create_results_table()).subscribe(
+        on_next=lambda table: table_ops.write_table(f"{static_data.WORKING_ROOT}output/rx_try15.csv", table,
+                                                    static_data.new_header),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
 

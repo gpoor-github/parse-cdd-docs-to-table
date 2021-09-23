@@ -72,7 +72,7 @@ def write_table(file_name: str, table: [[str]], header: [str]):
             if header:
                 print(f'Warning  overwriting header with {", ".join(header)}')
                 table[0] = header
-        except ValueError:
+        except (AttributeError, ValueError):
             if header:
                 section_id_index = header.index(SECTION_ID)
                 req_id_index = header.index(REQ_ID)
@@ -82,7 +82,7 @@ def write_table(file_name: str, table: [[str]], header: [str]):
         # get rid of bad rows
         for i in range(len(table)):
             row = table[i]
-            if len(row) > req_id_index:
+            if row and len(row) > req_id_index:
                 if len(row[section_id_index]) > 1:
                     table_writer.writerow(row)
         csv_output_file.close()
@@ -93,6 +93,9 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
 
     :rtype: {[[str]],dict,[]}
     """
+
+    if file_name.find(static_data.WORKING_ROOT) == -1:
+        file_name = static_data.WORKING_ROOT + file_name
     table = []
     header = []
     section_id_index = 1

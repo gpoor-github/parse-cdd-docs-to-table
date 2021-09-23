@@ -69,7 +69,7 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
     table[table_row_index][static_data.new_header.index('full_key')] = key_str
     if section_data:
         section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
-        table[table_row_index][static_data.new_header.index('requirement')] = section_data_cleaned
+        table[table_row_index][static_data.new_header.index(requirement)] = section_data_cleaned
 
     if len(key_split) > 1:
         table[table_row_index][static_data.new_header.index(static_data.REQ_ID)] = key_split[1]

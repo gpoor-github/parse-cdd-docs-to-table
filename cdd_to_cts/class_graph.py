@@ -24,7 +24,7 @@ def test_case_name(path_to_project_root, testcase_dictionary: dict):
     return None
 
 
-re_method = re.compile('(\w+?)\(\)')
+re_method = re.compile(static_data.METHOD_RE)
 re_class = re.compile('class (\w+)')
 
 
