@@ -1,7 +1,6 @@
 import os
 import time
 
-
 USER_HOME = "/home/gpoor/"
 
 CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
@@ -122,15 +121,19 @@ SEARCH_TERMS = 'search_terms'
 MODULE = 'module'
 METHOD = 'method'
 CLASS_DEF = 'class_def'
-MATCHED_TERMS = 'a_list_item'
+MATCHED_TERMS = 'matched_terms'
 QUALIFIED_METHOD = 'qualified_method'
+URLS = 'urls'
+METHODS_STRING = 'methods_string'
+MATCHED_FILES = 'matched_files'
+
 
 FULL_KEY = 'full_key'
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, METHOD_TEXT, FULL_KEY,
      REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, QUALIFIED_METHOD, MANUAL_SEARCH_TERMS, MATCHED_TERMS, FILE_NAME,
-     'matched_files', 'methods_string','urls'])
+     MATCHED_FILES, METHODS_STRING, URLS])
 
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (

@@ -3,7 +3,7 @@ import time
 import data_sources
 import static_data
 from cdd_to_cts import table_ops, helpers
-from cdd_to_cts.helpers import convert_version_to_number
+from cdd_to_cts.helpers import convert_version_to_number, convert_version_to_number_from_full_key
 from cdd_to_cts.react import RxData
 from table_ops import write_table, update_table
 
@@ -69,15 +69,15 @@ def write_new_data_line_to_table(key_str: str, keys_to_sections: dict, table: [[
             table[table_row_index][header.index('Test Availability')] = "Test Available"
 
         if matched:
-            table[table_row_index][header.index('matched_files')] = matched
-            table[table_row_index][header.index('a_list_item')] = matched
+            table[table_row_index][header.index(static_data.MATCHED_FILES)] = matched
+            table[table_row_index][header.index(static_data.MATCHED_TERMS)] = matched
 
         if a_found_methods_string:
             table[table_row_index][header.index('methods_string')] = a_found_methods_string
 
     else:
-        table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number(
-            key_split[0])
+        # This function handles having just a section_id
+        table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] =convert_version_to_number_from_full_key(key_split[0])
         print(f"Only a major key? {key_str}")
 
 
