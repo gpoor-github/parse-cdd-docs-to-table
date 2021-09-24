@@ -19,7 +19,7 @@ SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
 composite_key_string_re = "\s*(?:<li>)?\["
 req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
 full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str
-FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)*' + req_id_re_str
+FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)' + req_id_re_str
 METHOD_RE = '(\w+?)\(\)'
 java_methods_re_str = '(?:[a-zA-Z]\w+\() ?\w* ?\)'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
@@ -108,13 +108,19 @@ TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 HEADER_KEY = 'HEADER_KEY'
 ROW = "ROW"
 
-REQ_ID = 'req_id'
+SECTION = 'Section'
+DEFAULT_SECTION_ID_INDEX = 0
+
 SECTION_ID = 'section_id'
+DEFAULT_SECTION_ID_INDEX = 1
+
+REQ_ID = 'req_id'
+DEFAULT_REQ_ID_INDEX = 2
+
 REQUIREMENT = 'requirement'
 KEY_AS_NUMBER = 'key_as_number'
 TEST_AVAILABILITY = 'Test Availability'
 FILE_NAME = 'file_name'
-SECTION = 'Section'
 METHOD_TEXT = 'method_text'
 MANUAL_SEARCH_TERMS = 'manual_search_terms'
 SEARCH_TERMS = 'search_terms'

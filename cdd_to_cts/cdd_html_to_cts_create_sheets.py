@@ -123,7 +123,7 @@ if __name__ == '__main__':
     #     start = time.perf_counter()
     #     rd = RxData()
     #     result_table = [[str]]
-    #     rd.do_search2().pipe(rd.get_pipe_create_results_table()).subscribe(
+    #     rd.do_search().pipe(rd.get_pipe_create_results_table()).subscribe(
     #         on_next=lambda table: table_ops.write_table("output/built_table2.csv", table, static_data.cdd_to_cts_app_header),
     #         on_completed=lambda: print("completed"),
     #         on_error=lambda err: helpers.raise_error("in main", err))

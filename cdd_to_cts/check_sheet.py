@@ -107,5 +107,9 @@ class ReadSpreadSheet:
 
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
-    result: dict = rs.parse_data('output/built_from_created2.csv')
+    final_output = 'output/built_from_created2.csv'
+    sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.csv"
+    sheet_from_server_no_mod ="data_files/CDD-11_2021-11-23-csv"
+
+    result: dict = rs.parse_data(sheet_from_before_gpoor)
     print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))

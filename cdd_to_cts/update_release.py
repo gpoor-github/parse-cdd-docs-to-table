@@ -52,11 +52,15 @@ if __name__ == '__main__':
     # update_fullkey_table_with_only_new_changes()
     # original_sheet_file_name = "sachiyoAugust 23, 2_49 PM - CDD 11.csv"
     original_sheet_file_name1 = "data_files/version_up_there_sorted.csv"
-    # values_to_use_table_file = 'output/updated_table.csv'
-    values_to_use_table_file1 = 'output/rx_try14.csv'
-    new_updated_table_file1 ='output/new_updated_table_file.csv'
-    update_release_table_with_changes(original_sheet_file_name1, values_to_use_table_file1,new_updated_table_file1)
-    table_ops.diff_tables(original_sheet_file_name1, new_updated_table_file1)
+    values_to_use_table_file = 'output/updated_table.csv'
+    #values_to_use_table_file1 = 'output/rx_try14.csv'
+
+    new_updated_table_file1 ='output/new_updated_table_file2.csv'
+    fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
+    final_output_file = "output/built_from_created2.csv"
+
+    update_release_table_with_changes(fresh, final_output_file,new_updated_table_file1)
+    table_ops.diff_tables(fresh, new_updated_table_file1)
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

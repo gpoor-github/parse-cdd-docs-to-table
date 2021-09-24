@@ -2,7 +2,7 @@ import csv
 import sys
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID
 
 
 def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2: [[str]], key_to_index2: dict,
@@ -59,6 +59,7 @@ def merge_tables(file1, file2):
 
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
+
     if file_name.find(static_data.WORKING_ROOT) == -1:
         file_name = static_data.WORKING_ROOT + file_name
 
@@ -77,7 +78,7 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
                 req_id_index = header.index(REQ_ID)
                 table_writer.writerow(header)
             else:
-                print(f"error handling finding header for table{file_name}  first row",file=sys.stderr)
+                print(f"error handling finding header for table{file_name}  first row", file=sys.stderr)
         # get rid of bad rows
         for i in range(len(table)):
             row = table[i]
@@ -147,6 +148,7 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
                 if logging: print(f'Processed {table_index} lines {key_value} ')
                 if logging: print(f'For table {table_index}')
                 table_index += 1
+                # end for rows
 
             if logging: print("End with file")
             if len(duplicate_rows) > 0:
@@ -156,6 +158,8 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
                 duplicate_rows = None
             csv_file.close()
             return table, key_fields, header, duplicate_rows
+    except IndexError as e:
+        helpers.raise_error(f"Index error {file_name} idx {table_index} row =[{row}] exception -= {type(e)} exiting...")
 
     except IOError as e:
         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
@@ -163,7 +167,7 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
     # find urls that may help find the tests for the requirement
 
 
-def read_table_to_dictionary(file_name: str, logging: bool = False) -> (dict,[]):
+def read_table_to_dictionary(file_name: str, logging: bool = False) -> (dict, []):
     table_dictionary = dict()
     table, key_fields, header, duplicate_rows = read_table(file_name, logging)
     for key in key_fields:
@@ -204,7 +208,7 @@ def diff_tables(file1, file2):
     print(f"See block above Difference  2st-1nd={len(dif_2_1)}  f2=[{file2}] 1st f1=[{file1}]")
     print("Differences in shared rows ends... can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n\n")
 
-    print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}] intersection = {intersection}")
+    print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}")
     print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
     print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff={dif_2_1}\n")
     header_set1 = set(header1)
@@ -296,6 +300,15 @@ if __name__ == '__main__':
     from_more_recent_cdd_html = "../data_files/cdd_full_from_more_recent_worse_version.csv"
     from_less_recent_cdd_html = "../data_files/cdd_full_from_less_recent_better_version.csv"
 
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(from_more_recent_cdd_html,
-                                                                                       from_less_recent_cdd_html)
+    final_output = 'output/built_from_created2.csv'
+    sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.csv"
+    sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
+    original_sheet_file_name1 = "data_files/CDD-11_2021-11-23.csv"
+    # values_to_use_table_file1 = 'output/final_output_file.csv'
+    sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.csv"
+    new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
+
+    fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(new_updated_table_file1,
+                                                                                       sorted_sheet_does_it_matter)
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")

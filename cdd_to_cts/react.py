@@ -179,8 +179,13 @@ class RxData:
 
     def cdd_html_to_requirements_csv(self, html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                                      output_file="output/htm_to_cdd.csv") -> rx.Observable:
+        if html_file.find(static_data.WORKING_ROOT) == -1:
+            html_file = static_data.WORKING_ROOT + html_file
+        if output_file.find(static_data.WORKING_ROOT) == -1:
+            output_file = static_data.WORKING_ROOT + output_file
         return self.get_cdd_html_to_requirements(html_file).pipe(ops.map(lambda key_req: build_dict(key_req)),
-                                                                 ops.map(lambda v: build_row(v,static_data.cdd_info_only_header)),
+                                                                 ops.map(lambda v: build_row(v,
+                                                                                             static_data.cdd_info_only_header)),
                                                                  ops.to_list(),
                                                                  ops.map(
                                                                      lambda table: table_ops.write_table(output_file,
@@ -468,6 +473,7 @@ class RxData:
                             print(f"Warning skipping section 13 just the end no requirments")
                             continue
                         section = re.sub('\s\s+', ' ', section)
+                        section = section.replace("<\a>","")
                         self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
             self.__replay_cdd_requirements.on_completed()
             # if all ready read, just return it.
@@ -494,12 +500,12 @@ class RxData:
                              output_file: str = "output/output_built_table.csv",
                              output_header: str = static_data.cdd_to_cts_app_header,
                              scheduler: rx.typing.Scheduler = None):
-        return self.do_search2(input_table_file, scheduler).pipe(
+        return self.do_search(input_table_file, scheduler).pipe(
             self.get_pipe_create_results_table(),
             ops.map(lambda table: table_ops.write_table(output_file, table, output_header)))
 
-    def do_search2(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
-                   scheduler: rx.typing.Scheduler = None):
+    def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+                  scheduler: rx.typing.Scheduler = None):
         table_dict, header = self.get_input_table_keyed(input_table_file)
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
                                                             ops.map(lambda
