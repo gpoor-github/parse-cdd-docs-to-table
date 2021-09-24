@@ -473,7 +473,7 @@ class RxData:
                             print(f"Warning skipping section 13 just the end no requirments")
                             continue
                         section = re.sub('\s\s+', ' ', section)
-                        section = section.replace("<\a>","")
+                        section = section.replace("<\a>", "")
                         self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
             self.__replay_cdd_requirements.on_completed()
             # if all ready read, just return it.

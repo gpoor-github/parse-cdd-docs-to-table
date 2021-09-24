@@ -3,7 +3,6 @@ import re
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import process_requirement_text, find_java_objects, find_urls, build_composite_key, \
     find_full_key
-from cdd_to_cts.init_data_sources import key_to_java_objects
 from cdd_to_cts.static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE, composite_key_string_re, req_id_re_str, \
     full_key_string_for_re, CDD_REQUIREMENTS_FROM_HTML_FILE
 
@@ -96,9 +95,6 @@ def get_file_dependencies():
     return testfile_dependencies_to_words_local
 
 
-
-
-
 def remove_ubiquitous_words_code(word_set_dictionary: [str, set]):
     test_suite_last = ""
     word_set_last = set()
@@ -116,6 +112,7 @@ def remove_ubiquitous_words_code(word_set_dictionary: [str, set]):
         word_set_dictionary[key] = filtered_word_set
 
     return word_set_dictionary
+
 
 def convert_relative_filekey(local_file: str):
     return '\"{}\"'.format(local_file.replace('cts/', '$PROJECT_DIR$/', 1))

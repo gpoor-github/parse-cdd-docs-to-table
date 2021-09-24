@@ -3,11 +3,10 @@ import random
 import re
 import time
 
-from cdd_to_cts import static_data, class_graph, helpers, persist
-from cdd_to_cts.helpers import find_urls, find_java_objects, process_requirement_text, remove_non_determinative_words, \
-    bag_from_text, make_files_to_string, build_composite_key, find_full_key, build_test_cases_module_dictionary
-from cdd_to_cts.static_data import composite_key_string_re, req_id_re_str, full_key_string_for_re, MANUAL_SEARCH_TERMS, \
-    TEST_FILES_TO_DEPENDENCIES_STORAGE, CTS_SOURCE_ROOT, CTS_SOURCE_PARENT, CDD_REQUIREMENTS_FROM_HTML_FILE
+from cdd_to_cts import class_graph, persist
+from cdd_to_cts.data_sources_helper import convert_relative_filekey
+from cdd_to_cts.helpers import  remove_non_determinative_words, bag_from_text, make_files_to_string
+from cdd_to_cts.static_data import CTS_SOURCE_ROOT, CTS_SOURCE_PARENT
 
 
 # find likely java objects from a text block
@@ -15,6 +14,7 @@ from cdd_to_cts.table_ops import read_table
 
 
 def handle_java_files_data(key_str):
+    from cdd_to_cts.init_data_sources import search_files_as_strings_for_words
     keys_to_files_dict = search_files_as_strings_for_words(key_str)
     # keys_to_files_dict1 = sorted(keys_to_files_dict.items(), key=lambda x: x[1], reverse=True)
     a_single_test_file_name: str = ""
@@ -49,6 +49,7 @@ def handle_java_files_data(key_str):
                     test_case_key = str(class_name_split_src[0]).replace('cts/tests/', '')
                     if len(test_case_key) > 1:
                         project_root = str(test_case_key).replace("/", ".")
+                        from cdd_to_cts.init_data_sources import files_to_test_cases
                         test_case_name = files_to_test_cases.get(project_root)
 
                 if len(class_name_split_src) > 1:
@@ -186,6 +187,7 @@ class SourceCrawlerReducer:
             aggregate_words_for_dependencies = set()
             a_files_to_word = files_to_words_inner.get(CTS_SOURCE_PARENT + file)
             aggregate_words_for_dependencies.update(a_files_to_word)
+            from cdd_to_cts.init_data_sources import testfile_dependencies_to_words
             dependencies: [str] = testfile_dependencies_to_words.get(convert_relative_filekey(file))
             if dependencies:
                 for i in range(len(dependencies)):
@@ -212,6 +214,7 @@ class SourceCrawlerReducer:
             test_file = str(test_file)
             if test_file.endswith(".java"):
                 file_list.clear()
+                from cdd_to_cts.init_data_sources import testfile_dependencies_to_words
                 dependencies: [str] = testfile_dependencies_to_words.get(convert_relative_filekey(test_file))
                 file_list.append(test_file)
                 if dependencies:

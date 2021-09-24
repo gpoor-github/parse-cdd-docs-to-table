@@ -1,7 +1,6 @@
 import csv
 import json
 import os
-import sys
 
 from cdd_to_cts import static_data
 from static_data import CTS_SOURCE_ROOT, SECTION_ID, REQ_ID
@@ -27,7 +26,7 @@ def check_for_file_and_method(file_name_from_class: str, method_value: str, file
                     file_name_to_result[file_name_from_class] = method_value + " Failed reason: Method not found"
 
         except Exception as err:
-            print(" Could not open " + file_name_from_class )
+            print(" Could not open " + file_name_from_class)
             file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found"
     return False
 
@@ -109,7 +108,7 @@ if __name__ == '__main__':
     rs = ReadSpreadSheet()
     final_output = 'output/built_from_created2.csv'
     sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.csv"
-    sheet_from_server_no_mod ="data_files/CDD-11_2021-11-23-csv"
+    sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
 
     result: dict = rs.parse_data(sheet_from_before_gpoor)
     print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
