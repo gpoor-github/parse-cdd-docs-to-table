@@ -100,22 +100,26 @@ class MyTestCase(unittest.TestCase):
         a_7_line_table = "../test/input/section_id_length_one_issue.html"
 
         rd.get_cdd_html_to_requirements(a_7_line_table) \
-
+ \
     def test_parse_cdd_html_to_requirements(self, ):
         rd = RxData()
         a_7_line_table = "../test/input/just_one_section_id_digit_issue.html"
 
         from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
-        key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(a_7_line_table)
-        self.assertIs(key_to_full_requirement_text_local.get("3/W-0-1]"))
+        key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(
+            a_7_line_table)
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-1"))
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-2"))
+        self.assertEqual(4, len(key_to_full_requirement_text_local))
 
     def test_get_cdd_html_to_requirements_table(self, ):
         a_7_line_table = "test/input/section_id_length_one_issue.html"
 
         rd = RxData()
         rd.cdd_html_to_requirements_csv(a_7_line_table). \
-            subscribe(lambda table_dict:  (my_print2(table_dict) /
-                                           self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX])))
+            subscribe(lambda table_dict: (my_print2(table_dict) /
+                                          self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX])))
 
     def test_get_cdd_html_to_requirements_dict(self, ):
         rd = RxData()
@@ -171,7 +175,7 @@ class MyTestCase(unittest.TestCase):
         search_info_in = dict()
         search_info_in['full_key'] = '9.16/C-1-1'
         expected = {'secure', 'screen', 'lock', 'verification'}
-        search_info = rd.get_search_terms_from_key_create_result_dictionary(search_info_in,
+        search_info = get_search_terms_from_key_create_result_dictionary(search_info_in,
                                                                             "test/input/test_manual_search.csv")
         self.assertEqual(expected, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
@@ -179,20 +183,23 @@ class MyTestCase(unittest.TestCase):
         rd = RxData()
         search_info_in = dict()
         search_info_in['full_key'] = '99.16/x-1-1'
-        search_info = rd.get_search_terms_from_key_create_result_dictionary(search_info_in,
+        search_info = get_search_terms_from_key_create_result_dictionary(search_info_in,
                                                                             "test/input/test_manual_search.csv")
         self.assertEqual(None, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
     def test_auto_search_terms(self, ):
         key_req = "2.2.1/H-7-11:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
         expected = {'2.2.1', 'FHD', 'WSXGA', 'H-7-11'}
-        key_req2= "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
+        key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
         search_info = react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)
 
-        key_req2= "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
+        key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
         key_req2 = helpers.cleanhtml(key_req2)
-        self.assertEqual(expected,  react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req2).get(SEARCH_TERMS))
+        self.assertEqual(expected,
+                         react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req2).get(
+                             SEARCH_TERMS))
         self.assertEqual("2.2.1/H-7-11", search_info.get(FULL_KEY))
+
     def test_all_search_terms(self, ):
         rd = RxData()
         key_req = "9.16/C-1-1:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
@@ -201,7 +208,7 @@ class MyTestCase(unittest.TestCase):
         expected_manual = {'secure', 'screen', 'lock', 'verification'}
         rx.just(key_req).pipe(
             ops.map(lambda req: react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)),
-            ops.map(lambda search_info: rd.get_search_terms_from_key_create_result_dictionary(search_info,
+            ops.map(lambda search_info: get_search_terms_from_key_create_result_dictionary(search_info,
                                                                                               "test/input/test_manual_search.csv")),
             ops.map(lambda search_info: self.assertEqual(expected_manual,
                                                          search_info.get(
@@ -264,7 +271,7 @@ class MyTestCase(unittest.TestCase):
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
-            ops.map(lambda search_info: rd.get_search_terms_from_key_create_result_dictionary(search_info,
+            ops.map(lambda search_info: get_search_terms_from_key_create_result_dictionary(search_info,
                                                                                               "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results_local: rd.find_data_for_csv_dict(dict())),
@@ -365,16 +372,20 @@ class MyTestCase(unittest.TestCase):
         results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
         print(results.messages)
 
+
 def accum(acc: list, a):
     return list(acc).append(a)
+
 
 def my_write(v: Any, f: Any = '{}'):
     print(f.format(v))
     return v
 
+
 def bla(thing):
     print(thing)
     return thing
+
 
 if __name__ == "__main__":
     unittest.main()

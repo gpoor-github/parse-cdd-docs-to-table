@@ -58,12 +58,13 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
         return value
 
 
-def add_list_to_dict(a_list_item:str, a_dict:dict, key:str)-> dict:
+def add_list_to_dict(a_list_item: str, a_dict: dict, key: str) -> dict:
     if a_dict.get(key):
         a_dict[key] = f'{a_list_item} {a_dict.get(key)}'
     else:
         a_dict[key] = a_list_item
     return a_dict
+
 
 def find_urls(text_to_scan_urls: str):
     return " ".join(set(re.findall(find_url_re_str, text_to_scan_urls)))

@@ -5,12 +5,12 @@ import table_ops
 
 
 def update_release_table_with_changes(original_sheet_file_name: str,
-                                      values_to_use_table_file: str = "output/updated_table.csv",
+                                      values_to_use_table_file_local: str = "output/updated_table.csv",
                                       new_updated_table_file: str = 'output/new_updated_table_file.csv'):
     input_table, input_table_keys_to_index, input_header, duplicate_rows = table_ops.read_table(
         static_data.WORKING_ROOT + original_sheet_file_name)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_input_header, values_to_use_duplicate_rows = table_ops.read_table(
-        static_data.WORKING_ROOT + values_to_use_table_file)
+        static_data.WORKING_ROOT + values_to_use_table_file_local)
 
     updated_table, key_key1, key_key2 = table_ops.update_table(input_table,
                                                                input_table_keys_to_index,

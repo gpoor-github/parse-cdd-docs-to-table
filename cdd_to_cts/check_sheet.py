@@ -27,7 +27,7 @@ def check_for_file_and_method(file_name_from_class: str, method_value: str, file
 
         except Exception as err:
             print(" Could not open " + file_name_from_class)
-            file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found"
+            file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found "+str(err)
     return False
 
 

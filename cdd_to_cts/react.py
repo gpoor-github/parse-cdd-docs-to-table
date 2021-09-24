@@ -150,6 +150,26 @@ def get_search_terms_from_requirements_and_key_create_result_dictionary(requirem
     return search_info
 
 
+def get_search_terms_from_key_create_result_dictionary(full_key_row: [], header: []):
+    search_info = dict()
+    full_key = full_key_row[0]
+    row = full_key_row[1]
+    requirement = row[header.index(REQUIREMENT)]
+    java_objects = find_java_objects(requirement)
+    search_info[HEADER_KEY] = header
+    search_info[static_data.FULL_KEY] = full_key
+    search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
+    key_split = full_key.split('/')
+    java_objects.add(key_split[0])
+    if len(key_split) > 1:
+        java_objects.add(key_split[1])
+    search_info[static_data.SEARCH_TERMS] = java_objects
+    search_info[ROW] = row
+    search_info[MANUAL_SEARCH_TERMS] = row[header.index(MANUAL_SEARCH_TERMS)]
+
+    return search_info
+
+
 class RxData:
     # rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
     # rx_files_to_words = rx.from_iterable(sorted(files_to_words.items(), key=lambda x: x[1], reverse=True))
@@ -293,7 +313,6 @@ class RxData:
                     add_list_to_dict(class_name, search_result, CLASS_DEF)
                     qualified_method = f"Test[{test_case_name}]:[{class_name}:{method}]"
                     add_list_to_dict(qualified_method, search_result, QUALIFIED_METHOD)
-
 
         except Exception as e:
             helpers.raise_error(f"find_data_for_csv_dict at {full_key}", e)
@@ -488,7 +507,8 @@ class RxData:
             ops.map(lambda f:
                     f'{f}:{helpers.read_file_to_string(f)}'))
 
-    def get_pipe_create_results_table(self, ):
+    @staticmethod
+    def get_pipe_create_results_table():
         return pipe(ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
                     ops.map(lambda search_info: build_row(search_info, header=static_data.cdd_to_cts_app_header,
                                                           do_log=True)),
@@ -508,30 +528,10 @@ class RxData:
                   scheduler: rx.typing.Scheduler = None):
         table_dict, header = self.get_input_table_keyed(input_table_file)
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda
-                                                                        full_key_row: self.get_search_terms_from_key_create_result_dictionary(
+                                                            ops.map(lambda full_key_row: get_search_terms_from_key_create_result_dictionary(
                                                                 full_key_row, header)),
                                                             ops.map(
                                                                 lambda search_info: self.search_on_files(search_info)))
-
-    def get_search_terms_from_key_create_result_dictionary(self, full_key_row: [], header: []):
-        search_info = dict()
-        full_key = full_key_row[0]
-        row = full_key_row[1]
-        requirement = row[header.index(REQUIREMENT)]
-        java_objects = find_java_objects(requirement)
-        search_info[HEADER_KEY] = header
-        search_info[static_data.FULL_KEY] = full_key
-        search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
-        key_split = full_key.split('/')
-        java_objects.add(key_split[0])
-        if len(key_split) > 1:
-            java_objects.add(key_split[1])
-        search_info[static_data.SEARCH_TERMS] = java_objects
-        search_info[ROW] = row
-        search_info[MANUAL_SEARCH_TERMS] = row[header.index(MANUAL_SEARCH_TERMS)]
-
-        return search_info
 
     def search_on_files(self, search_info):
         list_of_test_files = self.get_list_of_at_test_files()

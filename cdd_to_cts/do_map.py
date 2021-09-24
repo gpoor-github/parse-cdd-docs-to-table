@@ -1,18 +1,18 @@
 import json
 import time
 
-from cdd_to_cts import static_data, helpers, table_ops
-from cdd_to_cts.cdd_html_to_cts_create_sheets import create_full_table_from_cdd, do_cdd_html_to_cts_create_sheets
+from cdd_to_cts import static_data, helpers, table_ops, data_sources
 from cdd_to_cts.check_sheet import ReadSpreadSheet
 from cdd_to_cts.react import RxData, my_print
 from cdd_to_cts.update_release import update_release_table_with_changes
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    create_full_table_from_cdd("output/full_cdd.csv", static_data.cdd_info_only_header)
+    scr = data_sources.SourceCrawlerReducer()
+    scr.create_full_table_from_cdd("output/full_cdd.csv", static_data.cdd_info_only_header)
 
-    do_cdd_html_to_cts_create_sheets("output/created_table.csv", "output/updated_table.csv",
-                                     static_data.cdd_to_cts_app_header)
+    scr.do_cdd_html_to_cts_create_sheets("output/created_table.csv", "output/updated_table.csv",
+                                         static_data.cdd_to_cts_app_header)
     rd = RxData()
     result_table = [[str]]
     final_output_file = "output/built_from_created2.csv"
