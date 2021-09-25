@@ -59,7 +59,6 @@ def merge_tables(file1, file2):
 
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
-
     if file_name.find(static_data.WORKING_ROOT) == -1:
         file_name = static_data.WORKING_ROOT + file_name
 
@@ -174,6 +173,7 @@ def read_table_to_dictionary(file_name: str, logging: bool = False) -> (dict, []
         table_dictionary[key] = table[key_fields[key]]
 
     return table_dictionary, header
+
 
 
 def diff_tables(file1, file2):

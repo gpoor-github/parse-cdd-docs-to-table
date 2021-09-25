@@ -8,13 +8,14 @@ import rx
 from rx import operators as ops, pipe
 from rx.subject import ReplaySubject, BehaviorSubject
 
-from cdd_to_cts import helpers, static_data, table_ops, class_graph
-from cdd_to_cts.class_graph import parse_class_or_method
+from cdd_to_cts import static_data, helpers, table_ops
+from cdd_to_cts.class_graph import parse_class_or_method, re_method
 from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
     convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES
+from cdd_to_cts.table_ops import write_table
 
 SEARCH_RESULT = 'a_dict'
 
@@ -23,7 +24,11 @@ def build_dict(key_req: str):
     row_dict = dict()
     key_req_spits = key_req.split(':', 1)
     row_dict[FULL_KEY] = key_req_spits[0]
-    row_dict[REQUIREMENT] = remove_n_spaces_and_commas(key_req_spits[1])
+    if len(key_req) < 2:
+        row_dict[REQUIREMENT] = "None found"
+        print("error build_dict " + key_req)
+    else:
+        row_dict[REQUIREMENT] = remove_n_spaces_and_commas(key_req_spits[1])
     return row_dict
 
 
@@ -72,6 +77,23 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
                 f"build_row: ValueError building row, expected when header and data mismatch {header_as_keys} vs {row_values}",
                 err)
     return row
+
+
+def write_table_from_dictionary(table_dict: dict, file_name: str, logging: bool = False) -> (dict, []):
+    if file_name.find(static_data.WORKING_ROOT) == -1:
+        file_name = static_data.WORKING_ROOT + file_name
+    with open(file_name, 'w', newline='') as csv_output_file:
+        table_writer = csv.writer(csv_output_file)
+        header = ','.join(table_dict.keys())
+        print(f"header ={header}")
+        table_writer.writerow(header)
+        for key in table_dict:
+            row_dict: dict = table_dict[key]
+            row = build_row(row_dict)
+            table_writer.writerow(row)
+        csv_output_file.close()
+
+    return table_dict
 
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
@@ -203,14 +225,16 @@ class RxData:
             html_file = static_data.WORKING_ROOT + html_file
         if output_file.find(static_data.WORKING_ROOT) == -1:
             output_file = static_data.WORKING_ROOT + output_file
-        return self.get_cdd_html_to_requirements(html_file).pipe(ops.map(lambda key_req: build_dict(key_req)),
-                                                                 ops.map(lambda v: build_row(v,
-                                                                                             static_data.cdd_info_only_header)),
-                                                                 ops.to_list(),
-                                                                 ops.map(
-                                                                     lambda table: table_ops.write_table(output_file,
-                                                                                                         table,
-                                                                                                         static_data.cdd_info_only_header)))
+        return self.get_cdd_html_to_requirements(html_file).pipe(
+            ops.filter(lambda key_req: not key_req or len(key_req) < 2),
+            ops.map(lambda key_req: build_dict(key_req)),
+            ops.map(lambda v: build_row(v,
+                                        static_data.cdd_info_only_header)),
+            ops.to_list(),
+            ops.map(
+                lambda table: write_table(output_file,
+                                          table,
+                                          static_data.cdd_info_only_header)))
 
     def get_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
@@ -221,6 +245,7 @@ class RxData:
     def get_input_table(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_header:
+            from cdd_to_cts import table_ops
             self.__input_table, self.__input_table_keys, self.__input_header, duplicate_row = table_ops.read_table(
                 table_dict_file)
         return self.__input_table, self.__input_table_keys, self.__input_header
@@ -228,6 +253,7 @@ class RxData:
     def get_input_table_keyed(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_table_keyed:
+            from cdd_to_cts import table_ops
             self.__input_table_keyed, self.__input_header_keyed = table_ops.read_table_to_dictionary(table_dict_file)
         return self.__input_table_keyed, self.__input_header_keyed
 
@@ -295,7 +321,7 @@ class RxData:
 
                 try:
                     method_text = search_result.get('method_text')
-                    method = class_graph.re_method.search(method_text, 1).group(0)
+                    method = re_method.search(method_text, 1).group(0)
                     add_list_to_dict(method, search_result, METHOD)
 
                 except Exception as err:
@@ -304,6 +330,7 @@ class RxData:
                 class_name_split_src = file_name.split('/src/')
                 # Module
                 if len(class_name_split_src) > 0:
+                    from cdd_to_cts import class_graph
                     test_case_name = class_graph.test_case_name(class_name_split_src[0],
                                                                 self.get_test_case_dict())
                     add_list_to_dict(test_case_name, search_result, MODULE)
@@ -528,7 +555,8 @@ class RxData:
                   scheduler: rx.typing.Scheduler = None):
         table_dict, header = self.get_input_table_keyed(input_table_file)
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda full_key_row: get_search_terms_from_key_create_result_dictionary(
+                                                            ops.map(lambda
+                                                                        full_key_row: get_search_terms_from_key_create_result_dictionary(
                                                                 full_key_row, header)),
                                                             ops.map(
                                                                 lambda search_info: self.search_on_files(search_info)))

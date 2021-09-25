@@ -7,7 +7,8 @@ from rx import operators as ops
 from rx.testing import TestScheduler, ReactiveTest
 
 from cdd_to_cts import static_data, helpers, react, table_ops
-from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict
+from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
+    get_search_terms_from_key_create_result_dictionary
 from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX
 
 
@@ -99,10 +100,9 @@ class MyTestCase(unittest.TestCase):
         rd = RxData()
         a_7_line_table = "../test/input/section_id_length_one_issue.html"
 
-        rd.get_cdd_html_to_requirements(a_7_line_table) \
- \
+        rd.get_cdd_html_to_requirements(a_7_line_table)
+
     def test_parse_cdd_html_to_requirements(self, ):
-        rd = RxData()
         a_7_line_table = "../test/input/just_one_section_id_digit_issue.html"
 
         from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
@@ -118,16 +118,18 @@ class MyTestCase(unittest.TestCase):
 
         rd = RxData()
         rd.cdd_html_to_requirements_csv(a_7_line_table). \
-            subscribe(lambda table_dict: (my_print2(table_dict) /
-                                          self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX])))
+            subscribe(lambda table_dict: self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX]))
+        # table_ops.write_table("output/try_table1.csv", table, header=static_data.cdd_to_cts_app_header)
+        # my_print2(table_dict) write_table("output/try_table1.csv", table_dict, static_data.cdd_to_cts_app_header)
 
     def test_get_cdd_html_to_requirements_dict(self, ):
         rd = RxData()
         # table_dict:dict
         rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) \
-            .pipe(ops.map(lambda v: my_print(v)),
+            .pipe(ops.filter(lambda wv: not wv or len(str(wv).split(':')) < 2), ops.map(lambda v: my_print(v)),
                   ops.to_dict(key_mapper=lambda key_req: key_req.split(':')[0],
                               element_mapper=lambda key_req: build_dict(key_req)),
+                              ops.map(  lambda tdict: react.write_table_from_dictionary(tdict,"output/tdict.csv")),
                   ops.map(lambda v: my_print2(v))).subscribe(
             lambda table_dict: self.assertEqual(1317, len(dict(table_dict).keys())))
 
@@ -176,7 +178,7 @@ class MyTestCase(unittest.TestCase):
         search_info_in['full_key'] = '9.16/C-1-1'
         expected = {'secure', 'screen', 'lock', 'verification'}
         search_info = get_search_terms_from_key_create_result_dictionary(search_info_in,
-                                                                            "test/input/test_manual_search.csv")
+                                                                         "test/input/test_manual_search.csv")
         self.assertEqual(expected, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
     def test_manual_search_terms_bad_key(self, ):
@@ -184,7 +186,7 @@ class MyTestCase(unittest.TestCase):
         search_info_in = dict()
         search_info_in['full_key'] = '99.16/x-1-1'
         search_info = get_search_terms_from_key_create_result_dictionary(search_info_in,
-                                                                            "test/input/test_manual_search.csv")
+                                                                         "test/input/test_manual_search.csv")
         self.assertEqual(None, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
     def test_auto_search_terms(self, ):
@@ -209,7 +211,7 @@ class MyTestCase(unittest.TestCase):
         rx.just(key_req).pipe(
             ops.map(lambda req: react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)),
             ops.map(lambda search_info: get_search_terms_from_key_create_result_dictionary(search_info,
-                                                                                              "test/input/test_manual_search.csv")),
+                                                                                           "test/input/test_manual_search.csv")),
             ops.map(lambda search_info: self.assertEqual(expected_manual,
                                                          search_info.get(
                                                              static_data.MANUAL_SEARCH_TERMS)))).subscribe(
@@ -272,7 +274,7 @@ class MyTestCase(unittest.TestCase):
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
             ops.map(lambda search_info: get_search_terms_from_key_create_result_dictionary(search_info,
-                                                                                              "test/input/test_manual_search.csv")),
+                                                                                           "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results_local: rd.find_data_for_csv_dict(dict())),
             ops.map(
@@ -281,7 +283,6 @@ class MyTestCase(unittest.TestCase):
             # .pipe(ops.multicast(mapper=lambda value:value,subject=rd.result_subject, scheduler=scheduler))
 
         # composed.subscribe(
-        #  lambda table: table_ops.write_table("output/try_table1.csv", table, header=static_data.cdd_to_cts_app_header))
 
         def create():
             return composed
@@ -306,8 +307,9 @@ class MyTestCase(unittest.TestCase):
         rd = RxData()
         table_dict: dict = rd.get_input_table_keyed("test/input/four_line_sparse.csv")
         pipe = rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda count: my_print(count,
+                                                            ops.map(lambda tdict: my_print(tdict,
                                                                                            "test test_table_dict[{}]\n")))
+
 
         # .subscribe(lambda key, row: self.assertTupleEqual())
 
@@ -318,7 +320,7 @@ class MyTestCase(unittest.TestCase):
         disposed = 1800
         results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
         print(results.messages)
-        self.assertEqual("Section,section_id,req_id,requirement".split(','), table_dict.get(HEADER_KEY))
+        self.assertCountEqual("Section,section_id,req_id,requirement".split(','), dict(table_dict).get(HEADER_KEY))
 
         t0 = (0, ['Section', 'section_id', 'req_id', 'requirement'])
         r1 = ",3.2.3.5,C-4-1,req-c-4-1".split(',')
