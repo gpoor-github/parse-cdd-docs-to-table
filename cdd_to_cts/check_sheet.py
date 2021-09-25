@@ -101,7 +101,7 @@ class ReadSpreadSheet:
             print("End for loop")
             print('No files {}'.format(self.not_found_count))
             print('Files {}'.format(self.found_count))
-            return self.file_name_to_result
+            return self.file_name_to_result, self.not_found_count, self.found_count
 
 
 if __name__ == '__main__':
@@ -110,5 +110,5 @@ if __name__ == '__main__':
     sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.csv"
     sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
 
-    result: dict = rs.parse_data(sheet_from_before_gpoor)
-    print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
+    result_dict, not_found, found = rs.parse_data(sheet_from_before_gpoor)
+    print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))

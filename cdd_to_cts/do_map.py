@@ -23,16 +23,18 @@ if __name__ == '__main__':
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
 
-    print(" Now check final output")
-    rs = ReadSpreadSheet()
-    result: dict = rs.parse_data(final_output_file)
-    print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
 
     original_sheet_file_name1 = "data_files/CDD-11_2021-11-23-sorted.csv"
     final_output_file = "output/built_from_created2.csv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
     update_release_table_with_changes(original_sheet_file_name1, final_output_file, new_updated_table_file1)
+
+    print(" Now check final output")
     table_ops.diff_tables(original_sheet_file_name1, new_updated_table_file1)
+
+    rs = ReadSpreadSheet()
+    result, not_found, found = rs.parse_data(final_output_file)
+    print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
