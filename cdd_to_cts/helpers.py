@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import traceback
+from typing import Any
 
 from cdd_to_cts import static_data
 from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_object_re_str, java_defines_str, \
@@ -58,22 +59,28 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
         return value
 
 
-def add_list_to_dict(new_value_to_add: str, dict_containing_values: dict, key: str, separator=' ', header: [] = static_data.cdd_to_cts_app_header) -> dict:
+def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str, separator=' ', header: [] = static_data.cdd_to_cts_app_header) -> dict:
     possible_pre_existing_value = None
     if not new_value_to_add:
-        return dict_containing_values
+        return dictionary_with_existing_values
     if not header.index(key):
         raise_error(f"add_list_to_dict no key for [{key}] in {str(header)}")
     try:
-        possible_pre_existing_value = dict_containing_values.get(key)
+        possible_pre_existing_value = dictionary_with_existing_values.get(key)
     except Exception as err:
-        raise_error(f"failed to get key={key} from dict={str(dict_containing_values)} {str(err)}", err)
+        raise_error(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
 
     if possible_pre_existing_value:
-        dict_containing_values[key] = f'{possible_pre_existing_value}{separator}{new_value_to_add}'
+        if isinstance(possible_pre_existing_value,str) and isinstance(new_value_to_add, str):
+            dictionary_with_existing_values[key] = f'{possible_pre_existing_value}{separator}{new_value_to_add}'
+        elif isinstance(possible_pre_existing_value,set) and isinstance(new_value_to_add, set):
+            dict_containing_values[key] = new_value_to_add.union(possible_pre_existing_value)
+        else:
+            dict_containing_values[key] = f'{str(possible_pre_existing_value)}{separator}{str(new_value_to_add)}'
+
     else:
-        dict_containing_values[key] = new_value_to_add
-    return dict_containing_values
+        dictionary_with_existing_values[key] = new_value_to_add
+    return dictionary_with_existing_values
 
 
 def find_urls(text_to_scan_urls: str):

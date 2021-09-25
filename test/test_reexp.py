@@ -193,12 +193,12 @@ class MyTestCase(unittest.TestCase):
         key_req = "2.2.1/H-7-11:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
         expected = {'2.2.1', 'FHD', 'WSXGA', 'H-7-11'}
         key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
-        search_info = react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)
+        search_info = react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)
 
         key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
         key_req2 = helpers.cleanhtml(key_req2)
         self.assertEqual(expected,
-                         react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req2).get(
+                         react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req2).get(
                              SEARCH_TERMS))
         self.assertEqual("2.2.1/H-7-11", search_info.get(FULL_KEY))
 
@@ -206,10 +206,10 @@ class MyTestCase(unittest.TestCase):
         rd = RxData()
         key_req = "9.16/C-1-1:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
         expected = {'9.16', 'FHD', 'WSXGA', 'C-1-1'}
-        # search_info = react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)
+        # search_info = react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)
         expected_manual = {'secure', 'screen', 'lock', 'verification'}
         rx.just(key_req).pipe(
-            ops.map(lambda req: react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)),
+            ops.map(lambda req: react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)),
             ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
                                                                                            "test/input/test_manual_search.csv")),
             ops.map(lambda search_info: self.assertEqual(expected_manual,
@@ -225,7 +225,7 @@ class MyTestCase(unittest.TestCase):
     #         ops.map(lambda req: my_print(req, "find_search_terms[{}]")),
     #         ops.combine_latest(rd.get_replay_of_at_test_files_only()),
     #
-    #         ops.filter(lambda result: dict(result).get("a_dict")),
+    #         ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
     #         ops.map(lambda req: my_print(req, "find_search_result[{}]")),
     #
     #         ops.map(lambda v: my_print2(v, "find_downstream_search_result[{}]")),
@@ -240,7 +240,7 @@ class MyTestCase(unittest.TestCase):
     def test_do_search(self, ):
         rd = RxData()
         rd.do_search("./input/full_cdd.csv").pipe(
-            ops.filter(lambda result: dict(result).get("a_dict")),
+            ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
             ops.count()).subscribe(lambda count: self.assertEqual(count, 950))
 
