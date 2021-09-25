@@ -5,48 +5,48 @@ from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID
 
 
-def update_table(table1: [[str]], key_to_index1: dict, header1: [str], table2: [[str]], key_to_index2: dict,
-                 header2: [str],
+def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]], key_to_index_source: dict,
+                 header_source: [str],
                  columns: [str]):
     """
-This will take table1 and update missing values in the specified key_to_index1 at columns to the target table if empty.
-    :param header2:
+This will take table_target and update missing values in the specified key_to_index_target at columns to the target table if empty.
+    :param header_source:
     :param columns:
-    :param header1:
-    :param key_to_index2:
-    :param key_to_index1:
-    :param table1:
-    :param table2:
+    :param header_target:
+    :param key_to_index_source:
+    :param key_to_index_target:
+    :param table_target:
+    :param table_source:
     :return:
     """
-    missingkeys1: set = set()
-    missingkeys2: set = set()
+    missingkeys_target: set = set()
+    missingkeys_source: set = set()
 
-    for key in key_to_index1:
-        if not key_to_index2.get(key) or not key_to_index1.get(key):
+    for key in key_to_index_target:
+        if not key_to_index_source.get(key) or not key_to_index_target.get(key):
             continue
-        table_index1 = int(key_to_index1.get(key))
-        table_index2 = int(key_to_index2.get(key))
-        if table_index1 and table_index2:
-            t1_row = table1[table_index1]
-            t2_row = table2[table_index2]
+        table_index_target = int(key_to_index_target.get(key))
+        table_index_source = int(key_to_index_source.get(key))
+        if table_index_target and table_index_source:
+            t_target_row = table_target[table_index_target]
+            t_source_row = table_source[table_index_source]
             # Section,section_id,req_id
             for column in columns:
-                column1_idx = header1.index(column)
-                column2_idx = header2.index(column)
-                # if column1_idx in range(0,len(t1_row)) and column2_idx in range(0,len(column)) :
-                #   if t2_row[column2_idx] and (len(t1_row[column1_idx]) <= 0):
-                t1_row[column1_idx] = t2_row[column2_idx]
+                column_target_idx = header_target.index(column)
+                column_source_idx = header_source.index(column)
+                # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
+                #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
+                t_target_row[column_target_idx] = t_source_row[column_source_idx]
 
-            if t1_row:
-                table1[table_index1] = t1_row
+            if t_target_row:
+                table_target[table_index_target] = t_target_row
         else:
-            if table_index1:
-                missingkeys2.add(key)
+            if table_index_target:
+                missingkeys_source.add(key)
             else:
-                missingkeys1.add(key)
+                missingkeys_target.add(key)
 
-    return table1, missingkeys1, missingkeys1
+    return table_target, missingkeys_target, missingkeys_source
 
 
 def merge_tables(file1, file2):
@@ -81,9 +81,10 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
         # get rid of bad rows
         for i in range(len(table)):
             row = table[i]
-            if row and len(row) > req_id_index:
-                if len(row[section_id_index]) > 1:
-                    table_writer.writerow(row)
+            if row and len(row) > 1:
+                table_writer.writerow(row)
+            else:
+                print(f"Error writing bad table row [{row}]")
         csv_output_file.close()
     return table
 
@@ -221,7 +222,7 @@ def diff_tables(file1, file2):
             f'Header dif1-2 [{header_set1.difference(header_set2)}] Header dif1-2 [{header_set2.difference(header_set1)}]'
             f'\nintersection=[{header_set1.intersection(header_set2)}]\n')
     handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2)
-    print(f"\nSize of table1={len(_key_fields1)} table2={len(_key_fields2)} f1=[{file1}] ^ f2=[{file2}] ")
+    print(f"\nSize of table_target={len(_key_fields1)} table_source={len(_key_fields2)} f1=[{file1}] ^ f2=[{file2}] ")
     print(
         f"Intersection of {len(intersection)}  content differs 1-2 {len(dif_1_2_dict_content)} and 2-1 {len(dif_2_1_dict_content)}  rows")
     print(f"Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}  ")

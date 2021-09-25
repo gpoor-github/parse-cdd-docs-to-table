@@ -128,10 +128,10 @@ class MyTestCase(unittest.TestCase):
         rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) \
             .pipe(ops.filter(lambda wv: not wv or len(str(wv).split(':')) < 2), ops.map(lambda v: my_print(v)),
                   ops.to_dict(key_mapper=lambda key_req: key_req.split(':')[0],
-                              element_mapper=lambda key_req: build_dict(key_req)),
-                              ops.map(  lambda tdict: react.write_table_from_dictionary(tdict,"output/tdict.csv")),
-                  ops.map(lambda v: my_print2(v))).subscribe(
-            lambda table_dict: self.assertEqual(1317, len(dict(table_dict).keys())))
+                              element_mapper=lambda key_req: build_dict(key_req))
+                          #    ,ops.map(  lambda tdict: react.write_table_from_dictionary(tdict,"output/tdict.csv")),
+                  ,ops.map(lambda v: my_print2(v))).subscribe(
+            lambda table_dict: self.assertEqual(1, len(dict(table_dict).keys())))
 
     # Callable[[TState, T1], TState]
     @staticmethod
