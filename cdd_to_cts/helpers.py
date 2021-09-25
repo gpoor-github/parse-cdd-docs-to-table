@@ -5,7 +5,7 @@ import traceback
 
 from cdd_to_cts import static_data
 from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_object_re_str, java_defines_str, \
-    all_words_to_skip, CTS_SOURCE_PARENT, MATCHED_TERMS
+    all_words_to_skip, CTS_SOURCE_PARENT
 
 
 def convert_version_to_number_from_full_key(full_key: str):
@@ -58,9 +58,19 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
         return value
 
 
-def add_list_to_dict(a_list_item: str, a_dict: dict, key: str) -> dict:
-    if a_dict.get(key):
-        a_dict[key] = f'{a_list_item} {a_dict.get(key)}'
+def add_list_to_dict(a_list_item: str, a_dict: dict, key: str, separator=' ', header: [] = static_data.cdd_to_cts_app_header) -> dict:
+    value = None
+    if not value:
+        return a_dict
+    if not header.index(key):
+        raise_error(f"add_list_to_dict no key for [{key}] in {str(header)}")
+    try:
+        value = a_dict.get(key)
+    except Exception as err:
+        raise_error(f"failed to get key={key} from dict={str(a_dict)} {str(err)}", err)
+
+    if value:
+        a_dict[key] = f'{value}{separator}{a_list_item}'
     else:
         a_dict[key] = a_list_item
     return a_dict
@@ -92,7 +102,7 @@ def find_section_id(section: str) -> str:
 
 
 def remove_n_spaces_and_commas(value):
-    value = re.sub("\s\s+", " ", value)
+    value = re.sub("\\s\\s+", " ", value)
     value = re.sub(",", ";", value)
     return value
 
@@ -112,7 +122,7 @@ def remove_non_determinative_words(set_to_diff: set):
 
 
 def bag_from_text(text: str):
-    file_string = re.sub("\s|;|{|:|,\n", " ", text)
+    file_string = re.sub("\\s|;|{|:|,\n", " ", text)
     split = file_string.split(" ")
     return set(split)
 

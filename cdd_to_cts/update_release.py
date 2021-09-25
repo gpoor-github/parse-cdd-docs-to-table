@@ -70,11 +70,11 @@ if __name__ == '__main__':
     values_to_use_table_file = 'output/updated_table.csv'
     # values_to_use_table_file1 = 'output/rx_try14.csv'
 
-    new_updated_table_file1 = 'output/new_updated_table_file2.csv'
+    new_updated_table_file1 = 'output/updated_table_recs_remaining_todo.csv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
-    final_output_file = "output/built_from_created2.csv"
-
-    update_release_table_with_changes(fresh, final_output_file, new_updated_table_file1)
+    final_output_file = "output/built_from_full_cdd_as_in_for_react.csv"
+    select_assigned_reqs = "input/new_recs_remaining_todo.csv"
+    update_release_table_with_changes(fresh, select_assigned_reqs, new_updated_table_file1)
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

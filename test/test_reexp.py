@@ -8,7 +8,7 @@ from rx.testing import TestScheduler, ReactiveTest
 
 from cdd_to_cts import static_data, helpers, react, table_ops
 from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
-    get_search_terms_from_key_create_result_dictionary
+    created_and_populated_search_info_from_row
 from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX
 
 
@@ -177,7 +177,7 @@ class MyTestCase(unittest.TestCase):
         search_info_in = dict()
         search_info_in['full_key'] = '9.16/C-1-1'
         expected = {'secure', 'screen', 'lock', 'verification'}
-        search_info = get_search_terms_from_key_create_result_dictionary(search_info_in,
+        search_info = created_and_populated_search_info_from_row(search_info_in,
                                                                          "test/input/test_manual_search.csv")
         self.assertEqual(expected, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
@@ -185,7 +185,7 @@ class MyTestCase(unittest.TestCase):
         rd = RxData()
         search_info_in = dict()
         search_info_in['full_key'] = '99.16/x-1-1'
-        search_info = get_search_terms_from_key_create_result_dictionary(search_info_in,
+        search_info = created_and_populated_search_info_from_row(search_info_in,
                                                                          "test/input/test_manual_search.csv")
         self.assertEqual(None, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
@@ -210,7 +210,7 @@ class MyTestCase(unittest.TestCase):
         expected_manual = {'secure', 'screen', 'lock', 'verification'}
         rx.just(key_req).pipe(
             ops.map(lambda req: react.get_search_terms_from_requirements_and_key_create_result_dictionary(key_req)),
-            ops.map(lambda search_info: get_search_terms_from_key_create_result_dictionary(search_info,
+            ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
                                                                                            "test/input/test_manual_search.csv")),
             ops.map(lambda search_info: self.assertEqual(expected_manual,
                                                          search_info.get(
@@ -220,7 +220,7 @@ class MyTestCase(unittest.TestCase):
     #
     # def test_search(self, ):
     #     rd = RxData()
-    #     rd.get_search_terms_from_key_create_result_dictionary(
+    #     rd.created_and_populated_search_info_from_row(
     #         rd.get_filtered_cdd_by_table("input/new_recs_remaining_todo.csv", "input/cdd.html")).pipe(
     #         ops.map(lambda req: my_print(req, "find_search_terms[{}]")),
     #         ops.combine_latest(rd.get_replay_of_at_test_files_only()),
@@ -273,7 +273,7 @@ class MyTestCase(unittest.TestCase):
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
-            ops.map(lambda search_info: get_search_terms_from_key_create_result_dictionary(search_info,
+            ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
                                                                                            "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results_local: rd.find_data_for_csv_dict(dict())),

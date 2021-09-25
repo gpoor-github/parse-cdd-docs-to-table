@@ -107,6 +107,7 @@ all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).uni
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
 HEADER_KEY = 'HEADER_KEY'
 ROW = "ROW"
+SEARCH_RESULT = 'SEARCH_RESULT'
 
 SECTION = 'Section'
 DEFAULT_SECTION_INDEX = 0
@@ -121,6 +122,7 @@ REQUIREMENT = 'requirement'
 KEY_AS_NUMBER = 'key_as_number'
 TEST_AVAILABILITY = 'Test Availability'
 FILE_NAME = 'file_name'
+PIPELINE_METHOD_TEXT = 'PIPELINE_METHOD_TEXT'
 METHOD_TEXT = 'method_text'
 MANUAL_SEARCH_TERMS = 'manual_search_terms'
 SEARCH_TERMS = 'search_terms'
