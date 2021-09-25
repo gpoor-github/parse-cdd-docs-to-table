@@ -7,7 +7,7 @@ CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
-WORKING_ROOT = "/home/gpoor/IdeaProjects/parse-cdd-html-to-source/"
+WORKING_ROOT = os.getcwd().replace("cdd_to_cts","")
 
 CDD_REQUIREMENTS_FROM_HTML_FILE = WORKING_ROOT + 'input/cdd.html'
 INPUT_TABLE_FILE_NAME = WORKING_ROOT + 'input/new_recs_remaining_todo.csv'

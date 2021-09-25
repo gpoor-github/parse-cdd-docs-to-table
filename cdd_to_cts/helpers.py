@@ -58,22 +58,22 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
         return value
 
 
-def add_list_to_dict(a_list_item: str, a_dict: dict, key: str, separator=' ', header: [] = static_data.cdd_to_cts_app_header) -> dict:
-    value = None
-    if not value:
-        return a_dict
+def add_list_to_dict(new_value_to_add: str, dict_containing_values: dict, key: str, separator=' ', header: [] = static_data.cdd_to_cts_app_header) -> dict:
+    possible_pre_existing_value = None
+    if not new_value_to_add:
+        return dict_containing_values
     if not header.index(key):
         raise_error(f"add_list_to_dict no key for [{key}] in {str(header)}")
     try:
-        value = a_dict.get(key)
+        possible_pre_existing_value = dict_containing_values.get(key)
     except Exception as err:
-        raise_error(f"failed to get key={key} from dict={str(a_dict)} {str(err)}", err)
+        raise_error(f"failed to get key={key} from dict={str(dict_containing_values)} {str(err)}", err)
 
-    if value:
-        a_dict[key] = f'{value}{separator}{a_list_item}'
+    if possible_pre_existing_value:
+        dict_containing_values[key] = f'{possible_pre_existing_value}{separator}{new_value_to_add}'
     else:
-        a_dict[key] = a_list_item
-    return a_dict
+        dict_containing_values[key] = new_value_to_add
+    return dict_containing_values
 
 
 def find_urls(text_to_scan_urls: str):

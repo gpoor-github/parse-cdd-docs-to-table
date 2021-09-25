@@ -8,7 +8,7 @@ import rx
 from rx import operators as ops, pipe
 from rx.subject import ReplaySubject, BehaviorSubject
 
-from cdd_to_cts import static_data, helpers, table_ops
+import static_data, helpers, table_ops
 from cdd_to_cts.class_graph import parse_class_or_method, re_method
 from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
     convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas
@@ -249,7 +249,7 @@ class RxData:
     def get_input_table(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_header:
-            from cdd_to_cts import table_ops
+            import table_ops
             self.__input_table, self.__input_table_keys, self.__input_header, duplicate_row = table_ops.read_table(
                 table_dict_file)
         return self.__input_table, self.__input_table_keys, self.__input_header
@@ -257,7 +257,7 @@ class RxData:
     def get_input_table_keyed(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_table_keyed:
-            from cdd_to_cts import table_ops
+            import table_ops
             self.__input_table_keyed, self.__input_header_keyed = table_ops.read_table_to_dictionary(table_dict_file)
         return self.__input_table_keyed, self.__input_header_keyed
 
@@ -285,28 +285,31 @@ class RxData:
             manual_search_terms = str(search_info.get(MANUAL_SEARCH_TERMS)).split(" ")
             if len(manual_search_terms) > 0 and len(manual_search_terms[0]) > 1:
                 search_terms = set(search_terms).union(set(manual_search_terms))
-            test_file_test = helpers.read_file_to_string(search_info[FILE_NAME])
+            full_text_of_file_str = helpers.read_file_to_string(search_info[FILE_NAME])
             if logging:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
             for matched_terms in search_terms:
                 matched_terms.strip(')')
-                si = test_file_test.find(matched_terms)
+                si = full_text_of_file_str.find(matched_terms)
                 is_found = si > 1
                 if is_found:
-                    for method_text in test_file_test.split("@Test"):
+                    for method_text in full_text_of_file_str.split("@Test"):
                         mi = method_text.find(matched_terms)
 
                         if mi > -1:
                             search_result = search_info.get(SEARCH_RESULT)
                             if not search_result:
-                                search_info[SEARCH_RESULT] = dict()
+                                search_result = dict()
+                                search_info[SEARCH_RESULT] = search_result
+
                             cts_file_path_name = str(search_info[FILE_NAME]).replace(static_data.CTS_SOURCE_ROOT, "")
-                            add_list_to_dict(cts_file_path_name, search_result, MATCHED_FILES)
-                            add_list_to_dict(matched_terms, search_result, MATCHED_TERMS)
-                            method_text_str = f"([{search_info[FILE_NAME]}]:[{str(mi)}]:[{method_text}])"
-                            add_list_to_dict(method_text_str, search_result, METHOD_TEXT)
-                            search_result[
-                                PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_csv_dict
+                            # ToDo add_list_to_dict(cts_file_path_name, search_result, MATCHED_FILES)
+                            # ToDo add_list_to_dict(matched_terms, search_result, MATCHED_TERMS)
+                            # ToDo  method_text_str = f"([{search_info[FILE_NAME]}]:[{str(mi)}]:[{method_text}])"
+                            # ToDo add_list_to_dict(method_text_str, search_result, METHOD_TEXT)
+                            search_result[METHOD_TEXT] = method_text
+                            search_result[FILE_NAME] = search_info[FILE_NAME]
+                            search_result[PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_csv_dict
                             self.find_data_for_csv_dict(search_info)
                             if logging:
                                 print(f"Found match {str(search_result)}")
@@ -339,7 +342,8 @@ class RxData:
                         method = method_result.group(0)
                         add_list_to_dict(method, search_result, METHOD)
                     else:
-                        method = "no_method_found"
+                        method = ""
+                        # ToDo figure out adding to the dictionary
 
                 except Exception as err:
                     print("Not fatal but should improve exception find_data_for_csv_dict " + str(err))
@@ -347,7 +351,7 @@ class RxData:
                 class_name_split_src = file_name.split('/src/')
                 # Module
                 if len(class_name_split_src) > 0:
-                    from cdd_to_cts import class_graph
+                    import class_graph
                     test_case_name = class_graph.test_case_name(class_name_split_src[0],
                                                                 self.get_test_case_dict())
                     add_list_to_dict(test_case_name, search_result, MODULE)
