@@ -2,6 +2,7 @@ import csv
 import re
 import time
 import traceback
+from itertools import chain
 from typing import Any
 
 import rx
@@ -68,8 +69,22 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
                 if value:
                     if type(value) is str:
                         row[index] = value
-                    elif type(value) is set or type(value) is list:
+                    elif type(value) is list:
+                        row[index] = ' '.join(set(value))
+                    elif type(value) is set:
                         row[index] = " ".join(value)
+                    elif type (value) is dict:
+                        row[index] = sorted({x for v in value.values() for x in v})
+                    elif type(value) is helpers.CountDict:
+                        a_count_dict : helpers.CountDict = value
+                        container_dict = a_count_dict.count_value_dict
+                        if container_dict and len(container_dict) > 0:
+                            try:
+                                local_value =   sorted(container_dict.items(), key=lambda x: x[1], reverse=True)
+                                row[index] = local_value
+                            except Exception as err1:
+                                if do_log: print(
+                                    f"build_row: Could not print values of {key} {str(container_dict)} {str(err1)}")
                     else:
                         row[index] = str(value)
         except (ValueError, IndexError) as err:
@@ -292,6 +307,8 @@ class RxData:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
             for matched_terms in search_terms:
                 matched_terms.strip(')')
+                if not matched_terms:
+                    continue
                 si = full_text_of_file_str.find(matched_terms)
                 is_found = si > 1
                 if is_found:
@@ -306,7 +323,7 @@ class RxData:
 
                             cts_file_path_name = str(search_info[FILE_NAME]).replace(static_data.CTS_SOURCE_ROOT,"")
                             add_list_to_dict(cts_file_path_name, search_result, MATCHED_FILES)
-                            add_list_to_dict(matched_terms, search_result, MATCHED_TERMS)
+                            helpers.add_list_to_count_dict(matched_terms, search_result, MATCHED_TERMS)
                             subset_text = ""
                             if len(method_text) > 50:
                                 subset_text =method_text[0:50]
@@ -613,12 +630,12 @@ if __name__ == '__main__':
     input_file_name ="full_cdd_as_in_for_react.csv"
     output_file_name ="built_from_full_cdd.csv"
 
-    input_file_name_s ="created_output.csv"
+    input_file_name_s ="output/created_output.csv"
     #output_file_name_s ="built_from_created_output2.csv"
-    final_output_file = "output/built_from_created2.csv"
+    final_output_file = "output/built_from_created_3.csv"
 
-    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/"+input_file_name_s,
-                            f"{static_data.WORKING_ROOT}output/"+final_output_file).subscribe(
+    rd.main_do_create_table(input_file_name_s,
+                            final_output_file).subscribe(
         on_next=lambda table: my_print("that's all folks!{} "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))

@@ -10,8 +10,8 @@ def update_release_table_with_changes(target_sheet_file_name: str,
                                       new_updated_table_file: str = 'output/new_updated_table_file.csv'):
     target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table(
         static_data.WORKING_ROOT + target_sheet_file_name)
-    values_to_use_table, values_to_use_table_keys_to_index, values_to_use_target_header, values_to_use_duplicate_rows = table_ops.read_table(
-        static_data.WORKING_ROOT + values_to_use_table_file_local)
+    values_to_use_table, values_to_use_table_keys_to_index, values_to_use_target_header, values_to_use_duplicate_rows = \
+        table_ops.read_table(static_data.WORKING_ROOT + values_to_use_table_file_local)
 
     updated_table, key_key1, key_key2 = table_ops.update_table(target_table,
                                                                target_table_keys_to_index,
