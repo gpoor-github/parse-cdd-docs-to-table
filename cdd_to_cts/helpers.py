@@ -61,7 +61,7 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
 
 
 
-def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str, separator=' ',
+def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str,
                      header: [] = static_data.cdd_to_cts_app_header) -> dict:
     pre_existing_value = None
     if not new_value_to_add:

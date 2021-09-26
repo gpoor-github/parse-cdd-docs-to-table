@@ -2,7 +2,6 @@ import csv
 import re
 import time
 import traceback
-from itertools import chain
 from typing import Any
 
 import rx
@@ -13,8 +12,8 @@ import helpers
 import static_data
 import table_ops
 from cdd_to_cts.class_graph import parse_class_or_method, re_method
-from cdd_to_cts.helpers import find_java_objects, build_test_cases_module_dictionary, raise_error, \
-    convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas
+from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_test_cases_module_dictionary, raise_error, \
+    convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas, CountDict
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT
@@ -60,23 +59,23 @@ def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app
     return None
 
 
-def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_log=False):
+def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_log=True):
     for key in header_as_keys:
         try:
             index = header_as_keys.index(key)
             if index > -1:
                 value = row_values.get(key)
                 if value:
-                    if type(value) is str:
+                    if isinstance(value,str):
                         row[index] = value
-                    elif type(value) is list:
+                    elif isinstance(value, list):
                         row[index] = ' '.join(set(value))
-                    elif type(value) is set:
+                    elif isinstance(value, set):
                         row[index] = " ".join(value)
                     elif type (value) is dict:
                         row[index] = sorted({x for v in value.values() for x in v})
-                    elif type(value) is helpers.CountDict:
-                        a_count_dict : helpers.CountDict = value
+                    elif isinstance(value, CountDict) or  isinstance(value, helpers.CountDict)  or  type(value)== helpers.CountDict:
+                        a_count_dict : CountDict = value
                         container_dict = a_count_dict.count_value_dict
                         if container_dict and len(container_dict) > 0:
                             try:
@@ -213,6 +212,7 @@ def created_and_populated_search_info_from_row(full_key_row: [], header: []):
     return search_info
 
 
+
 class RxData:
     # rx_cts_files = rx.from_iterable(os.walk(CTS_SOURCE_ROOT))
     # rx_files_to_words = rx.from_iterable(sorted(files_to_words.items(), key=lambda x: x[1], reverse=True))
@@ -305,6 +305,7 @@ class RxData:
             full_text_of_file_str = helpers.read_file_to_string(search_info[FILE_NAME])
             if logging:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
+            search_terms.difference_update(static_data.spurious_terms)
             for matched_terms in search_terms:
                 matched_terms.strip(')')
                 if not matched_terms:
@@ -321,15 +322,15 @@ class RxData:
                                 search_result = dict()
                                 search_info[SEARCH_RESULT] = search_result
 
-                            cts_file_path_name = str(search_info[FILE_NAME]).replace(static_data.CTS_SOURCE_ROOT,"")
-                            add_list_to_dict(cts_file_path_name, search_result, MATCHED_FILES)
-                            helpers.add_list_to_count_dict(matched_terms, search_result, MATCHED_TERMS)
+                            cts_file_path_name = str(search_info[FILE_NAME]).replace(static_data.CTS_SOURCE_ROOT+"/tests/","")
+                            add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
+                            add_list_to_count_dict(matched_terms, search_result, MATCHED_TERMS)
                             subset_text = ""
                             if len(method_text) > 50:
                                 subset_text =method_text[0:50]
-                            method_text_str = f"([{search_info[FILE_NAME]}]:[{str(mi)}]:[{subset_text}])"
+                            method_text_str = f"([{cts_file_path_name}]:[{matched_terms}]:[{str(mi)}]:method_text:[{subset_text}])"
                             add_list_to_dict(method_text_str, search_result, static_data.METHODS_STRING," || ")
-                            search_result[FILE_NAME] = search_info[FILE_NAME]
+                            search_result[FILE_NAME] =cts_file_path_name
                             search_result[PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_csv_dict
                             self.find_data_for_csv_dict(search_info)
                             if logging:
@@ -630,7 +631,7 @@ if __name__ == '__main__':
     input_file_name ="full_cdd_as_in_for_react.csv"
     output_file_name ="built_from_full_cdd.csv"
 
-    input_file_name_s ="output/created_output.csv"
+    input_file_name_s ="input/created_output_w_manual.csv"
     #output_file_name_s ="built_from_created_output2.csv"
     final_output_file = "output/built_from_created_3.csv"
 
