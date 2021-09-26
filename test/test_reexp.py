@@ -56,7 +56,7 @@ def test_get_replay_of_at_test_files():
 
 class MyTestCase(unittest.TestCase):
 
-    def test_cdd_html_to_requirements(self, ):
+    def test_cdd_html_to_requirements_rx(self, ):
         RxData().get_cdd_html_to_requirements("../input/cdd.html").pipe(
             ops.map(lambda v: my_print(v)),
             ops.count(),
@@ -102,18 +102,7 @@ class MyTestCase(unittest.TestCase):
 
         rd.get_cdd_html_to_requirements(a_7_line_table)
 
-    def test_parse_cdd_html_to_requirements(self, ):
-        a_7_line_table = "../test/input/just_one_section_id_digit_issue.html"
-
-        from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
-        key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(
-            a_7_line_table)
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-1"))
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-2"))
-        self.assertEqual(4, len(key_to_full_requirement_text_local))
-
-    def test_get_cdd_html_to_requirements_table(self, ):
+    def test_get_cdd_html_to_requirements_table_rx(self, ):
         a_7_line_table = "test/input/section_id_length_one_issue.html"
 
         rd = RxData()

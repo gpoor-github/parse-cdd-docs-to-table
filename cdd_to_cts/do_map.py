@@ -11,11 +11,8 @@ if __name__ == '__main__':
     scr = data_sources.SourceCrawlerReducer()
     scr.create_full_table_from_cdd("output/full_cdd.csv", static_data.cdd_info_only_header)
 
-    scr.do_cdd_html_to_cts_create_sheets("output/created_table.csv", "output/updated_table.csv",
-                                         static_data.cdd_to_cts_app_header)
     rd = RxData()
     result_table = [[str]]
-    final_output_file = "output/built_from_created2.csv"
     rd.main_do_create_table("input/created_output.csv",
                             final_output_file) \
         .subscribe(
@@ -25,8 +22,8 @@ if __name__ == '__main__':
 
 
     original_sheet_file_name1 = "data_files/CDD-11_2021-11-23-sorted.csv"
-    final_output_file = "output/built_from_created2.csv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
+    final_output_file = "output/built_from_created2.csv"
     update_release_table_with_changes(original_sheet_file_name1, final_output_file, new_updated_table_file1)
 
     print(" Now check final output")

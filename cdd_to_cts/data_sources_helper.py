@@ -1,6 +1,7 @@
 import os
 import re
 
+import static_data
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import process_requirement_text, find_java_objects, find_urls, build_composite_key, \
     find_full_key, bag_from_text, remove_non_determinative_words
@@ -16,6 +17,10 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
     # Should do key_to_cdd_section = dict()
     # keys_not_found: list = []
     total_requirement_count = 0
+
+    if cdd_html_file.find(static_data.WORKING_ROOT) == -1:
+        cdd_html_file = static_data.WORKING_ROOT + cdd_html_file
+
     with open(cdd_html_file, "r") as text_file:
         print(f"CDD HTML to csv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()

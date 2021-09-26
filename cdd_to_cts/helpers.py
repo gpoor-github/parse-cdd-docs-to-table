@@ -59,7 +59,8 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
         return value
 
 
-def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str, separator=' ', header: [] = static_data.cdd_to_cts_app_header) -> dict:
+def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str, separator=' ',
+                     header: [] = static_data.cdd_to_cts_app_header) -> dict:
     possible_pre_existing_value = None
     if not new_value_to_add:
         return dictionary_with_existing_values
@@ -71,12 +72,13 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
         raise_error(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
 
     if possible_pre_existing_value:
-        if isinstance(possible_pre_existing_value,str) and isinstance(new_value_to_add, str):
+        if isinstance(possible_pre_existing_value, str) and isinstance(new_value_to_add, str):
             dictionary_with_existing_values[key] = f'{possible_pre_existing_value}{separator}{new_value_to_add}'
-        elif isinstance(possible_pre_existing_value,set) and isinstance(new_value_to_add, set):
-            dict_containing_values[key] = new_value_to_add.union(possible_pre_existing_value)
+        elif isinstance(possible_pre_existing_value, set) and isinstance(new_value_to_add, set):
+            dictionary_with_existing_values[key] = new_value_to_add.union(possible_pre_existing_value)
         else:
-            dict_containing_values[key] = f'{str(possible_pre_existing_value)}{separator}{str(new_value_to_add)}'
+            dictionary_with_existing_values[
+                key] = f'{str(possible_pre_existing_value)}{separator}{str(new_value_to_add)}'
 
     else:
         dictionary_with_existing_values[key] = new_value_to_add
@@ -176,7 +178,11 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_CASE_MODULES,
                                        logging: bool = False) -> dict:
     test_cases_to_path: dict = dict()
-    # ./tests/DropBoxManager/AndroidTest.xml:29:        <option name="test-file-name" value="CtsDropBoxManagerTestCases.apk" />
+    # ./tests/DropBoxManager/AndroidTest.xml:29:        <option name="test-file-name"
+    # value="CtsDropBoxManagerTestCases.apk" />
+    if testcases_grep_results.find(static_data.WORKING_ROOT) == -1:
+        testcases_grep_results = static_data.WORKING_ROOT + testcases_grep_results
+
     with open(testcases_grep_results, "r") as f:
         file_content = f.readlines()
 

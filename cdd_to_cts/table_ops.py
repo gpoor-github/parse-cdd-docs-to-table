@@ -81,6 +81,8 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
         # get rid of bad rows
         for i in range(len(table)):
             row = table[i]
+            if  not row[len(row)-1].endswith('\n'):
+                row[len(row) - 1] = row[len(row) - 1]+'\n'
             if row and len(row) > 1:
                 table_writer.writerow(row)
             else:

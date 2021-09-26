@@ -53,15 +53,21 @@ def get_random_method_name(a_found_methods_string):
 
 
 class SourceCrawlerReducer(object):
-    def __init__(self, cts_root_directory: str = CTS_SOURCE_ROOT):
+    def __init__(self,
+                 cdd_requirements_html_source: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''),
+                 cts_root_directory: str = CTS_SOURCE_ROOT):
+        if not global_to_data_sources_do_search:
+            print("Waring global_to_data_sources_do_search False no search will be done by data_sources ")
+
         self.test_files_to_aggregated_dependency_string = dict()
 
-        self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.get_cached_crawler_data(cts_root_directory)
+        self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.get_cached_crawler_data(
+            cts_root_directory)
 
         self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table(
             static_data.INPUT_TABLE_FILE_NAME.replace('../', ''))
         self.key_to_full_requirement_text, self.key_to_java_objects, self.key_to_urls, self.cdd_string, self.section_to_data = parse_cdd_html_to_requirements(
-            static_data.CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''))
+            cdd_requirements_html_source)
 
         #    class DataSources:
         self.files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
@@ -74,10 +80,6 @@ class SourceCrawlerReducer(object):
     method_to_words_storage = 'storage/method_to_words.pickle'
     files_to_method_calls_storage = 'storage/files_to_method_calls.pickle'
     testfile_dependencies_to_words_storage = 'storage/testfile_dependencies_to_words_storage.pickle'
-
-    #
-    # global_input_table_keys_to_index
-    # global_input_header, global_duplicate_rows
 
     def __make_bags_of_testfile_dependency_word(self, files_to_words_inner: dict):
         # traverse root directory, and list directories as dirs and cts_files as cts_files
@@ -128,6 +130,7 @@ class SourceCrawlerReducer(object):
 
         return self.test_files_to_aggregated_dependency_string
 
+    # This is handled on the re-act side for now .. only done if do_search is true.
     def handle_java_files_data(self, key_str):
         keys_to_files_dict = self.search_files_as_strings_for_words(key_str)
         # keys_to_files_dict1 = sorted(keys_to_files_dict.items(), key=lambda x: x[1], reverse=True)
@@ -187,7 +190,7 @@ class SourceCrawlerReducer(object):
             if row[col_idx]:
                 manual_search_terms = set(row[col_idx].split(' '))
                 java_objects.update(manual_search_terms)
-        for item in files_to_words.items():
+        for item in self.__files_to_words.items():
             words = item[1]
             if words:
                 matching_file_set_out = diff_set_of_search_values_against_sets_of_words_from_files(count=count,
@@ -210,7 +213,7 @@ class SourceCrawlerReducer(object):
             try:
                 row = self.global_input_table[self.global_input_table_keys_to_index.get(key)]
             except Exception as err:
-                helpers.raise_error(f" matching_file_set_out issue {matching_file_set_out}", err)
+                helpers.raise_error(f"Exception [{key}] row not found in search_files_as_strings_for_word ", err)
 
             try:
                 col_idx = list(self.global_input_header).index(MANUAL_SEARCH_TERMS)
@@ -333,24 +336,26 @@ class SourceCrawlerReducer(object):
             table[table_row_index][header.index('search_terms')] = key_to_java_objects.get(key_str)
 
             # This function takes a long time
-            a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = self.handle_java_files_data(
-                key_str)
+            # This is handled in the React Side now
+            if global_to_data_sources_do_search:
+                a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = self.handle_java_files_data(
+                    key_str)
 
-            table[table_row_index][header.index('module')] = test_case_name
-            if a_single_test_file_name:
-                table[table_row_index][header.index('class_def')] = class_name
-                table[table_row_index][header.index(
-                    'file_name')] = static_data.CTS_SOURCE_PARENT + a_single_test_file_name
-            if a_method:
-                table[table_row_index][header.index('method')] = a_method
-                table[table_row_index][header.index('Test Availability')] = "Test Available"
+                table[table_row_index][header.index('module')] = test_case_name
+                if a_single_test_file_name:
+                    table[table_row_index][header.index('class_def')] = class_name
+                    table[table_row_index][header.index(
+                        'file_name')] = static_data.CTS_SOURCE_PARENT + a_single_test_file_name
+                if a_method:
+                    table[table_row_index][header.index('method')] = a_method
+                    table[table_row_index][header.index('Test Availability')] = "Test Available"
 
-            if matched:
-                table[table_row_index][header.index(static_data.MATCHED_FILES)] = matched
-                table[table_row_index][header.index(static_data.MATCHED_TERMS)] = matched
+                if matched:
+                    table[table_row_index][header.index(static_data.MATCHED_FILES)] = matched
+                    table[table_row_index][header.index(static_data.MATCHED_TERMS)] = matched
 
-            if a_found_methods_string:
-                table[table_row_index][header.index('methods_string')] = a_found_methods_string
+                if a_found_methods_string:
+                    table[table_row_index][header.index('methods_string')] = a_found_methods_string
 
         else:
             # This function handles having just a section_id
@@ -358,10 +363,9 @@ class SourceCrawlerReducer(object):
                 key_split[0])
             print(f"Only a major key? {key_str}")
 
-    def do_cdd_html_to_cts_create_sheets(self, created_table_file=static_data.WORKING_ROOT + "output/created_table.csv",
-                                         update_table_file=static_data.WORKING_ROOT + "output/updated_table.csv",
-                                         header: [] = static_data.cdd_to_cts_app_header):
-        # if targets == 'new' or targets == 'all':
+    def update_table_table_from_cdd(self, created_table_file=static_data.WORKING_ROOT + "output/created_table.csv",
+                                    update_table_file=static_data.WORKING_ROOT + "output/updated_table.csv",
+                                    header: [] = static_data.cdd_to_cts_app_header):
         # Write New Table
         table_for_sheet, keys_to_table_indexes = self.create_populated_table(self.global_input_table_keys_to_index)
         write_table(created_table_file, table_for_sheet, header)
@@ -386,20 +390,17 @@ class SourceCrawlerReducer(object):
         write_table(output_file, table_for_sheet, output_header)
 
 
+# Determines whether data_sources will try and search or not.
+global_to_data_sources_do_search = True
+
 if __name__ == '__main__':
     start = time.perf_counter()
-    scr = SourceCrawlerReducer()
-    #  scr.clear_cached_crawler_data()
-    files_to_words, method_to_words, files_to_method_call = scr.get_cached_crawler_data()
-    # remove_ubiquitous_words_code(files_to_words)
-    test_files_to_strings = scr.make_test_file_to_dependency_strings()
+
+    scr = SourceCrawlerReducer(
+        cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''),
+        cts_root_directory=static_data.CTS_SOURCE_ROOT)
+    scr.create_full_table_from_cdd(output_file="output/full_cdd.csv", output_header=static_data.cdd_to_cts_app_header)
+    scr.update_table_table_from_cdd("output/created_table.csv", "output/updated_table.csv",
+                                    static_data.cdd_to_cts_app_header)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
-#
-# if __name__ == '__main__':
-#     start = time.perf_counter()
-#     create_full_table_from_cdd("output/full_cdd.csv", static_data.cdd_to_cts_app_header)
-#     do_cdd_html_to_cts_create_sheets("output/created_table.csv", "output/updated_table.csv",
-#                                      static_data.cdd_to_cts_app_header)
-#
-#     end = time.perf_counter()

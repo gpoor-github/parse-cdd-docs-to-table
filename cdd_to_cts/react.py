@@ -307,8 +307,11 @@ class RxData:
                             cts_file_path_name = str(search_info[FILE_NAME]).replace(static_data.CTS_SOURCE_ROOT,"")
                             add_list_to_dict(cts_file_path_name, search_result, MATCHED_FILES)
                             add_list_to_dict(matched_terms, search_result, MATCHED_TERMS)
-                            method_text_str = f"([{search_info[FILE_NAME]}]:[{str(mi)}]:[{method_text}])"
-                            add_list_to_dict(method_text_str, search_result, static_data.METHODS_STRING,"\n=============\n")
+                            subset_text = ""
+                            if len(method_text) > 50:
+                                subset_text =method_text[0:50]
+                            method_text_str = f"([{search_info[FILE_NAME]}]:[{str(mi)}]:[{subset_text}])"
+                            add_list_to_dict(method_text_str, search_result, static_data.METHODS_STRING," || ")
                             search_result[FILE_NAME] = search_info[FILE_NAME]
                             search_result[PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_csv_dict
                             self.find_data_for_csv_dict(search_info)
@@ -385,7 +388,8 @@ class RxData:
             return self.__replay_at_test_files_to_methods
         else:
             self.__replay_at_test_files_to_methods = ReplaySubject(9999, scheduler=scheduler)
-
+        if results_grep_at_test.find(static_data.WORKING_ROOT) == -1:
+            results_grep_at_test = static_data.WORKING_ROOT + results_grep_at_test
         re_annotations = re.compile('@Test.*?$')
         try:
             with open(results_grep_at_test, "r") as grep_of_test_files:
@@ -419,7 +423,8 @@ class RxData:
 
     def get_list_of_at_test_files(self,
                                   results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:
-
+        if results_grep_at_test.find(static_data.WORKING_ROOT) == -1:
+            results_grep_at_test = static_data.WORKING_ROOT + results_grep_at_test
         if len(self.__list_of_at_test_files) > 0:
             # print(f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
             return self.__list_of_at_test_files
@@ -465,7 +470,8 @@ class RxData:
         section_id_index = 1
         req_id_index = 2
         duplicate_rows: [str, str] = dict()
-
+        if file_name.find(static_data.WORKING_ROOT) == -1:
+            file_name = static_data.WORKING_ROOT + file_name
         try:
             with open(file_name) as csv_file:
 
@@ -523,6 +529,8 @@ class RxData:
 
         if not self.__replay_cdd_requirements:
             self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
+            if cdd_html_file.find(static_data.WORKING_ROOT) == -1:
+                cdd_html_file = static_data.WORKING_ROOT + cdd_html_file
 
             with open(cdd_html_file, "r") as text_file:
                 cdd_requirements_file_as_string = text_file.read()
@@ -588,7 +596,7 @@ class RxData:
             end = time.perf_counter()
             print(f'elapsed {end - start:0.4f}sec ')
             print (f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
-        input("Do you want to continue?")
+        # input("Do you want to continue?")
         for file_name in list_of_test_files:
             self.execute_search_on_file_for_terms_return_results((search_info, file_name))
         return search_info
@@ -598,16 +606,19 @@ def my_print(v, f: Any = '{}'):
     print(f.format(v))
     return v
 
-
 if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
     result_table = [[str]]
-    output_file_name ="built_from_full_cdd.csv"
     input_file_name ="full_cdd_as_in_for_react.csv"
+    output_file_name ="built_from_full_cdd.csv"
 
-    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/"+input_file_name,
-                            f"{static_data.WORKING_ROOT}output/"+output_file_name).subscribe(
+    input_file_name_s ="created_output.csv"
+    #output_file_name_s ="built_from_created_output2.csv"
+    final_output_file = "output/built_from_created2.csv"
+
+    rd.main_do_create_table(f"{static_data.WORKING_ROOT}input/"+input_file_name_s,
+                            f"{static_data.WORKING_ROOT}output/"+final_output_file).subscribe(
         on_next=lambda table: my_print("that's all folks!{} "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))

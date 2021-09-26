@@ -49,6 +49,9 @@ def clear_cached_grep_of_at_test_files():
 
 def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data.TEST_FILES_TXT):
     test_files_to_methods: {str: str} = dict()
+    count = 0
+    if results_grep_at_test.find(static_data.WORKING_ROOT) == -1:
+        results_grep_at_test = static_data.WORKING_ROOT + results_grep_at_test
 
     re_annotations = re.compile('@Test.*?$')
     try:

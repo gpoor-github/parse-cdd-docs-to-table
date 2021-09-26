@@ -7,13 +7,13 @@ CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
-WORKING_ROOT = os.getcwd().replace("cdd_to_cts","")
+WORKING_ROOT = os.getcwd().replace("cdd_to_cts","") + "/"
 
-CDD_REQUIREMENTS_FROM_HTML_FILE = WORKING_ROOT + 'input/cdd.html'
-INPUT_TABLE_FILE_NAME = WORKING_ROOT + 'input/new_recs_remaining_todo.csv'
-TEST_FILES_TXT = WORKING_ROOT + "input_scripts/test-files.txt"
-TEST_CASE_MODULES = WORKING_ROOT + "input_scripts/testcases-modules.txt"
-INPUT_DEPENDENCIES_FOR_CTS_TXT = WORKING_ROOT + 'input_scripts/cts-deps-from-static_code_analysis.txt'
+CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
+INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
+TEST_FILES_TXT = "input_scripts/test-files.txt"
+TEST_CASE_MODULES ="input_scripts/testcases-modules.txt"
+INPUT_DEPENDENCIES_FOR_CTS_TXT =  'input_scripts/cts-deps-from-static_code_analysis.txt'
 
 SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
 composite_key_string_re = "\s*(?:<li>)?\["
@@ -126,6 +126,11 @@ PIPELINE_METHOD_TEXT = 'PIPELINE_METHOD_TEXT'
 METHOD_TEXT = 'method_text'
 MANUAL_SEARCH_TERMS = 'manual_search_terms'
 SEARCH_TERMS = 'search_terms'
+NOT_SEARCH_TERMS = "NOT_SEARCH_TERMS"
+SEARCH_ROOTS = 'SEARCH_ROOTS'
+NOT_SEARCH_ROOTS = 'NOT_SEARCH_ROOTS'
+
+
 MODULE = 'module'
 METHOD = 'method'
 CLASS_DEF = 'class_def'
@@ -134,14 +139,18 @@ QUALIFIED_METHOD = 'qualified_method'
 URLS = 'urls'
 METHODS_STRING = 'methods_string'
 MATCHED_FILES = 'matched_files'
+MAX_MATCHES = "MAX_MATCHES"
+MAX_MATCHES_DEFAULT = 5
+# Protect a set of columns in the row or the whole row
+PROTECTED = "PROTECTED"
 
 
 FULL_KEY = 'full_key'
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, METHOD_TEXT, FULL_KEY,
-     REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, QUALIFIED_METHOD, MANUAL_SEARCH_TERMS, MATCHED_TERMS, FILE_NAME,
-     MATCHED_FILES, METHODS_STRING, URLS])
+     REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS,  MANUAL_SEARCH_TERMS, NOT_SEARCH_TERMS, MATCHED_TERMS, QUALIFIED_METHOD,
+     MAX_MATCHES, FILE_NAME, MATCHED_FILES, METHODS_STRING, URLS, PROTECTED])
 
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (
@@ -170,6 +179,6 @@ def set_cts_path():
 
 if __name__ == '__main__':
     start = time.perf_counter()
-
+    set_cts_path()
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
