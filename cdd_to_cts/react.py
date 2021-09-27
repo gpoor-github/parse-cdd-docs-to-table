@@ -263,7 +263,7 @@ class RxData:
             self.__test_case_dict = build_test_cases_module_dictionary(table_dict_file)
         return self.__test_case_dict
 
-    def get_input_table(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
+    def get_input_table(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME_RX):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_header:
             import table_ops
@@ -271,7 +271,7 @@ class RxData:
                 table_dict_file)
         return self.__input_table, self.__input_table_keys, self.__input_header
 
-    def get_input_table_keyed(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME):
+    def get_input_table_keyed(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME_RX):
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_table_keyed:
             import table_ops
@@ -476,8 +476,8 @@ class RxData:
             except FileNotFoundError as e:
                 raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
 
-    def get_replay_read_table(self, file_name: str = static_data.INPUT_TABLE_FILE_NAME) -> [ReplaySubject,
-                                                                                            ReplaySubject]:
+    def get_replay_read_table(self, file_name: str = static_data.INPUT_TABLE_FILE_NAME_RX) -> [ReplaySubject,
+                                                                                               ReplaySubject]:
 
         if self.__replay_input_table and self.__replay_header:
             return self.__replay_input_table, self.__replay_header
@@ -534,7 +534,7 @@ class RxData:
         except IOError as e:
             helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
 
-    def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+    def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
                                   cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                                   scheduler: rx.typing.Scheduler = None) -> rx.Observable:
 
@@ -589,7 +589,7 @@ class RxData:
             ops.to_list()
         )
 
-    def main_do_create_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+    def main_do_create_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
                              # cdd_requirements_file: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
                              output_file: str = "output/output_built_table.csv",
                              output_header: str = static_data.cdd_to_cts_app_header,
@@ -598,7 +598,7 @@ class RxData:
             self.get_pipe_create_results_table(),
             ops.map(lambda table: table_ops.write_table(output_file, table, output_header)))
 
-    def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME,
+    def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
                   scheduler: rx.typing.Scheduler = None):
         table_dict, header = self.get_input_table_keyed(input_table_file)
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
@@ -632,10 +632,10 @@ if __name__ == '__main__':
     output_file_name ="built_from_full_cdd.csv"
 
     input_file_name_s ="input/created_output_w_manual.csv"
-    #output_file_name_s ="built_from_created_output2.csv"
-    final_output_file = "output/built_from_created_3.csv"
 
-    rd.main_do_create_table(input_file_name_s,
+    output_file_name_s ="built_from_created_output2.csv"
+    final_output_file = "output/built_from_created_3.csv"
+    rd.main_do_create_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
                             final_output_file).subscribe(
         on_next=lambda table: my_print("that's all folks!{} "),
         on_completed=lambda: print("completed"),

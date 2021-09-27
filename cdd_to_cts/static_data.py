@@ -10,7 +10,14 @@ CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 WORKING_ROOT = os.getcwd().replace("cdd_to_cts","") + "/"
 
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
-INPUT_TABLE_FILE_NAME = 'input/new_recs_remaining_todo.csv'
+DATA_SOURCES_CSV_FROM_HTML_1st = "output/data_sources_csv_from_html_1st.csv"
+DATA_SOURCES_UPDATED_CSV_2nd = "output/data_sources_updated_2nd.csv"
+DATA_SOURCES_GLOBAL_TABLE_FILE_NAME_RX = 'input/new_recs_remaining_todo.csv'
+
+
+INPUT_TABLE_FILE_NAME_RX = DATA_SOURCES_CSV_FROM_HTML_1st#'input/new_recs_remaining_todo.csv'
+
+
 TEST_FILES_TXT = "input_scripts/test-files.txt"
 TEST_CASE_MODULES ="input_scripts/testcases-modules.txt"
 INPUT_DEPENDENCIES_FOR_CTS_TXT =  'input_scripts/cts-deps-from-static_code_analysis.txt'

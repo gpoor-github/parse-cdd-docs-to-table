@@ -49,6 +49,14 @@ def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, so
     check_update(original_sheet_file_name, table_name_to_write)
 
 
+
+def make_new_table_with_row_keys_from_table(original_sheet_file_name: str, rows_to_use_table_file_name: str, table_name_to_write: str):
+    to_update_table,to_update_table_keys_to_index,to_update_header, duplicate_rows1 = table_ops.read_table( original_sheet_file_name)
+    rows_to_use_table_not_needed, rows_to_use_table_keys_to_index, columns_to_use_not_needed, duplicate_rows2 = table_ops.read_table(rows_to_use_table_file_name)
+    updated_table = table_ops.filter_first_table_by_keys_of_second(to_update_table,to_update_table_keys_to_index,rows_to_use_table_keys_to_index)
+    table_ops.write_table(table_name_to_write, updated_table,to_update_header)
+    check_update(original_sheet_file_name, table_name_to_write)
+
 def check_update(original_sheet_file_name, table_name_to_write):
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = table_ops.diff_tables(
         original_sheet_file_name, table_name_to_write)
@@ -70,11 +78,13 @@ if __name__ == '__main__':
     values_to_use_table_file = 'output/updated_table.csv'
     # values_to_use_table_file1 = 'output/rx_try14.csv'
 
-    new_updated_table_file1 = 'output/updated_table_recs_remaining_todo.csv'
+    new_updated_table_file1 = 'output/updated_table_recs_remaining_todo_input_rx.csv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
+
     final_output_file = "output/built_from_full_cdd_as_in_for_react.csv"
     select_assigned_reqs = "input/new_recs_remaining_todo.csv"
-    update_release_table_with_changes(fresh, select_assigned_reqs, new_updated_table_file1)
+
+    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, select_assigned_reqs, new_updated_table_file1)
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

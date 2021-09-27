@@ -23,31 +23,50 @@ This will take table_target and update missing values in the specified key_to_in
     missingkeys_source: set = set()
 
     for key in key_to_index_target:
-        if not key_to_index_source.get(key) or not key_to_index_target.get(key):
-            continue
-        table_index_target = int(key_to_index_target.get(key))
-        table_index_source = int(key_to_index_source.get(key))
-        if table_index_target and table_index_source:
-            t_target_row = table_target[table_index_target]
-            t_source_row = table_source[table_index_source]
-            # Section,section_id,req_id
-            for column in columns:
-                column_target_idx = header_target.index(column)
-                column_source_idx = header_source.index(column)
-                # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
-                #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
-                t_target_row[column_target_idx] = t_source_row[column_source_idx]
+        try:
+            if not key_to_index_source.get(key) or not key_to_index_target.get(key):
+                continue
+            table_index_target = int(key_to_index_target.get(key))
+            table_index_source = int(key_to_index_source.get(key))
+            if table_index_target and table_index_source:
+                t_target_row = table_target[table_index_target]
+                t_source_row = table_source[table_index_source]
+                # Section,section_id,req_id
+                for column in columns:
+                    column_target_idx = header_target.index(column)
+                    column_source_idx = header_source.index(column)
+                    # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
+                    #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
+                    t_target_row[column_target_idx] = t_source_row[column_source_idx]
 
-            if t_target_row:
-                table_target[table_index_target] = t_target_row
-        else:
-            if table_index_target:
-                missingkeys_source.add(key)
+                if t_target_row:
+                    table_target[table_index_target] = t_target_row
             else:
-                missingkeys_target.add(key)
+                if table_index_target:
+                    missingkeys_source.add(key)
+                else:
+                    missingkeys_target.add(key)
+        except Exception as err:
+            print (f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
 
     return table_target, missingkeys_target, missingkeys_source
 
+
+
+def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_target: dict,  key_indexes_to_use: dict):
+    new_table:[[str]] = list()
+    for key in key_indexes_to_use:
+        try:
+            if not key_to_index_target.get(key):
+                continue
+            table_index_target = int(key_to_index_target.get(key))
+            t_target_row = table_target[table_index_target]
+            new_table.append(t_target_row)
+
+        except Exception as err:
+            print (f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+
+    return new_table
 
 def merge_tables(file1, file2):
     table1, key_fields1, header1, duplicate_rows1 = read_table(file1)

@@ -6,7 +6,7 @@ from cdd_to_cts import class_graph, persist, static_data
 from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, \
     parse_cdd_html_to_requirements, make_bags_of_word
 from cdd_to_cts.helpers import make_files_to_string, build_test_cases_module_dictionary
-from cdd_to_cts.static_data import CTS_SOURCE_ROOT
+from cdd_to_cts.static_data import CTS_SOURCE_ROOT, DATA_SOURCES_CSV_FROM_HTML_1st
 
 import time
 
@@ -55,19 +55,21 @@ def get_random_method_name(a_found_methods_string):
 class SourceCrawlerReducer(object):
     def __init__(self,
                  cdd_requirements_html_source: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''),
-                 cts_root_directory: str = CTS_SOURCE_ROOT):
-        if not global_to_data_sources_do_search:
-            print("Waring global_to_data_sources_do_search False no search will be done by data_sources ")
+                 global_table_input_file_build_from_html = DATA_SOURCES_CSV_FROM_HTML_1st,
+                 cts_root_directory: str = CTS_SOURCE_ROOT,
+                 do_search=False):
 
+        self.global_to_data_sources_do_search = do_search
         self.test_files_to_aggregated_dependency_string = dict()
 
         self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.get_cached_crawler_data(
             cts_root_directory)
-
-        self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table(
-            static_data.INPUT_TABLE_FILE_NAME.replace('../', ''))
         self.key_to_full_requirement_text, self.key_to_java_objects, self.key_to_urls, self.cdd_string, self.section_to_data = parse_cdd_html_to_requirements(
             cdd_requirements_html_source)
+        self.create_full_table_from_cdd(global_table_input_file_build_from_html)
+
+        self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table(
+            global_table_input_file_build_from_html)
 
         #    class DataSources:
         self.files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
@@ -337,7 +339,7 @@ class SourceCrawlerReducer(object):
 
             # This function takes a long time
             # This is handled in the React Side now
-            if global_to_data_sources_do_search:
+            if self.global_to_data_sources_do_search:
                 a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = self.handle_java_files_data(
                     key_str)
 
@@ -362,28 +364,28 @@ class SourceCrawlerReducer(object):
             table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number_from_full_key(
                 key_split[0])
             print(f"Only a major key? {key_str}")
+    # The new table ops merge table functions make this obsoleet
+    # def update_table_table_from_cdd(self, created_table_file=static_data.WORKING_ROOT + "output/created_table.csv",
+    #                                 update_table_file=static_data.WORKING_ROOT + "output/updated_table.csv",
+    #                                 header: [] = static_data.cdd_to_cts_app_header):
+    #     # Write New Table
+    #     table_for_sheet, keys_to_table_indexes = self.create_populated_table(self.global_input_table_keys_to_index)
+    #     write_table(created_table_file, table_for_sheet, header)
+    #     # else:
+    #     #     table_for_sheet, keys_to_table_indexes = create_populated_table(input_table, keys_from_input_table, input_header )  # Just a smaller table
+    #     # Write Augmented Table
+    #     updated_table, key_key1, key_key2 = update_table(self.global_input_table,
+    #                                                      self.global_input_table_keys_to_index,
+    #                                                      self.global_input_header, table_for_sheet,
+    #                                                      keys_to_table_indexes, header,
+    #                                                      static_data.merge_header)
+    #     write_table(update_table_file, updated_table, self.global_input_header)
+    #
+    #     print(
+    #         f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
 
-    def update_table_table_from_cdd(self, created_table_file=static_data.WORKING_ROOT + "output/created_table.csv",
-                                    update_table_file=static_data.WORKING_ROOT + "output/updated_table.csv",
-                                    header: [] = static_data.cdd_to_cts_app_header):
-        # Write New Table
-        table_for_sheet, keys_to_table_indexes = self.create_populated_table(self.global_input_table_keys_to_index)
-        write_table(created_table_file, table_for_sheet, header)
-        # else:
-        #     table_for_sheet, keys_to_table_indexes = create_populated_table(input_table, keys_from_input_table, input_header )  # Just a smaller table
-        # Write Augmented Table
-        updated_table, key_key1, key_key2 = update_table(self.global_input_table,
-                                                         self.global_input_table_keys_to_index,
-                                                         self.global_input_header, table_for_sheet,
-                                                         keys_to_table_indexes, header,
-                                                         static_data.merge_header)
-        write_table(update_table_file, updated_table, self.global_input_header)
-
-        print(
-            f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
-
-    def create_full_table_from_cdd(self, output_file: str = "output/full_cdd.csv",
-                                   output_header: str = static_data.cdd_info_only_header):
+    def create_full_table_from_cdd(self, output_file: str = DATA_SOURCES_CSV_FROM_HTML_1st,
+                                   output_header: str = static_data.cdd_to_cts_app_header):
         table_for_sheet, keys_to_table_indexes = self.create_populated_table(self.key_to_full_requirement_text)
         print(f"CDD csv file to write to output is [{output_file}] output header is [{str(output_header)}]")
 
@@ -391,16 +393,14 @@ class SourceCrawlerReducer(object):
 
 
 # Determines whether data_sources will try and search or not.
-global_to_data_sources_do_search = True
 
 if __name__ == '__main__':
     start = time.perf_counter()
 
     scr = SourceCrawlerReducer(
-        cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''),
+        cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+        global_table_input_file_build_from_html=static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
         cts_root_directory=static_data.CTS_SOURCE_ROOT)
-    scr.create_full_table_from_cdd(output_file="output/full_cdd.csv", output_header=static_data.cdd_to_cts_app_header)
-    scr.update_table_table_from_cdd("output/created_table.csv", "output/updated_table.csv",
-                                    static_data.cdd_to_cts_app_header)
+
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
