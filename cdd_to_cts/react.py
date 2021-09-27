@@ -228,7 +228,7 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self):
-        self.max_matches = 7
+        self.max_matches = 50
         self.match_count = 0
         self.start = time.perf_counter()
         self.end = time.perf_counter()
@@ -641,6 +641,7 @@ def my_print(v, f: Any = '{}'):
 if __name__ == '__main__':
     start = time.perf_counter()
     rd = RxData()
+    rd.max_matches=200
     result_table = [[str]]
     input_file_name ="full_cdd_as_in_for_react.csv"
     output_file_name ="built_from_full_cdd.csv"
@@ -649,7 +650,7 @@ if __name__ == '__main__':
 
     output_file_name_s ="built_from_created_output2.csv"
     final_output_file = "output/built_from_created_3.csv"
-    rd.main_do_create_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
+    rd.main_do_create_table(static_data.FILTER_KEYS_TODO_TABLE,
                             final_output_file).subscribe(
         on_next=lambda table: my_print("that's all folks!{} "),
         on_completed=lambda: print("completed"),

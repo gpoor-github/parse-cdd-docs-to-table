@@ -84,7 +84,8 @@ if __name__ == '__main__':
     final_output_file = "output/built_from_full_cdd_as_in_for_react.csv"
     select_assigned_reqs = "input/new_recs_remaining_todo.csv"
 
-    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, select_assigned_reqs, new_updated_table_file1)
+    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, static_data.FILTER_KEYS_TODO_TABLE,
+                                            static_data.FILTERED_TABLE_TO_SEARCH)
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
