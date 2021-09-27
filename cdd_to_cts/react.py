@@ -1,5 +1,6 @@
 import csv
 import re
+import sys
 import time
 import traceback
 from typing import Any
@@ -60,6 +61,7 @@ def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app
 
 
 def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_log=True):
+    cell_value = ""
     for key in header_as_keys:
         try:
             index = header_as_keys.index(key)
@@ -67,25 +69,29 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
                 value = row_values.get(key)
                 if value:
                     if isinstance(value,str):
-                        row[index] = value
+                        cell_value = value
                     elif isinstance(value, list):
-                        row[index] = ' '.join(set(value))
+                        cell_value = ' '.join(set(value))
                     elif isinstance(value, set):
-                        row[index] = " ".join(value)
+                        cell_value = " ".join(value)
                     elif type (value) is dict:
-                        row[index] = sorted({x for v in value.values() for x in v})
+                        cell_value = sorted({x for v in value.values() for x in v})
                     elif isinstance(value, CountDict) or  isinstance(value, helpers.CountDict)  or  type(value)== helpers.CountDict:
                         a_count_dict : CountDict = value
                         container_dict = a_count_dict.count_value_dict
                         if container_dict and len(container_dict) > 0:
                             try:
                                 local_value =   sorted(container_dict.items(), key=lambda x: x[1], reverse=True)
-                                row[index] = local_value
+                                cell_value = local_value
                             except Exception as err1:
                                 if do_log: print(
                                     f"build_row: Could not print values of {key} {str(container_dict)} {str(err1)}")
                     else:
-                        row[index] = str(value)
+                        cell_value = str(value)
+                    if len(cell_value) > 120000:
+                        print(f"ERROR: row too long over 12000 {header_as_keys.index(key)}",file=sys.stderr)
+                        cell_value = cell_value[0:12000]
+                    row[index] = cell_value
         except (ValueError, IndexError) as err:
             if do_log: print(
                 f"build_row: ValueError building row, expected when header and data mismatch {header_as_keys} vs {row_values}",
@@ -222,6 +228,10 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self):
+        self.max_matches = 7
+        self.match_count = 0
+        self.start = time.perf_counter()
+        self.end = time.perf_counter()
         self.__test_case_dict = None
 
         self.__input_table_keyed = None
@@ -296,6 +306,8 @@ class RxData:
             # Get rid of tuple, change to a dict
             search_info[FILE_NAME] = search_info_and_file_tuple[1]
             full_key = search_info.get(FULL_KEY)
+            if self.match_count > self.max_matches:
+                print(f"Note: limiting matches to {self.max_matches} skipping {full_key} {search_info_and_file_tuple[1]} ")
             search_terms = search_info.get(SEARCH_TERMS)
             if not search_terms:
                 search_terms = set()
@@ -317,6 +329,7 @@ class RxData:
                         mi = method_text.find(matched_terms)
 
                         if mi > -1:
+                            self.match_count +=1
                             search_result = search_info.get(SEARCH_RESULT)
                             if not search_result:
                                 search_result = dict()
@@ -611,10 +624,11 @@ class RxData:
     def search_on_files(self, search_info, logging:bool = True):
         list_of_test_files = self.get_list_of_at_test_files()
         if logging:
-            end = time.perf_counter()
-            print(f'elapsed {end - start:0.4f}sec ')
+            self.end = time.perf_counter()
+            print(f'elapsed {self.end - self.start:0.4f}sec ')
             print (f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
         # input("Do you want to continue?")
+        self.match_count = 0
         for file_name in list_of_test_files:
             self.execute_search_on_file_for_terms_return_results((search_info, file_name))
         return search_info

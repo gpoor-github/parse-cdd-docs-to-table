@@ -15,7 +15,7 @@ DATA_SOURCES_UPDATED_CSV_2nd = "output/data_sources_updated_2nd.csv"
 DATA_SOURCES_GLOBAL_TABLE_FILE_NAME_RX = 'input/new_recs_remaining_todo.csv'
 
 
-INPUT_TABLE_FILE_NAME_RX = DATA_SOURCES_CSV_FROM_HTML_1st#'input/new_recs_remaining_todo.csv'
+INPUT_TABLE_FILE_NAME_RX = "input/table_file_for_react_filtered.csv"
 
 
 TEST_FILES_TXT = "input_scripts/test-files.txt"

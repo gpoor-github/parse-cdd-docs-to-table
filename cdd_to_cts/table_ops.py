@@ -132,43 +132,49 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
             table_index = 0
 
             for row in csv_reader_instance:
-                if table_index == 0:
-                    try:
-                        section_id_index = row.index(SECTION_ID)
-                        req_id_index = row.index(REQ_ID)
-                        if logging: print(f'Found header for {file_name} names are {", ".join(row)}')
-                        header = row
-                        table.append(row)
-                        table_index += 1
+                try:
+                    if table_index == 0:
+                        try:
+                            section_id_index = row.index(SECTION_ID)
+                            req_id_index = row.index(REQ_ID)
+                            if logging: print(f'Found header for {file_name} names are {", ".join(row)}')
+                            header = row
+                            table.append(row)
+                            table_index += 1
 
-                        # Skip the rest of the loop... if there is an exception carry on and get the first row
-                        continue
-                    except ValueError:
-                        message = f' Error: First row NOT header {row} default to section_id = col 1 and req_id col 2. First row of file {csv_file} should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
-                        print(message)
-                        raise SystemExit(message)
-                        # Carry on and get the first row
+                            # Skip the rest of the loop... if there is an exception carry on and get the first row
+                            continue
+                        except ValueError:
+                            message = f' Error: First row NOT header {row} default to section_id = col 1 and req_id col 2. First row of file {csv_file} should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
+                            print(message)
+                            raise SystemExit(message)
+                            # Carry on and get the first row
 
-                if logging: print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
-                # Section,section_id,req_id
-                table.append(row)
-                section_id_value = table[table_index][section_id_index].rstrip('.')
-                req_id_value = table[table_index][req_id_index]
-                if len(req_id_value) > 0:
-                    key_value = '{}/{}'.format(section_id_value, req_id_value)
-                elif len(section_id_value) > 0:
-                    key_value = section_id_value
+                    if logging: print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
+                    # Section,section_id,req_id
+                    table.append(row)
+                    section_id_value = table[table_index][section_id_index].rstrip('.')
+                    req_id_value = table[table_index][req_id_index]
+                    if len(req_id_value) > 0:
+                        key_value = '{}/{}'.format(section_id_value, req_id_value)
+                    elif len(section_id_value) > 0:
+                        key_value = section_id_value
 
-                does_key_existing_index = key_fields.get(key_value)
-                if does_key_existing_index:
-                    if logging: print(
-                        f" Error duplicate key in table key [{key_value}] row = [{row}] index ={table_index} dup index ={does_key_existing_index}!")
-                    duplicate_rows[key_value] = f"{row}||{table[does_key_existing_index]}"
-                key_fields[key_value] = table_index
+                    does_key_existing_index = key_fields.get(key_value)
+                    if does_key_existing_index:
+                        if logging: print(
+                            f" Error duplicate key in table key [{key_value}] row = [{row}] index ={table_index} dup index ={does_key_existing_index}!")
+                        duplicate_rows[key_value] = f"{row}||{table[does_key_existing_index]}"
+                    key_fields[key_value] = table_index
 
-                if logging: print(f'Processed {table_index} lines {key_value} ')
-                if logging: print(f'For table {table_index}')
-                table_index += 1
+                    if logging: print(f'Processed {table_index} lines {key_value} ')
+                    if logging: print(f'For table {table_index}')
+                    table_index += 1
+                except IndexError as e:
+                    helpers.raise_error(f"Index error {file_name} idx {table_index}  -= {type(e)} value {str(e)}...")
+                except Exception as e1:
+                    helpers.raise_error(f"Index error {file_name} idx {table_index} -= {type(e1)} exiting..{str(e1)}")
+
                 # end for rows
 
             if logging: print("End with file")
@@ -178,12 +184,10 @@ def read_table(file_name: str, logging: bool = False) -> [[[str]], dict[str, int
             else:
                 duplicate_rows = None
             csv_file.close()
-            return table, key_fields, header, duplicate_rows
-    except IndexError as e:
-        helpers.raise_error(f"Index error {file_name} idx {table_index} row =[{row}] exception -= {type(e)} exiting...")
-
     except IOError as e:
         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+    return table, key_fields, header, duplicate_rows
+
 
     # find urls that may help find the tests for the requirement
 
