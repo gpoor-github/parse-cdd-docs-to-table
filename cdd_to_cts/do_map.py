@@ -24,11 +24,11 @@ if __name__ == '__main__':
     data_sources_table_to_update = "input/new_recs_remaining_todo.csv"
     result_table = [[str]]
 
-    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, data_sources_table_to_update, static_data.INPUT_TABLE_FILE_NAME_RX)
+    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, static_data.FILTER_KEYS_TODO_TABLE, static_data.FILTERED_TABLE_TO_SEARCH )
 
     rd = RxData()
     rx_output_file ="output/rx_build_final.csv"
-    rd.main_do_create_table(input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
+    rd.main_do_create_table(input_table_file=static_data.FILTERED_TABLE_TO_SEARCH,
                             output_file=rx_output_file, output_header=static_data.cdd_to_cts_app_header) \
         .subscribe(
             on_next=lambda table: my_print(table, "that's all folks!{} "),
@@ -36,8 +36,10 @@ if __name__ == '__main__':
             on_error=lambda err: helpers.raise_error("in main", err))
 
     original_sheet_file_name1 = "data_files/CDD-11_2021-11-23-sorted.csv"
-    new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
-    update_release_table_with_changes(original_sheet_file_name1, rx_output_file, new_updated_table_file1)
+    select_assigned_reqs = "input/new_recs_remaining_todo.csv"
+
+    update_release_table_with_changes(original_sheet_file_name1, rx_output_file, select_assigned_reqs)
+    new_updated_table_file1 = 'input/new_updated_table_for_release.csv'
 
     print(" Now check final output")
     table_ops.diff_tables(original_sheet_file_name1, new_updated_table_file1)

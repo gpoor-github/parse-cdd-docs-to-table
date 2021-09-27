@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # original_sheet_file_name = "sachiyoAugust 23, 2_49 PM - CDD 11.csv"
     original_sheet_file_name1 = "data_files/version_up_there_sorted.csv"
     values_to_use_table_file = 'output/updated_table.csv'
-    # values_to_use_table_file1 = 'output/rx_try14.csv'
+    values_to_use_table_file1 = 'output/rx_build_final.csv'
 
     new_updated_table_file1 = 'output/updated_table_recs_remaining_todo_input_rx.csv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
