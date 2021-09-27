@@ -228,7 +228,7 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self):
-        self.max_matches = 50
+        self.max_matches = 100
         self.match_count = 0
         self.start = time.perf_counter()
         self.end = time.perf_counter()

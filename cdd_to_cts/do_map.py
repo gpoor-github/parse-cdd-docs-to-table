@@ -5,6 +5,7 @@ from cdd_to_cts import static_data, helpers, table_ops, data_sources
 from cdd_to_cts.check_sheet import ReadSpreadSheet
 from cdd_to_cts.react import RxData, my_print
 from cdd_to_cts.update_release import update_release_table_with_changes, make_new_table_with_row_keys_from_table
+from table_ops import update_manual_fields
 
 
 def do_on_complete():
@@ -17,17 +18,21 @@ if __name__ == '__main__':
     created_output = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
     update_output = "output/updated_table.csv"
     scr = data_sources.SourceCrawlerReducer(
-        cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+        cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, # Remember CDD_REQUIREMENTS_FROM_HTML_FILE needs to be download
         global_table_input_file_build_from_html =created_output,
         cts_root_directory=static_data.CTS_SOURCE_ROOT)
-    # The constructor created the file
-    data_sources_table_to_update = "input/new_recs_remaining_todo.csv"
-    result_table = [[str]]
+    result_table:[[str]] = list()
+    # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
+    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, static_data.FILTER_KEYS_DOWNLOADED_TABLE, static_data.FILTERED_TABLE_TO_SEARCH )
 
-    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, static_data.FILTER_KEYS_TODO_TABLE, static_data.FILTERED_TABLE_TO_SEARCH )
+    rx_output_file = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
+
+    try:
+        update_manual_fields(static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT,static_data.FILTERED_TABLE_TO_SEARCH)
+    except:
+        print('Failure expected the first run, when there are no result to copy back with there edits. ')
 
     rd = RxData()
-    rx_output_file ="output/rx_build_final.csv"
     rd.main_do_create_table(input_table_file=static_data.FILTERED_TABLE_TO_SEARCH,
                             output_file=rx_output_file, output_header=static_data.cdd_to_cts_app_header) \
         .subscribe(

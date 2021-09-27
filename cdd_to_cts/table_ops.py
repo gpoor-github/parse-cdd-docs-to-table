@@ -2,7 +2,7 @@ import csv
 import sys
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID, RX_WORKING_OUTPUT_TABLE_TO_EDIT
 
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]], key_to_index_source: dict,
@@ -21,7 +21,6 @@ This will take table_target and update missing values in the specified key_to_in
     """
     missingkeys_target: set = set()
     missingkeys_source: set = set()
-
     for key in key_to_index_target:
         try:
             if not key_to_index_source.get(key) or not key_to_index_target.get(key):
@@ -76,6 +75,14 @@ def merge_tables(file1, file2):
     write_table("output/update_test.cvs", updated_table, static_data.current_cdd_11_header)
     return table1, key_fields1, header1, table2, key_fields2, header2
 
+
+def update_manual_fields(file1, file2):
+    table1, key_fields1, header1, duplicate_rows1 = read_table(file1)
+    table2, key_fields2, header2, duplicate_rows2 = read_table(file2)
+    updated_table, missingkeys1, missingkeys1 = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
+                                                             static_data.update_manual_fields)
+    write_table("output/update_test.cvs", updated_table, static_data.cdd_to_cts_app_header)
+    return table1, key_fields1, header1, table2, key_fields2, header2
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
     if file_name.find(static_data.WORKING_ROOT) == -1:
@@ -333,8 +340,9 @@ if __name__ == '__main__':
     # values_to_use_table_file1 = 'output/final_output_file.csv'
     sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.csv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
+    update_manual_fields(static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT, static_data.FILTERED_TABLE_TO_SEARCH)
 
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(new_updated_table_file1,
-                                                                                       sorted_sheet_does_it_matter)
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables(RX_WORKING_OUTPUT_TABLE_TO_EDIT,
+                                                                                       static_data.FILTERED_TABLE_TO_SEARCH)
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")

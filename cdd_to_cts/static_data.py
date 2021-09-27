@@ -9,11 +9,17 @@ CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 WORKING_ROOT = os.getcwd().replace("cdd_to_cts","") + "/"
 
+# Remember these files must exit before the program is run
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
-DATA_SOURCES_CSV_FROM_HTML_1st = "output/data_sources_csv_from_html_1st.csv"
-DATA_SOURCES_UPDATED_CSV_2nd = "output/data_sources_updated_2nd.csv"
-FILTER_KEYS_TODO_TABLE = 'input/filter_keys_todo_table.csv'
-FILTERED_TABLE_TO_SEARCH = "output/filtered_table_to_search.csv"
+FILTER_KEYS_DOWNLOADED_TABLE = 'input/FILTER_KEYS_DOWNLOADED_TABLE.csv'
+
+
+DATA_SOURCES_CSV_FROM_HTML_1st = "output/DATA_SOURCES_CSV_FROM_HTML_1st.csv"
+DATA_SOURCES_UPDATED_CSV_2nd = "output/DATA_SOURCES_UPDATED_CSV_2nd.csv"
+
+FILTERED_TABLE_TO_SEARCH = "output/FILTERED_TABLE_TO_SEARCH.csv"
+RX_WORKING_OUTPUT_TABLE_TO_EDIT = "output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.csv"
+
 
 
 INPUT_TABLE_FILE_NAME_RX = "output/table_file_for_react_filtered.csv"
@@ -136,6 +142,8 @@ METHOD_TEXT = 'method_text'
 MANUAL_SEARCH_TERMS = 'manual_search_terms'
 SEARCH_TERMS = 'search_terms'
 NOT_SEARCH_TERMS = "NOT_SEARCH_TERMS"
+NOT_METHODS = "NOT_METHODS"
+NOT_FILES = "NOT_FILES"
 SEARCH_ROOTS = 'SEARCH_ROOTS'
 NOT_SEARCH_ROOTS = 'NOT_SEARCH_ROOTS'
 
@@ -156,10 +164,10 @@ PROTECTED = "PROTECTED"
 
 FULL_KEY = 'full_key'
 # Contains all the fields that are used to review and iterate on mappings.
-cdd_to_cts_app_header: [] = (
-    [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE, METHOD_TEXT, FULL_KEY,
-     REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS,  MANUAL_SEARCH_TERMS, NOT_SEARCH_TERMS, MATCHED_TERMS, QUALIFIED_METHOD,
-     MAX_MATCHES, FILE_NAME, MATCHED_FILES, METHODS_STRING, URLS, PROTECTED])
+cdd_to_cts_app_header:[]  = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
+                              METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
+                              NOT_SEARCH_TERMS, NOT_FILES, MATCHED_TERMS, QUALIFIED_METHOD, MAX_MATCHES, FILE_NAME,
+                              MATCHED_FILES, METHODS_STRING, URLS, PROTECTED]
 
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (
@@ -178,6 +186,10 @@ cdd_info_only_header: [] = (
 # Used in several methods that take data from a table cdd_to_cts_app_header header and copy just those columns for release.
 merge_header: [] = (
     [TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE])
+
+# Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
+update_manual_fields: [] = (
+    [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS,NOT_FILES, NOT_METHODS])
 
 
 def set_cts_path():
