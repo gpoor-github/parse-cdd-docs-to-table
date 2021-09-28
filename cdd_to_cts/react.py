@@ -277,7 +277,7 @@ class RxData:
         # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_header:
             import table_ops
-            self.__input_table, self.__input_table_keys, self.__input_header, duplicate_row = table_ops.read_table(
+            self.__input_table, self.__input_table_keys, self.__input_header, duplicate_row = table_ops.read_table_sect_and_req_key(
                 table_dict_file)
         return self.__input_table, self.__input_table_keys, self.__input_header
 
@@ -325,17 +325,17 @@ class RxData:
                 si = full_text_of_file_str.find(matched_terms)
                 is_found = si > 1
                 if is_found:
+                    cts_file_path_name = str(search_info[FILE_NAME]).replace(static_data.CTS_SOURCE_ROOT + "/tests/","")
+                    search_result=search_info.get(SEARCH_RESULT)
+                    if not search_result:
+                        search_result = dict()
+                    search_info[SEARCH_RESULT] = search_result
+                    add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                     for method_text in full_text_of_file_str.split("@Test"):
                         mi = method_text.find(matched_terms)
 
                         if mi > -1:
                             self.match_count +=1
-                            search_result = search_info.get(SEARCH_RESULT)
-                            if not search_result:
-                                search_result = dict()
-                                search_info[SEARCH_RESULT] = search_result
-
-                            cts_file_path_name = str(search_info[FILE_NAME]).replace(static_data.CTS_SOURCE_ROOT+"/tests/","")
                             add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                             add_list_to_count_dict(matched_terms, search_result, MATCHED_TERMS)
                             subset_text = ""
@@ -607,13 +607,13 @@ class RxData:
                              output_file: str = "output/output_built_table.csv",
                              output_header: str = static_data.cdd_to_cts_app_header,
                              scheduler: rx.typing.Scheduler = None):
-        return self.do_search(input_table_file, scheduler).pipe(
+        table_dict, header = self.get_input_table_keyed(input_table_file)
+        return self.do_search( table_dict, header, scheduler).pipe(
             self.get_pipe_create_results_table(),
             ops.map(lambda table: table_ops.write_table(output_file, table, output_header)))
 
-    def do_search(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
-                  scheduler: rx.typing.Scheduler = None):
-        table_dict, header = self.get_input_table_keyed(input_table_file)
+    def do_search(self, table_dict:dict, header:[],scheduler: rx.typing.Scheduler = None):
+
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
                                                             ops.map(lambda
                                                                         full_key_row: created_and_populated_search_info_from_row(
@@ -647,10 +647,11 @@ if __name__ == '__main__':
     output_file_name ="built_from_full_cdd.csv"
 
     input_file_name_s ="input/created_output_w_manual.csv"
+    input_file_name_oplus ="input/input_table_key_index_mod.csv"
 
     output_file_name_s ="built_from_created_output2.csv"
     final_output_file = "output/built_from_created_3.csv"
-    rd.main_do_create_table(static_data.FILTER_KEYS_TODO_TABLE,
+    rd.main_do_create_table(input_file_name_oplus,
                             final_output_file).subscribe(
         on_next=lambda table: my_print("that's all folks!{} "),
         on_completed=lambda: print("completed"),

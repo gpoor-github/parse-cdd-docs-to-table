@@ -54,7 +54,7 @@ def test_get_replay_of_at_test_files():
     rd.get_replay_of_at_test_files().subscribe()
 
 
-class MyTestCase(unittest.TestCase):
+class TestReacItems(unittest.TestCase):
 
     def test_cdd_html_to_requirements_rx(self, ):
         RxData().get_cdd_html_to_requirements("../input/cdd.html").pipe(
@@ -87,7 +87,7 @@ class MyTestCase(unittest.TestCase):
         RxData().get_at_test_method_words(static_data.TEST_FILES_TXT). \
             pipe(ops.map(lambda v: my_print(v)),
                  ops.count()). \
-            subscribe(lambda count: self.assertEqual(count, 964))
+            subscribe(lambda count: self.assertEqual(count, 1270))
 
     def test_get_cdd_html_to_requirements(self, ):
         rd = RxData()
@@ -222,13 +222,15 @@ class MyTestCase(unittest.TestCase):
 
     def test_do_search_unfiltered_on_results(self, ):
         rd = RxData()
-        rd.do_search("input/new_recs_remaining_todo.csv").pipe(
+        table, header = rd.get_input_table_keyed("input/new_recs_remaining_todo.csv")
+        rd.do_search(table, header,).pipe(table, header,
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
             ops.count()).subscribe(lambda count: self.assertEqual(count, 1029))
 
     def test_do_search(self, ):
         rd = RxData()
-        rd.do_search("./input/full_cdd.csv").pipe(
+        table, header = rd.get_input_table_keyed("../input/full_cdd.csv")
+        rd.do_search(table, header).pipe(
             ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
             ops.count()).subscribe(lambda count: self.assertEqual(count, 950))
@@ -237,7 +239,9 @@ class MyTestCase(unittest.TestCase):
     def test_handle_search_results_debug(self, ):
         scheduler = TestScheduler()
         rd = RxData()
-        composed = rd.do_search("input/full_cdd.csv", scheduler=scheduler)
+        table, header = rd.get_input_table_keyed("../input/FILTERED_TABLE_TO_SEARCH.csv")
+
+        composed = rd.do_search(table, header, scheduler=scheduler)
 
         # composed.subscribe()
 
@@ -248,7 +252,7 @@ class MyTestCase(unittest.TestCase):
         disposed = 1400
         results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
         print(results.messages)
-        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-4-1")
+        self.assertRegexpMatches(str(results.messages), "3/A-1-1")
 
         print("done")
 
@@ -258,7 +262,8 @@ class MyTestCase(unittest.TestCase):
 
         # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.cdd_to_cts_app_header)), ops.to_list(),
         #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[])))
-        composed = rd.do_search("./input/full_cdd.csv", scheduler=scheduler).pipe(
+        table, header =rd.get_input_table_keyed("./input/full_cdd.csv")
+        composed = rd.do_search(table, header, scheduler=scheduler).pipe(
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
@@ -290,36 +295,6 @@ class MyTestCase(unittest.TestCase):
         rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: accum(acc, a), seed=list)
                                          ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
 
-    def test_table_dict(self, ):
-        scheduler = TestScheduler()
-        interval_time = 300
-        rd = RxData()
-        table_dict: dict = rd.get_input_table_keyed("test/input/four_line_sparse.csv")
-        pipe = rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda tdict: my_print(tdict,
-                                                                                           "test test_table_dict[{}]\n")))
-
-
-        # .subscribe(lambda key, row: self.assertTupleEqual())
-
-        def create():
-            return pipe
-
-        subscribed = 300
-        disposed = 1800
-        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
-        print(results.messages)
-        self.assertCountEqual("Section,section_id,req_id,requirement".split(','), dict(table_dict).get(HEADER_KEY))
-
-        t0 = (0, ['Section', 'section_id', 'req_id', 'requirement'])
-        r1 = ",3.2.3.5,C-4-1,req-c-4-1".split(',')
-        r2 = ",3.2.3.5,C-5-1,req-c-5-1".split(',')
-        r3 = ",3.2.3.5,C-5-2,req-c-5-2".split(',')
-        r4 = ",3.2.3.5,C-6-1,req-c-6-1".split(',')
-        k1 = "3.2.3.5/C-4-1"
-        k2 = "3.2.3.5/C-5-1"
-        k3 = "3.2.3.5/C-5-2"
-        k4 = "3.2.3.5/C-6-1"
 
         assert results.messages == [
             ReactiveTest.on_next(300, (HEADER_KEY, table_dict.get(HEADER_KEY))),
@@ -333,7 +308,7 @@ class MyTestCase(unittest.TestCase):
     def test_read_table_section_id_one_digit(self, ):
         b = 5
         a = "test/input/one_digit_section_id.csv"
-        table, key_fields, header, duplicate_rows = table_ops.read_table(a, True)
+        table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(a, True)
         print(table)
         self.assertEqual(7, len(table))
         self.assertEqual(1, len(duplicate_rows))
@@ -349,7 +324,9 @@ class MyTestCase(unittest.TestCase):
         scheduler = TestScheduler()
         interval_time = 300
         rd = RxData()
-        pipe = rd.do_search("test/input/four_line_created.csv", scheduler).pipe(
+        table, header = rd.get_input_table_keyed("test/input/four_line_created.csv")
+
+        pipe = rd.do_search(table, header , scheduler).pipe(
             ops.map(lambda count: my_print(count,
                                            "test test_table_dict[{}]\n")))
 

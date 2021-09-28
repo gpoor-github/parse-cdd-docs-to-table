@@ -12,7 +12,7 @@ import time
 
 from cdd_to_cts import helpers
 from cdd_to_cts.static_data import CTS_SOURCE_PARENT, MANUAL_SEARCH_TERMS
-from cdd_to_cts.table_ops import read_table
+from cdd_to_cts.table_ops import read_table_sect_and_req_key
 
 
 def diff_set_of_search_values_against_sets_of_words_from_files(count: int, file_and_path: str, word_set: set,
@@ -68,7 +68,7 @@ class SourceCrawlerReducer(object):
             cdd_requirements_html_source)
         self.create_full_table_from_cdd(global_table_input_file_build_from_html)
 
-        self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table(
+        self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table_sect_and_req_key(
             global_table_input_file_build_from_html)
 
         #    class DataSources:

@@ -8,10 +8,10 @@ from cdd_to_cts import helpers
 def update_release_table_with_changes(target_sheet_file_name: str,
                                       values_to_use_table_file_local: str = "output/updated_table.csv",
                                       new_updated_table_file: str = 'output/new_updated_table_file.csv'):
-    target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table(
+    target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(
         static_data.WORKING_ROOT + target_sheet_file_name)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_target_header, values_to_use_duplicate_rows = \
-        table_ops.read_table(static_data.WORKING_ROOT + values_to_use_table_file_local)
+        table_ops.read_table_sect_and_req_key(static_data.WORKING_ROOT + values_to_use_table_file_local)
 
     updated_table, key_key1, key_key2 = table_ops.update_table(target_table,
                                                                target_table_keys_to_index,
@@ -29,10 +29,10 @@ def update_release_table_with_changes(target_sheet_file_name: str,
 
 
 def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, source_to_use_values: str, table_name_to_write: str):
-    full_before_gvp_sheet_table, full_before_gvp_sheet_table_keys_to_index, full_before_gvp_sheet_header, duplicate_rows1 = table_ops.read_table(
+    full_before_gvp_sheet_table, full_before_gvp_sheet_table_keys_to_index, full_before_gvp_sheet_header, duplicate_rows1 = table_ops.read_table_sect_and_req_key(
         original_sheet_file_name)
 
-    values_to_use_table, values_to_use_table_keys_to_index, values_to_use_full_before_gvp_sheet_header, duplicate_rows2 = table_ops.read_table(
+    values_to_use_table, values_to_use_table_keys_to_index, values_to_use_full_before_gvp_sheet_header, duplicate_rows2 = table_ops.read_table_sect_and_req_key(
         source_to_use_values)
     # merged_columns = static_data_holder.add_keys_only + static_data_holder.merge_header
     updated_table, key_key1, key_key2 = table_ops.update_table(full_before_gvp_sheet_table,
@@ -51,8 +51,8 @@ def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, so
 
 
 def make_new_table_with_row_keys_from_table(original_sheet_file_name: str, rows_to_use_table_file_name: str, table_name_to_write: str):
-    to_update_table,to_update_table_keys_to_index,to_update_header, duplicate_rows1 = table_ops.read_table( original_sheet_file_name)
-    rows_to_use_table_not_needed, rows_to_use_table_keys_to_index, columns_to_use_not_needed, duplicate_rows2 = table_ops.read_table(rows_to_use_table_file_name)
+    to_update_table,to_update_table_keys_to_index,to_update_header, duplicate_rows1 = table_ops.read_table_sect_and_req_key(original_sheet_file_name)
+    rows_to_use_table_not_needed, rows_to_use_table_keys_to_index, columns_to_use_not_needed, duplicate_rows2 = table_ops.read_table_sect_and_req_key(rows_to_use_table_file_name)
     updated_table = table_ops.filter_first_table_by_keys_of_second(to_update_table,to_update_table_keys_to_index,rows_to_use_table_keys_to_index)
     table_ops.write_table(table_name_to_write, updated_table,to_update_header)
     check_update(original_sheet_file_name, table_name_to_write)

@@ -120,49 +120,49 @@ all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).uni
     .union(license_words)
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
-HEADER_KEY = 'HEADER_KEY'
-ROW = "ROW"
-SEARCH_RESULT = 'SEARCH_RESULT'
+HEADER_KEY ='header_key'
+ROW ='row'
+SEARCH_RESULT ='search_result'
 
-SECTION = 'Section'
+SECTION ='section'
 DEFAULT_SECTION_INDEX = 0
 
-SECTION_ID = 'section_id'
+SECTION_ID ='section_id'
 DEFAULT_SECTION_ID_INDEX = 1
 
-REQ_ID = 'req_id'
+REQ_ID ='req_id'
 DEFAULT_REQ_ID_INDEX = 2
 
-REQUIREMENT = 'requirement'
-KEY_AS_NUMBER = 'key_as_number'
+REQUIREMENT ='requirement'
+KEY_AS_NUMBER ='key_as_number'
 TEST_AVAILABILITY = 'Test Availability'
-FILE_NAME = 'file_name'
-PIPELINE_METHOD_TEXT = 'PIPELINE_METHOD_TEXT'
-METHOD_TEXT = 'method_text'
-MANUAL_SEARCH_TERMS = 'manual_search_terms'
-SEARCH_TERMS = 'search_terms'
-NOT_SEARCH_TERMS = "NOT_SEARCH_TERMS"
-NOT_METHODS = "NOT_METHODS"
-NOT_FILES = "NOT_FILES"
-SEARCH_ROOTS = 'SEARCH_ROOTS'
-NOT_SEARCH_ROOTS = 'NOT_SEARCH_ROOTS'
+FILE_NAME ='file_name'
+PIPELINE_METHOD_TEXT ='pipeline_method_text'
+METHOD_TEXT ='method_text'
+MANUAL_SEARCH_TERMS ='manual_search_terms'
+SEARCH_TERMS ='search_terms'
+NOT_SEARCH_TERMS ='not_search_terms'
+NOT_METHODS ='not_methods'
+NOT_FILES ='not_files'
+SEARCH_ROOTS ='search_roots'
+NOT_SEARCH_ROOTS ='not_search_roots'
 
 
-MODULE = 'module'
-METHOD = 'method'
-CLASS_DEF = 'class_def'
-MATCHED_TERMS = 'matched_terms'
-QUALIFIED_METHOD = 'qualified_method'
-URLS = 'urls'
-METHODS_STRING = 'methods_string'
-MATCHED_FILES = 'matched_files'
-MAX_MATCHES = "MAX_MATCHES"
+MODULE ='module'
+METHOD ='method'
+CLASS_DEF ='class_def'
+MATCHED_TERMS ='matched_terms'
+QUALIFIED_METHOD ='qualified_method'
+URLS ='urls'
+METHODS_STRING ='methods_string'
+MATCHED_FILES ='matched_files'
+MAX_MATCHES ='max_matches'
 MAX_MATCHES_DEFAULT = 5
 # Protect a set of columns in the row or the whole row
-PROTECTED = "PROTECTED"
+PROTECTED ='protected'
 
 
-FULL_KEY = 'full_key'
+FULL_KEY ='full_key'
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header:[]  = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
                               METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,

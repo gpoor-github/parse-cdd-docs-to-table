@@ -3,7 +3,7 @@ from unittest import TestCase
 import static_data
 
 
-class Test(TestCase):
+class TestParse(TestCase):
     def test_parse_cdd_html_to_requirements(self):
         full_cdd_html = static_data.WORKING_ROOT+"/input/cdd.html"
 

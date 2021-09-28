@@ -4,7 +4,7 @@ from react import RxData
 from static_data import DEFAULT_SECTION_ID_INDEX
 
 
-class Test(TestCase):
+class TestAddToDict(TestCase):
     def test_add_to_dic(self):
         a_7_line_table = "test/input/section_id_length_one_issue.html"
         rd = RxData()

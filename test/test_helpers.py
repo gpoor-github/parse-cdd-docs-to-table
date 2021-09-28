@@ -4,7 +4,7 @@ import helpers
 import static_data
 
 
-class Test(TestCase):
+class TestHelpers1(TestCase):
     def test_add_list_to_dict(self):
         adic: dict = dict()
         adic['1'] = 'a'
