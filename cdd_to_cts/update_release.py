@@ -7,7 +7,8 @@ from cdd_to_cts import helpers
 
 def update_release_table_with_changes(target_sheet_file_name: str,
                                       values_to_use_table_file_local: str = "output/updated_table.csv",
-                                      new_updated_table_file: str = 'output/new_updated_table_file.csv'):
+                                      new_updated_table_file: str = 'output/new_updated_table_file.csv',
+                                      header_columns_to_copy:[] = static_data.merge_header):
     target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(
         static_data.WORKING_ROOT + target_sheet_file_name)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_target_header, values_to_use_duplicate_rows = \
@@ -18,7 +19,7 @@ def update_release_table_with_changes(target_sheet_file_name: str,
                                                                target_header, values_to_use_table,
                                                                values_to_use_table_keys_to_index,
                                                                values_to_use_target_header,
-                                                               static_data.merge_header)
+                                                               header_columns_to_copy)
 
     # table_ops.compare_tables(updated_table,target_table)
     table_ops.write_table(static_data.WORKING_ROOT + new_updated_table_file, updated_table, target_header)
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     final_output_file = "output/built_from_full_cdd_as_in_for_react.csv"
     select_assigned_reqs = "input/new_recs_remaining_todo.csv"
 
-    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, static_data.FILTER_KEYS_TODO_TABLE,
+    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st,select_assigned_reqs,
                                             static_data.FILTERED_TABLE_TO_SEARCH)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

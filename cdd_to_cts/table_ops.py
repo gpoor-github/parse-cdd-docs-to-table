@@ -115,8 +115,8 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
         # get rid of bad rows
         for i in range(len(table)):
             row = table[i]
-            if  not row[len(row)-1].endswith('\n'):
-                row[len(row) - 1] = row[len(row) - 1]+'\n'
+            # if  not row[len(row)-1].endswith('\n'):
+            #     row[len(row) - 1] = row[len(row) - 1]  +'\n'
             if row and len(row) > 1:
                 table_writer.writerow(row)
             else:
@@ -148,7 +148,7 @@ def read_table_key_at_index(file_name: str, key_index:int, has_header:bool = Tru
                         table.append(row)
                         table_index += 1
                         continue
-                    key_value = {row[key_index]}
+                    key_value = row[key_index].strip()
                     if logging: print(f'At idx {table_index} Key={key_value} row{table_index} {row} ')
                     table.append(row)
                     does_key_existing_index = key_fields.get(key_value)
@@ -223,9 +223,9 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
                     section_id_value = table[table_index][section_id_index].rstrip('.')
                     req_id_value = table[table_index][req_id_index]
                     if len(req_id_value) > 0:
-                        key_value = '{}/{}'.format(section_id_value, req_id_value)
+                        key_value = '{}/{}'.format(section_id_value.strip(), req_id_value.strip())
                     elif len(section_id_value) > 0:
-                        key_value = section_id_value
+                        key_value = section_id_value.strip()
 
                     does_key_existing_index = key_fields.get(key_value)
                     if does_key_existing_index:
@@ -362,13 +362,23 @@ def handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2):
         print(f"No duplicates for  2={file2}")
 
 
-def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file) -> ([[str]], [str]):
+def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file, columns_to_copy_header:[] = []) -> ([[str]], [str]):
     _dif_1_2, _dif_2_1, intersection, dif_1_2_dict, dif_2_1_dict = diff_tables(_file1_for_subset,
                                                                                _file2_for_subset)
     table2_for_subset, key_fields2_for_subset, header2_for_subset, duplicate_rows2 = read_table_sect_and_req_key(_file2_for_subset)
     table_out = list([[str]])
-    for key in intersection:
-        table_out.append(table2_for_subset[key_fields2_for_subset[key]])
+    if len(columns_to_copy_header) == 0:
+        for key in intersection:
+            table_out.append(table2_for_subset[key_fields2_for_subset[key]])
+    else:
+        copy_columns = set(header2_for_subset).intersection(columns_to_copy_header)
+        for key in intersection:
+            row_source = table2_for_subset[key_fields2_for_subset[key]]
+            row_target = list()
+            for copy_column in copy_columns:
+                row_index = list(header2_for_subset).index(copy_column)
+                row_target.append(row_source[row_index])
+            table_out.append(row_target)
 
     write_table(output_file, table_out, header2_for_subset)
     return table_out, header2_for_subset

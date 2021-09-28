@@ -61,13 +61,10 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
 
 
 
-def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str,
-                     header: [] = static_data.cdd_to_cts_app_header) -> dict:
+def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str)-> dict:
     pre_existing_value = None
     if not new_value_to_add:
         return dictionary_with_existing_values
-    if not header.index(key):
-        raise_error(f"add_list_to_dict no key for [{key}] in {str(header)}")
     try:
         pre_existing_value = dictionary_with_existing_values.get(key)
     except Exception as err:
@@ -96,6 +93,8 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
 
     if pre_existing_value:
         if isinstance(pre_existing_value, str) and isinstance(new_value_to_add, str):
+            new_value_to_add = new_value_to_add.strip()
+            pre_existing_value = pre_existing_value.strip()
             dictionary_with_existing_values[key] = f'{pre_existing_value}{separator}{new_value_to_add}'
         elif isinstance(pre_existing_value, set) and isinstance(new_value_to_add, set):
             dictionary_with_existing_values[key] = new_value_to_add.union(pre_existing_value)
@@ -104,7 +103,6 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
         else:
             dictionary_with_existing_values[
                 key] = f'{str(pre_existing_value)}{separator}{str(new_value_to_add)}'
-
     else:
         dictionary_with_existing_values[key] = new_value_to_add
     return dictionary_with_existing_values
@@ -119,6 +117,7 @@ class CountDict():
             return self.count_value_dict
 
         if isinstance(new_value_to_add, str):
+            new_value_to_add = new_value_to_add.strip()
             if self.count_value_dict.get(new_value_to_add):
                 current_count = self.count_value_dict.get(new_value_to_add)
             self.count_value_dict[new_value_to_add] =  current_count+1

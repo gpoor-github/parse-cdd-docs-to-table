@@ -124,7 +124,7 @@ HEADER_KEY ='header_key'
 ROW ='row'
 SEARCH_RESULT ='search_result'
 
-SECTION ='section'
+SECTION ='Section'
 DEFAULT_SECTION_INDEX = 0
 
 SECTION_ID ='section_id'
@@ -137,6 +137,7 @@ REQUIREMENT ='requirement'
 KEY_AS_NUMBER ='key_as_number'
 TEST_AVAILABILITY = 'Test Availability'
 FILE_NAME ='file_name'
+PIPELINE_FILE_NAME ='pipeline_file_name'
 PIPELINE_METHOD_TEXT ='pipeline_method_text'
 METHOD_TEXT ='method_text'
 MANUAL_SEARCH_TERMS ='manual_search_terms'
