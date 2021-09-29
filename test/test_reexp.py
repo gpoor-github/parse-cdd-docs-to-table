@@ -295,6 +295,37 @@ class TestReacItems(unittest.TestCase):
         rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: accum(acc, a), seed=list)
                                          ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
 
+    def test_get_input_table_keyed(self, ):
+        scheduler = TestScheduler()
+        header = ["Section","section_id","req_id","full_key","requirement","manual_search_terms"]
+        rd = RxData()
+
+        table_dict, header = rd.get_input_table_keyed("test/input/get_input_table_key_index_mod.csv,")
+        pipe = rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
+                                                            ops.map(lambda tdict: my_print(tdict,
+                                                                                           "test test_table_dict[{}]\n")))
+
+
+        # .subscribe(lambda key, row: self.assertTupleEqual())
+
+        def create():
+            return pipe
+
+        subscribed = 300
+        disposed = 1800
+        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
+        print(results.messages)
+        self.assertCountEqual("Section,section_id,req_id,requirement".split(','), dict(table_dict).get(HEADER_KEY))
+
+        t0 = (0, ['Section', 'section_id', 'req_id', 'requirement'])
+        r1 = ",3.2.3.5,C-4-1,req-c-4-1".split(',')
+        r2 = ",3.2.3.5,C-5-1,req-c-5-1".split(',')
+        r3 = ",3.2.3.5,C-5-2,req-c-5-2".split(',')
+        r4 = ",3.2.3.5,C-6-1,req-c-6-1".split(',')
+        k1 = "3.2.3.5/C-4-1"
+        k2 = "3.2.3.5/C-5-1"
+        k3 = "3.2.3.5/C-5-2"
+        k4 = "3.2.3.5/C-6-1"
 
         assert results.messages == [
             ReactiveTest.on_next(300, (HEADER_KEY, table_dict.get(HEADER_KEY))),

@@ -80,7 +80,7 @@ def update_manual_fields(file1, file2):
     table1, key_fields1, header1, duplicate_rows1 = read_table_sect_and_req_key(file1)
     table2, key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(file2)
     updated_table, missingkeys1, missingkeys1 = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
-                                                             static_data.update_manual_fields)
+                                                             static_data.update_manual_header)
     write_table("output/update_test.cvs", updated_table, static_data.cdd_to_cts_app_header)
     return table1, key_fields1, header1, table2, key_fields2, header2
 

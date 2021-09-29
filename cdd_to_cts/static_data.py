@@ -167,7 +167,7 @@ FULL_KEY ='full_key'
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header:[]  = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
                               METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
-                              NOT_SEARCH_TERMS, NOT_FILES, MATCHED_TERMS, QUALIFIED_METHOD, MAX_MATCHES, FILE_NAME,
+                              NOT_SEARCH_TERMS, NOT_FILES, MATCHED_TERMS,SEARCH_ROOTS, QUALIFIED_METHOD, MAX_MATCHES, FILE_NAME,
                               MATCHED_FILES, METHODS_STRING, URLS, PROTECTED]
 
 # Used in merge_tables to populate missing fields in the the target release sheets.
@@ -189,7 +189,7 @@ merge_header: [] = (
     [TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE])
 
 # Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
-update_manual_fields: [] = (
+update_manual_header: [] = (
     [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS,NOT_FILES, NOT_METHODS])
 
 

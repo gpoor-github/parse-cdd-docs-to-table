@@ -11,4 +11,4 @@ class TestUpdate(TestCase):
         result_file_name = "output/result_output_from_input.csv"
 
         update_release_table_with_changes(input_file_name, output_file_name, result_file_name,
-                                          static_data.update_manual_fields)
+                                          static_data.update_manual_header)
