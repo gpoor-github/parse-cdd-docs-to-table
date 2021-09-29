@@ -1,4 +1,4 @@
-Section,id,req_id,status,class_def,method,module,filename_line,Bug,,
+Section,section_id,req_id,status,class_def,method,module,filename_line,Bug,,
 Section unknown,7.8.3,,Test Available,com.android.cts.verifier.audio.HifiUltrasoundSpeakerTestActivity,,None,Comment unknown,Bug unknown,/home/gpoor/cts-source/cts//apps/CtsVerifier/src/com/android/cts/verifier/audio/HifiUltrasoundSpeakerTestActivity.java,
 Section unknown,7.8.2.2,H-2-1,Test Available,com.android.cts.verifier.audio.USBAudioPeripheralNotificationsTest,,None,Comment unknown,Bug unknown,/home/gpoor/cts-source/cts//apps/CtsVerifier/src/com/android/cts/verifier/audio/USBAudioPeripheralNotificationsTest.java,
 Section unknown,7.8.2.2,H-3-1,Test Available,com.android.cts.verifier.audio.USBAudioPeripheralNotificationsTest,,None,Comment unknown,Bug unknown,/home/gpoor/cts-source/cts//apps/CtsVerifier/src/com/android/cts/verifier/audio/USBAudioPeripheralNotificationsTest.java,

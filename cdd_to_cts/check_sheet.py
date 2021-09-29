@@ -110,6 +110,6 @@ if __name__ == '__main__':
     sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.csv"
     sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
     sheet_generate_annotations_from_source = "data_files/mapping_output_for_import.csv"
-
-    result_dict, not_found, found = rs.parse_data(sheet_generate_annotations_from_source)
+    mapping_cdd = "input/mapping_output_for_import.csv"
+    result_dict, not_found, found = rs.parse_data(mapping_cdd)
     print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
