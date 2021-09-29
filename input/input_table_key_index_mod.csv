@@ -7,7 +7,7 @@ Section,section_id,req_id,full_key,requirement,manual_search_terms,Area,,CTS tes
 ,7.5     ,H-1-6 ,7.5/H-1-6,"7.5/H-1-6: Startup latency < 500ms, 3000K lighting",,,,,Yes,,,,,,,
 ,7.1.1.1 ,H-1-1 ,7.1.1.1/H-1-1,7.1.1.1/H-1-1: Screen resolution of at least 1080p,,Hardware,,,Yes,,,,,,,
 ,7.1.1.3 ,H-1-1,7.1.1.3/H-1-1,7.1.1.3/H-1-1: Screen density of at least 400 dpi,,,,,Yes,,,,,,,
-,7.6     ,H-1-1 ,7.6/H-1-1,7.6.1/H-1-1: At least 6GB of physical memory,,,,,Yes,,,,,,,
+,7.6.1   ,H-1-1 ,7.6.1/H-1-1,7.6.1/H-1-1: At least 6GB of physical memory,,,,,Yes,,,,,,,
 ,5.1     ,H-1-1 ,5.1/H-1-1,5.1/H-1-1: Advertise the maximum number of hardware video decoder sessions that can be run concurrently in any codec combination,,Media,,,Yes,,,,,,,
 ,5.1     ,H-1-2 ,5.1/H-1-2,"5.1/H-1-2: Support 6 instances of hardware video decoder sessions (AVC, VP8, HEVC, VP9 or later) in any codec combination running concurrently at 720p resolution@30fps.",,,,,Maybe,,,,,,,
 ,5.1     ,H-1-3 ,5.1/H-1-3,5.1/H-1-3: Advertise the maximum number of hardware video encoder sessions that can be run concurrently in any codec combination,,,,,Yes,,,,,,,

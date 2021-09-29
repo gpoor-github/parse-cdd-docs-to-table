@@ -320,8 +320,10 @@ class RxData:
 
                 if not matched_terms:
                     continue
-                number_of_matches = full_text_of_file_str.count(matched_terms)
-                is_found = number_of_matches > 0
+                # File search
+                re_matches_from_file_search =  re.findall(matched_terms,full_text_of_file_str,flags=re.IGNORECASE)# full_text_of_file_str.count(matched_terms)
+
+                is_found =len(re_matches_from_file_search) > 0
                 if is_found:
                     if matched_terms == search_info.get(FULL_KEY):
                         self.is_exact_match = True
@@ -333,14 +335,17 @@ class RxData:
                     search_result[static_data.PIPELINE_FILE_NAME] = file_name
                     add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                     for method_text in full_text_of_file_str.split("@Test"):
-                        index_of_term_in_method = method_text.find(matched_terms)
+                       # index_of_term_in_method = method_text.find(matched_terms)
+                        re_matches_from_method_search = re.findall(matched_terms, method_text,
+                                                                 flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
 
-                        if index_of_term_in_method > -1:
+                        is_found = len(re_matches_from_file_search) > 0
+                        if len(re_matches_from_method_search) > 0:
                             add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                             add_list_to_count_dict(matched_terms, search_result, MATCHED_TERMS)
-                            subset_text = self.find_method_text_subset(index_of_term_in_method, method_text)
+                            subset_text = self.find_method_text_subset(len(re_matches_from_method_search), method_text)
                             # add_list_to_count_dict(subset_text, search_result, static_data.METHOD_TEXT)#," || ")
-                            method_text_str = f"([{number_of_matches}:{cts_file_path_name}]:[{matched_terms}]:[{str(index_of_term_in_method)}]:method_text:[{subset_text}])"
+                            method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_terms}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
                             add_list_to_count_dict(method_text_str, search_result,
                                                    static_data.METHODS_STRING)  # ," || ")
                             search_result[FILE_NAME] = cts_file_path_name
@@ -416,7 +421,7 @@ class RxData:
                     class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
                     add_list_to_count_dict(class_name, search_result, CLASS_DEF)
                     if method.find('Test') != -1 or method.find('test') != -1:
-                        qualified_method = f"{class_name}.{method}"
+                        qualified_method = f"{test_case_name}:{class_name}.{method}"
                         add_list_to_dict(qualified_method, search_result, QUALIFIED_METHOD)
                         self.match_count += 1
                     else:
@@ -663,12 +668,13 @@ class RxData:
         except:
             pass
         self.is_exact_match = False
-        for file_name in list_of_test_files:
-            if not (search_root and len(search_root) > 0 and input_file_name.find(search_root) != -1):
+        for file_to_search in list_of_test_files:
+            # if there is not filter data OR the filter is match search
+            if ((not search_root) or (len(search_root) == 0)) or (file_to_search.find(search_root) != -1):
                 if self.match_count > self.max_matches:
-                    print(f"Note: limiting matches to {self.max_matches} skipping {file_name}")
+                    print(f"Note: limiting matches to {self.max_matches} skipping {file_to_search}")
                 else:
-                    self.execute_search_on_file_for_terms_return_results((search_info, file_name))
+                    self.execute_search_on_file_for_terms_return_results((search_info, file_to_search))
             if self.is_exact_match:
                 break
         return search_info
@@ -698,8 +704,7 @@ if __name__ == '__main__':
         copyfile(static_data.WORKING_ROOT + original_source_csv, static_data.WORKING_ROOT + output_file_name)
         print("Expected first time through")
 
-    rd.main_do_create_table(output_file_name,
-                            output_file_name).subscribe(
+    rd.main_do_create_table("output/output_from_input-5.6.csv","output/output_from_input-5.6_out.csv").subscribe(
         on_next=lambda table: my_print("that's all folks!{} "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))
