@@ -7,7 +7,7 @@ CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
-WORKING_ROOT = os.getcwd().replace("cdd_to_cts","") + "/"
+WORKING_ROOT = os.getcwd().replace("cdd_to_cts","")
 
 # Remember these files must exit before the program is run
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'

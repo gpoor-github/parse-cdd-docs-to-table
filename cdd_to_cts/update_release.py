@@ -59,7 +59,7 @@ def make_new_table_with_row_keys_from_table(original_sheet_file_name: str, rows_
     check_update(original_sheet_file_name, table_name_to_write)
 
 def check_update(original_sheet_file_name, table_name_to_write):
-    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = table_ops.diff_tables(
+    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = table_ops.diff_tables_files(
         original_sheet_file_name, table_name_to_write)
     if len(dif_1_2) != 0 or len(dif_2_1) != 0:
         helpers.raise_error(

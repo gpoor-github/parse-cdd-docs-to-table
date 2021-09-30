@@ -47,7 +47,7 @@ if __name__ == '__main__':
     new_updated_table_file1 = 'input/new_updated_table_for_release.csv'
 
     print(" Now check final output")
-    table_ops.diff_tables(original_sheet_file_name1, new_updated_table_file1)
+    table_ops.diff_tables_files(original_sheet_file_name1, new_updated_table_file1)
 
     rs = ReadSpreadSheet()
     result, not_found, found = rs.parse_data(rx_output_file)

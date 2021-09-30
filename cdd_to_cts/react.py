@@ -280,7 +280,6 @@ class RxData:
         return self.__input_table, self.__input_table_keys, self.__input_header
 
     def get_input_table_keyed(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME_RX):
-        # input_table, input_table_keys_to_index, input_header, duplicate_rows =
         if not self.__input_table_keyed:
             import table_ops
             self.__input_table_keyed, self.__input_header_keyed = table_ops.read_table_to_dictionary(table_dict_file)
@@ -311,21 +310,22 @@ class RxData:
             if len(manual_search_terms) > 0 and len(manual_search_terms[0]) > 1:
                 search_terms = set(search_terms).union(set(manual_search_terms))
             full_text_of_file_str = helpers.read_file_to_string(file_name)
+
+            search_terms.difference_update(static_data.spurious_terms)
             if logging:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
-            search_terms.difference_update(static_data.spurious_terms)
-            for matched_terms in search_terms:
-                matched_terms = matched_terms.strip(' ')
-                matched_terms = matched_terms.strip(')')
+            for matched_term in search_terms:
+                matched_term = matched_term.strip(' ')
 
-                if not matched_terms:
+
+                if not matched_term:
                     continue
                 # File search
-                re_matches_from_file_search =  re.findall(matched_terms,full_text_of_file_str,flags=re.IGNORECASE)# full_text_of_file_str.count(matched_terms)
+                re_matches_from_file_search =  re.findall(re.escape(matched_term),full_text_of_file_str,flags=re.IGNORECASE)# full_text_of_file_str.count(matched_terms)
 
                 is_found =len(re_matches_from_file_search) > 0
                 if is_found:
-                    if matched_terms == search_info.get(FULL_KEY):
+                    if matched_term == search_info.get(FULL_KEY):
                         self.is_exact_match = True
                     cts_file_path_name = str(file_name).replace(static_data.CTS_SOURCE_ROOT + "/tests/", "")
                     search_result = search_info.get(SEARCH_RESULT)
@@ -336,16 +336,16 @@ class RxData:
                     add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                     for method_text in full_text_of_file_str.split("@Test"):
                        # index_of_term_in_method = method_text.find(matched_terms)
-                        re_matches_from_method_search = re.findall(matched_terms, method_text,
+                        re_matches_from_method_search = re.findall(re.escape(matched_term), method_text,
                                                                  flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
 
                         is_found = len(re_matches_from_file_search) > 0
                         if len(re_matches_from_method_search) > 0:
                             add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
-                            add_list_to_count_dict(matched_terms, search_result, MATCHED_TERMS)
+                            add_list_to_count_dict(matched_term, search_result, MATCHED_TERMS)
                             subset_text = self.find_method_text_subset(len(re_matches_from_method_search), method_text)
                             # add_list_to_count_dict(subset_text, search_result, static_data.METHOD_TEXT)#," || ")
-                            method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_terms}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
+                            method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_term}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
                             add_list_to_count_dict(method_text_str, search_result,
                                                    static_data.METHODS_STRING)  # ," || ")
                             search_result[FILE_NAME] = cts_file_path_name
@@ -693,18 +693,18 @@ if __name__ == '__main__':
 
     input_file_name_s = "input/created_output_w_manual.csv"
     input_file_name_oplus = "input/input_table_key_index_mod.csv"
-    input_file_name = "input/output_from_input.csv"
     original_source_csv = "input/input_table_key_index_mod.csv"
     ##  input_file_name ="input/output_from_input.csv"
     test_output_file_name = "output/test_output_from_input.csv"
+    input_file_name = "input/oplus-5.1.csv"
+    output_file_name = "output/oplus-5.1.csv"
 
-    output_file_name = "output/output_from_input.csv"
     input_file = Path(static_data.WORKING_ROOT + output_file_name)
-    if not input_file.exists():
-        copyfile(static_data.WORKING_ROOT + original_source_csv, static_data.WORKING_ROOT + output_file_name)
-        print("Expected first time through")
+    # if not input_file.exists():
+    #     copyfile(static_data.WORKING_ROOT + original_source_csv, static_data.WORKING_ROOT + output_file_name)
+    #     print("Expected first time through")
 
-    rd.main_do_create_table("output/output_from_input-5.6.csv","output/output_from_input-5.6_out.csv").subscribe(
+    rd.main_do_create_table(input_file_name,output_file_name).subscribe(
         on_next=lambda table: my_print("that's all folks!{} "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))

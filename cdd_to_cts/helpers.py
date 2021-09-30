@@ -190,7 +190,7 @@ def make_files_to_string(iterable_file_list: [str]) -> str:
 
 def read_file_to_string(file: str, prepend_path_if_needed: str = CTS_SOURCE_PARENT):
     full_path = file
-    if file.find(prepend_path_if_needed) == -1:
+    if not file.startswith('/') and file.find(prepend_path_if_needed) == -1:
         full_path = prepend_path_if_needed + file
 
     with open(full_path, "r") as text_file:
