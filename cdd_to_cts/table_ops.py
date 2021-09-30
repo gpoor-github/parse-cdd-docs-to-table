@@ -27,16 +27,19 @@ This will take table_target and update missing values in the specified key_to_in
                 continue
             table_index_target = int(key_to_index_target.get(key))
             table_index_source = int(key_to_index_source.get(key))
+            test_target_index_str = ",".join(header_target)
+            test_source_index_str = ",".join(header_source)
             if table_index_target and table_index_source:
                 t_target_row = table_target[table_index_target]
                 t_source_row = table_source[table_index_source]
                 # Section,section_id,req_id
                 for column in columns:
-                    column_target_idx = header_target.index(column)
-                    column_source_idx = header_source.index(column)
-                    # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
-                    #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
-                    t_target_row[column_target_idx] = t_source_row[column_source_idx]
+                    if test_target_index_str.find(column) > -1 and test_source_index_str.find(column)  > -1:
+                        column_target_idx = header_target.index(column)
+                        column_source_idx = header_source.index(column)
+                        # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
+                        #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
+                        t_target_row[column_target_idx] = t_source_row[column_source_idx]
 
                 if t_target_row:
                     table_target[table_index_target] = t_target_row
@@ -86,6 +89,11 @@ def update_manual_fields(input_table :[[str]], input_key_fields: dict, input_hea
         except ValueError:
             updated_header.append(column)
 
+    added_column_count = len(updated_header) - len(input_table[0])
+    for row in input_table:
+        for index in range(0,added_column_count+1):
+            row.append("")
+    input_table[0] =updated_header
     updated_table, missingkeys1, missingkeys1 = update_table( input_table, input_key_fields, updated_header, table_source, key_fields_source, input_header,
                                                              manual_fields_header)
     return updated_table, updated_header

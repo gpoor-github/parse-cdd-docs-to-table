@@ -29,7 +29,7 @@ class TestRxData(TestCase):
         # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
 
 
-    def test_update_table(self):
+    def test_update_manual_fields(self):
         input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
         output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_update_manual_fields_test.csv"
         table1_org, key_fields1_org, header1_org, duplicate_rows1_org= read_table_sect_and_req_key(input_file_to_be_updated_with_manual_terms)
