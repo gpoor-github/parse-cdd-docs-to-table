@@ -60,8 +60,7 @@ def process_requirement_text(text_for_requirement_value: str, previous_value: st
         return value
 
 
-
-def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str)-> dict:
+def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str) -> dict:
     pre_existing_value = None
     if not new_value_to_add:
         return dictionary_with_existing_values
@@ -72,12 +71,12 @@ def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_value
 
     if not pre_existing_value:
         dictionary_with_existing_values[key] = CountDict()
-    if isinstance(dictionary_with_existing_values.get(key),CountDict):
-        count_dict:CountDict = dictionary_with_existing_values[key]
+    if isinstance(dictionary_with_existing_values.get(key), CountDict):
+        count_dict: CountDict = dictionary_with_existing_values[key]
         count_dict.add_to_count_dict(new_value_to_add)
 
-
     return dictionary_with_existing_values
+
 
 def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str, separator=' ',
                      header: [] = static_data.cdd_to_cts_app_header) -> dict:
@@ -107,11 +106,12 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
         dictionary_with_existing_values[key] = new_value_to_add
     return dictionary_with_existing_values
 
+
 class CountDict():
     def __init__(self):
         self.count_value_dict = dict()
 
-    def add_to_count_dict(self, new_value_to_add: Any) -> dict[str,int]:
+    def add_to_count_dict(self, new_value_to_add: Any) -> dict[str, int]:
         current_count = 0
         if not new_value_to_add:
             return self.count_value_dict
@@ -120,14 +120,15 @@ class CountDict():
             new_value_to_add = new_value_to_add.strip()
             if self.count_value_dict.get(new_value_to_add):
                 current_count = self.count_value_dict.get(new_value_to_add)
-            self.count_value_dict[new_value_to_add] =  current_count+1
+            self.count_value_dict[new_value_to_add] = current_count + 1
         elif isinstance(new_value_to_add, list) or isinstance(new_value_to_add, set):
-              for value in new_value_to_add:
-                  self.add_to_count_dict(value)
+            for value in new_value_to_add:
+                self.add_to_count_dict(value)
         else:
             helpers.raise_error(f"Bad type add_to_count_dict {new_value_to_add}")
 
         return self.count_value_dict
+
 
 def find_urls(text_to_scan_urls: str):
     return " ".join(set(re.findall(find_url_re_str, text_to_scan_urls)))
@@ -217,6 +218,15 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
         return record_id_string.rstrip(']').lstrip('>')
     else:
         return None
+
+
+def find_valid_path(file_name: str) -> str:
+    if file_name.find(static_data.WORKING_ROOT) == -1:
+        if not static_data.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
+            file_name = static_data.WORKING_ROOT + '/' + file_name
+        else:
+            file_name = static_data.WORKING_ROOT + file_name
+    return file_name
 
 
 def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_CASE_MODULES,

@@ -76,12 +76,19 @@ def merge_tables(file1, file2):
     return table1, key_fields1, header1, table2, key_fields2, header2
 
 
-def update_manual_fields(input_table :[[str]], input_key_fields: dict,  manual_data_source_file_name:str,
-                         input_header:[str] = static_data.cdd_info_only_header, manual_fields_header:[str]=static_data.update_manual_header):
-    table2, key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(manual_data_source_file_name)
-    updated_table, missingkeys1, missingkeys1 = update_table(input_table, input_key_fields, input_header, table2, key_fields2, header2,
-                                                             static_data.update_manual_header)
-    return input_table, input_key_fields, input_header, table2, key_fields2, header2
+def update_manual_fields(input_table :[[str]], input_key_fields: dict, input_header:[str],  manual_data_source_file_name:str,
+                       manual_data_source_header:[str]=None, manual_fields_header:[str]=static_data.update_manual_header):
+    table_source, key_fields_source, header_source, duplicate_rows_source = read_table_sect_and_req_key(manual_data_source_file_name,manual_data_source_header)
+    updated_header = input_header
+    for column in manual_fields_header:
+        try:
+            updated_header.index(column)
+        except ValueError:
+            updated_header.append(column)
+
+    updated_table, missingkeys1, missingkeys1 = update_table( input_table, input_key_fields, updated_header, table_source, key_fields_source, input_header,
+                                                             manual_fields_header)
+    return updated_table, updated_header
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
     if file_name.find(static_data.WORKING_ROOT) == -1:

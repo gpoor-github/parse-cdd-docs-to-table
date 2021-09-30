@@ -205,7 +205,7 @@ def created_and_populated_search_info_from_row(full_key_row: [], header: []):
         if manual_search_terms != "":
             add_list_to_dict(manual_search_terms, search_info, MANUAL_SEARCH_TERMS)
             search_term_set.update(set(manual_search_terms.split(' ')))
-        # ToDo disabled search for anything but cdd java_object search_term_set.update(java_objects)
+        search_term_set.update(java_objects)
         search_info[static_data.SEARCH_TERMS] = search_term_set
 
     except Exception as err:
