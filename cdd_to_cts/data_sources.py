@@ -1,7 +1,7 @@
 import os
 import random
 from cdd_to_cts.helpers import convert_version_to_number, convert_version_to_number_from_full_key
-from table_ops import write_table, update_table
+from table_ops import write_table
 from cdd_to_cts import class_graph, persist, static_data
 from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, \
     parse_cdd_html_to_requirements, make_bags_of_word

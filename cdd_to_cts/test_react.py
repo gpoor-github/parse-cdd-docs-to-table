@@ -33,10 +33,12 @@ class TestRxData(TestCase):
         input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
         output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_update_manual_fields_test.csv"
         table1_org, key_fields1_org, header1_org, duplicate_rows1_org= read_table_sect_and_req_key(input_file_to_be_updated_with_manual_terms)
+        update_header:[str] = list()
 
         updated_table, update_header = update_manual_fields(table1_org, key_fields1_org, header1_org, output_file_to_take_as_input_for_update)
+        self.assertEqual("Yes 1 manual_search_terms",updated_table[1][update_header.index(static_data.MANUAL_SEARCH_TERMS)])
+        self.assertEqual("Yes inputfile 2",updated_table[2][update_header.index("input_file_ex1")])
 
-        table_ops.write_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/test_update_table.csv",updated_table,update_header)
 
     def test_play2_re_search(self):
         logging = True

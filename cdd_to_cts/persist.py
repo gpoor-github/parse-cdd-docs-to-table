@@ -4,7 +4,6 @@
 import json
 import pickle
 
-from cdd_to_cts import static_data
 from helpers import find_valid_path
 
 

@@ -4,7 +4,6 @@ import sys
 import traceback
 from typing import Any
 
-import helpers
 from cdd_to_cts import static_data
 from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_object_re_str, java_defines_str, \
     all_words_to_skip, CTS_SOURCE_PARENT
@@ -107,7 +106,7 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
     return dictionary_with_existing_values
 
 
-class CountDict():
+class CountDict:
     def __init__(self):
         self.count_value_dict = dict()
 
@@ -125,7 +124,7 @@ class CountDict():
             for value in new_value_to_add:
                 self.add_to_count_dict(value)
         else:
-            helpers.raise_error(f"Bad type add_to_count_dict {new_value_to_add}")
+            raise_error(f"Bad type add_to_count_dict {new_value_to_add}")
 
         return self.count_value_dict
 

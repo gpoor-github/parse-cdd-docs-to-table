@@ -133,6 +133,9 @@ DEFAULT_SECTION_ID_INDEX = 1
 REQ_ID ='req_id'
 DEFAULT_REQ_ID_INDEX = 2
 
+FULL_KEY ='full_key'
+DEFAULT_FULL_KEY_INDEX= 3
+
 REQUIREMENT ='requirement'
 KEY_AS_NUMBER ='key_as_number'
 TEST_AVAILABILITY = 'Test Availability'
@@ -163,7 +166,6 @@ MAX_MATCHES_DEFAULT = 5
 PROTECTED ='protected'
 
 
-FULL_KEY ='full_key'
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header:[]  = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
                               METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,

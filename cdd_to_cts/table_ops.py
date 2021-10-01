@@ -2,10 +2,11 @@ import csv
 import sys
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID, RX_WORKING_OUTPUT_TABLE_TO_EDIT
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID, RX_WORKING_OUTPUT_TABLE_TO_EDIT, HEADER_KEY
 
 
-def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]], key_to_index_source: dict,
+def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],
+                 key_to_index_source: dict,
                  header_source: [str],
                  columns: [str]):
     """
@@ -34,7 +35,7 @@ This will take table_target and update missing values in the specified key_to_in
                 t_source_row = table_source[table_index_source]
                 # Section,section_id,req_id
                 for column in columns:
-                    if test_target_index_str.find(column) > -1 and test_source_index_str.find(column)  > -1:
+                    if test_target_index_str.find(column) > -1 and test_source_index_str.find(column) > -1:
                         column_target_idx = header_target.index(column)
                         column_source_idx = header_source.index(column)
                         # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
@@ -49,14 +50,14 @@ This will take table_target and update missing values in the specified key_to_in
                 else:
                     missingkeys_target.add(key)
         except Exception as err:
-            print (f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+            print(
+                f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
 
     return table_target, missingkeys_target, missingkeys_source
 
 
-
-def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_target: dict,  key_indexes_to_use: dict):
-    new_table:[[str]] = list()
+def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_target: dict, key_indexes_to_use: dict):
+    new_table: [[str]] = list()
     for key in key_indexes_to_use:
         try:
             if not key_to_index_target.get(key):
@@ -66,9 +67,11 @@ def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_tar
             new_table.append(t_target_row)
 
         except Exception as err:
-            print (f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+            print(
+                f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
 
     return new_table
+
 
 def merge_tables(file1, file2):
     table1, key_fields1, header1, duplicate_rows1 = read_table_sect_and_req_key(file1)
@@ -79,9 +82,12 @@ def merge_tables(file1, file2):
     return table1, key_fields1, header1, table2, key_fields2, header2
 
 
-def update_manual_fields(input_table :[[str]], input_key_fields: dict, input_header:[str],  manual_data_source_file_name:str,
-                       manual_data_source_header:[str]=None, manual_fields_header:[str]=static_data.update_manual_header):
-    table_source, key_fields_source, header_source, duplicate_rows_source = read_table_sect_and_req_key(manual_data_source_file_name,manual_data_source_header)
+def update_manual_fields(input_table: [[str]], input_key_fields: dict, input_header: [str],
+                         manual_data_source_file_name: str,
+                         manual_data_source_header: [str] = None,
+                         manual_fields_header: [str] = static_data.update_manual_header) -> ([[str]], [str]):
+    table_source, key_fields_source, header_source, duplicate_rows_source = read_table_sect_and_req_key(
+        manual_data_source_file_name, manual_data_source_header)
     updated_header = input_header
     for column in manual_fields_header:
         try:
@@ -91,12 +97,14 @@ def update_manual_fields(input_table :[[str]], input_key_fields: dict, input_hea
 
     added_column_count = len(updated_header) - len(input_table[0])
     for row in input_table:
-        for index in range(0,added_column_count+1):
+        for index in range(0, added_column_count + 1):
             row.append("")
-    input_table[0] =updated_header
-    updated_table, missingkeys1, missingkeys1 = update_table( input_table, input_key_fields, updated_header, table_source, key_fields_source, input_header,
+    input_table[0] = updated_header
+    updated_table, missingkeys1, missingkeys1 = update_table(input_table, input_key_fields, updated_header,
+                                                             table_source, key_fields_source, header_source,
                                                              manual_fields_header)
     return updated_table, updated_header
+
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
     if file_name.find(static_data.WORKING_ROOT) == -1:
@@ -104,30 +112,14 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
 
     with open(file_name, 'w', newline='') as csv_output_file:
         table_writer = csv.writer(csv_output_file)
-        try:
-            section_id_index = table[0].index(SECTION_ID)
-            req_id_index = table[0].index(REQ_ID)
-            print(f'write_table Found header for {file_name} names are {", ".join(table[0])}')
-            if header:
-                print(f'Warning  overwriting header with {", ".join(header)}')
-                table[0] = header
-        except  IndexError as ie:
-            if header:
-                section_id_index = header.index(SECTION_ID)
-                req_id_index = header.index(REQ_ID)
-                print(f'Warning no row 0 in table just writing header {str(ie)} {", ".join(header)}',file=sys.stderr)
-                table_writer.writerow(header)
-            else:
-                print(f"error handling finding header for table{file_name}  first row nothing to write", file=sys.stderr)
-        except (AttributeError, ValueError):
-            if header:
-                section_id_index = header.index(SECTION_ID)
-                req_id_index = header.index(REQ_ID)
-                table_writer.writerow(header)
-            else:
-                print(f"error handling finding header for table{file_name}  first row", file=sys.stderr)
+        found_header = find_header(table,header)
+        start_index = 0
+        if found_header:
+            table_writer.writerow(found_header)
+            start_index += 1
+
         # get rid of bad rows
-        for i in range(len(table)):
+        for i in range(start_index, len(table)):
             row = table[i]
             # if  not row[len(row)-1].endswith('\n'):
             #     row[len(row) - 1] = row[len(row) - 1]  +'\n'
@@ -139,8 +131,88 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
     return table
 
 
-def read_table_key_at_index(file_name: str, key_index:int, has_header:bool = True, logging: bool = True) -> [[[str]], dict[str, int], [str], dict[str, str]]:
+def find_key_indices(table: [[str]]) -> (int, int):
+    section_id_index = static_data.DEFAULT_SECTION_ID_INDEX
+    req_id_index = static_data.DEFAULT_REQ_ID_INDEX
+    try:
+        section_id_index = table[0].index(SECTION_ID)
+        req_id_index = table[0].index(REQ_ID)
+        print(f'write_table indexes names sect {section_id_index}/{req_id_index}')
+    except  (AttributeError, ValueError, IndexError) as ie:
+        print(f"error handling finding header for table first row nothing to write", file=sys.stderr)
+    return section_id_index, req_id_index
 
+
+def find_full_key_index(table: [[str]]) -> int:
+    full_key_index = static_data.DEFAULT_FULL_KEY_INDEX
+    try:
+        full_key_index = table[0].index(static_data.FULL_KEY)
+        req_id_index = table[0].index(REQ_ID)
+        print(f' indexes names sect {full_key_index}')
+    except  (AttributeError, ValueError, IndexError) as ie:
+        print(f"error handling finding header for table first row nothing to write", file=sys.stderr)
+    return full_key_index
+
+
+def find_header(table: [[str]],header:[str])->[str]:
+    try:
+        table[0].index(SECTION_ID)
+        table[0].index(REQ_ID)
+        header = table[0]
+        print(f'write_table Found header, names are {", ".join(table[0])}')
+    except  (AttributeError, ValueError, IndexError) as ie:
+        print(f'No row 0 in table just writing use the one passed im header {str(ie)} {", ".join(header)}')
+    return header
+
+
+def convert_to_table_with_index_dict(table_keyed: dict[str, str], header: [str], logging: bool = True) -> (
+[[str]], dict[str, int], [str]):
+    index_table: [[str]] = list()
+    table_index_dict: dict = dict()
+
+    if table_keyed.get(HEADER_KEY):
+        header = table_keyed.get(HEADER_KEY)
+    index_table.append(header)
+
+    table_index = 1
+    for key in table_keyed:
+        if key == HEADER_KEY:
+            continue
+        row = table_keyed.get(key)
+        index_table.append(row)
+        table_index_dict[key] = table_index
+        table_index += 1
+    return index_table, table_index_dict, header
+
+
+def convert_to_keyed_table_dict(input_table: [[str]], input_header: [str], logging: bool = True) -> (
+[[str]], dict[str, int], [str]):
+    table_dict_req_ids_to_rows: dict = dict()
+    found_header = find_header(input_table, None)# So we know if we should advance a row or not.
+    full_key_index = find_full_key_index(input_table)
+    table_index = 0
+    if found_header:
+        table_dict_req_ids_to_rows[HEADER_KEY] = found_header
+        table_index += 1
+    elif input_header:
+        table_dict_req_ids_to_rows[HEADER_KEY] = found_header
+        table_index += 1
+    else:
+        print("Waring No header convert_to_keyed_table_dict ", file=sys.stderr)
+
+    for table_index in range(1, len(input_table)):
+        row = input_table[table_index]
+        key = row[full_key_index]
+        table_dict_req_ids_to_rows[key] = row
+    return table_dict_req_ids_to_rows, found_header
+
+
+def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = True, logging: bool = True) -> [[[str]],
+                                                                                                               dict[
+                                                                                                                   str, int],
+                                                                                                               [str],
+                                                                                                               dict[
+                                                                                                                   str, str]]:
     if file_name.find(static_data.WORKING_ROOT) == -1:
         file_name = static_data.WORKING_ROOT + file_name
     table = []
@@ -176,7 +248,8 @@ def read_table_key_at_index(file_name: str, key_index:int, has_header:bool = Tru
                 except IndexError as e:
                     helpers.raise_error(f"Index error {file_name} idx {table_index}  -= {type(e)} value {str(e)}...")
                 except Exception as e1:
-                    helpers.raise_error(f"General exception  {file_name} idx {table_index} -= {type(e1)} exiting..{str(e1)}")
+                    helpers.raise_error(
+                        f"General exception  {file_name} idx {table_index} -= {type(e1)} exiting..{str(e1)}")
 
                 # end for rows
 
@@ -191,7 +264,9 @@ def read_table_key_at_index(file_name: str, key_index:int, has_header:bool = Tru
         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     return table, key_fields, header, duplicate_rows
 
-def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str]], dict[str, int], [str], dict[str, str]]:
+
+def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str]], dict[str, int], [str],
+                                                                           dict[str, str]]:
     """],
 
     :rtype: {[[str]],dict,[]}
@@ -271,7 +346,6 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     return table, key_fields, header, duplicate_rows
 
-
     # find urls that may help find the tests for the requirement
 
 
@@ -284,8 +358,7 @@ def read_table_to_dictionary(file_name: str, logging: bool = False) -> (dict, []
     return table_dictionary, header
 
 
-
-def read_table_to_dictionary_key_index(file_name: str, key_index:int, logging: bool = False) -> (dict, []):
+def read_table_to_dictionary_key_index(file_name: str, key_index: int, logging: bool = False) -> (dict, []):
     table_dictionary = dict()
     table, key_fields, header, duplicate_rows = read_table_key_at_index(file_name, key_index, logging)
     for key in key_fields:
@@ -293,10 +366,12 @@ def read_table_to_dictionary_key_index(file_name: str, key_index:int, logging: b
 
     return table_dictionary, header
 
+
 def diff_tables_files(file1, file2):
     table1, _key_fields1, header1, duplicate_rows1 = read_table_sect_and_req_key(file1)
     table2, _key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(file2)
-    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables( table1, _key_fields1, table2, _key_fields2)
+    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables(table1, _key_fields1,
+                                                                                             table2, _key_fields2)
 
     report_diff(_key_fields1, _key_fields2, dif_1_2, dif_1_2_dict_content, dif_2_1, dif_2_1_dict_content,
                 duplicate_rows1, duplicate_rows2, file1, file2, header1, header2, intersection)
@@ -332,7 +407,7 @@ def report_diff(_key_fields1, _key_fields2, dif_1_2, dif_1_2_dict_content, dif_2
     print(f"Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}  ")
 
 
-def diff_tables( table1, _key_fields1, table2, _key_fields2):
+def diff_tables(table1, _key_fields1, table2, _key_fields2):
     file1 = "File1"
     file2 = "File2"
 
@@ -388,10 +463,12 @@ def handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2):
         print(f"No duplicates for  2={file2}")
 
 
-def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file, columns_to_copy_header) -> ([[str]], [str]):
+def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file, columns_to_copy_header) -> (
+[[str]], [str]):
     _dif_1_2, _dif_2_1, intersection, dif_1_2_dict, dif_2_1_dict = diff_tables_files(_file1_for_subset,
                                                                                      _file2_for_subset)
-    table2_for_subset, key_fields2_for_subset, header2_for_subset, duplicate_rows2 = read_table_sect_and_req_key(_file2_for_subset)
+    table2_for_subset, key_fields2_for_subset, header2_for_subset, duplicate_rows2 = read_table_sect_and_req_key(
+        _file2_for_subset)
     table_out = list([[str]])
     if len(columns_to_copy_header) == 0:
         for key in intersection:
@@ -445,9 +522,10 @@ if __name__ == '__main__':
     # values_to_use_table_file1 = 'output/final_output_file.csv'
     sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.csv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
-    #update_manual_fields(static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT, static_data.FILTERED_TABLE_TO_SEARCH)
+    # update_manual_fields(static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT, static_data.FILTERED_TABLE_TO_SEARCH)
 
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(RX_WORKING_OUTPUT_TABLE_TO_EDIT,
-                                                                                             static_data.FILTERED_TABLE_TO_SEARCH)
+    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
+        RX_WORKING_OUTPUT_TABLE_TO_EDIT,
+        static_data.FILTERED_TABLE_TO_SEARCH)
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")

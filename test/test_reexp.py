@@ -134,23 +134,103 @@ class TestReacItems(unittest.TestCase):
 
     match = False
 
-    def does_match_item(self, target: str, o_term: rx.Observable) -> bool:
-        # val = term.lock
-        val = True
-        o_term.pipe(ops.map(lambda v: my_print(v, "a{}")), ops.to_list(), ops.map(lambda v: my_print(v, "b{}")),
-                    ops.filter(lambda term: RxData().predicate(term)), ops.flat_map(rx.just(False)))
-        return self.match
-        # term = o_term.pipe(ops.first(),o
+    # def predicate(self, target) -> bool:
+    #     # print("predicate " + str(target))
+    #     result = self.execute_search_on_file_for_terms_return_results(target)
+    #     if result.get(SEARCH_RESULT):
+    #         self.result_subject.on_next(result)
+    #         return True
+    #     return False
+    # def does_match_item(self, target: str, o_term: rx.Observable) -> bool:
+    #     # val = term.lock
+    #     val = True
+    #     o_term.pipe(ops.map(lambda v: my_print(v, "a{}")), ops.to_list(), ops.map(lambda v: my_print(v, "b{}")),
+    #                 ops.filter(lambda term: RxData().predicate(term)), ops.flat_map(rx.just(False)))
+    #     return self.match
+    #     # term = o_term.pipe(ops.first(),o
+    #
+    #     # if target.find(term) > -1:
+    #     #     print(f"does_match_item term {term}")
+    #     #     return rx.just(target)
+    #     # else:
+    #     #     return rx.empty()
+    #
+    # # def test_rx_find(self, ):
+    # #     rd = RxData()
+    # #     rd.get_replay_of_at_test_files().pipe(ops.find(predicate2)).subscribe()
+    # def get_replay_read_table(self, file_name: str = static_data.INPUT_TABLE_FILE_NAME_RX) -> [ReplaySubject,
+    #                                                                                            ReplaySubject]:
+    #
+    #     if self.__replay_input_table and self.__replay_header:
+    #         return self.__replay_input_table, self.__replay_header
+    #     else:
+    #         self.__replay_input_table = ReplaySubject(1500)
+    #         self.__replay_header = ReplaySubject(50)
+    #
+    #     section_id_index = 1
+    #     req_id_index = 2
+    #     duplicate_rows: [str, str] = dict()
+    #     if file_name.find(static_data.WORKING_ROOT) == -1:
+    #         file_name = static_data.WORKING_ROOT + file_name
+    #     try:
+    #         with open(file_name) as csv_file:
+    #
+    #             csv_reader_instance: [str] = csv.reader(csv_file, delimiter=',')
+    #             table_index = 0
+    #
+    #             for row in csv_reader_instance:
+    #                 if table_index == 0:
+    #                     try:
+    #                         section_id_index = row.index(SECTION_ID)
+    #                         req_id_index = row.index(REQ_ID)
+    #                         print(f'Found header for {file_name} names are {", ".join(row)}')
+    #                         self.__replay_header.on_next(row)
+    #                         self.__replay_header.on_completed()
+    #                         table_index += 1
+    #
+    #                         # Skip the rest of the loop... if there is an exception carry on and get the first row
+    #                         continue
+    #                     except ValueError:
+    #                         message = f' Error: First row NOT header {row} default to section_id = col 1 and req_id col 2. First row of file {csv_file} should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
+    #                         print(message)
+    #                         raise SystemExit(message)
+    #                         # Carry on and get the first row
+    #
+    #                 # Section,section_id,req_id
+    #                 section_id_value = row[section_id_index].rstrip('.')
+    #                 req_id_value = row[req_id_index]
+    #                 if len(req_id_value) > 0:
+    #                     key_value = '{}/{}'.format(section_id_value, req_id_value)
+    #                 elif len(section_id_value) > 0:
+    #                     key_value = section_id_value
+    #
+    #                 self.__replay_input_table.on_next(f'{key_value}:{row}')
+    #
+    #             if len(duplicate_rows) > 0:
+    #                 print(
+    #                     f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
+    #
+    #         self.__replay_input_table.on_completed()
+    #
+    #         return self.__replay_input_table, self.__replay_header
+    #     except IOError as e:
+    #         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+    #
+    # def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
+    #                               cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+    #                               scheduler: rx.typing.Scheduler = None) -> rx.Observable:
+    #
+    #     table_dic = observable_to_dict(self.get_replay_read_table(input_table_file)[0])
+    #     return self.get_cdd_html_to_requirements(cdd_requirements_file, scheduler) \
+    #         .pipe(ops.filter(lambda v: table_dic.get(str(v).split(':', 1)[0])))
 
-        # if target.find(term) > -1:
-        #     print(f"does_match_item term {term}")
-        #     return rx.just(target)
-        # else:
-        #     return rx.empty()
-
-    # def test_rx_find(self, ):
-    #     rd = RxData()
-    #     rd.get_replay_of_at_test_files().pipe(ops.find(predicate2)).subscribe()
+    # def init_input_table(self, table_dict_file=static_data.INPUT_TABLE_FILE_NAME_RX):
+    #     # input_table, input_table_keys_to_index, input_header, duplicate_rows =
+    #     if not self.__input_header:
+    #         import table_ops
+    #         self.__input_table, self.__input_table_keys, self.__input_header, duplicate_row = table_ops.read_table_sect_and_req_key(
+    #             table_dict_file)
+    #     return self.__input_table, self.__input_table_keys, self.__input_header
 
     def test_replay_simple_at_test_file_only(self, ):
         start = time.perf_counter()
@@ -222,14 +302,14 @@ class TestReacItems(unittest.TestCase):
 
     def test_do_search_unfiltered_on_results(self, ):
         rd = RxData()
-        table, header = rd.get_input_table_keyed("input/new_recs_remaining_todo.csv")
+        table, header = rd.init_input_table_keyed("input/new_recs_remaining_todo.csv")
         rd.do_search(table, header,).pipe(table, header,
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
             ops.count()).subscribe(lambda count: self.assertEqual(count, 1029))
 
     def test_do_search(self, ):
         rd = RxData()
-        table, header = rd.get_input_table_keyed("../input/full_cdd.csv")
+        table, header = rd.init_input_table_keyed("../input/full_cdd.csv")
         rd.do_search(table, header).pipe(
             ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
@@ -239,7 +319,7 @@ class TestReacItems(unittest.TestCase):
     def test_handle_search_results_debug(self, ):
         scheduler = TestScheduler()
         rd = RxData()
-        table, header = rd.get_input_table_keyed("../input/FILTERED_TABLE_TO_SEARCH.csv")
+        table, header = rd.init_input_table_keyed("../input/FILTERED_TABLE_TO_SEARCH.csv")
 
         composed = rd.do_search(table, header, scheduler=scheduler)
 
@@ -262,7 +342,7 @@ class TestReacItems(unittest.TestCase):
 
         # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.cdd_to_cts_app_header)), ops.to_list(),
         #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[])))
-        table, header =rd.get_input_table_keyed("./input/full_cdd.csv")
+        table, header =rd.init_input_table_keyed("./input/full_cdd.csv")
         composed = rd.do_search(table, header, scheduler=scheduler).pipe(
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
@@ -300,7 +380,7 @@ class TestReacItems(unittest.TestCase):
         header = ["Section","section_id","req_id","full_key","requirement","manual_search_terms"]
         rd = RxData()
 
-        table_dict, header = rd.get_input_table_keyed("test/input/get_input_table_key_index_mod.csv,")
+        table_dict, header = rd.init_input_table_keyed("test/input/get_input_table_key_index_mod.csv,")
         pipe = rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
                                                             ops.map(lambda tdict: my_print(tdict,
                                                                                            "test test_table_dict[{}]\n")))
@@ -355,7 +435,7 @@ class TestReacItems(unittest.TestCase):
         scheduler = TestScheduler()
         interval_time = 300
         rd = RxData()
-        table, header = rd.get_input_table_keyed("test/input/four_line_created.csv")
+        table, header = rd.init_input_table_keyed("test/input/four_line_created.csv")
 
         pipe = rd.do_search(table, header , scheduler).pipe(
             ops.map(lambda count: my_print(count,
