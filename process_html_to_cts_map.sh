@@ -38,9 +38,9 @@ fi
 # This script should be run in CTS source directory.
 echo this is what was entered $ctsdir
 #/home/gpoor/cts-source/cts
-echo grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/tests/* > input_scripts/test-files.txt
-grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/tests/* > input_scripts/test-files.txt
+echo grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_scripts/test-files.txt
+grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_scripts/test-files.txt
 
-echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/tests/* > input_scripts/testcases-modules.txt
-grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/tests/* > input_scripts/testcases-modules.txt
+echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_scripts/testcases-modules.txt
+grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_scripts/testcases-modules.txt
 python3 ./cdd_to_cts/do_map.py

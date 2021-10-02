@@ -2,7 +2,9 @@ import csv
 import json
 import os
 
-from static_data import CTS_SOURCE_ROOT
+from cdd_to_cts import static_data
+from helpers import find_valid_path
+from static_data import CTS_SOURCE_ROOT, SECTION_ID, REQ_ID
 
 
 def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) -> bool:
@@ -24,9 +26,9 @@ def check_for_file_and_method(file_name_from_class: str, method_value: str, file
                 else:
                     file_name_to_result[file_name_from_class] = method_value + " Failed reason: Method not found"
 
-        except:
+        except Exception as err:
             print(" Could not open " + file_name_from_class)
-            file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found"
+            file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found "+str(err)
     return False
 
 
@@ -62,7 +64,10 @@ class ReadSpreadSheet:
         table = []
         header = []
         self.crawl()
+        ccd_csv_file_name = find_valid_path(ccd_csv_file_name)
+
         with open(ccd_csv_file_name) as csv_file:
+            print(f"Openned {ccd_csv_file_name}")
             csv_reader = csv.reader(csv_file, delimiter=',')
             line_count = 0
 
@@ -77,8 +82,8 @@ class ReadSpreadSheet:
                     table_index = line_count - 1
                     # Section,section_id,req_id
                     section_value = table[table_index][header.index("Section")]
-                    section_id_value = table[table_index][header.index("section_id")]
-                    req_id_value = table[table_index][header.index("req_id")]
+                    section_id_value = table[table_index][header.index(SECTION_ID)]
+                    req_id_value = table[table_index][header.index(REQ_ID)]
                     class_def_value = table[table_index][header.index("class_def")]
                     method_value = table[table_index][header.index("method")]
                     module_value = table[table_index][header.index("module")]
@@ -96,10 +101,15 @@ class ReadSpreadSheet:
             print("End for loop")
             print('No files {}'.format(self.not_found_count))
             print('Files {}'.format(self.found_count))
-            return self.file_name_to_result
+            return self.file_name_to_result, self.not_found_count, self.found_count
 
 
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
-    result: dict = rs.parse_data('input/created_output.csv')
-    print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
+    final_output = 'output/built_from_created2.csv'
+    sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.csv"
+    sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
+    sheet_generate_annotations_from_source = "data_files/mapping_output_for_import.csv"
+    mapping_cdd = "input/mapping_output_for_import.csv"
+    result_dict, not_found, found = rs.parse_data(mapping_cdd)
+    print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
