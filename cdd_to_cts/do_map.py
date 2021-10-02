@@ -5,7 +5,6 @@ from cdd_to_cts import static_data, helpers, table_ops, data_sources
 from cdd_to_cts.check_sheet import ReadSpreadSheet
 from cdd_to_cts.react import RxData, my_print
 from cdd_to_cts.update_release import update_release_table_with_changes, make_new_table_with_row_keys_from_table
-from table_ops import update_manual_fields
 
 
 def do_on_complete():
@@ -26,11 +25,6 @@ if __name__ == '__main__':
     make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, static_data.FILTER_KEYS_DOWNLOADED_TABLE, static_data.FILTERED_TABLE_TO_SEARCH )
 
     rx_output_file = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
-
-    try:
-        update_manual_fields(static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT,static_data.FILTERED_TABLE_TO_SEARCH)
-    except:
-        print('Failure expected the first run, when there are no result to copy back with there edits. ')
 
     rd = RxData()
     rd.main_do_create_table(input_table_file=static_data.FILTERED_TABLE_TO_SEARCH,

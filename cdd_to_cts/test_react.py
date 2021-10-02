@@ -1,5 +1,4 @@
 import re
-from pathlib import Path
 from unittest import TestCase
 
 import helpers
@@ -7,8 +6,6 @@ import static_data
 import table_ops
 from react import RxData, my_print
 from table_ops import update_manual_fields, read_table_sect_and_req_key
-
-
 
 
 class TestRxData(TestCase):

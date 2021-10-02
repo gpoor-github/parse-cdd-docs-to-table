@@ -3,7 +3,6 @@
 import os
 import re
 
-import static_data
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import process_requirement_text, find_java_objects, find_urls, build_composite_key, \
     find_full_key, bag_from_text, remove_non_determinative_words, find_valid_path

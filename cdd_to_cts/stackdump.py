@@ -1,8 +1,9 @@
 #  Block to comment
 from __future__ import print_function
-from itertools import chain
+
 import traceback
-import sys
+from itertools import chain
+
 
 def stackdump(id='', msg='HERE'):
     print('ENTERING STACK_DUMP' + (': '+id) if id else '')

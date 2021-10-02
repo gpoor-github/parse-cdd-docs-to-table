@@ -2,7 +2,6 @@ import csv
 import json
 import os
 
-from cdd_to_cts import static_data
 from helpers import find_valid_path
 from static_data import CTS_SOURCE_ROOT, SECTION_ID, REQ_ID
 
