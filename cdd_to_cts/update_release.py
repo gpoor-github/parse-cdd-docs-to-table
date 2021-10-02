@@ -63,8 +63,7 @@ def check_update(original_sheet_file_name, table_name_to_write):
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = table_ops.diff_tables_files(
         original_sheet_file_name, table_name_to_write)
     if len(dif_1_2) != 0 or len(dif_2_1) != 0:
-        helpers.raise_error(
-            f"Error: diff 1-2{len(dif_1_2)} 2-1{dif_2_1} Original table and updated table should have same number of row/keys")
+      print(f"Warning: diff 1-2{len(dif_1_2)} 2-1{dif_2_1} Original table and updated table should have same number of row/keys")
     elif len(dif_1_2_dict_content) == 0 or len(dif_2_1_dict_content) == 0:
         helpers.raise_error(f"Error: NO difference from update... you should figure out why Original ")
     else:

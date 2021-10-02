@@ -555,22 +555,18 @@ class RxData:
 
     def main_do_create_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
                              output_file: str = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT,
-                             output_header: str = static_data.cdd_to_cts_app_header,
                              scheduler: rx.typing.Scheduler = None):
         self.__input_table_keyed, self.__input_header_keyed = self.init_input_table_keyed(input_table_file)
 
         return self.do_search(self.__input_table_keyed, self.__input_header_keyed, scheduler).pipe(
             self.get_pipe_create_results_table(),
-            ops.map(lambda table: table_ops.write_table(output_file, table, output_header)))
+            ops.map(lambda table: table_ops.write_table(output_file, table, self.__input_header_keyed)))
 
     def do_search(self, table_dict: dict, header: [], scheduler: rx.typing.Scheduler = None):
 
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda
-                                                                        full_key_row: created_and_populated_search_info_from_row(
-                                                                full_key_row, header)),
-                                                            ops.map(
-                                                                lambda search_info: self.search_on_files(search_info)))
+                                                            ops.map(lambda full_key_row: created_and_populated_search_info_from_row(full_key_row, header)),
+                                                            ops.map(lambda search_info: self.search_on_files(search_info)))
 
     def search_on_files(self, search_info, logging: bool = True):
         list_of_test_files = self.get_list_of_at_test_files()
@@ -611,13 +607,8 @@ if __name__ == '__main__':
     rd.max_matches = 200
     result_table = [[str]]
 
-    input_file_name_s = "input/created_output_w_manual.csv"
-    input_file_name_oplus = "input/input_table_key_index_mod.csv"
-    original_source_csv = "input/input_table_key_index_mod.csv"
-    ##  input_file_name ="input/output_from_input.csv"
-    test_output_file_name = "output/test_output_from_input.csv"
-    input_file_name = "input/oplus-5.1.csv"
-    output_file_name = "output/oplus-5.1.csv"
+    input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
+    output_file_name = "output/rx_new_recs_remaining_todo.csv"
 
     input_file = Path(static_data.WORKING_ROOT + output_file_name)
 

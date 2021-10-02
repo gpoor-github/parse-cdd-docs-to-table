@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     rd = RxData()
     rd.main_do_create_table(input_table_file=static_data.FILTERED_TABLE_TO_SEARCH,
-                            output_file=rx_output_file, output_header=static_data.cdd_to_cts_app_header) \
+                            output_file=rx_output_file) \
         .subscribe(
             on_next=lambda table: my_print(table, "that's all folks!{} "),
             on_completed=lambda:  do_on_complete(),

@@ -1,3 +1,5 @@
+#  Block to comment
+
 import os
 import re
 
@@ -32,11 +34,17 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
             cdd_section_id_search_results = re.search(section_re_str, section)
             if not cdd_section_id_search_results:
                 continue
-
             cdd_section_id = cdd_section_id_search_results[0]
             cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
             cdd_section_id = cdd_section_id.replace('_', '.')
-            section_to_section_data[cdd_section_id] = str(cdd_section_id_search_results[0]).replace("\"", "")
+            section_re = "\. ([\w \.]*)\s*"# _([a-zA-Z_]+)"
+            section_to_section_data[cdd_section_id] = cdd_section_id
+            section_text_result = re.search(section_re,section)
+            if section_text_result:
+                section_text = section_text_result[0]
+                section_text = section_text.strip()
+                section_to_section_data[cdd_section_id] = f'{section_to_section_data[cdd_section_id]} {section_text}'
+
             if '13' == cdd_section_id:
                 # section 13 is "Contact us" and has characters that cause issues at lest for git
                 print(f"Warning skipping section 13 {section}")
@@ -167,3 +175,6 @@ def make_bags_of_word(root_cts_source_directory):
                         i += 1
 
     return files_to_words_local, method_to_words_local, files_to_method_calls_local
+
+if __name__ == '__main__':
+    parse_cdd_html_to_requirements()
