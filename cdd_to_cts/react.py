@@ -259,22 +259,22 @@ class RxData:
         self.__replay_header = None
         self.__replay_at_test_files_to_methods = None
         self.__replay_cdd_requirements = None
-
-    def cdd_html_to_requirements_csv(self, html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-                                     output_file="output/htm_to_cdd.csv") -> rx.Observable:
-        html_file = helpers.find_valid_path(html_file)
-        output_file = helpers.find_valid_path(output_file)
-
-        return self.get_cdd_html_to_requirements(html_file).pipe(
-            ops.filter(lambda key_req: not key_req or len(key_req) < 2),
-            ops.map(lambda key_req: build_dict(key_req)),
-            ops.map(lambda v: build_row(v,
-                                        static_data.cdd_info_only_header)),
-            ops.to_list(),
-            ops.map(
-                lambda table: write_table(output_file,
-                                          table,
-                                          static_data.cdd_info_only_header)))
+    # Not in use
+    # def cdd_html_to_requirements_csv(self, html_file :str,
+    #                                  output_file: str) -> rx.Observable:
+    #     html_file = helpers.find_valid_path(html_file)
+    #     output_file = helpers.find_valid_path(output_file)
+    #
+    #     return self.get_cdd_html_to_requirements(html_file).pipe(
+    #         ops.filter(lambda key_req: not key_req or len(key_req) < 2),
+    #         ops.map(lambda key_req: build_dict(key_req)),
+    #         ops.map(lambda v: build_row(v,
+    #                                     static_data.cdd_info_only_header)),
+    #         ops.to_list(),
+    #         ops.map(
+    #             lambda table: write_table(output_file,
+    #                                       table,
+    #                                       static_data.cdd_info_only_header)))
 
     def init_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
         self.__test_case_dict = build_test_cases_module_dictionary(table_dict_file)

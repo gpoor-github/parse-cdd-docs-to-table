@@ -98,7 +98,6 @@ def update_manual_fields(input_table: [[str]], input_key_fields: dict, input_hea
     for row in input_table:
         for index in range(len(row), len(updated_header)):
             row.append(f"{index} of {updated_header[index] }")
-    input_table[0] = updated_header
     updated_table, missingkeys1, missingkeys1 = update_table(input_table, input_key_fields, updated_header,
                                                              table_source, key_fields_source, header_source,
                                                              manual_fields_header)
@@ -389,7 +388,7 @@ def report_diff(_key_fields1, _key_fields2, dif_1_2, dif_1_2_dict_content, dif_2
     print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict_content)} diff= [{dif_2_1_dict_content}]")
     print(f"See block above Difference  2st-1nd={len(dif_2_1)}  f2=[{file2}] 1st f1=[{file1}]")
     print("Differences in shared rows ends... can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n\n")
-    print(f"\n\nIntersection={len(intersection)} 1=[{file1}] ^ 2=[{file2}")
+    print(f"\n\nIntersection={len(intersection)} =[{intersection}]")
     print(f"\nDifference 1st-2nd={len(dif_1_2)} [{file1}] - 2=[{file2}]  diff={dif_1_2}")
     print(f"\nDifference 2nd-1st={len(dif_2_1)} [{file2}] - 1=[{file1}] diff={dif_2_1}\n")
     header_set1 = set(header1)
@@ -527,6 +526,6 @@ if __name__ == '__main__':
 
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
     x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
-        RX_WORKING_OUTPUT_TABLE_TO_EDIT,
-        static_data.FILTERED_TABLE_TO_SEARCH)
+        _file1_sachiyo_recent,
+        "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.csv")
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")

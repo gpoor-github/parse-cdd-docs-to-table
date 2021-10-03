@@ -3,7 +3,7 @@ import unittest
 from typing import Any
 
 import rx
-from rx import operators as ops
+from rx import operators as ops, pipe
 from rx.testing import TestScheduler, ReactiveTest
 
 from cdd_to_cts import static_data, helpers, react, table_ops
@@ -66,8 +66,7 @@ class TestReacItems(unittest.TestCase):
     def test_filtered_cdd_by_table(self, ):
         scheduler = TestScheduler()
         rd = RxData()
-        composed = rd.get_pipe_create_results_table("./input/four_line_sparse.csv", "./input/short_cdd_html_3-2-4-5.html",
-                                                scheduler=scheduler)
+        composed = pipe( rd.get_pipe_create_results_table())
 
         # composed.subscribe()
 
@@ -87,7 +86,7 @@ class TestReacItems(unittest.TestCase):
         RxData().get_at_test_method_words(static_data.TEST_FILES_TXT). \
             pipe(ops.map(lambda v: my_print(v)),
                  ops.count()). \
-            subscribe(lambda count: self.assertEqual(count, 1270))
+            subscribe(lambda count: self.assertEqual(count, 964))
 
     def test_get_cdd_html_to_requirements(self, ):
         rd = RxData()
@@ -106,7 +105,7 @@ class TestReacItems(unittest.TestCase):
         a_7_line_table = "test/input/section_id_length_one_issue.html"
 
         rd = RxData()
-        rd.cdd_html_to_requirements_csv(a_7_line_table). \
+        rd.get_cdd_html_to_requirements((a_7_line_table,"../output/a_test.cvs")). \
             subscribe(lambda table_dict: self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX]))
         # table_ops.write_table("output/try_table1.csv", table, header=static_data.cdd_to_cts_app_header)
         # my_print2(table_dict) write_table("output/try_table1.csv", table_dict, static_data.cdd_to_cts_app_header)
@@ -118,8 +117,8 @@ class TestReacItems(unittest.TestCase):
             .pipe(ops.filter(lambda wv: not wv or len(str(wv).split(':')) < 2), ops.map(lambda v: my_print(v)),
                   ops.to_dict(key_mapper=lambda key_req: key_req.split(':')[0],
                               element_mapper=lambda key_req: build_dict(key_req))
-                          #    ,ops.map(  lambda tdict: react.write_table_from_dictionary(tdict,"output/tdict.csv")),
-                  ,ops.map(lambda v: my_print2(v))).subscribe(
+                  #    ,ops.map(  lambda tdict: react.write_table_from_dictionary(tdict,"output/tdict.csv")),
+                  , ops.map(lambda v: my_print2(v))).subscribe(
             lambda table_dict: self.assertEqual(1, len(dict(table_dict).keys())))
 
     # Callable[[TState, T1], TState]
@@ -247,7 +246,7 @@ class TestReacItems(unittest.TestCase):
         search_info_in['full_key'] = '9.16/C-1-1'
         expected = {'secure', 'screen', 'lock', 'verification'}
         search_info = created_and_populated_search_info_from_row(search_info_in,
-                                                                         "test/input/test_manual_search.csv")
+                                                                 "test/input/test_manual_search.csv")
         self.assertEqual(expected, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
     def test_manual_search_terms_bad_key(self, ):
@@ -255,30 +254,52 @@ class TestReacItems(unittest.TestCase):
         search_info_in = dict()
         search_info_in['full_key'] = '99.16/x-1-1'
         search_info = created_and_populated_search_info_from_row(search_info_in,
-                                                                         "test/input/test_manual_search.csv")
+                                                                 "test/input/test_manual_search.csv")
         self.assertEqual(None, search_info.get(static_data.MANUAL_SEARCH_TERMS))
 
     def test_auto_search_terms(self, ):
         key_req = "2.2.1/H-7-11:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
         expected = {'2.2.1', 'FHD', 'WSXGA', 'H-7-11'}
         key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
-        search_info = react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)
+        header = ['Section', 'section_id', 'req_id',  'requirement','Test Availability', 'class_def', 'method', 'module',
+                  'method_text', 'full_key', 'requirement', 'key_as_number', 'search_terms', 'manual_search_terms',
+                  'not_search_terms', 'not_files', 'matched_terms', 'search_roots', 'qualified_method', 'max_matches',
+                  'file_name', 'matched_files', 'methods_string', 'urls', 'protected', 'Area', 'Shortened',
+                  'Test Level']
+        row = ('3/A-1-1', ['3 . Software', '3', 'A-1-1', '">3/A-1-1] MUST NOT attach special privileges to system application\'s use of these properties; or prevent third-party applications from using these properties. [<a href="#3_0_intro""',
+                           '03000000.650101', "{'3', 'A-1-1'}", '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+                           ''])
+
+        search_info = react.created_and_populated_search_info_from_row(row,header)
 
         key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
         key_req2 = helpers.cleanhtml(key_req2)
+        rd = RxData()
         self.assertEqual(expected,
-                         react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req2).get(
-                             SEARCH_TERMS))
+                         search_info.get( SEARCH_TERMS))
         self.assertEqual("2.2.1/H-7-11", search_info.get(FULL_KEY))
 
     def test_all_search_terms(self, ):
         rd = RxData()
+        header = ['Section', 'section_id', 'req_id', 'Test Availability', 'class_def', 'method', 'module', 'method_text',
+         'full_key', 'requirement', 'key_as_number', 'search_terms', 'manual_search_terms', 'not_search_terms',
+         'not_files', 'matched_terms', 'search_roots', 'qualified_method', 'max_matches', 'file_name', 'matched_files',
+         'methods_string', 'urls', 'protected', 'Area', 'Shortened', 'Test Level']
         key_req = "9.16/C-1-1:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
         expected = {'9.16', 'FHD', 'WSXGA', 'C-1-1'}
+        file_to_search = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/EncoderInitializationLatencyTest.java"
+
+        row = ('3/A-1-1', ['3 . Software', '3', 'A-1-1', '', '', '', '', '', '3/A-1-1',
+                           '">3/A-1-1] MUST NOT attach special privileges to system application\'s use of these properties; or prevent third-party applications from using these properties. [<a href="#3_0_intro""',
+                           '03000000.650101', "{'3', 'A-1-1'}", '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+                           ''])
+
+        search_info = created_and_populated_search_info_from_row(row,header )
         # search_info = react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)
+        rd.execute_search_on_file_for_terms_return_results((search_info,file_to_search))
         expected_manual = {'secure', 'screen', 'lock', 'verification'}
-        rx.just(key_req).pipe(
-            ops.map(lambda req: react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)),
+        rx.just((search_info,file_to_search)).pipe(
+            ops.map(lambda dict_and_file: rd.execute_search_on_file_for_terms_return_results(dict_and_file)),
             ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
                                                                                            "test/input/test_manual_search.csv")),
             ops.map(lambda search_info: self.assertEqual(expected_manual,
@@ -302,24 +323,24 @@ class TestReacItems(unittest.TestCase):
 
     def test_do_search_unfiltered_on_results(self, ):
         rd = RxData()
-        table, header = rd.init_input_table_keyed("input/new_recs_remaining_todo.csv")
-        rd.do_search(table, header,).pipe(table, header,
-            ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 1029))
+        table, header = rd.init_input_table_keyed("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/new_recs_remaining_todo.csv")
+        rd.do_search(table, header, ).pipe(
+                                           ops.map(lambda req: my_print(req, "test_do_search[{}]")),
+                                           ops.count()).subscribe(lambda count: self.assertEqual(count, 1029))
 
     def test_do_search(self, ):
         rd = RxData()
-        table, header = rd.init_input_table_keyed("/input/full_cdd.csv")
+        table, header = rd.init_input_table_keyed("/input/four_line_created.csv")
         rd.do_search(table, header).pipe(
             ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
             ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(count, 950))
+            ops.count()).subscribe(lambda count: self.assertEqual(950,count ))
 
     # 2264 != 2266
     def test_handle_search_results_debug(self, ):
         scheduler = TestScheduler()
         rd = RxData()
-        table, header = rd.init_input_table_keyed("../input/FILTERED_TABLE_TO_SEARCH.csv")
+        table, header = rd.init_input_table_keyed("../input/four_line_created.csv")
 
         composed = rd.do_search(table, header, scheduler=scheduler)
 
@@ -342,13 +363,13 @@ class TestReacItems(unittest.TestCase):
 
         # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.cdd_to_cts_app_header)), ops.to_list(),
         #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[])))
-        table, header =rd.init_input_table_keyed("./input/full_cdd.csv")
+        table, header = rd.init_input_table_keyed("../input/four_line_created.csv")
         composed = rd.do_search(table, header, scheduler=scheduler).pipe(
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
             ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
-                                                                                           "test/input/test_manual_search.csv")),
+                                                                                   "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results_local: rd.find_data_for_csv_dict(dict())),
             ops.map(
@@ -377,14 +398,13 @@ class TestReacItems(unittest.TestCase):
 
     def test_get_input_table_keyed(self, ):
         scheduler = TestScheduler()
-        header = ["Section","section_id","req_id","full_key","requirement","manual_search_terms"]
+        header = ["Section", "section_id", "req_id", "full_key", "requirement", "manual_search_terms"]
         rd = RxData()
 
         table_dict, header = rd.init_input_table_keyed("input/input_table_key_index_mod.csv")
         pipe = rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
                                                             ops.map(lambda tdict: my_print(tdict,
                                                                                            "test test_table_dict[{}]\n")))
-
 
         # .subscribe(lambda key, row: self.assertTupleEqual())
 
@@ -395,7 +415,7 @@ class TestReacItems(unittest.TestCase):
         disposed = 1800
         results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
         print(results.messages)
-        self.assertCountEqual("Section,section_id,req_id,requirement".split(','), dict(table_dict).get(HEADER_KEY))
+#        self.assertCountEqual("Section,section_id,req_id,requirement".split(','), dict(table_dict).get(HEADER_KEY))
 
         t0 = (0, ['Section', 'section_id', 'req_id', 'requirement'])
         r1 = ",3.2.3.5,C-4-1,req-c-4-1".split(',')
@@ -437,7 +457,7 @@ class TestReacItems(unittest.TestCase):
         rd = RxData()
         table, header = rd.init_input_table_keyed("test/input/four_line_created.csv")
 
-        pipe = rd.do_search(table, header , scheduler).pipe(
+        pipe = rd.do_search(table, header, scheduler).pipe(
             ops.map(lambda count: my_print(count,
                                            "test test_table_dict[{}]\n")))
 

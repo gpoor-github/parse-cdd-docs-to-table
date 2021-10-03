@@ -164,13 +164,15 @@ MAX_MATCHES ='max_matches'
 MAX_MATCHES_DEFAULT = 5
 # Protect a set of columns in the row or the whole row
 PROTECTED ='protected'
-
+AREA='Area'
+SHORTENED ='Shortened'
+TEST_LEVEL= 'Test Level'
 
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header:[]  = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
                               METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
                               NOT_SEARCH_TERMS, NOT_FILES, MATCHED_TERMS,SEARCH_ROOTS, QUALIFIED_METHOD, MAX_MATCHES, FILE_NAME,
-                              MATCHED_FILES, METHODS_STRING, URLS, PROTECTED]
+                              MATCHED_FILES, METHODS_STRING, URLS, PROTECTED, AREA, SHORTENED,TEST_LEVEL]
 
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (

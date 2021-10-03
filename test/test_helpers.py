@@ -5,39 +5,34 @@ import static_data
 
 
 class TestHelpers1(TestCase):
+
+    def test_clean_html(self):
+        test_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/small_html_sample_with_http_anchor.html"
+        html_str = helpers.read_file_to_string(test_file)
+        self.assertTrue(html_str.find("</a>") != -1)
+        self.assertTrue(html_str.find("<title>" ) != -1)
+        self.assertTrue(html_str.find("<!DOCTYPE html>" ) != -1)
+        self.assertTrue(html_str.find("<a href=") != -1)
+        self.assertTrue(html_str.find("7_1_display_and_graphics" ) != -1)
+        html_str =  helpers.cleanhtml(html_str)
+        self.assertFalse(html_str.find("</a>" ) != -1)
+        self.assertFalse(html_str.find("<title>" ) != -1)
+        self.assertFalse(html_str.find("<!DOCTYPE html>" ) != -1)
+        self.assertFalse(html_str.find("<a href=""#7_1_display_and_graphics"">7.1</a>.1.1/H-0-1] MUST have at least" ) != -1)
+        self.assertFalse(html_str.find("7_1_display_and_graphics" ) != -1)
+        self.assertTrue(html_str.find(" MUST have at least" ) != -1)
+        self.assertFalse(html_str.find("href" ) != -1)
+
+
+
     def test_add_list_to_dict(self):
-        adic: dict = dict()
-        adic['1'] = 'a'
-        adic['2'] = 'c'
+        a_dict: dict = dict()
+        a_dict['1'] = 'a'
+        a_dict['2'] = 'c'
+        header = ['1']
         from cdd_to_cts.helpers import add_list_to_dict
-        adic = add_list_to_dict("b", adic, '1')
-        self.assertEqual('a b', adic.get('1'))
-
-    def test_cleanhtml(self):
-        self.fail()
-
-    def test_find_full_key(self):
-        self.fail()
-
-    def test_remove_n_spaces_and_commas(self):
-        self.fail()
-
-    def test_bag_from_text(self):
-        self.fail()
-
-
-    def test_convert_version_to_number_from_full_key(self):
-        self.fail()
-
-    def test_convert_version_to_number(self):
-        self.fail()
-
-    def test_raise_error(self):
-        self.fail()
-
-    def test_process_requirement_text(self):
-        self.fail()
-
+        a_dict = add_list_to_dict("b", a_dict, '1', header= header)
+        self.assertEqual('a b', a_dict.get('1'))
 
     def test_add_to_count_dict_add_sets_helper(self):
         search_results = dict()
@@ -45,7 +40,7 @@ class TestHelpers1(TestCase):
         b="b"
         c="c"
         s1 = {a, b}
-        s2 = set({c,b})
+        s2 = {c, b}
         helpers.add_list_to_count_dict(s1,search_results,static_data.MATCHED_TERMS)
         cd = search_results.get(static_data.MATCHED_TERMS)
         self.assertEqual(1,cd.count_value_dict.get(a))
@@ -68,8 +63,7 @@ class TestHelpers1(TestCase):
         b="b"
         c="c"
         s1 = {a, b}
-        s2 = set({c,b})
-        count_dictionary = dict()
+        s2 = {c, b}
         cd.add_to_count_dict(s1)
         self.assertEqual(1,cd.count_value_dict.get(a))
         self.assertEqual(1,cd.count_value_dict.get(b))
@@ -85,32 +79,9 @@ class TestHelpers1(TestCase):
     def test_add_to_count_dict_add_2(self):
         cd2 = helpers.CountDict()
         a="a"
-        b="b"
-        count_dictionary = dict()
         cd2.add_to_count_dict(a)
         self.assertEqual(1,cd2.count_value_dict.get(a))
         cd2.add_to_count_dict(a)
         self.assertEqual(2,cd2.count_value_dict.get(a))
-        cd2 = None
-
-    def test_find_urls(self):
-        self.fail()
-
-    def test_find_java_objects(self):
-        self.fail()
-
-    def test_find_section_id(self):
-        self.fail()
-
-    def test_make_files_to_string(self):
-        self.fail()
-
-    def test_read_file_to_string(self):
-        self.fail()
-
-    def test_build_composite_key(self):
-        self.fail()
 
 
-    def test_build_test_cases_module_dictionary(self):
-        self.fail()

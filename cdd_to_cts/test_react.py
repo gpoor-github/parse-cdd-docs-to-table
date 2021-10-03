@@ -31,14 +31,15 @@ class TestRxData(TestCase):
     def test_convert_unconvert(self):
         input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
         output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_for_manual_fields.csv"
-        __input_table_keyed, __input_header_keyed = table_ops.read_table_to_dictionary(input_file_to_be_updated_with_manual_terms)
+        __input_table_keyed, __input_header_keyed = table_ops.read_table_to_dictionary(
+            input_file_to_be_updated_with_manual_terms)
 
         table, table_index_dict, output_header = table_ops.convert_to_table_with_index_dict(__input_table_keyed,
                                                                                             __input_header_keyed)
         updated_table, updated_header = table_ops.update_manual_fields(table, table_index_dict, output_header,
                                                                        output_file_to_take_as_input_for_update)
-        input_table_keyed,input_header_keyed = table_ops.convert_to_keyed_table_dict(updated_table,
-                                                                                                    updated_header)
+        input_table_keyed, input_header_keyed = table_ops.convert_to_keyed_table_dict(updated_table,
+                                                                                      updated_header)
         self.assertEqual("Yes 1 manual_search_terms",
                          input_table_keyed.get("5.1/H-1-1")[input_header_keyed.index(static_data.MANUAL_SEARCH_TERMS)])
         self.assertEqual("Yes inputfile 2",
@@ -47,13 +48,17 @@ class TestRxData(TestCase):
     def test_update_manual_fields(self):
         input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
         output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_update_manual_fields_test.csv"
-        table1_org, key_fields1_org, header1_org, duplicate_rows1_org= read_table_sect_and_req_key(input_file_to_be_updated_with_manual_terms)
-        update_header:[str] = list()
+        table1_org, key_fields1_org, header1_org, duplicate_rows1_org = read_table_sect_and_req_key(
+            input_file_to_be_updated_with_manual_terms, static_data.update_manual_header)
+        update_header: [str] = [static_data.cdd_info_only_header]
 
-        updated_table, update_header = update_manual_fields(table1_org, key_fields1_org, header1_org, output_file_to_take_as_input_for_update)
-        table_ops.write_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/test_update_table.csv",updated_table,update_header)
-        self.assertEqual("Yes 1 manual_search_terms",updated_table[1][update_header.index(static_data.MANUAL_SEARCH_TERMS)])
-        self.assertEqual("Yes inputfile 2",updated_table[2][update_header.index("input_file_ex1")])
+        updated_table, update_header = update_manual_fields(table1_org, key_fields1_org, header1_org,
+                                                            output_file_to_take_as_input_for_update, update_header)
+        table_ops.write_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/test_update_table.csv",
+                              updated_table, update_header)
+        self.assertEqual("Yes 1 manual_search_terms",
+                         updated_table[0][update_header.index(static_data.MANUAL_SEARCH_TERMS)])
+        self.assertEqual("Yes inputfile 2", updated_table[1][update_header.index("input_file_ex1")])
 
     def test_update_manual_fields_from_main(self):
 
@@ -64,10 +69,13 @@ class TestRxData(TestCase):
         input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
         output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_update_manual_fields_test_2.csv"
 
-        rd.main_do_create_table(input_file_to_be_updated_with_manual_terms, output_file_to_take_as_input_for_update).subscribe(
-            on_next=lambda table: my_print(f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
+        rd.main_do_create_table(input_file_to_be_updated_with_manual_terms,
+                                output_file_to_take_as_input_for_update).subscribe(
+            on_next=lambda table: my_print(
+                f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
             on_completed=lambda: print("completed"),
             on_error=lambda err: helpers.raise_error("in main", err))
+
     def test_update_manual_field_new_approach(self):
 
         rd = RxData()
@@ -77,12 +85,12 @@ class TestRxData(TestCase):
         input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
         output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_update_manual_fields_test_2.csv"
 
-        rd.main_do_create_table(input_file_to_be_updated_with_manual_terms, output_file_to_take_as_input_for_update).subscribe(
-            on_next=lambda table: my_print(f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
+        rd.main_do_create_table(input_file_to_be_updated_with_manual_terms,
+                                output_file_to_take_as_input_for_update).subscribe(
+            on_next=lambda table: my_print(
+                f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
             on_completed=lambda: print("completed"),
             on_error=lambda err: helpers.raise_error("in main", err))
-
-
 
     def test_play2_re_search(self):
         logging = True
@@ -148,6 +156,7 @@ class TestRxData(TestCase):
     def test_execute_search_on_file_for_terms_return_results(self):
         logging = True
         search_terms = set("\... H-1-3 5\.1 codec  'H-1-3' 5.1.?H-1-3 decoder Advertise video".split(' '))
+
         mediapc_test_file = "/home/gpoor/cts-source/cts/tests/tests/media/src/android/media/cts/MediaCodecCapabilitiesTest.java"
         full_text_of_file_str = helpers.read_file_to_string(mediapc_test_file)
 

@@ -1,0 +1,4 @@
+Section,section_id,req_id,full_key,requirement,manual_search_terms,Area,,CTS test Case,Oppo FindX3Pro (b/187219683),Find X3,Find X4,Find X4 Pro,OnePlus 9 ,OnePlus 9 Pro,OnePlus 10,OnePlus 10 Pro
+,5.1     ,H-1-1 ,5.1/H-1-1,5.1/H-1-1: Advertise the maximum number of hardware video decoder sessions that can be run concurrently in any codec combination,,Media,,,Yes,,,,,,,
+,5.1     ,H-1-2 ,5.1/H-1-2,"5.1/H-1-2: Support 6 instances of hardware video decoder sessions (AVC, VP8, HEVC, VP9 or later) in any codec combination running concurrently at 720p resolution@30fps.",,,,,Maybe,,,,,,,
+,5.1     ,H-1-5 ,5.1/H-1-5,5.1/H-1-5: Advertise the maximum number of hardware video encoder and decoder sessions that can be run concurrently in any codec combination,,,,,Yes,,,,,,,
