@@ -232,9 +232,9 @@ def find_search_terms(search_info) -> dict:
     auto_search_terms.update(section_req)
     search_info[static_data.AUTO_SEARCH_TERMS]  = auto_search_terms
 
-    manual_search_terms = str(search_info.get(MANUAL_SEARCH_TERMS)).split(" ")
-    if len(manual_search_terms) > 0 and len(manual_search_terms[0]) > 1:
-        search_term_set = set(search_term_set).union(set(manual_search_terms))
+    manual_search_terms= set(str(search_info.get(MANUAL_SEARCH_TERMS)).split(" "))
+    if len(manual_search_terms) > 1:
+        search_term_set.update(manual_search_terms)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
     search_info[static_data.SEARCH_TERMS] = search_term_set
@@ -571,6 +571,7 @@ class RxData:
 
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
                                                             ops.map(lambda full_key_row: created_and_populated_search_info_from_key_row_tuple(full_key_row, header)),
+                                                            ops.map(lambda search_info: find_search_terms(search_info)),
                                                             ops.map(lambda search_info: self.search_on_files(search_info)))
 
     def search_on_files(self, search_info, logging: bool = True):
