@@ -241,6 +241,23 @@ class TestReacItems(unittest.TestCase):
         self.assertIs('secure screen lock verification', find_search_info.get(static_data.MANUAL_SEARCH_TERMS))
         self.assertSetEqual(expected_manual.union(expected_auto), find_search_info.get(static_data.SEARCH_TERMS))
 
+    def test_one_manual_search_terms(self, ):
+        header = ['Section', 'section_id', 'req_id', 'full_key', 'requirement', 'yes_2', 'manual_search_terms']
+        row = ['s', '5.1', 'H-1-1', '5.1/H-1-1', '5.1/H-1-1: juicyTestFunction()', 'yes_2',
+               'foobarone']
+        search_info = created_and_populated_search_info_from_key_row_tuple(('5.1/H-1-1', row), header)
+        find_search_info = find_search_terms(search_info)
+        self.assertEqual('foobarone', search_info.get(static_data.MANUAL_SEARCH_TERMS))
+        self.assertEqual('5.1/H-1-1', search_info.get(static_data.FULL_KEY))
+        self.assertIsNot(None,find_search_info.get(static_data.SEARCH_TERMS))
+        self.assertIsNot(None,search_info.get(static_data.SEARCH_TERMS))
+        self.assertIsNot(None,search_info.get(static_data.AUTO_SEARCH_TERMS))
+        expected_manual = {'foobarone'}
+        expected_auto = {'5.1', 'H-1-1', 'juicyTestFunction()', '5.1/H-1-1'}
+
+        self.assertSetEqual(expected_auto, find_search_info.get(static_data.AUTO_SEARCH_TERMS))
+        self.assertIs('foobarone', find_search_info.get(static_data.MANUAL_SEARCH_TERMS))
+        self.assertSetEqual(expected_manual.union(expected_auto), find_search_info.get(static_data.SEARCH_TERMS))
 
 
     def test_manual_search_terms_bad_key(self, ):

@@ -233,7 +233,7 @@ def find_search_terms(search_info) -> dict:
     search_info[static_data.AUTO_SEARCH_TERMS]  = auto_search_terms
 
     manual_search_terms= set(str(search_info.get(MANUAL_SEARCH_TERMS)).split(" "))
-    if len(manual_search_terms) > 1:
+    if len(manual_search_terms) > 0:
         search_term_set.update(manual_search_terms)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
@@ -618,7 +618,9 @@ if __name__ == '__main__':
     input_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv"
     output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
 
-    input_file = Path(output_file_name)
+    test_output_exists = Path(output_file_name)
+    if test_output_exists.exists():
+        table_ops.update_manual_fields_from_files(input_file_name,output_file_name)
 
     rd.main_do_create_table(input_file_name,output_file_name).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{output_file_name}] from [{input_file_name}] "),
