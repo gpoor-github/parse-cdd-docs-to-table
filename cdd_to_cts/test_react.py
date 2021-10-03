@@ -27,23 +27,23 @@ class TestRxData(TestCase):
             on_error=lambda err: helpers.raise_error("in main", err))
         # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
         # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
-
-    def test_convert_unconvert(self):
-        input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
-        output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_for_manual_fields.csv"
-        __input_table_keyed, __input_header_keyed = table_ops.read_table_to_dictionary(
-            input_file_to_be_updated_with_manual_terms)
-
-        table, table_index_dict, output_header = table_ops.convert_to_table_with_index_dict(__input_table_keyed,
-                                                                                            __input_header_keyed)
-        updated_table, updated_header = table_ops.update_manual_fields(table, table_index_dict, output_header,
-                                                                       output_file_to_take_as_input_for_update)
-        input_table_keyed, input_header_keyed = table_ops.convert_to_keyed_table_dict(updated_table,
-                                                                                      updated_header)
-        self.assertEqual("Yes 1 manual_search_terms",
-                         input_table_keyed.get("5.1/H-1-1")[input_header_keyed.index(static_data.MANUAL_SEARCH_TERMS)])
-        self.assertEqual("Yes inputfile 2",
-                         input_table_keyed.get("5.1/H-1-2")[input_header_keyed.index("input_file_ex1")])
+    #
+    # def test_convert_unconvert(self):
+    #     input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"
+    #     output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/output_for_manual_fields.csv"
+    #     __input_table_keyed, __input_header_keyed = table_ops.read_table_to_dictionary(
+    #         input_file_to_be_updated_with_manual_terms)
+    #
+    #     table, table_index_dict, output_header = table_ops.convert_to_table_with_index_dict(__input_table_keyed,
+    #                                                                                         __input_header_keyed)
+    #     updated_table, updated_header = table_ops.update_manual_fields(table, table_index_dict, output_header,
+    #                                                                    output_file_to_take_as_input_for_update)
+    #     input_table_keyed, input_header_keyed = table_ops.convert_to_keyed_table_dict(updated_table,
+    #                                                                                   updated_header)
+    #     self.assertEqual("Yes 1 manual_search_terms",
+    #                      input_table_keyed.get("5.1/H-1-1")[input_header_keyed.index(static_data.MANUAL_SEARCH_TERMS)])
+    #     self.assertEqual("Yes inputfile 2",
+    #                      input_table_keyed.get("5.1/H-1-2")[input_header_keyed.index("input_file_ex1")])
 
     def test_update_manual_fields(self):
         input_file_to_be_updated_with_manual_terms = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_manual_fields_test.csv"

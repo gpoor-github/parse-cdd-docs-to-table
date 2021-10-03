@@ -8,8 +8,9 @@ from rx.testing import TestScheduler, ReactiveTest
 
 from cdd_to_cts import static_data, helpers, react, table_ops
 from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
-    created_and_populated_search_info_from_row
-from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX
+    created_and_populated_search_info_from_key_row_tuple, find_search_terms
+from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX, \
+    REQUIREMENT, MANUAL_SEARCH_TERMS
 
 
 def my_print(v: Any, f: Any = '{}'):
@@ -63,24 +64,6 @@ class TestReacItems(unittest.TestCase):
             ops.map(lambda count: my_print(count, "count ={}"))). \
             subscribe(lambda count: self.assertEqual(count, 1317))
 
-    def test_filtered_cdd_by_table(self, ):
-        scheduler = TestScheduler()
-        rd = RxData()
-        composed = pipe( rd.get_pipe_create_results_table())
-
-        # composed.subscribe()
-
-        def create():
-            return composed
-
-        subscribed = 300
-        disposed = 1400
-        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
-        print(results.messages)
-        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-4-1")
-        self.assertRegexpMatches(str(results.messages), "3.2.3.5/C-6-1")
-
-        print("done")
 
     def test_rx_at_test_methods_to_words(self, ):
         RxData().get_at_test_method_words(static_data.TEST_FILES_TXT). \
@@ -100,15 +83,6 @@ class TestReacItems(unittest.TestCase):
         a_7_line_table = "../test/input/section_id_length_one_issue.html"
 
         rd.get_cdd_html_to_requirements(a_7_line_table)
-
-    def test_get_cdd_html_to_requirements_table_rx(self, ):
-        a_7_line_table = "test/input/section_id_length_one_issue.html"
-
-        rd = RxData()
-        rd.get_cdd_html_to_requirements((a_7_line_table,"../output/a_test.cvs")). \
-            subscribe(lambda table_dict: self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX]))
-        # table_ops.write_table("output/try_table1.csv", table, header=static_data.cdd_to_cts_app_header)
-        # my_print2(table_dict) write_table("output/try_table1.csv", table_dict, static_data.cdd_to_cts_app_header)
 
     def test_get_cdd_html_to_requirements_dict(self, ):
         rd = RxData()
@@ -240,122 +214,41 @@ class TestReacItems(unittest.TestCase):
         end = time.perf_counter()
         print(f"Took time {end - start:0.4f}sec ")
 
-    def test_manual_search_terms(self, ):
-        rd = RxData()
-        search_info_in = dict()
-        search_info_in['full_key'] = '9.16/C-1-1'
+    def test_create_initial_search_info(self, ):
+        header = ['Section', 'section_id', 'req_id', 'full_key', 'requirement', 'yes_2', 'manual_search_terms']
+        row = ['s', '5.1', 'H-1-1', '5.1/H-1-1', '5.1/H-1-1: juicyTestFunction()', 'yes_2','secure screen lock verification']
         expected = {'secure', 'screen', 'lock', 'verification'}
-        search_info = created_and_populated_search_info_from_row(search_info_in,
-                                                                 "test/input/test_manual_search.csv")
-        self.assertEqual(expected, search_info.get(static_data.MANUAL_SEARCH_TERMS))
+        search_info = created_and_populated_search_info_from_key_row_tuple(('5.1/H-1-1',row), header)
+
+
+        self.assertEqual('5.1/H-1-1: juicyTestFunction()', search_info.get(static_data.REQUIREMENT))
+        self.assertEqual('secure screen lock verification', search_info.get(static_data.MANUAL_SEARCH_TERMS))
+        self.assertEqual('5.1/H-1-1', search_info.get(static_data.FULL_KEY))
+        return search_info
+
+    def test_manual_search_terms(self, ):
+        search_info=  self.test_create_initial_search_info()
+        find_search_info = find_search_terms(search_info)
+        self.assertEqual('secure screen lock verification', search_info.get(static_data.MANUAL_SEARCH_TERMS))
+        self.assertEqual('5.1/H-1-1', search_info.get(static_data.FULL_KEY))
+        self.assertIsNot(None,find_search_info.get(static_data.SEARCH_TERMS))
+        self.assertIsNot(None,search_info.get(static_data.SEARCH_TERMS))
+        self.assertIsNot(None,search_info.get(static_data.AUTO_SEARCH_TERMS))
+        expected_manual = {'secure', 'screen', 'lock', 'verification'}
+        expected_auto = {'5.1', 'H-1-1', 'juicyTestFunction()', '5.1/H-1-1'}
+
+        self.assertSetEqual(expected_auto, find_search_info.get(static_data.AUTO_SEARCH_TERMS))
+        self.assertIs('secure screen lock verification', find_search_info.get(static_data.MANUAL_SEARCH_TERMS))
+        self.assertSetEqual(expected_manual.union(expected_auto), find_search_info.get(static_data.SEARCH_TERMS))
+
+
 
     def test_manual_search_terms_bad_key(self, ):
-        rd = RxData()
-        search_info_in = dict()
-        search_info_in['full_key'] = '99.16/x-1-1'
-        search_info = created_and_populated_search_info_from_row(search_info_in,
-                                                                 "test/input/test_manual_search.csv")
+        header = ['Section', 'section_id', 'req_id', 'full_key', 'requirement', 'yes_2', 'manual_search_terms']
+        row = ['s', '5.1', 'H-1-1', '5.1/H-1-1', '5.1/H-1-1: req leave or copy', 'secure', 'screen', 'lock', 'verification']
+        expected = {'secure', 'screen', 'lock', 'verification'}
+        search_info = created_and_populated_search_info_from_key_row_tuple(row, header)
         self.assertEqual(None, search_info.get(static_data.MANUAL_SEARCH_TERMS))
-
-    def test_auto_search_terms(self, ):
-        key_req = "2.2.1/H-7-11:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
-        expected = {'2.2.1', 'FHD', 'WSXGA', 'H-7-11'}
-        key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
-        header = ['Section', 'section_id', 'req_id',  'requirement','Test Availability', 'class_def', 'method', 'module',
-                  'method_text', 'full_key', 'requirement', 'key_as_number', 'search_terms', 'manual_search_terms',
-                  'not_search_terms', 'not_files', 'matched_terms', 'search_roots', 'qualified_method', 'max_matches',
-                  'file_name', 'matched_files', 'methods_string', 'urls', 'protected', 'Area', 'Shortened',
-                  'Test Level']
-        row = ('3/A-1-1', ['3 . Software', '3', 'A-1-1', '">3/A-1-1] MUST NOT attach special privileges to system application\'s use of these properties; or prevent third-party applications from using these properties. [<a href="#3_0_intro""',
-                           '03000000.650101', "{'3', 'A-1-1'}", '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                           ''])
-
-        search_info = react.created_and_populated_search_info_from_row(row,header)
-
-        key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
-        key_req2 = helpers.cleanhtml(key_req2)
-        rd = RxData()
-        self.assertEqual(expected,
-                         search_info.get( SEARCH_TERMS))
-        self.assertEqual("2.2.1/H-7-11", search_info.get(FULL_KEY))
-
-    def test_all_search_terms(self, ):
-        rd = RxData()
-        header = ['Section', 'section_id', 'req_id', 'Test Availability', 'class_def', 'method', 'module', 'method_text',
-         'full_key', 'requirement', 'key_as_number', 'search_terms', 'manual_search_terms', 'not_search_terms',
-         'not_files', 'matched_terms', 'search_roots', 'qualified_method', 'max_matches', 'file_name', 'matched_files',
-         'methods_string', 'urls', 'protected', 'Area', 'Shortened', 'Test Level']
-        key_req = "9.16/C-1-1:] The memory available to the kernel and userspace MUST be at least 1280MB if the default display uses framebuffer resolutions up to FHD (e.g. WSXGA+). </p> </li> <li> <p>"
-        expected = {'9.16', 'FHD', 'WSXGA', 'C-1-1'}
-        file_to_search = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/EncoderInitializationLatencyTest.java"
-
-        row = ('3/A-1-1', ['3 . Software', '3', 'A-1-1', '', '', '', '', '', '3/A-1-1',
-                           '">3/A-1-1] MUST NOT attach special privileges to system application\'s use of these properties; or prevent third-party applications from using these properties. [<a href="#3_0_intro""',
-                           '03000000.650101', "{'3', 'A-1-1'}", '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                           ''])
-
-        search_info = created_and_populated_search_info_from_row(row,header )
-        # search_info = react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)
-        rd.execute_search_on_file_for_terms_return_results((search_info,file_to_search))
-        expected_manual = {'secure', 'screen', 'lock', 'verification'}
-        rx.just((search_info,file_to_search)).pipe(
-            ops.map(lambda dict_and_file: rd.execute_search_on_file_for_terms_return_results(dict_and_file)),
-            ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
-                                                                                           "test/input/test_manual_search.csv")),
-            ops.map(lambda search_info: self.assertEqual(expected_manual,
-                                                         search_info.get(
-                                                             static_data.MANUAL_SEARCH_TERMS)))).subscribe(
-            lambda search_info: self.assertEqual(expected_manual, search_info.get(static_data.SEARCH_TERMS)))
-
-    #
-    # def test_search(self, ):
-    #     rd = RxData()
-    #     rd.created_and_populated_search_info_from_row(
-    #         rd.get_filtered_cdd_by_table("input/new_recs_remaining_todo.csv", "input/cdd.html")).pipe(
-    #         ops.map(lambda req: my_print(req, "find_search_terms[{}]")),
-    #         ops.combine_latest(rd.get_replay_of_at_test_files_only()),
-    #
-    #         ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
-    #         ops.map(lambda req: my_print(req, "find_search_result[{}]")),
-    #
-    #         ops.map(lambda v: my_print2(v, "find_downstream_search_result[{}]")),
-    #         ops.count()).subscribe(lambda count: self.assertEqual(count, 32))
-
-    def test_do_search_unfiltered_on_results(self, ):
-        rd = RxData()
-        table, header = rd.init_input_table_keyed("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/new_recs_remaining_todo.csv")
-        rd.do_search(table, header, ).pipe(
-                                           ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-                                           ops.count()).subscribe(lambda count: self.assertEqual(count, 1029))
-
-    def test_do_search(self, ):
-        rd = RxData()
-        table, header = rd.init_input_table_keyed("/input/four_line_created.csv")
-        rd.do_search(table, header).pipe(
-            ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
-            ops.map(lambda req: my_print(req, "test_do_search[{}]")),
-            ops.count()).subscribe(lambda count: self.assertEqual(950,count ))
-
-    # 2264 != 2266
-    def test_handle_search_results_debug(self, ):
-        scheduler = TestScheduler()
-        rd = RxData()
-        table, header = rd.init_input_table_keyed("../input/four_line_created.csv")
-
-        composed = rd.do_search(table, header, scheduler=scheduler)
-
-        # composed.subscribe()
-
-        def create():
-            return composed
-
-        subscribed = 300
-        disposed = 1400
-        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
-        print(results.messages)
-        self.assertRegexpMatches(str(results.messages), "3/A-1-1")
-
-        print("done")
 
     def test_handle_search_results_to_csv(self, ):
         scheduler = TestScheduler()
@@ -368,7 +261,7 @@ class TestReacItems(unittest.TestCase):
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
             ops.filter(lambda search_info: dict(search_info).get(SEARCH_RESULT)),
-            ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
+            ops.map(lambda search_info: created_and_populated_search_info_from_key_row_tuple(search_info,
                                                                                    "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
             ops.map(lambda results_local: rd.find_data_for_csv_dict(dict())),
@@ -396,45 +289,6 @@ class TestReacItems(unittest.TestCase):
         rx.from_iterable(range(10)).pipe(ops.reduce(lambda acc, a: accum(acc, a), seed=list)
                                          ).subscribe(on_next=lambda result: my_write(result, "test_reducer  ={}"))
 
-    def test_get_input_table_keyed(self, ):
-        scheduler = TestScheduler()
-        header = ["Section", "section_id", "req_id", "full_key", "requirement", "manual_search_terms"]
-        rd = RxData()
-
-        table_dict, header = rd.init_input_table_keyed("input/input_table_key_index_mod.csv")
-        pipe = rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda tdict: my_print(tdict,
-                                                                                           "test test_table_dict[{}]\n")))
-
-        # .subscribe(lambda key, row: self.assertTupleEqual())
-
-        def create():
-            return pipe
-
-        subscribed = 300
-        disposed = 1800
-        results = scheduler.start(create, created=1, subscribed=subscribed, disposed=disposed)
-        print(results.messages)
-#        self.assertCountEqual("Section,section_id,req_id,requirement".split(','), dict(table_dict).get(HEADER_KEY))
-
-        t0 = (0, ['Section', 'section_id', 'req_id', 'requirement'])
-        r1 = ",3.2.3.5,C-4-1,req-c-4-1".split(',')
-        r2 = ",3.2.3.5,C-5-1,req-c-5-1".split(',')
-        r3 = ",3.2.3.5,C-5-2,req-c-5-2".split(',')
-        r4 = ",3.2.3.5,C-6-1,req-c-6-1".split(',')
-        k1 = "3.2.3.5/C-4-1"
-        k2 = "3.2.3.5/C-5-1"
-        k3 = "3.2.3.5/C-5-2"
-        k4 = "3.2.3.5/C-6-1"
-
-        assert results.messages == [
-            ReactiveTest.on_next(300, (HEADER_KEY, table_dict.get(HEADER_KEY))),
-            ReactiveTest.on_next(300, (k1, r1)),
-            ReactiveTest.on_next(300, (k2, r2)),
-            ReactiveTest.on_next(300, (k3, r3)),
-            ReactiveTest.on_next(300, (k4, r4)),
-            ReactiveTest.on_completed(300)
-        ]
 
     def test_read_table_section_id_one_digit(self, ):
         b = 5

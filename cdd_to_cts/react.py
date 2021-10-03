@@ -172,43 +172,29 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
-def created_and_populated_search_info_from_row(full_key_row: [], header: []):
+def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [], header: [])-> dict:
     search_info = dict()
     try:
-        full_key: str = str(full_key_row[0]).strip()
-        row: [] = full_key_row[1]
+        full_key: str = str(tuple_of_key_and_row[0]).strip()
+        row: [] = tuple_of_key_and_row[1]
         search_info[ROW] = row
+
+        header_as_string = " ".join(header)
         for column in static_data.update_manual_header:
-            try:
+            if header_as_string.find(column) != -1:
                 index = header.index(column)
                 search_info[column] = row[index]
-            except:
-                pass
 
-        requirement: str = row[header.index(REQUIREMENT)]
-        search_info[REQUIREMENT] = requirement
-        java_objects = find_java_objects(requirement)
+        search_info[REQUIREMENT] = row[header.index(REQUIREMENT)]
         search_info[HEADER_KEY] = header
         search_info[static_data.FULL_KEY] = full_key
         search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
-        key_split = full_key.split('/')
-        search_term_set = set()
-        section_req = set()
-        section_req.add(full_key)
-        section_req.add(key_split[0])
-        if len(key_split) > 1:
-            section_req.add(key_split[1])
-        search_term_set.update(section_req)
-        manual_search_terms = row[header.index(MANUAL_SEARCH_TERMS)]
-        if manual_search_terms != "":
-            add_list_to_dict(manual_search_terms, search_info, MANUAL_SEARCH_TERMS)
-            search_term_set.update(set(manual_search_terms.split(' ')))
-        search_term_set.update(java_objects)
-        search_info[static_data.SEARCH_TERMS] = search_term_set
+        return search_info
+
 
     except Exception as err:
         helpers.raise_error(
-            f"created_and_populated_search_info_from_row row=[{str()}] header[{str(header)}]  err =[{str(err)}] ", err)
+            f"created_and_populated_search_info_from_key_row_tuple row=[{str()}] header[{str(header)}]  err =[{str(err)}] ", err)
 
     return search_info
 
@@ -229,6 +215,30 @@ def find_method_text_subset(index_of_term_in_method, method_text):
         subset_text = method_text
     subset_text = subset_text.replace('\n', '')
     return subset_text
+
+
+def find_search_terms(search_info) -> dict:
+    full_key = search_info.get(FULL_KEY)
+    requirement = search_info.get(REQUIREMENT)
+    auto_search_terms = find_java_objects(requirement)
+
+    key_split = full_key.split('/')
+    search_term_set = set()
+    section_req = set()
+    section_req.add(full_key)
+    section_req.add(key_split[0])
+    if len(key_split) > 1:
+        section_req.add(key_split[1])
+    auto_search_terms.update(section_req)
+    search_info[static_data.AUTO_SEARCH_TERMS]  = auto_search_terms
+
+    manual_search_terms = str(search_info.get(MANUAL_SEARCH_TERMS)).split(" ")
+    if len(manual_search_terms) > 0 and len(manual_search_terms[0]) > 1:
+        search_term_set = set(search_term_set).union(set(manual_search_terms))
+    search_term_set.update(auto_search_terms)
+    search_term_set.difference_update(static_data.spurious_terms)
+    search_info[static_data.SEARCH_TERMS] = search_term_set
+    return search_info
 
 
 class RxData:
@@ -300,16 +310,11 @@ class RxData:
         try:
             # Get rid of tuple, change to a dict
             file_name = search_info_and_file_tuple[1]
-            full_key = search_info.get(FULL_KEY)
+
             search_terms = search_info.get(SEARCH_TERMS)
-            if not search_terms:
-                search_terms = set()
-            manual_search_terms = str(search_info.get(MANUAL_SEARCH_TERMS)).split(" ")
-            if len(manual_search_terms) > 0 and len(manual_search_terms[0]) > 1:
-                search_terms = set(search_terms).union(set(manual_search_terms))
+
             full_text_of_file_str = helpers.read_file_to_string(file_name)
 
-            search_terms.difference_update(static_data.spurious_terms)
             if logging:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
             for matched_term in search_terms:
@@ -565,7 +570,7 @@ class RxData:
     def do_search(self, table_dict: dict, header: [], scheduler: rx.typing.Scheduler = None):
 
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda full_key_row: created_and_populated_search_info_from_row(full_key_row, header)),
+                                                            ops.map(lambda full_key_row: created_and_populated_search_info_from_key_row_tuple(full_key_row, header)),
                                                             ops.map(lambda search_info: self.search_on_files(search_info)))
 
     def search_on_files(self, search_info, logging: bool = True):

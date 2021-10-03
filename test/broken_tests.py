@@ -11,7 +11,7 @@ from rx.testing import TestScheduler, ReactiveTest
 
 from cdd_to_cts import static_data, helpers, react, table_ops
 from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
-    created_and_populated_search_info_from_row, my_print
+    created_and_populated_search_info_from_key_row_tuple, my_print
 from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX
 
 
@@ -59,13 +59,13 @@ class BrokenTestsToFixSomeday(unittest.TestCase):
                            '03000000.650101', "{'3', 'A-1-1'}", '', '', '', '', '', '', '', '', '', '', '', '', '', '',
                            ''])
 
-        search_info = created_and_populated_search_info_from_row(row,header )
+        search_info = created_and_populated_search_info_from_key_row_tuple(row, header)
         # search_info = react.get_search_terms_from_requirements_and_key_create_search_info_dictionary(key_req)
         rd.execute_search_on_file_for_terms_return_results((search_info,file_to_search))
         expected_manual = {'secure', 'screen', 'lock', 'verification'}
         rx.just((search_info,file_to_search)).pipe(
             ops.map(lambda dict_and_file: rd.execute_search_on_file_for_terms_return_results(dict_and_file)),
-            ops.map(lambda search_info: created_and_populated_search_info_from_row(search_info,
+            ops.map(lambda search_info: created_and_populated_search_info_from_key_row_tuple(search_info,
                                                                                            "test/input/test_manual_search.csv")),
             ops.map(lambda search_info: self.assertEqual(expected_manual,
                                                          search_info.get(
@@ -75,7 +75,7 @@ class BrokenTestsToFixSomeday(unittest.TestCase):
     #
     # def test_search(self, ):
     #     rd = RxData()
-    #     rd.created_and_populated_search_info_from_row(
+    #     rd.created_and_populated_search_info_from_key_row_tuple(
     #         rd.get_filtered_cdd_by_table("input/new_recs_remaining_todo.csv", "input/cdd.html")).pipe(
     #         ops.map(lambda req: my_print(req, "find_search_terms[{}]")),
     #         ops.combine_latest(rd.get_replay_of_at_test_files_only()),
@@ -94,6 +94,16 @@ class BrokenTestsToFixSomeday(unittest.TestCase):
             subscribe(lambda table_dict: self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX]))
         # table_ops.write_table("output/try_table1.csv", table, header=static_data.cdd_to_cts_app_header)
         # my_print2(table_dict) write_table("output/try_table1.csv", table_dict, static_data.cdd_to_cts_app_header)
+
+
+    def test_do_search(self, ):
+        rd = RxData()
+        table, header = rd.init_input_table_keyed("/input/four_line_created.csv")
+        rd.do_search(table, header).pipe(
+            ops.filter(lambda result: dict(result).get("dictionary_with_existing_values")),
+            ops.map(lambda req: my_print(req, "test_do_search[{}]")),
+            ops.count()).subscribe(lambda count: self.assertEqual(950,count ))
+
 
     def test_handle_search_results_debug(self, ):
         scheduler = TestScheduler()
@@ -169,7 +179,7 @@ class BrokenTestsToFixSomeday(unittest.TestCase):
                            '03000000.650101', "{'3', 'A-1-1'}", '', '', '', '', '', '', '', '', '', '', '', '', '', '',
                            ''])
 
-        search_info = react.created_and_populated_search_info_from_row(row,header)
+        search_info = react.created_and_populated_search_info_from_key_row_tuple(row, header)
 
         key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
         key_req2 = helpers.cleanhtml(key_req2)

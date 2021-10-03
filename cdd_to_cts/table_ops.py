@@ -89,19 +89,19 @@ def update_manual_fields(input_table: [[str]], input_key_fields: dict, input_hea
     table_source, key_fields_source, header_source, duplicate_rows_source = read_table_sect_and_req_key(
         manual_data_source_file_name, manual_data_source_header)
     updated_header = input_header
+
+    updated_table, missingkeys1, missingkeys1 = update_table(input_table, input_key_fields, updated_header,
+                                                             table_source, key_fields_source, header_source,
+                                                             manual_fields_header)
+    return updated_table, updated_header
+
+
+def add_columns(manual_fields_header, updated_header):
     for column in manual_fields_header:
         try:
             updated_header.index(column)
         except ValueError:
             updated_header.append(column)
-
-    for row in input_table:
-        for index in range(len(row), len(updated_header)):
-            row.append(f"{index} of {updated_header[index] }")
-    updated_table, missingkeys1, missingkeys1 = update_table(input_table, input_key_fields, updated_header,
-                                                             table_source, key_fields_source, header_source,
-                                                             manual_fields_header)
-    return updated_table, updated_header
 
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:

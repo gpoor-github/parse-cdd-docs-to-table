@@ -9,10 +9,9 @@ def update_release_table_with_changes(target_sheet_file_name: str,
                                       values_to_use_table_file_local: str = "output/updated_table.csv",
                                       new_updated_table_file: str = 'output/new_updated_table_file.csv',
                                       header_columns_to_copy:[] = static_data.merge_header):
-    target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(
-        static_data.WORKING_ROOT + target_sheet_file_name)
+    target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(target_sheet_file_name)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_target_header, values_to_use_duplicate_rows = \
-        table_ops.read_table_sect_and_req_key(static_data.WORKING_ROOT + values_to_use_table_file_local)
+        table_ops.read_table_sect_and_req_key( values_to_use_table_file_local)
 
     updated_table, key_key1, key_key2 = table_ops.update_table(target_table,
                                                                target_table_keys_to_index,
@@ -28,6 +27,7 @@ def update_release_table_with_changes(target_sheet_file_name: str,
     print(
         f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
     check_update(target_sheet_file_name, new_updated_table_file)
+    return updated_table, target_header
 
 
 def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, source_to_use_values: str, table_name_to_write: str):
