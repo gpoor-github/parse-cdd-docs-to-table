@@ -301,6 +301,7 @@ class TestReacItems(unittest.TestCase):
 
     def test_search_on_files(self, ):
         rd = RxData()
+        rd.init_input_table_keyed("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/four_line_created.csv")
         search_info = dict()
         search_info[static_data.SEARCH_TERMS] = "for  while public".split(' ')
         rd.search_on_files(search_info)

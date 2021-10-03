@@ -59,6 +59,9 @@ class TestRxData(TestCase):
         self.assertEqual("Yes 1 manual_search_terms",
                          updated_table[0][update_header.index(static_data.MANUAL_SEARCH_TERMS)])
         self.assertEqual("Yes inputfile 2", updated_table[1][update_header.index("input_file_ex1")])
+        self.assertEqual("Yes 1 manual_search_terms", updated_table[0][update_header.index(static_data.MANUAL_SEARCH_TERMS)])
+        self.assertEqual("Yes 2 manual_search_terms", updated_table[1][update_header.index(static_data.MANUAL_SEARCH_TERMS)])
+        self.assertEqual("Yes 3 manual_search_terms", updated_table[2][update_header.index(static_data.MANUAL_SEARCH_TERMS)])
 
     def test_update_manual_fields_from_main(self):
 

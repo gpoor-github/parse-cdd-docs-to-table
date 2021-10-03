@@ -251,6 +251,7 @@ class RxData:
 
     def __init__(self):
         self.max_matches = 100
+        self.progress_count = 0
         self.is_exact_match: bool = False
 
         self.match_count = 0
@@ -576,11 +577,12 @@ class RxData:
 
     def search_on_files(self, search_info, logging: bool = True):
         list_of_test_files = self.get_list_of_at_test_files()
+        self.progress_count+=1
         if logging:
             self.end = time.perf_counter()
+            print (f'\n {self.progress_count}) of {len(self.__input_table_keyed)} ')
             print(f'elapsed {self.end - self.start:0.4f}sec ')
-            print(
-                f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
+            print(f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
         # input("Do you want to continue?")
         self.match_count = 0
         search_root = ""
@@ -613,10 +615,10 @@ if __name__ == '__main__':
     rd.max_matches = 200
     result_table = [[str]]
 
-    input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
-    output_file_name = "output/rx_new_recs_remaining_todo.csv"
+    input_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv"
+    output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
 
-    input_file = Path(static_data.WORKING_ROOT + output_file_name)
+    input_file = Path(output_file_name)
 
     rd.main_do_create_table(input_file_name,output_file_name).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{output_file_name}] from [{input_file_name}] "),
