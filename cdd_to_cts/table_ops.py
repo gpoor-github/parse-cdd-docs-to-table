@@ -24,13 +24,11 @@ This will take table_target and update missing values in the specified key_to_in
     missingkeys_source: set = set()
     for key in key_to_index_target:
         try:
-            if not key_to_index_source.get(key) or not key_to_index_target.get(key):
-                continue
-            table_index_target = int(key_to_index_target.get(key))
-            table_index_source = int(key_to_index_source.get(key))
-            test_target_index_str = ",".join(header_target)
-            test_source_index_str = ",".join(header_source)
-            if table_index_target and table_index_source:
+            table_index_source:int = key_to_index_source.get(key)
+            table_index_target:int = key_to_index_target.get(key)
+            if (table_index_source != None) and  (table_index_target!= None):
+                test_target_index_str = ",".join(header_target)
+                test_source_index_str = ",".join(header_source)
                 t_target_row = table_target[table_index_target]
                 t_source_row = table_source[table_index_source]
                 # Section,section_id,req_id
@@ -42,18 +40,20 @@ This will take table_target and update missing values in the specified key_to_in
                         #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
                         t_target_row[column_target_idx] = t_source_row[column_source_idx]
 
-                if t_target_row:
+                if t_target_row != None:
                     table_target[table_index_target] = t_target_row
-            else:
-                if table_index_target:
-                    missingkeys_source.add(key)
                 else:
-                    missingkeys_target.add(key)
-        except Exception as err:
-            print(
-                f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+                    if table_index_target:
+                        missingkeys_source.add(key)
+                    else:
+                        missingkeys_target.add(key)
+            else:
+                helpers.raise_error( f"Error: key {key} No index found")
 
-    return table_target, missingkeys_target, missingkeys_source
+        except Exception as err:
+            print(f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+
+        return table_target, missingkeys_target, missingkeys_source
 
 
 def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_target: dict, key_indexes_to_use: dict):
@@ -522,10 +522,11 @@ if __name__ == '__main__':
     # values_to_use_table_file1 = 'output/final_output_file.csv'
     sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.csv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
-    # update_manual_fields(static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT, static_data.FILTERED_TABLE_TO_SEARCH)
+    table, header = update_manual_fields(static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT, static_data.FILTERED_TABLE_TO_SEARCH,
+                                         static_data.update_manual_header,static_data.update_manual_header)
 
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
-    x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
-        _file1_sachiyo_recent,
-        "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.csv")
+    # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
+    #     _file1_sachiyo_recent,
+    #    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.csv")
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")
