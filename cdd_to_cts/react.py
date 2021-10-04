@@ -17,9 +17,10 @@ from cdd_to_cts.class_graph import parse_class_or_method, re_method
 from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_test_cases_module_dictionary, \
     raise_error, \
     convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas, CountDict
-from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION_ID_RE_STR, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
+from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
-    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT
+    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT,SHORTENED,AREA
+
 from cdd_to_cts.table_ops import write_table
 
 
@@ -41,6 +42,8 @@ def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app
     search_info_dict[SECTION_ID] = key_split[0]
     if len(key_split) > 1:
         search_info_dict[REQ_ID] = key_split[1]
+    row_data = search_info_dict[ROW]
+    search_info_dict[SECTION] = row_data[header.index(SECTION)]
 
     row: [str] = list(header)
     try:
