@@ -23,7 +23,7 @@ class TestSourceCrawlerReducer(TestCase):
 
     def test_parse_cdd_html_to_short_file_only_7(self, ):
 
-        a_7_line_table = "input/just_one_section_id_digit_issue.html"
+        a_7_line_table = "test/input/just_one_section_id_digit_issue.html"
         cwd = os.getcwd()
         static_data.WORKING_ROOT = cwd + "/"
         scr = data_sources.SourceCrawlerReducer(a_7_line_table)

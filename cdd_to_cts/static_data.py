@@ -7,13 +7,14 @@ CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
-WORKING_ROOT = os.getcwd().replace("cdd_to_cts","")
+WORKING_ROOT = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source"
+#os.getcwd().replace("cdd_to_cts","")
 
-# Remember these files must exit before the program is run
+# Remember these 2 files must exit before the program is run
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
 FILTER_KEYS_DOWNLOADED_TABLE = 'input/FILTER_KEYS_DOWNLOADED_TABLE.csv'
 
-
+# These 2 are generated
 DATA_SOURCES_CSV_FROM_HTML_1st = "output/DATA_SOURCES_CSV_FROM_HTML_1st.csv"
 DATA_SOURCES_UPDATED_CSV_2nd = "output/DATA_SOURCES_UPDATED_CSV_2nd.csv"
 

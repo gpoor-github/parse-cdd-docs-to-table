@@ -177,6 +177,8 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
             else:
                 print(f"Error writing bad table row [{row}]")
         csv_output_file.close()
+        print(f"wrote table of size {len(table)}  to {file_name} with columns {str(header)}")
+
     return table
 
 

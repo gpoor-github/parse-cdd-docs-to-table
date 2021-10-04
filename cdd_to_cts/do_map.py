@@ -11,19 +11,28 @@ def do_on_complete():
     print("completed")
 
 
+
+# Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
+
+def do_prep(cdd_requirements_downloaded_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+            keys_for_requirements_to_map_downloaded_csv_table: str = static_data.FILTER_KEYS_DOWNLOADED_TABLE,
+            requirements_generated_from_html: str= static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
+            requirements_to_search_generated_table: str= static_data.FILTERED_TABLE_TO_SEARCH):
+
+    data_sources.SourceCrawlerReducer(
+        cdd_requirements_html_source=cdd_requirements_downloaded_html_file,
+        # Remember CDD_REQUIREMENTS_FROM_HTML_FILE needs to be download
+        global_table_input_file_build_from_html= requirements_generated_from_html,
+        cts_root_directory=static_data.CTS_SOURCE_ROOT)
+
+    # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
+    make_new_table_with_row_keys_from_table(cdd_requirements_downloaded_html_file, keys_for_requirements_to_map_downloaded_csv_table,
+                                            requirements_to_search_generated_table)
+    return cdd_requirements_downloaded_html_file, keys_for_requirements_to_map_downloaded_csv_table,requirements_generated_from_html,requirements_to_search_generated_table
+
 if __name__ == '__main__':
     start = time.perf_counter()
-    full_cdd = "output/full_cdd.csv"
-    created_output = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
-    update_output = "output/updated_table.csv"
-    scr = data_sources.SourceCrawlerReducer(
-        cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE, # Remember CDD_REQUIREMENTS_FROM_HTML_FILE needs to be download
-        global_table_input_file_build_from_html =created_output,
-        cts_root_directory=static_data.CTS_SOURCE_ROOT)
-    result_table:[[str]] = list()
-    # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
-    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, static_data.FILTER_KEYS_DOWNLOADED_TABLE, static_data.FILTERED_TABLE_TO_SEARCH )
-
+    do_prep()
     rx_output_file = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
 
     rd = RxData()

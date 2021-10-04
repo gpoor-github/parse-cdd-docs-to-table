@@ -625,8 +625,13 @@ if __name__ == '__main__':
     rd.max_matches = 200
     result_table = [[str]]
 
-    input_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv"
-    output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
+    input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv"
+    output_file_name1 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
+    input_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
+    output_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/to_do_undone_subset_out2.csv"
+
+    input_file_name0= static_data.FILTERED_TABLE_TO_SEARCH
+    output_file_name0 = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
 
     test_output_exists = Path(output_file_name)
     if test_output_exists.exists():
