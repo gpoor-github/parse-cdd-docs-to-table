@@ -199,15 +199,19 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
     return search_info
 
 
-def find_method_text_subset(index_of_term_in_method, method_text):
+def find_method_text_subset(matched_term, method_text):
     method_text_len = len(method_text)
-    if method_text_len > 50:
-        if index_of_term_in_method + 25 < method_text_len:
-            end_mark = index_of_term_in_method
-            start_mark = end_mark - 50
+    first_re_match_from_method_search = re.search(re.escape(matched_term), method_text, flags=re.IGNORECASE)
+    index_of_term_in_method = first_re_match_from_method_search.endpos
+    target_length = 100
+    half_target_length = int(target_length/2)
+    if method_text_len > target_length:
+        if index_of_term_in_method + half_target_length < method_text_len:
+            end_mark = index_of_term_in_method + half_target_length
+            start_mark = end_mark - target_length
         else:
             end_mark = method_text_len - 1
-            start_mark = end_mark - 50
+            start_mark = end_mark - target_length
         if start_mark < 0:
             start_mark = 0
         subset_text = method_text[start_mark:end_mark]
@@ -331,23 +335,21 @@ class RxData:
                 if is_found:
                     if matched_term == search_info.get(FULL_KEY):
                         self.is_exact_match = True
-                    cts_file_path_name = str(file_name).replace(static_data.CTS_SOURCE_ROOT + "/tests/", "")
+                    cts_file_path_name = str(file_name).partition('src')[2]
                     search_result = search_info.get(SEARCH_RESULT)
                     if not search_result:
                         search_result = dict()
                     search_info[SEARCH_RESULT] = search_result
                     search_result[static_data.PIPELINE_FILE_NAME] = file_name
                     add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
-                    for method_text in full_text_of_file_str.split("@Test"):
-                       # index_of_term_in_method = method_text.find(matched_terms)
+                    method_text_splits_of_file = full_text_of_file_str.split("@Test")
+                    for method_text in method_text_splits_of_file:
                         re_matches_from_method_search = re.findall(re.escape(matched_term), method_text,
                                                                  flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
-
-                        is_found = len(re_matches_from_file_search) > 0
                         if len(re_matches_from_method_search) > 0:
                             add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                             add_list_to_count_dict(matched_term, search_result, MATCHED_TERMS)
-                            subset_text = find_method_text_subset(len(re_matches_from_method_search), method_text)
+                            subset_text = find_method_text_subset(matched_term,method_text)
                             # add_list_to_count_dict(subset_text, search_result, static_data.METHOD_TEXT)#," || ")
                             method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_term}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
                             add_list_to_count_dict(method_text_str, search_result,
@@ -512,35 +514,35 @@ class RxData:
             except FileNotFoundError as e:
                 raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
 
-
-    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-                                     scheduler: rx.typing.Scheduler = None):
-
-        if not self.__replay_cdd_requirements:
-            self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
-            cdd_html_file = helpers.find_valid_path(cdd_html_file)
-
-            with open(cdd_html_file, "r") as text_file:
-                cdd_requirements_file_as_string = text_file.read()
-                section_id_re_str: str = SECTION_ID_RE_STR
-                cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
-                                               flags=re.DOTALL)
-                # Start at 0 to don't skip for tests and unknown input
-                for i in range(0, len(cdd_sections_splits)):
-                    section = cdd_sections_splits[i]
-                    cdd_section_id = helpers.find_section_id(section)
-                    if cdd_section_id:
-                        if '13' == cdd_section_id:
-                            # section 13 is "Contact us" and has characters that cause issues at lest for git
-                            print(f"Warning skipping section 13 just the end no requirments")
-                            continue
-                        section = re.sub('\s\s+', ' ', section)
-                        section = section.replace("<\a>", "")
-                        self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
-            self.__replay_cdd_requirements.on_completed()
-            # if all ready read, just return it.
-        return self.__replay_cdd_requirements.pipe(
-            ops.flat_map(lambda section_and_key: process_section(section_and_key)))
+    #
+    # def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+    #                                  scheduler: rx.typing.Scheduler = None):
+    #
+    #     if not self.__replay_cdd_requirements:
+    #         self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
+    #         cdd_html_file = helpers.find_valid_path(cdd_html_file)
+    #
+    #         with open(cdd_html_file, "r") as text_file:
+    #             cdd_requirements_file_as_string = text_file.read()
+    #             section_id_re_str: str = SECTION_ID_RE_STR
+    #             cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
+    #                                            flags=re.DOTALL)
+    #             # Start at 0 to don't skip for tests and unknown input
+    #             for i in range(0, len(cdd_sections_splits)):
+    #                 section = cdd_sections_splits[i]
+    #                 cdd_section_id = helpers.find_section_id(section)
+    #                 if cdd_section_id:
+    #                     if '13' == cdd_section_id:
+    #                         # section 13 is "Contact us" and has characters that cause issues at lest for git
+    #                         print(f"Warning skipping section 13 just the end no requirments")
+    #                         continue
+    #                     section = re.sub('\s\s+', ' ', section)
+    #                     section = section.replace("<\a>", "")
+    #                     self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
+    #         self.__replay_cdd_requirements.on_completed()
+    #         # if all ready read, just return it.
+    #     return self.__replay_cdd_requirements.pipe(
+    #         ops.flat_map(lambda section_and_key: process_section(section_and_key)))
 
     def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT,
                                  scheduler: rx.typing.Scheduler = None):

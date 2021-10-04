@@ -57,43 +57,12 @@ def test_get_replay_of_at_test_files():
 
 class TestReacItems(unittest.TestCase):
 
-    def test_cdd_html_to_requirements_rx(self, ):
-        RxData().get_cdd_html_to_requirements("../input/cdd.html").pipe(
-            ops.map(lambda v: my_print(v)),
-            ops.count(),
-            ops.map(lambda count: my_print(count, "count ={}"))). \
-            subscribe(lambda count: self.assertEqual(count, 1317))
-
-
     def test_rx_at_test_methods_to_words(self, ):
         RxData().get_at_test_method_words(static_data.TEST_FILES_TXT). \
             pipe(ops.map(lambda v: my_print(v)),
                  ops.count()). \
             subscribe(lambda count: self.assertEqual(count, 964))
 
-    def test_get_cdd_html_to_requirements(self, ):
-        rd = RxData()
-        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) \
-            .pipe(ops.map(lambda v: my_print(v)),
-                  ops.count()). \
-            subscribe(lambda count: self.assertEqual(count, 1317))
-
-    def test_get_cdd_html_to_requirements_values(self, ):
-        rd = RxData()
-        a_7_line_table = "../test/input/section_id_length_one_issue.html"
-
-        rd.get_cdd_html_to_requirements(a_7_line_table)
-
-    def test_get_cdd_html_to_requirements_dict(self, ):
-        rd = RxData()
-        # table_dict:dict
-        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) \
-            .pipe(ops.filter(lambda wv: not wv or len(str(wv).split(':')) < 2), ops.map(lambda v: my_print(v)),
-                  ops.to_dict(key_mapper=lambda key_req: key_req.split(':')[0],
-                              element_mapper=lambda key_req: build_dict(key_req))
-                  #    ,ops.map(  lambda tdict: react.write_table_from_dictionary(tdict,"output/tdict.csv")),
-                  , ops.map(lambda v: my_print2(v))).subscribe(
-            lambda table_dict: self.assertEqual(1, len(dict(table_dict).keys())))
 
     # Callable[[TState, T1], TState]
     @staticmethod

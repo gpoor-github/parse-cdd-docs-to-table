@@ -39,7 +39,7 @@ java_methods_re_str = '(?:[a-zA-Z]\w+\() ?\w* ?\)'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
 java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
 find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
-spurious_terms ={'None','',""," ",' ','()',')','(',':'}
+spurious_terms ={'None','',""," ",' ','()',')','(',':','1','2','3','4','5','6','7','8','9','0'}
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
                     'condition',
                     'Condition', 'any', 'unconditional;', '-', 'SR]', 'C:', 'Type', 'Tab:', 'implementation', '1',
@@ -53,7 +53,7 @@ cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'im
                     'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'  "MUST",
                     "SHOULD",
                     "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'STRONGLY',
-                    'developer.android.com', 'Test', '@Test', 'app,data'}
+                    'developer.android.com', 'Test', '@Test', 'app,data','1','2','3','4','5','6','7','8','9','0'}
 
 common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'using', 'value', 'more' 'open', 'getType',
                   'getMessage', 'equals', 'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from',
