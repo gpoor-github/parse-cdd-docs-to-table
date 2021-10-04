@@ -222,6 +222,10 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 
 
 def find_valid_path(file_name: str) -> str:
+
+    if file_name.find(static_data.WORKING_ROOT[0:20]) != -1:
+        return file_name
+
     if file_name.find(static_data.WORKING_ROOT) == -1:
         if not static_data.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
             file_name = static_data.WORKING_ROOT + '/' + file_name

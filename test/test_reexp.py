@@ -242,7 +242,7 @@ class TestReacItems(unittest.TestCase):
 
         # .pipe(ops.map(lambda result_dic: react.publish_results(result_dic, static_data.cdd_to_cts_app_header)), ops.to_list(),
         #  ops.reduce(lambda acc, a: accum2(acc, " ".join(a), seed=[])))
-        table, header = rd.init_input_table_keyed("../input/four_line_created.csv")
+        table, header = rd.init_input_table_keyed("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/four_line_created.csv")
         composed = rd.do_search(table, header, scheduler=scheduler).pipe(
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
 
@@ -296,7 +296,7 @@ class TestReacItems(unittest.TestCase):
         scheduler = TestScheduler()
         interval_time = 300
         rd = RxData()
-        table, header = rd.init_input_table_keyed("test/input/four_line_created.csv")
+        table, header = rd.init_input_table_keyed("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/four_line_created.csv")
 
         pipe = rd.do_search(table, header, scheduler).pipe(
             ops.map(lambda count: my_print(count,

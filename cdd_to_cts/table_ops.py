@@ -73,6 +73,40 @@ def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_tar
     return new_table
 
 
+
+def filter_able_by_removing_keys(table_target: [[str]], key_to_index_target: dict, key_indexes_to_use: list):
+    new_table: [[str]] = list()
+    valid_keys_str = " ".join(key_indexes_to_use)
+    for key in key_to_index_target:
+        try:
+            if valid_keys_str.find(key) == -1:
+                table_index_target = int(key_to_index_target.get(key))
+                t_target_row = table_target[table_index_target]
+                new_table.append(t_target_row)
+
+        except Exception as err:
+            print(
+                f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+
+    return new_table
+
+def filter_table_by_keys(table_target: [[str]], key_to_index_target: dict, key_indexes_to_use: list):
+    new_table: [[str]] = list()
+    for key in key_indexes_to_use:
+        try:
+            if not key_to_index_target.get(key):
+                continue
+            table_index_target = int(key_to_index_target.get(key))
+            t_target_row = table_target[table_index_target]
+            new_table.append(t_target_row)
+
+        except Exception as err:
+            print(
+                f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+
+    return new_table
+
+
 def merge_tables(file1, file2):
     table1, key_fields1, header1, duplicate_rows1 = read_table_sect_and_req_key(file1)
     table2, key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(file2)
@@ -355,6 +389,7 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
             csv_file.close()
     except (IOError, IndexError) as e:
         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+        raise SystemExit(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     return table, key_fields, header, duplicate_rows
 
     # find urls that may help find the tests for the requirement
@@ -534,8 +569,6 @@ if __name__ == '__main__':
     sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.csv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
-
-
 
     update_manual_fields_from_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv",
                                     "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv")

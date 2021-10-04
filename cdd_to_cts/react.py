@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import rx
+from packaging.requirements import URL
 from rx import operators as ops, pipe
 from rx.subject import ReplaySubject, BehaviorSubject
 
@@ -189,6 +190,10 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
                 search_info[column] = row[index]
 
         search_info[REQUIREMENT] = row[header.index(REQUIREMENT)]
+        urls = helpers.find_urls(search_info[REQUIREMENT])
+        if len(urls) > 0:
+            search_info[static_data.URLS] = urls
+
         search_info[HEADER_KEY] = header
         search_info[static_data.FULL_KEY] = full_key
         search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)

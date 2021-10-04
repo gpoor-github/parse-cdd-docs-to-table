@@ -28,7 +28,10 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
         cdd_sections_splits = re.split('(?={})'.format(section_re_str), cdd_requirements_file_as_string,
                                        flags=re.DOTALL)
         section_count = 0
+        char_count = 0
         for section in cdd_sections_splits:
+            section_count += 1
+            char_count += len(section)
             section = helpers.clean_html_anchors(section)
             cdd_section_id_search_results = re.search(section_re_str, section)
             if not cdd_section_id_search_results:
@@ -42,7 +45,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
             if section_text_result:
                 section_text = section_text_result[0]
                 section_text = section_text.strip()
-                section_to_section_data[cdd_section_id] = f'{section_to_section_data[cdd_section_id]} {section_text}'
+                section_to_section_data[cdd_section_id] = f'{section_count}:{char_count}) {section_to_section_data[cdd_section_id]}  {section_text}'
 
             if '13' == cdd_section_id:
                 # section 13 is "Contact us" and has characters that cause issues at lest for git
@@ -62,7 +65,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
                                                           key_to_full_requirement_text_local, req_id_splits,
                                                           section_count, total_requirement_count)
 
-            section_count += 1
+
         for key in key_to_full_requirement_text_local:
             requirement_text = key_to_full_requirement_text_local.get(key)
             key_to_urls_local[key] = find_urls(requirement_text)

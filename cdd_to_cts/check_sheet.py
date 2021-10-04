@@ -2,6 +2,7 @@ import csv
 import json
 import os
 
+import table_ops
 from helpers import find_valid_path
 from static_data import CTS_SOURCE_ROOT, SECTION_ID, REQ_ID
 
@@ -112,3 +113,4 @@ if __name__ == '__main__':
     mapping_cdd = "input/mapping_output_for_import.csv"
     result_dict, not_found, found = rs.parse_data(mapping_cdd)
     print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
+    table_ops.diff_tables_files(mapping_cdd,"/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.csv")
