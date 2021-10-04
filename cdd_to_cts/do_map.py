@@ -26,31 +26,27 @@ def do_prep(cdd_requirements_downloaded_html_file=static_data.CDD_REQUIREMENTS_F
         cts_root_directory=static_data.CTS_SOURCE_ROOT)
 
     # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
-    make_new_table_with_row_keys_from_table(cdd_requirements_downloaded_html_file, keys_for_requirements_to_map_downloaded_csv_table,
+    make_new_table_with_row_keys_from_table(requirements_generated_from_html, keys_for_requirements_to_map_downloaded_csv_table,
                                             requirements_to_search_generated_table)
     return cdd_requirements_downloaded_html_file, keys_for_requirements_to_map_downloaded_csv_table,requirements_generated_from_html,requirements_to_search_generated_table
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    do_prep()
+    cdd_requirements_downloaded_html_file, keys_for_requirements_to_map_downloaded_csv_table, \
+    requirements_generated_from_html, requirements_to_search_generated_table=\
+        do_prep()
     rx_output_file = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
 
     rd = RxData()
-    rd.main_do_create_table(input_table_file=static_data.FILTERED_TABLE_TO_SEARCH,
+    rd.main_do_create_table(input_table_file=requirements_to_search_generated_table,
                             output_file=rx_output_file) \
         .subscribe(
             on_next=lambda table: my_print(table, "that's all folks!{} "),
             on_completed=lambda:  do_on_complete(),
             on_error=lambda err: helpers.raise_error("in main", err))
 
-    original_sheet_file_name1 = "data_files/CDD-11_2021-11-23-sorted.csv"
-    select_assigned_reqs = "input/new_recs_remaining_todo.csv"
-
-    update_release_table_with_changes(original_sheet_file_name1, rx_output_file, select_assigned_reqs)
-    new_updated_table_file1 = 'input/new_updated_table_for_release.csv'
-
     print(" Now check final output")
-    table_ops.diff_tables_files(original_sheet_file_name1, new_updated_table_file1)
+    table_ops.diff_tables_files(rx_output_file, requirements_to_search_generated_table)
 
     rs = ReadSpreadSheet()
     result, not_found, found = rs.parse_data(rx_output_file)

@@ -2,7 +2,7 @@ import csv
 import sys
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID, RX_WORKING_OUTPUT_TABLE_TO_EDIT, HEADER_KEY
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
 
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],
@@ -26,7 +26,7 @@ This will take table_target and update missing values in the specified key_to_in
         try:
             table_index_source:int = key_to_index_source.get(key)
             table_index_target:int = key_to_index_target.get(key)
-            if (table_index_source != None) and  (table_index_target!= None):
+            if (table_index_source is not None) and  (table_index_target is not None):
                 test_target_index_str = ",".join(header_target)
                 test_source_index_str = ",".join(header_source)
                 t_target_row = table_target[table_index_target]
@@ -155,12 +155,12 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
 
     with open(file_name, 'w', newline='') as csv_output_file:
         table_writer = csv.writer(csv_output_file)
-        found_header = find_header(table,None)
+        found_header = find_header(table)
         start_index = 0
-        if found_header:
+        if found_header is not None and (len(found_header) >0):
             table_writer.writerow(found_header)
             start_index=+1
-        elif header:
+        elif header is not None and (len(header) >0):
             table_writer.writerow(header)
         else:
             helpers.raise_error(f"Filename {file_name} has no header fatal")
@@ -201,11 +201,12 @@ def find_full_key_index(table: [[str]]) -> int:
         req_id_index = table[0].index(REQ_ID)
         print(f' indexes names sect {full_key_index}')
     except  (AttributeError, ValueError, IndexError) as ie:
-        print(f"error handling finding header for table first row nothing to write", file=sys.stderr)
+        print(f"error {str(ie)} handling finding header for table first row nothing to write", file=sys.stderr)
     return full_key_index
 
 
-def find_header(table: [[str]],header:[str])->[str]:
+def find_header(table: [[str]])->[str]:
+    header = None
     try:
         table[0].index(SECTION_ID)
         table[0].index(REQ_ID)
@@ -239,14 +240,14 @@ def convert_to_table_with_index_dict(table_keyed: dict[str, str], header: [str],
 def convert_to_keyed_table_dict(input_table: [[str]], input_header: [str], logging: bool = True) -> (
 [[str]], dict[str, int], [str]):
     table_dict_req_ids_to_rows: dict = dict()
-    found_header = find_header(input_table, None)# So we know if we should advance a row or not.
+    found_header = find_header(input_table)# So we know if we should advance a row or not.
     full_key_index = find_full_key_index(input_table)
     table_index = 0
     if found_header:
         table_dict_req_ids_to_rows[HEADER_KEY] = found_header
         table_index += 1
-    elif input_header:
-        table_dict_req_ids_to_rows[HEADER_KEY] = found_header
+    elif input_header is not None and len(input_header) > 0:
+        table_dict_req_ids_to_rows[HEADER_KEY] = input_header
         table_index += 1
     else:
         print("Waring No header convert_to_keyed_table_dict ", file=sys.stderr)
@@ -350,7 +351,7 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
                             # Skip the rest of the loop... if there is an exception carry on and get the first row
                             continue
                         except ValueError:
-                            message = f' Error: First row NOT header {row} default to section_id = col 1 and req_id col 2. First row of file {csv_file} should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
+                            message = f' Error: First row NOT header file={csv_file}  row={row} default to section_id = col 1 and req_id col 2. First row of file should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
                             print(message)
                             raise SystemExit(message)
                             # Carry on and get the first row
