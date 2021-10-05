@@ -5,6 +5,7 @@ import time
 from cdd_to_cts import persist, helpers
 from cdd_to_cts import static_data
 from helpers import find_valid_path
+from static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE
 
 FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
 
@@ -119,23 +120,36 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
         input_file = open(file_name_in, 'r')
         test_classes_to_dependent_classes: dict = dict()
         file_as_string = input_file.read()
+        input_file.close()
         file_splits = file_as_string.split('<file path=')
         for a_file_split in file_splits:
-            count +=1
-            target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0)  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
+            target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0).strip('"')  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
             if target_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:
+                print(target_file_name)
                 dependencies_split = a_file_split.split('<dependency path=')
                 dependency_list: [] = list()
                 for a_dependencies_split in dependencies_split:
+                    count += 1
+                    if count % 10 == 0:
+                        end = time.perf_counter()
+                        print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
                     dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
                     if  dependencies_file_name is not None and dependencies_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:                    # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
-                        dependency_list.append(dependencies_file_name)
+                        dependency_list.append(dependencies_file_name.strip('"'))
                 test_classes_to_dependent_classes[target_file_name] = dependency_list
-                end = time.perf_counter()
-                if count % 100 == 0:
-                    print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
 
-        input_file.close()
+
+        end = time.perf_counter()
+        print(f'Finished parsing {str(test_classes_to_dependent_classes)} {count} time {end - start:0.4f}sec ')
+
     except Exception as err:
         helpers.raise_error(f" Maybe couldn't open {file_name_in}", err)
     return test_classes_to_dependent_classes
+
+if __name__ == '__main__':
+    start1 = time.perf_counter()
+
+    testfile_dependencies_to_words_local = parse_dependency_file()
+    dependencies_dict = persist.write(testfile_dependencies_to_words_local, TEST_FILES_TO_DEPENDENCIES_STORAGE)
+    end1 = time.perf_counter()
+    print(f'Took time {end1 - start1:0.4f}sec ')
