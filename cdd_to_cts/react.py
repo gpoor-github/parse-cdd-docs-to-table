@@ -7,10 +7,11 @@ from pathlib import Path
 from typing import Any
 
 import rx
-from packaging.requirements import URL
 from rx import operators as ops, pipe
 from rx.subject import ReplaySubject, BehaviorSubject
 
+import class_graph
+import data_sources_helper
 import helpers
 import static_data
 import table_ops
@@ -20,9 +21,7 @@ from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_
     convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas, CountDict
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
-    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT,SHORTENED,AREA
-
-from cdd_to_cts.table_ops import write_table
+    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT
 
 
 def build_dict(key_req: str):
@@ -89,7 +88,7 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
                         if container_dict and len(container_dict) > 0:
                             try:
                                 local_value = sorted(container_dict.items(), key=lambda x: x[1], reverse=True)
-                                cell_value = local_value
+                                cell_value = f'{local_value}'
                             except Exception as err1:
                                 if do_log: print(
                                     f"build_row: Could not print values of {key} {str(container_dict)} {str(err1)}")
@@ -108,7 +107,6 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
 
 def write_table_from_dictionary(table_dict: dict, file_name: str, header: [str] = static_data.cdd_to_cts_app_header,
                                 logging: bool = False) -> (dict, []):
-
     file_name = helpers.find_valid_path(file_name)
 
     with open(file_name, 'w', newline='') as csv_output_file:
@@ -176,7 +174,7 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
-def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [], header: [])-> dict:
+def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [], header: []) -> dict:
     search_info = dict()
     try:
         full_key: str = str(tuple_of_key_and_row[0]).strip()
@@ -202,7 +200,8 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
 
     except Exception as err:
         helpers.raise_error(
-            f"created_and_populated_search_info_from_key_row_tuple row=[{str()}] header[{str(header)}]  err =[{str(err)}] ", err)
+            f"created_and_populated_search_info_from_key_row_tuple row=[{str()}] header[{str(header)}]  err =[{str(err)}] ",
+            err)
 
     return search_info
 
@@ -212,7 +211,7 @@ def find_method_text_subset(matched_term, method_text):
     first_re_match_from_method_search = re.search(re.escape(matched_term), method_text, flags=re.IGNORECASE)
     index_of_term_in_method = first_re_match_from_method_search.endpos
     target_length = 100
-    half_target_length = int(target_length/2)
+    half_target_length = int(target_length / 2)
     if method_text_len > target_length:
         if index_of_term_in_method + half_target_length < method_text_len:
             end_mark = index_of_term_in_method + half_target_length
@@ -242,9 +241,9 @@ def find_search_terms(search_info) -> dict:
     if len(key_split) > 1:
         section_req.add(key_split[1])
     auto_search_terms.update(section_req)
-    search_info[static_data.AUTO_SEARCH_TERMS]  = auto_search_terms
+    search_info[static_data.AUTO_SEARCH_TERMS] = auto_search_terms
 
-    manual_search_terms= set(str(search_info.get(MANUAL_SEARCH_TERMS)).split(" "))
+    manual_search_terms = set(str(search_info.get(MANUAL_SEARCH_TERMS)).split(" "))
     if len(manual_search_terms) > 0:
         search_term_set.update(manual_search_terms)
     search_term_set.update(auto_search_terms)
@@ -282,6 +281,9 @@ class RxData:
         self.__replay_header = None
         self.__replay_at_test_files_to_methods = None
         self.__replay_cdd_requirements = None
+
+        self.__dependency_dictionary = class_graph.parse_dependency_file()
+
     # Not in use
     # def cdd_html_to_requirements_csv(self, html_file :str,
     #                                  output_file: str) -> rx.Observable:
@@ -313,13 +315,11 @@ class RxData:
             self.init_input_table_keyed(static_data.INPUT_TABLE_FILE_NAME_RX)
         return self.__input_table_keyed, self.__input_header_keyed
 
-
     def execute_search_on_file_for_terms_return_results(self, search_info_and_file_tuple: tuple,
                                                         logging: bool = False) -> dict:
         # print("predicate " + str(target))
         # rx give us a tuple from combine latest, we want to bind them in one object that will get info in the stream and provide our result
         search_info: dict = search_info_and_file_tuple[0]
-
         try:
             # Get rid of tuple, change to a dict
             file_name = search_info_and_file_tuple[1]
@@ -333,13 +333,13 @@ class RxData:
             for matched_term in search_terms:
                 matched_term = matched_term.strip(' ')
 
-
                 if not matched_term:
                     continue
                 # File search
-                re_matches_from_file_search =  re.findall(re.escape(matched_term),full_text_of_file_str,flags=re.IGNORECASE)# full_text_of_file_str.count(matched_terms)
+                re_matches_from_file_search = re.findall(re.escape(matched_term), full_text_of_file_str,
+                                                         flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
 
-                is_found =len(re_matches_from_file_search) > 0
+                is_found = len(re_matches_from_file_search) > 0
                 if is_found:
                     if matched_term == search_info.get(FULL_KEY):
                         self.is_exact_match = True
@@ -353,11 +353,11 @@ class RxData:
                     method_text_splits_of_file = full_text_of_file_str.split("@Test")
                     for method_text in method_text_splits_of_file:
                         re_matches_from_method_search = re.findall(re.escape(matched_term), method_text,
-                                                                 flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
+                                                                   flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
                         if len(re_matches_from_method_search) > 0:
                             add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                             add_list_to_count_dict(matched_term, search_result, MATCHED_TERMS)
-                            subset_text = find_method_text_subset(matched_term,method_text)
+                            subset_text = find_method_text_subset(matched_term, method_text)
                             # add_list_to_count_dict(subset_text, search_result, static_data.METHOD_TEXT)#," || ")
                             method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_term}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
                             add_list_to_count_dict(method_text_str, search_result,
@@ -408,7 +408,7 @@ class RxData:
                         try:
                             method_text = search_result.get(PIPELINE_METHOD_TEXT)
                             method_results = re_method.findall(method_text)
-                            if method_results and len(method_results) >0 :
+                            if method_results and len(method_results) > 0:
                                 for method in method_results:
                                     if method.lower().find('is') != -1 or method.lower().find('test') != -1:
                                         qualified_method = f"{test_case_name}:{class_name}.{method}"
@@ -581,18 +581,23 @@ class RxData:
     def do_search(self, table_dict: dict, header: [], scheduler: rx.typing.Scheduler = None):
 
         return rx.from_iterable(table_dict, scheduler).pipe(ops.map(lambda key: (key, table_dict.get(key))),
-                                                            ops.map(lambda full_key_row: created_and_populated_search_info_from_key_row_tuple(full_key_row, header)),
+                                                            ops.map(lambda
+                                                                        full_key_row: created_and_populated_search_info_from_key_row_tuple(
+                                                                full_key_row, header)),
                                                             ops.map(lambda search_info: find_search_terms(search_info)),
-                                                            ops.map(lambda search_info: self.search_on_files(search_info)))
+                                                            ops.map(
+                                                                lambda search_info: self.search_on_files(search_info)))
 
     def search_on_files(self, search_info, logging: bool = True):
         list_of_test_files = self.get_list_of_at_test_files()
-        self.progress_count+=1
+
+        self.progress_count += 1
         if logging:
             self.end = time.perf_counter()
-            print (f'\n {self.progress_count}) of {len(self.__input_table_keyed)} ')
+            print(f'\n {self.progress_count}) of {len(self.__input_table_keyed)} ')
             print(f'elapsed {self.end - self.start:0.4f}sec ')
-            print(f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
+            print(
+                f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
         # input("Do you want to continue?")
         self.match_count = 0
         search_root = ""
@@ -609,6 +614,11 @@ class RxData:
                     print(f"Note: limiting matches to {self.max_matches} skipping {file_to_search}")
                 else:
                     self.execute_search_on_file_for_terms_return_results((search_info, file_to_search))
+                    dependencies = self.__dependency_dictionary
+                    if dependencies:
+                        for dependency in dependencies:
+                            self.execute_search_on_file_for_terms_return_results((search_info, dependency))
+
             if self.is_exact_match:
                 break
         return search_info
@@ -627,17 +637,20 @@ if __name__ == '__main__':
 
     # input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv"
     # output_file_name1 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
-    input_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
-    output_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/to_do_undone_subset_out2.csv"
+    input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
+    # input_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5.csv"
+    # input_file_name =   "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5-c-12-1.csv"
+    # output_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
+    output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
 
-    input_file_name0= static_data.FILTERED_TABLE_TO_SEARCH
+    input_file_name0 = static_data.FILTERED_TABLE_TO_SEARCH
     output_file_name0 = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
 
     test_output_exists = Path(output_file_name)
-    if test_output_exists.exists():
-        table_ops.update_manual_fields_from_files(input_file_name,output_file_name)
+    # if test_output_exists.exists():
+    #     table_ops.update_manual_fields_from_files(input_file_name,output_file_name)
 
-    rd.main_do_create_table(input_file_name,output_file_name).subscribe(
+    rd.main_do_create_table(input_file_name, output_file_name).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{output_file_name}] from [{input_file_name}] "),
         on_completed=lambda: print("completed"),
         on_error=lambda err: helpers.raise_error("in main", err))

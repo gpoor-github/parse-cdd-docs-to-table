@@ -67,3 +67,8 @@ class TestUpdate(TestCase):
                                                                                           logging=True)
         table_ops.write_table(
             "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/to_do_undone.csv",table, header)
+
+    def test_write_file_fields_to_files(self):
+        input_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/3_2.3.5-c-12-1_out.csv"
+        table_ops.write_file_fields_to_files(input_table)
+

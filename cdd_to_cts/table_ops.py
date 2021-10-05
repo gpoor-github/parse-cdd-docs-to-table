@@ -1,4 +1,5 @@
 import csv
+import os
 import sys
 
 from cdd_to_cts import static_data, helpers
@@ -148,6 +149,33 @@ def add_columns(manual_fields_header, updated_header):
         except ValueError:
             updated_header.append(column)
 
+
+def write_file_fields_to_files(source_to_use_values: str,  fields_to_write: [str]=static_data.cdd_to_cts_app_header) -> [[str]]:
+    table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key( source_to_use_values)
+    fields_to_write_str = " ".join(fields_to_write)
+    path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
+
+    for i in range(0, len(table)):
+        row = table[i]
+        key:str = row[header.index(static_data.FULL_KEY)]
+        key_f = key.replace('/','_')
+        req_path = f"{path_for_files_root}/{key_f}"
+        os.makedirs(req_path,exist_ok=True)
+        for j in  range(0, len(row)-1):
+          if j >= len(header):
+              print("Error header and data out of sync")
+              break
+          if fields_to_write_str.find(header[j]) > -1:
+            value:str = row[j]
+            if len(value) > 10:
+                col =header[j]
+                file_path =rf"{req_path}/{col}.txt"
+                text_file = open(file_path, "w")
+                if col != static_data.METHODS_STRING:
+                    value = value.replace(' ','\n')
+                value = value.replace(']',']\n')
+                n = text_file.write(value)
+                text_file.close()
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
 

@@ -1,5 +1,6 @@
 import os
 import re
+import time
 
 from cdd_to_cts import persist, helpers
 from cdd_to_cts import static_data
@@ -111,23 +112,29 @@ def parse_class_or_method(line_method):
 def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR_CTS_TXT):
     # /Volumes/graham-ext/AndroidStudioProjects/cts
     test_classes_to_dependent_classes = dict()
+    start = time.perf_counter()
+    count =0
     try:
+        file_name_in = helpers.find_valid_path(file_name_in)
         input_file = open(file_name_in, 'r')
         test_classes_to_dependent_classes: dict = dict()
         file_as_string = input_file.read()
         file_splits = file_as_string.split('<file path=')
         for a_file_split in file_splits:
-            target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(
-                0)  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
-            dependencies_split = a_file_split.split('<dependency path=')
-            dependency_list: [] = list()
-            for a_dependencies_split in dependencies_split:
-                dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
-                if dependencies_file_name.endswith('.java') and dependencies_file_name:
-                    # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
-                    dependency_list.append(dependencies_file_name)
+            count +=1
+            target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0)  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
+            if target_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:
+                dependencies_split = a_file_split.split('<dependency path=')
+                dependency_list: [] = list()
+                for a_dependencies_split in dependencies_split:
+                    dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
+                    if  dependencies_file_name is not None and dependencies_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:                    # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
+                        dependency_list.append(dependencies_file_name)
+                test_classes_to_dependent_classes[target_file_name] = dependency_list
+                end = time.perf_counter()
+                if count % 100 == 0:
+                    print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
 
-            test_classes_to_dependent_classes[target_file_name] = dependency_list
         input_file.close()
     except Exception as err:
         helpers.raise_error(f" Maybe couldn't open {file_name_in}", err)

@@ -23,7 +23,8 @@ def do_prep(cdd_requirements_downloaded_html_file=static_data.CDD_REQUIREMENTS_F
         cdd_requirements_html_source=cdd_requirements_downloaded_html_file,
         # Remember CDD_REQUIREMENTS_FROM_HTML_FILE needs to be download
         global_table_input_file_build_from_html= requirements_generated_from_html,
-        cts_root_directory=static_data.CTS_SOURCE_ROOT)
+        cts_root_directory=static_data.CTS_SOURCE_ROOT,
+        do_search=True)
 
     # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
     make_new_table_with_row_keys_from_table(requirements_generated_from_html, keys_for_requirements_to_map_downloaded_csv_table,
