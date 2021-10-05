@@ -72,3 +72,9 @@ class TestUpdate(TestCase):
         input_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/3_2.3.5-c-12-1_out.csv"
         table_ops.write_file_fields_to_files(input_table)
 
+
+    def test_try_tabs(self):
+        input_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/o_cdd-cts-tracker - 3_2.3.5_out.tsv"
+        table, key_fields, header, duplicate_rows= table_ops.read_table_sect_and_req_key(input_table)
+        print(str(table))
+

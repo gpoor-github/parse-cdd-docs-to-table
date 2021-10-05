@@ -1,101 +1,101 @@
 Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,Comment(internal) e.g. why a test is not possible ,Comment (external) ,New vs Updated(Q';CTS Bug Id ,CDD Bug Id,CDD CL,Area,Shortened,Test Level,,external version,,,
-,3,A-1-1,Test Available,,Yes,,android.graphics.cts.PaintTest,testUnion(),CtsGraphicsTestCases,,,,,,,,,
-,3,A-1-2,Test Available,,Yes,,android.graphics.cts.PaintTest,PathEffect(),CtsGraphicsTestCases,,,,,,,,,
-,3.1.1,C-0-3,,,Yes,,android.appsecurity.cts.ApkVerityInstallTest,testRemoveIf(),,,,,,,,,,
-,3.1.1,C-0-2,Test Available,,Yes,,,,,,,,,,,,,
-,3.2.3.1,A-0-1,Test Available,,Yes,,,,,,,,,,,,,
-,3.2.3.1,Tab-0-1,,,Yes,,,,,,,,,,,,,
-,3.2.3.5,C-6-1,Test Available,,Yes,,android.app.notification.legacy.cts.ConditionProviderServiceTest,testConstantStateNotSet(),CtsLegacyNotification27TestCases,,,,,,,,,
-,3.2.3.5,C-5-2,,,Yes,,android.app.notification.legacy.cts.ConditionProviderServiceTest,testDraw(),CtsLegacyNotification27TestCases,,,,,,,,,
-,3.2.3.5,C-2-6,Test Available,,Yes,,android.appwidget.cts.DarkTextThemeTest,testZeroLengthByteBuffer(),CtsAppWidgetTestCases,,,,,,,,,
-,3.2.3.5,C-14-1,Test Available,,Yes,,android.autofillservice.cts.SettingsIntentTest,testBuilder_throwsException_whenZoomIsNegative(),CtsAutoFillServiceTestCases,,,,,,,,,
-,3.2.3.5,C-11-1,Test Available,,Yes,,android.content.syncmanager.cts.CtsSyncManagerTest,testNegativeSampleSize(),,,,,,,,,,
-,3.2.3.5,C-7-1,Test Available,,Yes,,android.systemintents.cts.TestSystemIntents,getWindow(),CtsSystemIntentTestCases,,,,,,,,,
-,3.2.3.5,C-13-2,,,Yes,,com.android.cts.managedprofile.ProvisioningTest,invokeOnColorsChangedListenerTest_systemOnly(),,,,,,,,,,
-,3.2.3.5,C-12-1,Test Available,,Yes,,,,,,,,,,,,,
-,3.2.3.5,C-15-1,Test Available,,Yes,,,,,,,,,,,,,
-,3.2.3.5,C-3-2,Test Available,,Yes,,,,,,,,,,,,,
-,3.2.3.5,C-5-1,Test Available,,Yes,,,,,,,,,,,,,
-,3.2.3.5,C-8-1,Test Available,,Yes,,,,,,,,,,,,,
-,3.2.3.5,C-13-1,,,Yes,,,,,,,,,,,,,
-,3.2.3.5,C-9-1,,,Yes,,,,,,,,,,,,,
-,3.8.16,H-1-1,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,cannotKeepAndTruncateNewLines(),CtsCameraTestCases,,,,,,,,,
-,3.8.16,H-1-2,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testGetDesiredWidth(),CtsCameraTestCases,,,,,,,,,
-,3.8.16,H-1-3,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,cannotKeepAndTruncateNewLines(),CtsCameraTestCases,,,,,,,,,
-,3.8.16,H-1-4,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testGetDesiredWidth(),CtsCameraTestCases,,,,,,,,,
-,3.8.16,H-2-1,Test Available,,Yes,,,,,,,,,,,,,
-,3.8.16,H-2-2,,,Yes,,,,,,,,,,,,,
-,3.9.11,C-1-3,Test Available,,Yes,,,,,,,,,,,,,
-,3.9.2,C-2-1,Test Available,,Yes,,android.telephony.embms.cts.MbmsDownloadCallbackTest,getResources(),CtsTelephonyTestCases,,,,,,,,,
-,4,C-0-8,Test Available,,Yes,,android.graphics.cts.PaintTest,testConstructor(),CtsGraphicsTestCases,,,,,,,,,
-,4,C-0-9,Test Available,,Yes,,android.graphics.cts.PaintTest,Paint(),CtsGraphicsTestCases,,,,,,,,,
-,6.1,C-3-2,Not testable,,Yes,,android.hardware.cts.LowRamDeviceTest,testGetRightPadding(),CtsHardwareTestCases,,,,,,,,,
-,6.1,C-4-1,Not testable,,Yes,,android.hardware.cts.LowRamDeviceTest,testGetRightPadding(),CtsHardwareTestCases,,,,,,,,,
-,6.1,C-0-11,Test Available,,Yes,,android.hardware.cts.LowRamDeviceTest,testGetRightPadding(),CtsHardwareTestCases,,,,,,,,,
-,6.1,C-3-1,Test Available,,Yes,,android.hardware.cts.LowRamDeviceTest,testGetRightPadding(),CtsHardwareTestCases,,,,,,,,,
-,6.1,C-5-1,Test Available,,Yes,,android.hardware.cts.LowRamDeviceTest,testGetRightPadding(),CtsHardwareTestCases,,,,,,,,,
-,6.1,C-0-10,Test Available,Yes,Yes,,UidAtomTests.java,testLmkKillOccurred,,,,,,148611927,12483943,,,
-,7.1.1.1,C-3-1,Test Available,,Yes,,android.incrementalinstall.cts.IncrementalFeatureTest,hasTuner(),,,,,,,,,,
-,7.1.1.1,C-2-1,Not testable,,Yes,,,,,,,,,,,,,
-,7.1.1.1,H-1-1,Other (see comment),,Yes,,,,,,,,,,,,,
-,7.1.1.1,H-2-1,,,Yes,,,,,,,,,,,,,
-,7.1.4.2,C-1-10,Test Available,,Yes,,android.graphics.cts.VulkanDeqpLevelTest,testUnpremul(),CtsGraphicsTestCases,,,,,,,,,
-,7.1.4.6,H-0-1,Test Available,,Yes,,android.graphics.cts.BitmapTest,testEquals1(),CtsGraphicsTestCases,,,,,,,,,
-,7.1.4.6,H-1-1,Test Available,,Yes,,android.graphics.cts.BitmapTest,testInvalidCmapFont_unsortedEntries(),CtsGraphicsTestCases,,,,,,,,,
-,7.1.4.6,H-1-2,Test Available,,Yes,,android.graphics.cts.BitmapTest,testGetPixelFormatInfoTranslucent(),CtsGraphicsTestCases,,,,,,,,,
-,7.1.4.6,H-1-3,Test Available,,Yes,,android.graphics.cts.BitmapTest,Point(),CtsGraphicsTestCases,,,,,,,,,
-,7.1.4.6,H-1-4,Test Available,,Yes,,android.graphics.cts.BitmapTest,testSetSaturation(),CtsGraphicsTestCases,,,,,,,,,
-,7.2.3,C-3-1,Not testable,,Yes,,android.telephony.cts.CellInfoTest,testRequiredEglExtensions(),CtsTelephonyTestCases,,,,,,,,,
-,7.2.4,C-3-3,Not testable,,Yes,,android.content.res.cts.ConfigTest,testOnLevelChange(),CtsContentTestCases,,,,,,,,,
-,7.2.4,C-3-2,Test Available,,Yes,,,,,,,,,,,,,
-,7.2.6.1,C-2-1,Test Missing,,Yes,,android.appwidget.cts.AppWidgetTest,Builder(),CtsAppWidgetTestCases,,,,,,,,,
-,7.3,C-1-6,Test Available,,Yes,,android.telephony.cts.CellInfoTest,testRequiredEglExtensions(),CtsTelephonyTestCases,,,,,,,,,
-,7.3,C-1-7,Test Available,,Yes,,,,,,,,,,,,,
-,7.3.10,C-3-4,Not testable,,Yes,,android.provider.cts.media.MediaStore_Video_ThumbnailsTest,values(),CtsProviderTestCases,,,,,,,,,
-,7.3.10,C-6-2,,,Yes,,com.android.cts.verifier.security.UnlockedDeviceRequiredTest,MyLinkMovementMethod(),,,,,,,,,,
-,7.3.10,C-4-2,Not testable,,Yes,,,,,,,,,,,,,
-,7.3.10,C-4-3,Not testable,,Yes,,,,,,,,,,,,,
-,7.3.10,C-5-1,Not testable,,Yes,,,,,,,,,,,,,
-,7.3.10,C-5-2,Test Available,,Yes,,,,,,,,,,,,,
-7.3.10 LockScreen and biometrics,7.3.10,C-4-1,,,Yes,,,,,,,,,,,,,
-,7.3.10,C-6-1,,,Yes,,,,,,,,,,,,,
-,7.3.13,C-1-2,,,Yes,,android.graphics.cts.PaintTest,testSetColorLAB(),CtsGraphicsTestCases,,,,,,,,,
-7.3.13 Hinge Angle Sensor,7.3.13,C-1-1,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,invalidFlags(),CtsCameraTestCases,,,,,,,,,
-,7.3.13,C-1-3,,,Yes,,,,,,,,,,,,,
-,7.3.4,A-3-1,Test Available,,Yes,,,,,,,,,,,,,
-,7.3.4,A-3-2,Test Available,,Yes,,,,,,,,,,,,,
-,7.3.6,C-2-1,Test Available,,Yes,,,,,,,,,,,,,
-,7.4.5.2,C-4-1,Test Available,,Yes,,,,,,,,,,,,,
-,7.4.5.3,C-1-2,Test Missing,,Yes,,android.graphics.cts.PaintTest,Paint(),CtsGraphicsTestCases,,,,,,,,,
-7.4.5.3. Captive Portals,7.4.5.3,C-1-1,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testGetDesiredWidth(),CtsCameraTestCases,,,,,,,,,
-,7.4.5.3,C-1-3,Test Missing,,Yes,,android.net.wifi.cts.WifiBackupRestoreTest,getRecord(),CtsWifiTestCases,,,,,,,,,
-,7.4.5.3,C-1-4,Test Missing,,Yes,,android.net.wifi.cts.WifiBackupRestoreTest,testMutableDrawable(),CtsWifiTestCases,,,,,,,,,
-,7.4.5.3,C-1-5,,,Yes,,android.net.wifi.cts.WifiLocationInfoTest,testExceptionInStream(),CtsWifiTestCases,,,,,,,,,
-,7.4.8,C-1-2,Test Available,,Yes,,android.graphics.cts.PaintTest,Paint(),CtsGraphicsTestCases,,,,,,,,,
-,7.5.4,H-1-1,Not testable,,Yes,,android.hardware.camera2.cts.LogicalCameraDeviceTest,testDefaultFOV,CtsCamera2TestCases,,,New in Q,133786213,123773985,6923679,Camera,Camera,2
-,7.5.4,C-0-12,Other (see comment),,Yes,,android.view.cts.TextureViewCameraTest,testBindChildView(),CtsViewTestCases,,,,,,,,,
-,9.1,C-2-1,Not testable,,Yes,,android.systemintents.cts.TestManageOverlayPermissionIntents,testAccessSelection(),CtsSystemIntentTestCases,,,,,,,,,
-,9.10.,C-0-4,Not testable,,Yes,,android.appsecurity.cts.ApkVerityInstallTest,testAddAll(),,,,,,,,,,
-,9.10.,C-0-5,Not testable,,Yes,,android.appsecurity.cts.ApkVerityInstallTest,testRemoveIf(),,,,,,,,,,
-,9.10.,C-1-10,Not testable,,Yes,,android.appsecurity.cts.ApkVerityInstallTest,testIndexOf(),,,,,,,,,,
-,9.10.,C-1-9,Test Available,,Yes,,android.graphics.cts.VulkanDeqpLevelTest,testUnpremul(),CtsGraphicsTestCases,,,,,,,,,
-,9.11.3,C-0-2,Not testable,,Yes,,android.net.wifi.cts.ConnectedNetworkScorerTest,testEmptyByteBuffer(),CtsWifiTestCases,,,,,,,,,
-,9.11.3,C-0-4,Not testable,,Yes,,android.net.wifi.nl80211.cts.NativeWifiClientTest,testPostProcessorInvalidReturn(),CtsWifiTestCases,,,,,,,,,
-9.11.3 Identity Credential,9.11.3,C-0-1,Test Available,,Yes,,android.provider.cts.media.MediaStoreAudioTestHelper,testOffset(),CtsProviderTestCases,,,,,,,,,
-,9.11.3,C-0-3,Not testable,,Yes,,android.security.identity.cts.HkdfTest,testPreconditions(),CtsIdentityTestCases,,,,,,,,,
-,9.16,C-1-4,Not testable,,Yes,,android.graphics.cts.PaintTest,Region(),CtsGraphicsTestCases,,,,,,,,,
-,9.16,C-1-2,Test Available,,Yes,,android.graphics.cts.PaintTest,Shader(),CtsGraphicsTestCases,,,,,,,,,
-9.16. Applciation Data Migration,9.16,C-1-1,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,cannotKeepAndTruncateNewLines(),CtsCameraTestCases,,,,,,,,,
-,9.16,C-1-5,Not testable,,Yes,,,,,,,,,,,,,
-,9.16,C-1-3,Test Available,,Yes,,,,,,,,,,,,,
-,9.5,C-1-3,Not testable,,Yes,,android.appsecurity.cts.ExternalStorageHostTest,testMultiUserStorageIsolated,CtsAppSecurityHostTestCases,,,,,,,Security,Security,2
-,9.5,C-1-2,Not testable,,Yes,,android.graphics.cts.PaintTest,testSetShadowLayerXYZ(),CtsGraphicsTestCases,,,,,,,,,
-9.8.10. Connectivity Bug Report,9.8.10,C-1-1,Test Available,,Yes,,android.carrierapi.cts.BugreportManagerTest,testAlphaPlusSetTargetColorSpace(),CtsCarrierApiTestCases,,,,,,,,,
-,9.8.10,C-1-4,Test Available,,Yes,,android.carrierapi.cts.NetworkScanApiTest,testAlphaMaskPlusHardwareAnimated(),CtsCarrierApiTestCases,,,,,,,,,
-,9.8.10,C-1-2,Test Available,,Yes,,android.graphics.cts.PaintTest,testLightingColorFilter(),CtsGraphicsTestCases,,,,,,,,,
-,9.8.10,C-1-3,Test Available,,Yes,,,,,,,,,,,,,
-,9.8.11,C-1-2,Test Available,,Yes,,android.graphics.cts.PaintTest,testIsComplex(),CtsGraphicsTestCases,,,,,,,,,
-9.8.11. Data blobs sharing,9.8.11,C-1-1,Test Available,,Yes,,com.android.cts.blob.BlobStoreManagerTest,preIsIgnored(),CtsBlobStoreTestCases,,,,,,,,,
-9.8.9. Installed apps,9.8.9,C-0-1,Test Available,,Yes,,android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest,testGetDesiredWidth(),CtsCameraTestCases,,,,,,,,,
-,9.9.3,C-1-14,Not testable,,Yes,,,,,,,,,,,,,
-9.9.4. Resume on Reboot,9.9.4,C-0-1,Test Available,,Yes,,android.graphics.cts.ANativeWindowTest,testNewInstanceInputStream(),CtsGraphicsTestCases,,,,,,,,,
+	3	A-1-1	Test Available		Yes		android.graphics.cts.PaintTest	testUnion()	CtsGraphicsTestCases
+	3	A-1-2	Test Available		Yes		android.graphics.cts.PaintTest	PathEffect()	CtsGraphicsTestCases
+	3.1.1	C-0-3			Yes		android.appsecurity.cts.ApkVerityInstallTest	testRemoveIf()
+	3.1.1	C-0-2	Test Available		Yes
+	3.2.3.1	A-0-1	Test Available		Yes
+	3.2.3.1	Tab-0-1			Yes
+	3.2.3.5	C-6-1	Test Available		Yes		android.app.notification.legacy.cts.ConditionProviderServiceTest	testConstantStateNotSet()	CtsLegacyNotification27TestCases
+	3.2.3.5	C-5-2			Yes		android.app.notification.legacy.cts.ConditionProviderServiceTest	testDraw()	CtsLegacyNotification27TestCases
+	3.2.3.5	C-2-6	Test Available		Yes		android.appwidget.cts.DarkTextThemeTest	testZeroLengthByteBuffer()	CtsAppWidgetTestCases
+	3.2.3.5	C-14-1	Test Available		Yes		android.autofillservice.cts.SettingsIntentTest	testBuilder_throwsException_whenZoomIsNegative()	CtsAutoFillServiceTestCases
+	3.2.3.5	C-11-1	Test Available		Yes		android.content.syncmanager.cts.CtsSyncManagerTest	testNegativeSampleSize()
+	3.2.3.5	C-7-1	Test Available		Yes		android.systemintents.cts.TestSystemIntents	getWindow()	CtsSystemIntentTestCases
+	3.2.3.5	C-13-2			Yes		com.android.cts.managedprofile.ProvisioningTest	invokeOnColorsChangedListenerTest_systemOnly()
+	3.2.3.5	C-12-1	Test Available		Yes
+	3.2.3.5	C-15-1	Test Available		Yes
+	3.2.3.5	C-3-2	Test Available		Yes
+	3.2.3.5	C-5-1	Test Available		Yes
+	3.2.3.5	C-8-1	Test Available		Yes
+	3.2.3.5	C-13-1			Yes
+	3.2.3.5	C-9-1			Yes
+	3.8.16	H-1-1	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	cannotKeepAndTruncateNewLines()	CtsCameraTestCases
+	3.8.16	H-1-2	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	testGetDesiredWidth()	CtsCameraTestCases
+	3.8.16	H-1-3	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	cannotKeepAndTruncateNewLines()	CtsCameraTestCases
+	3.8.16	H-1-4	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	testGetDesiredWidth()	CtsCameraTestCases
+	3.8.16	H-2-1	Test Available		Yes
+	3.8.16	H-2-2			Yes
+	3.9.11	C-1-3	Test Available		Yes
+	3.9.2	C-2-1	Test Available		Yes		android.telephony.embms.cts.MbmsDownloadCallbackTest	getResources()	CtsTelephonyTestCases
+	4	C-0-8	Test Available		Yes		android.graphics.cts.PaintTest	testConstructor()	CtsGraphicsTestCases
+	4	C-0-9	Test Available		Yes		android.graphics.cts.PaintTest	Paint()	CtsGraphicsTestCases
+	6.1	C-3-2	Not testable		Yes		android.hardware.cts.LowRamDeviceTest	testGetRightPadding()	CtsHardwareTestCases
+	6.1	C-4-1	Not testable		Yes		android.hardware.cts.LowRamDeviceTest	testGetRightPadding()	CtsHardwareTestCases
+	6.1	C-0-11	Test Available		Yes		android.hardware.cts.LowRamDeviceTest	testGetRightPadding()	CtsHardwareTestCases
+	6.1	C-3-1	Test Available		Yes		android.hardware.cts.LowRamDeviceTest	testGetRightPadding()	CtsHardwareTestCases
+	6.1	C-5-1	Test Available		Yes		android.hardware.cts.LowRamDeviceTest	testGetRightPadding()	CtsHardwareTestCases
+	6.1	C-0-10	Test Available	Yes	Yes		UidAtomTests.java	testLmkKillOccurred						148611927	12483943
+	7.1.1.1	C-3-1	Test Available		Yes		android.incrementalinstall.cts.IncrementalFeatureTest	hasTuner()
+	7.1.1.1	C-2-1	Not testable		Yes
+	7.1.1.1	H-1-1	Other (see comment)		Yes
+	7.1.1.1	H-2-1			Yes
+	7.1.4.2	C-1-10	Test Available		Yes		android.graphics.cts.VulkanDeqpLevelTest	testUnpremul()	CtsGraphicsTestCases
+	7.1.4.6	H-0-1	Test Available		Yes		android.graphics.cts.BitmapTest	testEquals1()	CtsGraphicsTestCases
+	7.1.4.6	H-1-1	Test Available		Yes		android.graphics.cts.BitmapTest	testInvalidCmapFont_unsortedEntries()	CtsGraphicsTestCases
+	7.1.4.6	H-1-2	Test Available		Yes		android.graphics.cts.BitmapTest	testGetPixelFormatInfoTranslucent()	CtsGraphicsTestCases
+	7.1.4.6	H-1-3	Test Available		Yes		android.graphics.cts.BitmapTest	Point()	CtsGraphicsTestCases
+	7.1.4.6	H-1-4	Test Available		Yes		android.graphics.cts.BitmapTest	testSetSaturation()	CtsGraphicsTestCases
+	7.2.3	C-3-1	Not testable		Yes		android.telephony.cts.CellInfoTest	testRequiredEglExtensions()	CtsTelephonyTestCases
+	7.2.4	C-3-3	Not testable		Yes		android.content.res.cts.ConfigTest	testOnLevelChange()	CtsContentTestCases
+	7.2.4	C-3-2	Test Available		Yes
+	7.2.6.1	C-2-1	Test Missing		Yes		android.appwidget.cts.AppWidgetTest	Builder()	CtsAppWidgetTestCases
+	7.3	C-1-6	Test Available		Yes		android.telephony.cts.CellInfoTest	testRequiredEglExtensions()	CtsTelephonyTestCases
+	7.3	C-1-7	Test Available		Yes
+	7.3.10	C-3-4	Not testable		Yes		android.provider.cts.media.MediaStore_Video_ThumbnailsTest	values()	CtsProviderTestCases
+	7.3.10	C-6-2			Yes		com.android.cts.verifier.security.UnlockedDeviceRequiredTest	MyLinkMovementMethod()
+	7.3.10	C-4-2	Not testable		Yes
+	7.3.10	C-4-3	Not testable		Yes
+	7.3.10	C-5-1	Not testable		Yes
+	7.3.10	C-5-2	Test Available		Yes
+7.3.10 LockScreen and biometrics	7.3.10	C-4-1			Yes
+	7.3.10	C-6-1			Yes
+	7.3.13	C-1-2			Yes		android.graphics.cts.PaintTest	testSetColorLAB()	CtsGraphicsTestCases
+7.3.13 Hinge Angle Sensor	7.3.13	C-1-1	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	invalidFlags()	CtsCameraTestCases
+	7.3.13	C-1-3			Yes
+	7.3.4	A-3-1	Test Available		Yes
+	7.3.4	A-3-2	Test Available		Yes
+	7.3.6	C-2-1	Test Available		Yes
+	7.4.5.2	C-4-1	Test Available		Yes
+	7.4.5.3	C-1-2	Test Missing		Yes		android.graphics.cts.PaintTest	Paint()	CtsGraphicsTestCases
+7.4.5.3. Captive Portals	7.4.5.3	C-1-1	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	testGetDesiredWidth()	CtsCameraTestCases
+	7.4.5.3	C-1-3	Test Missing		Yes		android.net.wifi.cts.WifiBackupRestoreTest	getRecord()	CtsWifiTestCases
+	7.4.5.3	C-1-4	Test Missing		Yes		android.net.wifi.cts.WifiBackupRestoreTest	testMutableDrawable()	CtsWifiTestCases
+	7.4.5.3	C-1-5			Yes		android.net.wifi.cts.WifiLocationInfoTest	testExceptionInStream()	CtsWifiTestCases
+	7.4.8	C-1-2	Test Available		Yes		android.graphics.cts.PaintTest	Paint()	CtsGraphicsTestCases
+	7.5.4	H-1-1	Not testable		Yes		android.hardware.camera2.cts.LogicalCameraDeviceTest	testDefaultFOV	CtsCamera2TestCases			New in Q	133786213	123773985	6923679	Camera	Camera	2
+	7.5.4	C-0-12	Other (see comment)		Yes		android.view.cts.TextureViewCameraTest	testBindChildView()	CtsViewTestCases
+	9.1	C-2-1	Not testable		Yes		android.systemintents.cts.TestManageOverlayPermissionIntents	testAccessSelection()	CtsSystemIntentTestCases
+	9.10.	C-0-4	Not testable		Yes		android.appsecurity.cts.ApkVerityInstallTest	testAddAll()
+	9.10.	C-0-5	Not testable		Yes		android.appsecurity.cts.ApkVerityInstallTest	testRemoveIf()
+	9.10.	C-1-10	Not testable		Yes		android.appsecurity.cts.ApkVerityInstallTest	testIndexOf()
+	9.10.	C-1-9	Test Available		Yes		android.graphics.cts.VulkanDeqpLevelTest	testUnpremul()	CtsGraphicsTestCases
+	9.11.3	C-0-2	Not testable		Yes		android.net.wifi.cts.ConnectedNetworkScorerTest	testEmptyByteBuffer()	CtsWifiTestCases
+	9.11.3	C-0-4	Not testable		Yes		android.net.wifi.nl80211.cts.NativeWifiClientTest	testPostProcessorInvalidReturn()	CtsWifiTestCases
+9.11.3 Identity Credential	9.11.3	C-0-1	Test Available		Yes		android.provider.cts.media.MediaStoreAudioTestHelper	testOffset()	CtsProviderTestCases
+	9.11.3	C-0-3	Not testable		Yes		android.security.identity.cts.HkdfTest	testPreconditions()	CtsIdentityTestCases
+	9.16	C-1-4	Not testable		Yes		android.graphics.cts.PaintTest	Region()	CtsGraphicsTestCases
+	9.16	C-1-2	Test Available		Yes		android.graphics.cts.PaintTest	Shader()	CtsGraphicsTestCases
+9.16. Applciation Data Migration	9.16	C-1-1	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	cannotKeepAndTruncateNewLines()	CtsCameraTestCases
+	9.16	C-1-5	Not testable		Yes
+	9.16	C-1-3	Test Available		Yes
+	9.5	C-1-3	Not testable		Yes		android.appsecurity.cts.ExternalStorageHostTest	testMultiUserStorageIsolated	CtsAppSecurityHostTestCases							Security	Security	2
+	9.5	C-1-2	Not testable		Yes		android.graphics.cts.PaintTest	testSetShadowLayerXYZ()	CtsGraphicsTestCases
+9.8.10. Connectivity Bug Report	9.8.10	C-1-1	Test Available		Yes		android.carrierapi.cts.BugreportManagerTest	testAlphaPlusSetTargetColorSpace()	CtsCarrierApiTestCases
+	9.8.10	C-1-4	Test Available		Yes		android.carrierapi.cts.NetworkScanApiTest	testAlphaMaskPlusHardwareAnimated()	CtsCarrierApiTestCases
+	9.8.10	C-1-2	Test Available		Yes		android.graphics.cts.PaintTest	testLightingColorFilter()	CtsGraphicsTestCases
+	9.8.10	C-1-3	Test Available		Yes
+	9.8.11	C-1-2	Test Available		Yes		android.graphics.cts.PaintTest	testIsComplex()	CtsGraphicsTestCases
+9.8.11. Data blobs sharing	9.8.11	C-1-1	Test Available		Yes		com.android.cts.blob.BlobStoreManagerTest	preIsIgnored()	CtsBlobStoreTestCases
+9.8.9. Installed apps	9.8.9	C-0-1	Test Available		Yes		android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	testGetDesiredWidth()	CtsCameraTestCases
+	9.9.3	C-1-14	Not testable		Yes
+9.9.4. Resume on Reboot	9.9.4	C-0-1	Test Available		Yes		android.graphics.cts.ANativeWindowTest	testNewInstanceInputStream()	CtsGraphicsTestCases

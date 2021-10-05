@@ -110,7 +110,7 @@ def write_table_from_dictionary(table_dict: dict, file_name: str, header: [str] 
     file_name = helpers.find_valid_path(file_name)
 
     with open(file_name, 'w', newline='') as csv_output_file:
-        table_writer = csv.writer(csv_output_file)
+        table_writer = csv.writer(csv_output_file,delimiter=static_data.table_delimiter)
         # header = ','.join(table_dict.keys())
         if logging: print(f"header ={header}")
         table_writer.writerow(header)
@@ -588,7 +588,7 @@ class RxData:
                                                             ops.map(
                                                                 lambda search_info: self.search_on_files(search_info)))
 
-    def search_on_files(self, search_info, logging: bool = True):
+    def search_on_files(self, search_info:dict, logging: bool = True):
         list_of_test_files = self.get_list_of_at_test_files()
 
         self.progress_count += 1
@@ -607,20 +607,33 @@ class RxData:
         except:
             pass
         self.is_exact_match = False
+        search_dependency_set = set()
+        not_found_set=set()
         for file_to_search in list_of_test_files:
             # if there is not filter data OR the filter is match search
-            if ((not search_root) or (len(search_root) == 0)) or (file_to_search.find(search_root) != -1):
+            if (( search_root is None) or (len(search_root) == 0)) or (file_to_search.find(search_root) != -1):
                 if self.match_count > self.max_matches:
                     print(f"Note: limiting matches to {self.max_matches} skipping {file_to_search}")
                 else:
                     self.execute_search_on_file_for_terms_return_results((search_info, file_to_search))
-                    dependencies = self.__dependency_dictionary
-                    if dependencies:
-                        for dependency in dependencies:
-                            self.execute_search_on_file_for_terms_return_results((search_info, dependency))
-
+                    search_result:dict = search_info.get(SEARCH_RESULT)
+                    if search_result is None or search_result.get(METHOD) is None:
+                        not_found_set.add(file_to_search)
             if self.is_exact_match:
                 break
+        search_result = search_info.get(SEARCH_RESULT)
+        if  search_result is None or  search_result.get(METHOD) is None:
+            for not_found_in in not_found_set:
+               dependency_set:set = self.__dependency_dictionary.get(not_found_in)
+               if dependency_set:
+                search_dependency_set.update(dependency_set)
+            print(f" Search {len(search_dependency_set)} files")
+            for file_to_search in search_dependency_set:
+                if ((not search_root) or (len(search_root) == 0)) or (file_to_search.find(search_root) != -1):
+                    if self.match_count > self.max_matches:
+                        print(f"Note: limiting matches to {self.max_matches} skipping {file_to_search}")
+                    else:
+                        self.execute_search_on_file_for_terms_return_results((search_info, file_to_search))
         return search_info
 
 
@@ -637,18 +650,20 @@ if __name__ == '__main__':
 
     # input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv"
     # output_file_name1 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
-    input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
-    # input_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5.csv"
+    #input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
+    input_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5.csv"
+    output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_b.csv"
+
     # input_file_name =   "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5-c-12-1.csv"
     # output_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
-    output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
+    # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
 
     input_file_name0 = static_data.FILTERED_TABLE_TO_SEARCH
     output_file_name0 = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
-
-    test_output_exists = Path(output_file_name)
+    #
+    # test_output_exists = Path(output_file_name)
     # if test_output_exists.exists():
-    #     table_ops.update_manual_fields_from_files(input_file_name,output_file_name)
+    #         table_ops.update_manual_fields_from_files(input_file_name,output_file_name)
 
     rd.main_do_create_table(input_file_name, output_file_name).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{output_file_name}] from [{input_file_name}] "),

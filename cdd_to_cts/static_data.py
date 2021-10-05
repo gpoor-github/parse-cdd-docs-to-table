@@ -12,14 +12,14 @@ WORKING_ROOT = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source"
 
 # Remember these 2 files must exit before the program is run
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
-FILTER_KEYS_DOWNLOADED_TABLE = 'input/FILTER_KEYS_DOWNLOADED_TABLE.csv'
+FILTER_KEYS_DOWNLOADED_TABLE = 'input/FILTER_KEYS_DOWNLOADED_TABLE.tsv'
 
 # These 2 are generated
-DATA_SOURCES_CSV_FROM_HTML_1st = "output/DATA_SOURCES_CSV_FROM_HTML_1st.csv"
-DATA_SOURCES_UPDATED_CSV_2nd = "output/DATA_SOURCES_UPDATED_CSV_2nd.csv"
+DATA_SOURCES_CSV_FROM_HTML_1st = "output/DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
+DATA_SOURCES_UPDATED_CSV_2nd = "output/DATA_SOURCES_UPDATED_CSV_2nd.tsv"
 
-FILTERED_TABLE_TO_SEARCH = "output/FILTERED_TABLE_TO_SEARCH.csv"
-RX_WORKING_OUTPUT_TABLE_TO_EDIT = "output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.csv"
+FILTERED_TABLE_TO_SEARCH = "output/FILTERED_TABLE_TO_SEARCH.tsv"
+RX_WORKING_OUTPUT_TABLE_TO_EDIT = "output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
 
 
 
@@ -198,6 +198,7 @@ merge_header: [] = (
 update_manual_header: [] = (
     [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS,NOT_FILES, NOT_METHODS])
 
+table_delimiter='\t'
 
 def set_cts_path():
     os.environ['CTS_SOURCE_ROOT'] = CTS_SOURCE_ROOT
@@ -210,3 +211,4 @@ if __name__ == '__main__':
     set_cts_path()
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
+

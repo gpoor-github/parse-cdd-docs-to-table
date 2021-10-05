@@ -66,6 +66,7 @@ class SourceCrawlerReducer(object):
             cts_root_directory)
         self.key_to_full_requirement_text, self.key_to_java_objects, self.key_to_urls, self.cdd_string, self.section_to_data = parse_cdd_html_to_requirements(
             cdd_requirements_html_source)
+        self.create_full_table_from_cdd(global_table_input_file_build_from_html)
 
         self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table_sect_and_req_key(
             global_table_input_file_build_from_html)
@@ -76,7 +77,6 @@ class SourceCrawlerReducer(object):
         #    class DataSources:
         self.files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
 
-        self.create_full_table_from_cdd(global_table_input_file_build_from_html)
 
 
     files_to_words_storage = 'storage/files_to_words.pickle'
@@ -402,7 +402,7 @@ if __name__ == '__main__':
         cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
         global_table_input_file_build_from_html=static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
         cts_root_directory=static_data.CTS_SOURCE_ROOT,
-        do_search=True)
-
+        do_search=False)
+    scr.create_full_table_from_cdd("output/out_test.tsv",static_data.cdd_info_only_header)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

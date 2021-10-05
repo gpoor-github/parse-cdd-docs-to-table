@@ -3,6 +3,7 @@
 import os
 import re
 
+import table_ops
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import process_requirement_text, find_java_objects, find_urls, build_composite_key, \
     find_full_key, bag_from_text, remove_non_determinative_words, find_valid_path
@@ -179,4 +180,6 @@ def make_bags_of_word(root_cts_source_directory):
     return files_to_words_local, method_to_words_local, files_to_method_calls_local
 
 if __name__ == '__main__':
-    parse_cdd_html_to_requirements()
+    key_to_full_requirement, key_to_java_objects, key_to_urls, cdd_as_string, section_to_section_data =\
+        parse_cdd_html_to_requirements()
+    table_ops.write_table()

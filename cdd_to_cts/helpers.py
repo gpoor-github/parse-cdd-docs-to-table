@@ -223,7 +223,7 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 
 def find_valid_path(file_name: str) -> str:
 
-    if file_name.find(static_data.WORKING_ROOT[0:20]) != -1:
+    if file_name.find(static_data.WORKING_ROOT[0:10]) != -1:
         return file_name
 
     if file_name.find(static_data.WORKING_ROOT) == -1:

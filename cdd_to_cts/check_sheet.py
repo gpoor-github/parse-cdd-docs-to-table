@@ -2,6 +2,7 @@ import csv
 import json
 import os
 
+import static_data
 import table_ops
 from helpers import find_valid_path
 from static_data import CTS_SOURCE_ROOT, SECTION_ID, REQ_ID
@@ -68,7 +69,7 @@ class ReadSpreadSheet:
 
         with open(ccd_csv_file_name) as csv_file:
             print(f"Openned {ccd_csv_file_name}")
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader = csv.reader(csv_file, delimiter=static_data.table_delimiter)
             line_count = 0
 
             for row in csv_reader:

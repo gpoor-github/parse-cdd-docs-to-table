@@ -182,7 +182,7 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
     file_name = helpers.find_valid_path(file_name)
 
     with open(file_name, 'w', newline='') as csv_output_file:
-        table_writer = csv.writer(csv_output_file)
+        table_writer = csv.writer(csv_output_file,delimiter=static_data.table_delimiter)
         found_header = find_header(table)
         start_index = 0
         if found_header is not None and (len(found_header) >0):
@@ -302,7 +302,7 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
     try:
         with open(file_name) as csv_file:
 
-            csv_reader_instance = csv.reader(csv_file, delimiter=',')
+            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter)
             table_index = 0
 
             for row in csv_reader_instance:
@@ -344,7 +344,7 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
     return table, key_fields, header, duplicate_rows
 
 
-def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str]], dict[str, int], [str],
+def read_table_sect_and_req_key(file_name: str, header_in: [str]=None, logging: bool = False) -> [[[str]], dict[str, int], [str],
                                                                            dict[str, str]]:
     """],
 
@@ -360,11 +360,14 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
     duplicate_rows: [str, str] = dict()
 
     try:
-        with open(file_name) as csv_file:
+        with open(file_name, newline='\n') as csv_file:
 
-            csv_reader_instance = csv.reader(csv_file, delimiter=',')
+            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter)
             table_index = 0
             is_header_set = False
+            if header_in is not None and len(header_in) > 0:
+                is_header_set = True
+                header = header_in
 
             for row in csv_reader_instance:
                 try:
@@ -379,7 +382,7 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
                             # Skip the rest of the loop... if there is an exception carry on and get the first row
                             continue
                         except ValueError:
-                            message = f' Error: First row NOT header file={csv_file}  row={row} default to section_id = col 1 and req_id col 2. First row of file should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
+                            message = f' Fatal,  exit Error: First row NOT header file={csv_file}   ToDo: Consider passing in header? row={row} default to section_id = col 1 and req_id col 2. First row of file should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
                             print(message)
                             raise SystemExit(message)
                             # Carry on and get the first row
@@ -421,6 +424,9 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
     except (IOError, IndexError) as e:
         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
         raise SystemExit(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+    except Exception as e2:
+        helpers.raise_error(f"Unexpected fatal exception[{str(e)}] file {file_name}  in read_table_sect_and_req_key  exiting...")
+        raise SystemExit(f"Failed to open file {file_name} exception -= {str(e)} exiting...")
     return table, key_fields, header, duplicate_rows
 
     # find urls that may help find the tests for the requirement
@@ -428,7 +434,7 @@ def read_table_sect_and_req_key(file_name: str, logging: bool = False) -> [[[str
 
 def read_table_to_dictionary(file_name: str, logging: bool = False) -> (dict[str,str], [str]):
     table_dictionary = dict()
-    table, key_fields, header, duplicate_rows = read_table_sect_and_req_key(file_name, logging)
+    table, key_fields, header, duplicate_rows = read_table_sect_and_req_key(file_name=file_name, logging=logging)
     for key in key_fields:
         table_dictionary[key] = table[key_fields[key]]
 

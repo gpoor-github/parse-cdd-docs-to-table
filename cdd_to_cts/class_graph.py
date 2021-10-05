@@ -110,7 +110,7 @@ def parse_class_or_method(line_method):
     return class_def, method
 
 
-def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR_CTS_TXT):
+def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR_CTS_TXT) -> dict[str,set]:
     # /Volumes/graham-ext/AndroidStudioProjects/cts
     test_classes_to_dependent_classes = dict()
     start = time.perf_counter()
@@ -125,6 +125,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
         for a_file_split in file_splits:
             target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0).strip('"')  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
             if target_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:
+                target_file_name = target_file_name.replace("$PROJECT_DIR$",static_data.CTS_SOURCE_ROOT)
                 print(target_file_name)
                 dependencies_split = a_file_split.split('<dependency path=')
                 dependency_list: [] = list()
@@ -134,9 +135,10 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
                         end = time.perf_counter()
                         print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
                     dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
-                    if  dependencies_file_name is not None and dependencies_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:                    # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
+                    if  dependencies_file_name is not None and dependencies_file_name.find(".java") > -1 and dependencies_file_name.find("$PROJECT_DIR$") > -1:                    # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
+                        dependencies_file_name = dependencies_file_name.replace("$PROJECT_DIR$", static_data.CTS_SOURCE_ROOT)
                         dependency_list.append(dependencies_file_name.strip('"'))
-                test_classes_to_dependent_classes[target_file_name] = dependency_list
+                test_classes_to_dependent_classes[target_file_name] = set(dependency_list)
 
 
         end = time.perf_counter()
