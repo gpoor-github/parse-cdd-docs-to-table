@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import traceback
+from pathlib import Path
 from typing import Any
 
 import rx
@@ -658,19 +659,17 @@ if __name__ == '__main__':
     # input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv"
     # output_file_name1 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
     #input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
-    input_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5.csv"
-    output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_b.csv"
 
     # input_file_name =   "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5-c-12-1.csv"
     # output_file_name="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
     # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
 
-    input_file_name0 = static_data.FILTERED_TABLE_TO_SEARCH
-    output_file_name0 = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
+    input_file_name0= static_data.FILTERED_TABLE_TO_SEARCH
+    output_file_name = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
     #
-    # test_output_exists = Path(output_file_name)
-    # if test_output_exists.exists():
-    #         table_ops.update_manual_fields_from_files(input_file_name,output_file_name)
+    test_output_exists = Path(output_file_name)
+    if test_output_exists.exists():
+            table_ops.update_manual_fields_from_files(input_file_name,output_file_name)
 
     rd.main_do_create_table(input_file_name, output_file_name).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{output_file_name}] from [{input_file_name}] "),
