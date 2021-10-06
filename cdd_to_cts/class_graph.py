@@ -19,12 +19,18 @@ def get_package_name(class_path):
 
 
 def test_case_name(path_to_project_root, testcase_dictionary: dict):
+    module = None
     path_to_project_root_split = str(path_to_project_root).split('cts/tests/')
     if len(path_to_project_root_split) > 1:
-        key = path_to_project_root_split[1]
+        key = path_to_project_root_split[1].replace('/','.')
         module = testcase_dictionary.get(key)
-        return module
-    return None
+
+    if not module:
+        path_to_project_root_split = str(path_to_project_root).split('cts/')
+        if len(path_to_project_root_split) > 1:
+            key = path_to_project_root_split[1].replace('/','.')
+            module = testcase_dictionary.get(key)
+    return module
 
 
 re_method = re.compile(static_data.METHOD_RE)

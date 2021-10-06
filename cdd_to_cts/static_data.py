@@ -169,6 +169,7 @@ PROTECTED ='protected'
 AREA='Area'
 SHORTENED ='Shortened'
 TEST_LEVEL= 'Test Level'
+not_annotated_test_start = "public void test"
 
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header:[]  = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,

@@ -3,7 +3,6 @@ import re
 import sys
 import time
 import traceback
-from pathlib import Path
 from typing import Any
 
 import rx
@@ -11,7 +10,6 @@ from rx import operators as ops, pipe
 from rx.subject import ReplaySubject, BehaviorSubject
 
 import class_graph
-import data_sources_helper
 import helpers
 import static_data
 import table_ops
@@ -351,7 +349,13 @@ class RxData:
                     search_result[static_data.PIPELINE_FILE_NAME] = file_name
                     add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                     method_text_splits_of_file = full_text_of_file_str.split("@Test")
+                    prepend =""
+                    if len(method_text_splits_of_file) <= 1:
+                        method_text_splits_of_file = method_text_splits_of_file = full_text_of_file_str.split(
+                            static_data.not_annotated_test_start)
+                        prepend = static_data.not_annotated_test_start
                     for method_text in method_text_splits_of_file:
+                        method_text = prepend+method_text
                         re_matches_from_method_search = re.findall(re.escape(matched_term), method_text,
                                                                    flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
                         if len(re_matches_from_method_search) > 0:
@@ -590,8 +594,9 @@ class RxData:
 
     def search_on_files(self, search_info:dict, logging: bool = True):
         list_of_test_files = self.get_list_of_at_test_files()
-
+        list_of_test_files =list_of_test_files.union(helpers.get_list_void_public_test_files())
         self.progress_count += 1
+        files_skipped = 0
         if logging:
             self.end = time.perf_counter()
             print(f'\n {self.progress_count}) of {len(self.__input_table_keyed)} ')
@@ -612,9 +617,7 @@ class RxData:
         for file_to_search in list_of_test_files:
             # if there is not filter data OR the filter is match search
             if (( search_root is None) or (len(search_root) == 0)) or (file_to_search.find(search_root) != -1):
-                if self.match_count > self.max_matches:
-                    print(f"Note: limiting matches to {self.max_matches} skipping {file_to_search}")
-                else:
+                if self.match_count < self.max_matches:
                     self.execute_search_on_file_for_terms_return_results((search_info, file_to_search))
                     search_result:dict = search_info.get(SEARCH_RESULT)
                     if search_result is None or search_result.get(METHOD) is None:
@@ -628,12 +631,16 @@ class RxData:
                if dependency_set:
                 search_dependency_set.update(dependency_set)
             print(f" Search {len(search_dependency_set)} files")
-            for file_to_search in search_dependency_set:
-                if ((not search_root) or (len(search_root) == 0)) or (file_to_search.find(search_root) != -1):
-                    if self.match_count > self.max_matches:
-                        print(f"Note: limiting matches to {self.max_matches} skipping {file_to_search}")
-                    else:
-                        self.execute_search_on_file_for_terms_return_results((search_info, file_to_search))
+            for dependency_file in search_dependency_set:
+                dependency_file = str(dependency_file)
+                if ((not search_root) or (len(search_root) == 0)) or (dependency_file.find(search_root) != -1):
+                    if self.match_count < self.max_matches:
+                        self.execute_search_on_file_for_terms_return_results((search_info, dependency_file))
+
+        if logging: print(f"result =[{search_info.get(SEARCH_RESULT)}]")
+        if self.match_count > self.max_matches:
+            if logging: print(f"Note: limiting matches to {self.max_matches} skipped many files")
+
         return search_info
 
 

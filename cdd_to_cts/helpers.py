@@ -10,6 +10,24 @@ from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_ob
 from stackdump import stackdump
 
 
+def get_list_void_public_test_files(results_grep_public_test: str = "input_scripts/public_void_test_files.txt") -> set:
+    results_grep_public_test = find_valid_path(results_grep_public_test)
+    test_file_set = set()
+
+    try:
+        with open(results_grep_public_test, "r") as grep_of_test_files:
+            file_content = grep_of_test_files.readlines()
+            count = 0
+            while count < len(file_content):
+                line = file_content[count]
+                count += 1
+                test_file_set.add( line.split(":")[0])
+        grep_of_test_files.close()
+    except FileNotFoundError as e:
+        raise_error(f" Could not find {results_grep_public_test} ", e)
+    return test_file_set
+
+
 def convert_version_to_number_from_full_key(full_key: str):
     key_split = full_key.split('/')
     if len(key_split) == 1:
