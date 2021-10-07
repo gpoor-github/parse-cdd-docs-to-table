@@ -24,12 +24,19 @@ def test_case_name(path_to_project_root, testcase_dictionary: dict):
     if len(path_to_project_root_split) > 1:
         key = path_to_project_root_split[1].replace('/','.')
         module = testcase_dictionary.get(key)
-
+        if not module:
+            key_split = key.split('.')
+            if len(key_split)> 1:
+                module = testcase_dictionary.get(key_split[1])
     if not module:
-        path_to_project_root_split = str(path_to_project_root).split('cts/')
-        if len(path_to_project_root_split) > 1:
-            key = path_to_project_root_split[1].replace('/','.')
+        path_to_project_root_partition = str(path_to_project_root).partition(static_data.CTS_SOURCE_NAME)
+        if path_to_project_root_partition[2]:
+            key = path_to_project_root_partition[2].replace('/', '.')
             module = testcase_dictionary.get(key)
+            if not module:
+                key_split = key.split('.')
+                if len(key_split)> 1:
+                    module = testcase_dictionary.get(key_split[1])
     return module
 
 
@@ -132,14 +139,14 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
             target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0).strip('"')  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
             if target_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:
                 target_file_name = target_file_name.replace("$PROJECT_DIR$",static_data.CTS_SOURCE_ROOT)
-                print(target_file_name)
+                # print(target_file_name)
                 dependencies_split = a_file_split.split('<dependency path=')
                 dependency_list: [] = list()
                 for a_dependencies_split in dependencies_split:
                     count += 1
                     if count % 10 == 0:
                         end = time.perf_counter()
-                        print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
+                        # print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
                     dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
                     if  dependencies_file_name is not None and dependencies_file_name.find(".java") > -1 and dependencies_file_name.find("$PROJECT_DIR$") > -1:                    # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
                         dependencies_file_name = dependencies_file_name.replace("$PROJECT_DIR$", static_data.CTS_SOURCE_ROOT)
@@ -148,7 +155,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
 
 
         end = time.perf_counter()
-        print(f'Finished parsing {str(test_classes_to_dependent_classes)} {count} time {end - start:0.4f}sec ')
+        print(f'Finished parsing dependencies {count} time {end - start:0.4f}sec ')
 
     except Exception as err:
         helpers.raise_error(f" Maybe couldn't open {file_name_in}", err)

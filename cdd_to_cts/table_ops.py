@@ -28,8 +28,8 @@ This will take table_target and update missing values in the specified key_to_in
             table_index_source:int = key_to_index_source.get(key)
             table_index_target:int = key_to_index_target.get(key)
             if (table_index_source is not None) and  (table_index_target is not None):
-                test_target_index_str = ",".join(header_target)
-                test_source_index_str = ",".join(header_source)
+                test_target_index_str = static_data.table_delimiter.join(header_target)
+                test_source_index_str = static_data.table_delimiter.join(header_source)
                 t_target_row = table_target[table_index_target]
                 t_source_row = table_source[table_index_source]
                 # Section,section_id,req_id
@@ -379,6 +379,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str]=None, logging: 
                             header = row
                             ##table.append(row)
                             is_header_set= True
+
                             # Skip the rest of the loop... if there is an exception carry on and get the first row
                             continue
                         except ValueError:
@@ -386,9 +387,11 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str]=None, logging: 
                             print(message)
                             raise SystemExit(message)
                             # Carry on and get the first row
-
+                    header_len = len(header)
                     if logging: print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
                     # Section,section_id,req_id
+                    for i in range(len(row),header_len):
+                        row.append('*')
                     table.append(row)
                     table[table_index][section_id_index] = table[table_index][section_id_index].strip().rstrip('.')
                     section_id_value = table[table_index][section_id_index]
@@ -427,6 +430,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str]=None, logging: 
     except Exception as e2:
         helpers.raise_error(f"Unexpected fatal exception[{str(e)}] file {file_name}  in read_table_sect_and_req_key  exiting...")
         raise SystemExit(f"Failed to open file {file_name} exception -= {str(e)} exiting...")
+
     return table, key_fields, header, duplicate_rows
 
     # find urls that may help find the tests for the requirement

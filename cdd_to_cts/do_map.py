@@ -47,11 +47,11 @@ if __name__ == '__main__':
             on_error=lambda err: helpers.raise_error("in main", err))
 
     print(" Now check final output")
-    table_ops.diff_tables_files(rx_output_file, requirements_to_search_generated_table)
+    # table_ops.diff_tables_files(rx_output_file, requirements_to_search_generated_table)
 
-    rs = ReadSpreadSheet()
-    result, not_found, found = rs.parse_data(rx_output_file)
-    print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
+    # rs = ReadSpreadSheet()
+    # result, not_found, found = rs.parse_data(rx_output_file)
+    # print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
 
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

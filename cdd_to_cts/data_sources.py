@@ -308,7 +308,7 @@ class SourceCrawlerReducer(object):
     # ['Section', SECTION_ID, 'req_id', 'Test Availability','class_def', 'method', 'module','full_key','requirement', 'key_as_number','search_terms','urls','file_name'])
 
     def write_new_data_line_to_table(self, key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int,
-                                     header: [] = static_data.cdd_to_cts_app_header):
+                                     header: [] = static_data.cdd_to_cts_app_header, logging=False):
         key_to_java_objects = self.key_to_java_objects
         key_to_urls = self.key_to_urls
         section_data = keys_to_sections.get(key_str)
@@ -318,7 +318,7 @@ class SourceCrawlerReducer(object):
         if len(table) <= table_row_index:
             table.append(row)
 
-        print(f"keys from  {table_row_index} [{key_str}]")
+        if logging: print(f"keys from  {table_row_index} [{key_str}]")
         key_str = key_str.rstrip(".").strip(' ')
         key_split = key_str.split('/')
         table[table_row_index][header.index('Section')] = self.section_to_data.get(

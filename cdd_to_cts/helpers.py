@@ -176,7 +176,7 @@ def find_section_id(section: str) -> str:
 
 def remove_n_spaces_and_commas(value):
     value = re.sub("\\s\\s+", " ", value)
-    value = re.sub(",", ";", value)
+    value = re.sub(static_data.table_delimiter, " ", value)
     return value
 
 
