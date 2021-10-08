@@ -685,8 +685,8 @@ if __name__ == '__main__':
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/3_2.3.5_output.tsv"
     # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
-    input_file_name = "/input1/3.1.1-input.tsv"
-    output_file_name= "/output1/3.1.1-output.tsv"
+    input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.2.3.5_input.tsv"
+    output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_output.tsv"
     # input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
     # output_file_name = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
     # #
