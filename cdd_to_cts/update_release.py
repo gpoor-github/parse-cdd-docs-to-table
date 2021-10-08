@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     final_output_file = "output/built_from_full_cdd_as_in_for_react.csv"
     select_assigned_reqs = "input/FILTER_KEYS_DOWNLOADED_TABLE.csv"
-    #mapped_cdd_annotated =     "input/mapping_output_for_import.csv"
+    #mapped_cdd_annotated =     "input/mapping_output_for_import.tsv"
     make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st,select_assigned_reqs,
                                             static_data.FILTERED_TABLE_TO_SEARCH)
     end = time.perf_counter()

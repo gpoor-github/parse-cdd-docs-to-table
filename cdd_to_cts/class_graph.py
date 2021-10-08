@@ -18,25 +18,29 @@ def get_package_name(class_path):
     return class_path
 
 
-def test_case_name(path_to_project_root, testcase_dictionary: dict):
+def search_for_test_case_name(full_path_to_file, testcase_dictionary: dict, logging = False):
     module = None
-    path_to_project_root_split = str(path_to_project_root).split('cts/tests/')
-    if len(path_to_project_root_split) > 1:
-        key = path_to_project_root_split[1].replace('/','.')
-        module = testcase_dictionary.get(key)
-        if not module:
-            key_split = key.split('.')
-            if len(key_split)> 1:
-                module = testcase_dictionary.get(key_split[1])
-    if not module:
-        path_to_project_root_partition = str(path_to_project_root).partition(static_data.CTS_SOURCE_NAME)
-        if path_to_project_root_partition[2]:
-            key = path_to_project_root_partition[2].replace('/', '.')
+    try:
+        full_path = os.path.dirname(os.path.abspath(full_path_to_file))
+        relative_path = str(full_path).split(static_data.CTS_SOURCE_ROOT)[1].replace('/','.').strip('.')
+        # cts_splitter = f".{static_data.CTS_SOURCE_NAME}."
+        src_splits = relative_path.split('src')
+        key = src_splits[0]
+        if key:
+            key = key.strip('.')
             module = testcase_dictionary.get(key)
-            if not module:
-                key_split = key.split('.')
-                if len(key_split)> 1:
-                    module = testcase_dictionary.get(key_split[1])
+            if module:
+                return module
+            else:
+                while key.startswith('tests.'):
+                    key = key.removeprefix('tests.')
+                    module = testcase_dictionary.get(key)
+                    if module:
+                        return module
+    except Exception as e:
+        print(f"No test case found for {full_path_to_file} from exception {str(e)}")
+    if not module:
+        if logging: print (f"No test case found for {full_path_to_file}")
     return module
 
 

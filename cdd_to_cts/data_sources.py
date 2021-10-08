@@ -166,10 +166,7 @@ class SourceCrawlerReducer(object):
                     class_name_split_src = a_single_test_file_name.split('/src/')
                     # Module
                     if len(class_name_split_src) > 0:
-                        test_case_key = str(class_name_split_src[0]).replace('cts/tests/', '')
-                        if len(test_case_key) > 1:
-                            project_root = str(test_case_key).replace("/", ".")
-                            test_case_name = self.files_to_test_cases.get(project_root)
+                            test_case_name = class_graph.search_for_test_case_name(a_single_test_file_name, self.files_to_test_cases)
 
                     if len(class_name_split_src) > 1:
                         class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")

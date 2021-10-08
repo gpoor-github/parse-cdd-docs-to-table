@@ -300,8 +300,9 @@ class RxData:
     #                                       table,
     #                                       static_data.cdd_info_only_header)))
 
-    def init_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
-        self.__test_case_dict = build_test_cases_module_dictionary(table_dict_file)
+    def get_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
+        if not self.__test_case_dict:
+            self.__test_case_dict = build_test_cases_module_dictionary(table_dict_file)
         return self.__test_case_dict
 
     def init_input_table_keyed(self, table_dict_file):
@@ -310,7 +311,7 @@ class RxData:
         return self.__input_table_keyed, self.__input_header_keyed
 
     def get_input_table_keyed(self):
-        if self.__input_table_keyed:
+        if not self.__input_table_keyed:
             self.init_input_table_keyed(static_data.INPUT_TABLE_FILE_NAME_RX)
         return self.__input_table_keyed, self.__input_header_keyed
 
@@ -404,8 +405,8 @@ class RxData:
                 if len(class_name_split_src) > 0:
 
                     import class_graph
-                    test_case_name = class_graph.test_case_name(class_name_split_src[0],
-                                                                self.init_test_case_dict())
+                    test_case_name = class_graph.search_for_test_case_name(file_name,
+                                                                           self.get_test_case_dict())
                     add_list_to_count_dict(test_case_name, search_result, MODULE)
                     if len(class_name_split_src) > 1:
                         class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
@@ -417,7 +418,7 @@ class RxData:
                             if method_results and len(method_results) > 0:
                                 for method in method_results:
                                     if method.lower().find('is') != -1 or method.lower().find('test') != -1:
-                                        qualified_method = f"{test_case_name}:{class_name}.{method}"
+                                        qualified_method = f"[{class_name} {method} {test_case_name}]"
                                         add_list_to_dict(qualified_method, search_result, QUALIFIED_METHOD)
                                         self.match_count += 1
                                         break
@@ -658,7 +659,7 @@ class RxData:
             matched =  sorted(results.get(MATCHED_TERMS).count_value_dict.items(), key=lambda x: x[1], reverse=True)
             if logging: print(f"Matches!  {self.match_count} of {self.max_matches} allowed: matched  {matched}\n")
         else:
-            Fprint("No matches!")
+            print("No matches!")
 
         if self.match_count > self.max_matches:
             if logging: print(f"\nNOTE: SKIPPED {skip_count} files limiting matches to {self.max_matches} skipped many files!!!\n")
@@ -684,8 +685,8 @@ if __name__ == '__main__':
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/3_2.3.5_output.tsv"
     # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
-    input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/3.1.1.1-input.tsv"
-    output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.1.1.1-output.tsv"
+    input_file_name = "/input1/3.1.1-input.tsv"
+    output_file_name= "/output1/3.1.1-output.tsv"
     # input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
     # output_file_name = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
     # #

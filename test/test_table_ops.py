@@ -22,7 +22,7 @@ class TestUpdate(TestCase):
         keys = ['3.18/C-1-5', '7.1.4.2/C-1-9', '7.1.4.2/C-1-8', '3.18/C-1-3', '3.18/C-1-4', '9.10/C-0-3', '3.18/C-1-2',
                 '3.18/C-1-1']
         table_input = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
-        mapping_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/mapping_output_for_import.csv"
+        mapping_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/mapping_output_for_import.tsv"
         table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(mapping_input)
         new_table = filter_table_by_keys(table, key_fields, keys)
         table_ops.write_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/mapping_input_update_table.csv", new_table,
@@ -39,7 +39,7 @@ class TestUpdate(TestCase):
         keys_to_filter_by = ['3.18/C-1-5', '7.1.4.2/C-1-9', '7.1.4.2/C-1-8', '3.18/C-1-3', '3.18/C-1-4', '9.10/C-0-3', '3.18/C-1-2',
                 '3.18/C-1-1']
         table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(
-            "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/mapping_output_for_import.csv")
+            "/mapping_output_for_import.tsv")
         new_table = table_ops.filter_able_by_removing_keys(table, key_fields, keys_to_filter_by)
 
         table_ops.write_table(
