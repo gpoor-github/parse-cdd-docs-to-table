@@ -169,6 +169,8 @@ PROTECTED ='protected'
 AREA='Area'
 SHORTENED ='Shortened'
 TEST_LEVEL= 'Test Level'
+#SCRIPT_OPTIONS = 'SCRIPT_OPTIONS'
+SO_ONLY_SEARCH_KEYS = "ONLY_SEARCH_KEYS"
 not_annotated_test_start = "public void test"
 
 # Contains all the fields that are used to review and iterate on mappings.
@@ -197,9 +199,13 @@ merge_header: [] = (
 
 # Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
 update_manual_header: [] = (
-    [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS,NOT_FILES, NOT_METHODS])
+    [PROTECTED, MANUAL_SEARCH_TERMS,SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS,NOT_FILES, NOT_METHODS])
 
 table_delimiter='\t'
+table_dialect='excel-tab'
+table_newline= ''
+table_encoding='UTF-8'
+table_lineterminator=table_newline
 
 def set_cts_path():
     os.environ['CTS_SOURCE_ROOT'] = CTS_SOURCE_ROOT

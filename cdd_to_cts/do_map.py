@@ -42,9 +42,9 @@ if __name__ == '__main__':
     rd.main_do_create_table(input_table_file=requirements_to_search_generated_table,
                             output_file=rx_output_file) \
         .subscribe(
-            on_next=lambda table: my_print(table, "that's all folks!{} "),
+            on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),
             on_completed=lambda:  do_on_complete(),
-            on_error=lambda err: helpers.raise_error("in main", err))
+            on_error=lambda err: helpers.raise_error("rx on_error do_map()", err))
 
     print(" Now check final output")
     # table_ops.diff_tables_files(rx_output_file, requirements_to_search_generated_table)

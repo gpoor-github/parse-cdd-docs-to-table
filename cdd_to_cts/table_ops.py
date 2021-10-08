@@ -1,9 +1,8 @@
 import csv
-import os
 import sys
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY, table_lineterminator
 
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],
@@ -149,40 +148,40 @@ def add_columns(manual_fields_header, updated_header):
         except ValueError:
             updated_header.append(column)
 
-
-def write_file_fields_to_files(source_to_use_values: str,  fields_to_write: [str]=static_data.cdd_to_cts_app_header) -> [[str]]:
-    table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key( source_to_use_values)
-    fields_to_write_str = " ".join(fields_to_write)
-    path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
-
-    for i in range(0, len(table)):
-        row = table[i]
-        key:str = row[header.index(static_data.FULL_KEY)]
-        key_f = key.replace('/','_')
-        req_path = f"{path_for_files_root}/{key_f}"
-        os.makedirs(req_path,exist_ok=True)
-        for j in  range(0, len(row)-1):
-          if j >= len(header):
-              print("Error header and data out of sync")
-              break
-          if fields_to_write_str.find(header[j]) > -1:
-            value:str = row[j]
-            if len(value) > 10:
-                col =header[j]
-                file_path =rf"{req_path}/{col}.txt"
-                text_file = open(file_path, "w")
-                if col != static_data.METHODS_STRING:
-                    value = value.replace(' ','\n')
-                value = value.replace(']',']\n')
-                n = text_file.write(value)
-                text_file.close()
+#
+# def write_file_fields_to_files(source_to_use_values: str,  fields_to_write: [str]=static_data.cdd_to_cts_app_header) -> [[str]]:
+#     table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key( source_to_use_values)
+#     fields_to_write_str = " ".join(fields_to_write)
+#     path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
+#
+#     for i in range(0, len(table)):
+#         row = table[i]
+#         key:str = row[header.index(static_data.FULL_KEY)]
+#         key_f = key.replace('/','_')
+#         req_path = f"{path_for_files_root}/{key_f}"
+#         os.makedirs(req_path,exist_ok=True)
+#         for j in  range(0, len(row)-1):
+#           if j >= len(header):
+#               print("Error header and data out of sync")
+#               break
+#           if fields_to_write_str.find(header[j]) > -1:
+#             value:str = row[j]
+#             if len(value) > 10:
+#                 col =header[j]
+#                 file_path =rf"{req_path}/{col}.txt"
+#                 text_file = open(file_path, "w")
+#                 if col != static_data.METHODS_STRING:
+#                     value = value.replace(' ','\n')
+#                 value = value.replace(']',']\n')
+#                 n = text_file.write(value)
+#                 text_file.close()
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
 
     file_name = helpers.find_valid_path(file_name)
 
-    with open(file_name, 'w', newline='') as csv_output_file:
-        table_writer = csv.writer(csv_output_file,delimiter=static_data.table_delimiter)
+    with open(file_name, 'w', newline=static_data.table_newline) as csv_output_file:
+        table_writer = csv.writer(csv_output_file,quoting=csv.QUOTE_ALL, delimiter=static_data.table_delimiter)
         found_header = find_header(table)
         start_index = 0
         if found_header is not None and (len(found_header) >0):
@@ -300,9 +299,9 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
     duplicate_rows: [str, str] = dict()
 
     try:
-        with open(file_name) as csv_file:
+        with open(file_name,newline=static_data.table_newline,encoding=static_data.table_encoding) as csv_file:
 
-            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter)
+            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter, dialect=static_data.table_dialect)
             table_index = 0
 
             for row in csv_reader_instance:
@@ -360,9 +359,8 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str]=None, logging: 
     duplicate_rows: [str, str] = dict()
 
     try:
-        with open(file_name, newline='\n') as csv_file:
-
-            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter)
+        with open(file_name, newline=static_data.table_newline,encoding=static_data.table_encoding) as csv_file:
+            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter, dialect=static_data.table_dialect)
             table_index = 0
             is_header_set = False
             if header_in is not None and len(header_in) > 0:

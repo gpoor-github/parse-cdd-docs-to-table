@@ -3,7 +3,6 @@
 import os
 import re
 
-import table_ops
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import process_requirement_text, find_java_objects, find_urls, build_composite_key, \
     find_full_key, bag_from_text, remove_non_determinative_words, find_valid_path
@@ -11,7 +10,7 @@ from cdd_to_cts.static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE, composite
     full_key_string_for_re, CDD_REQUIREMENTS_FROM_HTML_FILE
 
 
-def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE):
+def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE, logging=False):
     key_to_full_requirement_text_local = dict()
     key_to_java_objects_local = dict()
     key_to_urls_local = dict()
@@ -57,14 +56,14 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
 
             total_requirement_count = process_section(find_full_key, full_key_string_for_re, cdd_section_id,
                                                       key_to_full_requirement_text_local, req_id_splits,
-                                                      section_count, total_requirement_count)
+                                                      section_count, total_requirement_count, logging)
             # Only build a key if you can't find any...
             if len(req_id_splits) < 2:
                 req_id_splits = re.split(composite_key_string_re, str(section))
 
                 total_requirement_count = process_section(build_composite_key, req_id_re_str, cdd_section_id,
                                                           key_to_full_requirement_text_local, req_id_splits,
-                                                          section_count, total_requirement_count)
+                                                          section_count, total_requirement_count,logging)
 
 
         for key in key_to_full_requirement_text_local:
@@ -83,7 +82,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count):
+                    record_id_splits, section_id_count, total_requirement_count, logging = False):
     record_id_count = 0
 
     for record_id_split in record_id_splits:
@@ -92,7 +91,7 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
             record_id_split = helpers.clean_html_anchors(record_id_split)
             record_id_count += 1
             total_requirement_count += 1
-            print(
+            if logging: print(
                 f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text_param.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
             key_to_full_requirement_text_param[key] = process_requirement_text(record_id_split,
                                                                                key_to_full_requirement_text_param.get(
@@ -180,6 +179,5 @@ def make_bags_of_word(root_cts_source_directory):
     return files_to_words_local, method_to_words_local, files_to_method_calls_local
 
 if __name__ == '__main__':
-    key_to_full_requirement, key_to_java_objects, key_to_urls, cdd_as_string, section_to_section_data =\
+    key_to_full_requirement, key_to_java_objects, key_to_urls, cdd_as_string, section_to_section_data_test =\
         parse_cdd_html_to_requirements()
-    table_ops.write_table()

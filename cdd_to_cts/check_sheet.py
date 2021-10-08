@@ -67,9 +67,9 @@ class ReadSpreadSheet:
         self.crawl()
         ccd_csv_file_name = find_valid_path(ccd_csv_file_name)
 
-        with open(ccd_csv_file_name) as csv_file:
-            print(f"Openned {ccd_csv_file_name}")
-            csv_reader = csv.reader(csv_file, delimiter=static_data.table_delimiter)
+        with open(ccd_csv_file_name,newline=static_data.table_newline) as csv_file:
+            print(f"Opened {ccd_csv_file_name}")
+            csv_reader = csv.reader(csv_file, delimiter=static_data.table_delimiter, dialect=static_data.table_dialect)
             line_count = 0
 
             for row in csv_reader:

@@ -108,8 +108,8 @@ def write_table_from_dictionary(table_dict: dict, file_name: str, header: [str] 
                                 logging: bool = False) -> (dict, []):
     file_name = helpers.find_valid_path(file_name)
 
-    with open(file_name, 'w', newline='') as csv_output_file:
-        table_writer = csv.writer(csv_output_file,delimiter=static_data.table_delimiter)
+    with open(file_name, 'w',newline=static_data.table_newline) as csv_output_file:
+        table_writer = csv.writer(csv_output_file,quoting=csv.QUOTE_ALL, delimiter=static_data.table_delimiter)
         # header = ','.join(table_dict.keys())
         if logging: print(f"header ={header}")
         table_writer.writerow(header)
@@ -247,7 +247,7 @@ def find_search_terms(search_info) -> dict:
         search_term_set.update(manual_search_terms)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
-    search_info[static_data.SEARCH_TERMS] = search_term_set
+    search_info[static_data.SEARCH_TERMS] = section_req.union(manual_search_terms)
     return search_info
 
 
