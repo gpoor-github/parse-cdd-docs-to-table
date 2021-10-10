@@ -53,14 +53,14 @@ cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'im
                     'Devices', ';', 'support', 'document', 'level', 'through', 'logical', 'available',
                     'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'  "MUST",
                     "SHOULD",
-                    "API", 'source.android.com', 'NOT', 'SDK', 'MAY', 'AOSP', 'STRONGLY',
+                    "API", 'source.android.com', 'NOT', 'SDK', 'AND', 'MAY', 'AOSP', 'STRONGLY',
                     'developer.android.com', 'Test', '@Test', 'app,data','1','2','3','4','5','6','7','8','9','0'}
 
 common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'using', 'value', 'more' 'open', 'getType',
                   'getMessage', 'equals', 'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from',
                   'String', 'HashMap', "None", "no"}
 
-common_english_words = {'the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on',
+common_english_words = {'AND','the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on',
                         'are', 'as', 'with', 'his', 'they', 'I', 'at', 'be', 'this', 'have', 'from', 'or', 'one',
                         'had', 'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can',
                         'said', 'there', 'use', 'an', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will',

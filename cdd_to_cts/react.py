@@ -20,7 +20,7 @@ from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_
     convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas, CountDict
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
-    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT
+    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT
 
 
 def build_dict(key_req: str):
@@ -286,7 +286,7 @@ class RxData:
 
         self.__list_of_at_test_files: set = set()
 
-        self.result_subject = BehaviorSubject("0:" + str(static_data.cdd_to_cts_app_header))
+        self.result_subject = BehaviorSubject(dict())
         self.__replay_input_table = None
 
         self.__replay_header = None
@@ -363,6 +363,11 @@ class RxData:
                     if not search_result:
                         search_result = dict()
                     search_info[SEARCH_RESULT] = search_result
+                    flat_result = dict()
+                    search_result[FLAT_RESULT] =flat_result
+                    flat_result[REQUIREMENT] = search_info[REQUIREMENT]
+                    flat_result[SEARCH_TERMS] = search_info[SEARCH_TERMS]
+
                     search_result[static_data.PIPELINE_FILE_NAME] = file_name
                     add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                     method_text_splits_of_file = full_text_of_file_str.split("@Test")
@@ -378,13 +383,15 @@ class RxData:
                         if len(re_matches_from_method_search) > 0:
                             add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
                             add_list_to_count_dict(file_name, search_result, FILE_NAME)
-
+                            flat_result[FILE_NAME] = file_name
                             add_list_to_count_dict(matched_term, search_result, MATCHED_TERMS)
+                            flat_result[MATCHED_TERMS] = matched_term
                             subset_text = find_method_text_subset(search_string, method_text)
                             # add_list_to_count_dict(subset_text, search_result, static_data.METHOD_TEXT)#," || ")
                             method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_term}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
                             add_list_to_count_dict(method_text_str, search_result,
                                                    static_data.METHODS_STRING)  # ," || ")
+                            flat_result[static_data.METHODS_STRING] = method_text
                             search_result[
                                 PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_csv_dict
                             self.find_data_for_csv_dict(search_info)
@@ -414,6 +421,7 @@ class RxData:
             full_key = search_info.get(FULL_KEY)
             search_result = search_info.get(SEARCH_RESULT)
             if search_result:
+                flat_result = search_result.get(FLAT_RESULT)
                 file_name = search_result.get(static_data.PIPELINE_FILE_NAME)
                 class_name_split_src = file_name.split('/src/')
                 # Module
@@ -423,9 +431,12 @@ class RxData:
                     test_case_name = class_graph.search_for_test_case_name(file_name,
                                                                            self.get_test_case_dict())
                     add_list_to_count_dict(test_case_name, search_result, MODULE)
+                    flat_result[MODULE] = test_case_name
+
                     if len(class_name_split_src) > 1:
                         class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
                         add_list_to_count_dict(class_name, search_result, CLASS_DEF)
+                        flat_result[CLASS_DEF] = class_name
 
                         try:
                             method_text = search_result.get(PIPELINE_METHOD_TEXT)
@@ -435,15 +446,12 @@ class RxData:
                                     if method.lower().find('is') != -1 or method.lower().find('test') != -1:
                                         qualified_method = f"[{class_name} {method} {test_case_name}]"
                                         add_list_to_count_dict(qualified_method, search_result, QUALIFIED_METHOD)
-                                        flat_result = dict()
-                                        flat_result[CLASS_DEF] =  class_name
                                         flat_result[METHOD] =  method
-                                        flat_result[MODULE] =  test_case_name
-                                        search_result[static_data.FLAT_RESULT] = flat_result
                                         self.result_subject.on_next(search_info)
                                         self.match_count += 1
                                         break
                                     else:
+                                        flat_result[METHOD] = method
                                         # result = re.search(r'\s*public.+?\w+?(?=\(\w*?\))(?=.*?{)', method_text)
                                         # ToDo search dependencies
                                         if logging: print(f"result No method with test in the name {method}.")
@@ -615,6 +623,9 @@ class RxData:
                                                             ops.map(lambda search_info: find_search_terms(search_info)),
                                                             ops.map(
                                                                 lambda search_info: self.search_on_files(search_info)))
+    def do_on_complete(self):
+        self.result_subject.on_completed()
+        pass
 
     def search_on_files(self, search_info:dict, logging: bool = True):
         list_of_test_files = self.get_list_of_at_test_files()
@@ -688,9 +699,21 @@ class RxData:
         return search_info
 
 
-def my_print(v, f: Any = '{}'):
+def my_print(v:Any, f: Any = '{}')-> Any:
     print(f.format(v))
     return v
+
+
+def translate_flat(result :dict)-> dict:
+    flat_result = dict()
+    if not result:
+        return flat_result
+    flat_result[ROW] = result.get(ROW)
+    flat_result[FULL_KEY] = result.get(FULL_KEY)
+    flat_result[SECTION_ID] = result.get(SECTION_ID)
+    flat_result[REQ_ID] = result.get(REQ_ID)
+    flat_result[SEARCH_RESULT] = dict(result.get(SEARCH_RESULT)).get(FLAT_RESULT)
+    return flat_result
 
 
 if __name__ == '__main__':
@@ -708,8 +731,8 @@ if __name__ == '__main__':
     # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_output.tsv"
-    input_file_name = "/a_working/one_in.tsv"
-    output_file_name = "/a_working/one_out.tsv"
+    input_file_name = "/a_working/9-16.tsv"
+    output_file_name = "/a_working/9-16.tsv"
 
     ""
     # input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
@@ -718,10 +741,19 @@ if __name__ == '__main__':
     # test_output_exists = Path(output_file_name)
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
+    rd.result_subject.pipe(
+        ops.map(lambda result: translate_flat(result))
+        ,ops.filter(lambda flat_result: len(flat_result) !=0)
+        ,ops.map(lambda flat_result: build_row(flat_result, header=static_data.cdd_to_cts_app_header,do_log=True))
+        ,ops.to_list()
+        ,ops.map(lambda table: table_ops.write_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9-16_flat.tsv", table, static_data.cdd_to_cts_app_header)))\
+    .subscribe( on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
+        on_completed=lambda: print("complete result_subject"),
+        on_error=lambda err: helpers.raise_error("result_subject", err))
 
-    rd.main_do_create_table(output_file_name, output_file_name).subscribe(
+    rd.main_do_create_table(input_file_name, output_file_name).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{output_file_name}] from [{input_file_name}] "),
-        on_completed=lambda: print("completed"),
+        on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.raise_error("in main", err))
 
     # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
