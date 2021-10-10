@@ -413,7 +413,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str]=None, logging: 
                     table_index += 1
                 except (IndexError, ValueError) as e:
                     helpers.raise_error(f"Index ValueError row[{row}] at idx={table_index}  from {file_name}  -= {type(e)} value {str(e)}...")
-
+            csv_file.close()
             # end for rows
 
             if logging: print("End with file")
@@ -610,7 +610,7 @@ if __name__ == '__main__':
     new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
 
-    update_manual_fields_from_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.tsv",
+    update_manual_fields_from_files("/a_working/sub1_3_software.tsv",
                                     "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.tsv")
     # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
     #     _file1_sachiyo_recent,

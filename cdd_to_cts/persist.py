@@ -12,6 +12,7 @@ def write(adict: dict, file_name: str):
 
     with open(file_name, 'w') as file:
         file.write(json.dumps(adict))  # use `json.loads` to do the reverse
+        file.close()
 
 
 def read(file_name: str):
@@ -19,6 +20,7 @@ def read(file_name: str):
 
     with open(file_name, newline='') as f:
         data = json.load(f)
+        f.close()
         return data
 
 

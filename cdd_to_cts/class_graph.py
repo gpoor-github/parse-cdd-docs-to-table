@@ -102,6 +102,7 @@ def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data.TEST_F
                             test_files_to_methods[test_annotated_file_name] = method.strip(' ')
 
                     print(f'{count}) {test_annotated_file_name}:{method}')
+                grep_of_test_files.close()
     except FileNotFoundError as e:
         helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
     print(f'{count}) {len(test_files_to_methods)}')

@@ -169,6 +169,7 @@ PROTECTED ='protected'
 AREA='Area'
 SHORTENED ='Shortened'
 TEST_LEVEL= 'Test Level'
+FLAT_RESULT = 'FLAT_RESULT'
 #SCRIPT_OPTIONS = 'SCRIPT_OPTIONS'
 SO_ONLY_SEARCH_KEYS = "ONLY_SEARCH_KEYS"
 not_annotated_test_start = "public void test"

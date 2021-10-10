@@ -26,7 +26,7 @@ def check_for_file_and_method(file_name_from_class: str, method_value: str, file
                             file_name_from_class] = method_value + " Failed reason: @Test annotation not found"
                 else:
                     file_name_to_result[file_name_from_class] = method_value + " Failed reason: Method not found"
-
+                f.close()
         except Exception as err:
             print(" Could not open " + file_name_from_class)
             file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found "+str(err)
@@ -85,8 +85,8 @@ class ReadSpreadSheet:
                     section_value = table[table_index][header.index("Section")]
                     section_id_value = table[table_index][header.index(SECTION_ID)]
                     req_id_value = table[table_index][header.index(REQ_ID)]
-                    class_def_value = table[table_index][header.index("class_def")]
-                    method_value = table[table_index][header.index("method")]
+                    class_def_value = table[table_index][header.index(static_data.CLASS_DEF)]
+                    method_value = table[table_index][header.index(static_data.METHOD)]
                     module_value = table[table_index][header.index("module")]
                     if class_def_value:
                         is_found = check_for_file_and_method(self.file_dict.get(class_def_value), method_value,
@@ -99,6 +99,7 @@ class ReadSpreadSheet:
                     line_count += 1
                     print(f'Processed {line_count} lines. ')
                 print(f'For table {line_count}')
+            csv_file.close()
             print("End for loop")
             print('No files {}'.format(self.not_found_count))
             print('Files {}'.format(self.found_count))
