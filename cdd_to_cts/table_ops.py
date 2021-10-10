@@ -1,4 +1,5 @@
 import csv
+import os
 import sys
 
 from cdd_to_cts import static_data, helpers
@@ -148,33 +149,33 @@ def add_columns(manual_fields_header, updated_header):
         except ValueError:
             updated_header.append(column)
 
-#
-# def write_file_fields_to_files(source_to_use_values: str,  fields_to_write: [str]=static_data.cdd_to_cts_app_header) -> [[str]]:
-#     table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key( source_to_use_values)
-#     fields_to_write_str = " ".join(fields_to_write)
-#     path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
-#
-#     for i in range(0, len(table)):
-#         row = table[i]
-#         key:str = row[header.index(static_data.FULL_KEY)]
-#         key_f = key.replace('/','_')
-#         req_path = f"{path_for_files_root}/{key_f}"
-#         os.makedirs(req_path,exist_ok=True)
-#         for j in  range(0, len(row)-1):
-#           if j >= len(header):
-#               print("Error header and data out of sync")
-#               break
-#           if fields_to_write_str.find(header[j]) > -1:
-#             value:str = row[j]
-#             if len(value) > 10:
-#                 col =header[j]
-#                 file_path =rf"{req_path}/{col}.txt"
-#                 text_file = open(file_path, "w")
-#                 if col != static_data.METHODS_STRING:
-#                     value = value.replace(' ','\n')
-#                 value = value.replace(']',']\n')
-#                 n = text_file.write(value)
-#                 text_file.close()
+
+def write_file_fields_to_files(source_to_use_values: str,  fields_to_write: [str]=static_data.cdd_to_cts_app_header) -> [[str]]:
+    table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key( source_to_use_values)
+    fields_to_write_str = " ".join(fields_to_write)
+    path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
+
+    for i in range(0, len(table)):
+        row = table[i]
+        key:str = row[header.index(static_data.FULL_KEY)]
+        key_f = key.replace('/','_')
+        req_path = f"{path_for_files_root}/{key_f}"
+        os.makedirs(req_path,exist_ok=True)
+        for j in  range(0, len(row)-1):
+          if j >= len(header):
+              print("Error header and data out of sync")
+              break
+          if fields_to_write_str.find(header[j]) > -1:
+            value:str = row[j]
+            if len(value) > 10:
+                col =header[j]
+                file_path =rf"{req_path}/{col}.txt"
+                text_file = open(file_path, "w")
+                if col != static_data.METHODS_STRING:
+                    value = value.replace(' ','\n')
+                value = value.replace(']',']\n')
+                n = text_file.write(value)
+                text_file.close()
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
 
@@ -573,8 +574,8 @@ def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output
 
 
 def merge_table_example():
-    _file1 = "input/new_recs_remaining_todo.csv"
-    _file2 = "data_files/created_output.csv"
+    _file1 = "input/new_recs_remaining_todo.tsv"
+    _file2 = "data_files/created_output.tsv"
     _table1, _key_fields1, _header1, _table2, _key_fields2, _header2 = merge_tables(_file1, _file2)
     _key_set1 = set(_key_fields1.keys())
     _key_set2 = set(_key_fields2.keys())
@@ -588,30 +589,30 @@ def merge_table_example():
 
 
 if __name__ == '__main__':
-    _file1_before_g_eddy = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.csv"
-    _file1_sachiyo_recent = "../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.csv"
-    _file2_after_g = "../data_files/gpoor-updated-sept-11-2021.csv"
-    before_graham = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.csv"
-    latest_sheet = "../data_files/dups_removed.csv"
-    latest2 = "../data_files/version_up_there_sorted.csv"
+    _file1_before_g_eddy = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.tsv"
+    _file1_sachiyo_recent = "../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.tsv"
+    _file2_after_g = "../data_files/gpoor-updated-sept-11-2021.tsv"
+    before_graham = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.tsv"
+    latest_sheet = "../data_files/dups_removed.tsv"
+    latest2 = "../data_files/version_up_there_sorted.tsv"
     x_file1_for_subset = "../output/created_output.cvs"
-    x_file2_for_subset = "../input/new_recs_full_todo.csv"
-    release = "../output/release_updated_table2.csv"
-    from_more_recent_cdd_html = "../data_files/cdd_full_from_more_recent_worse_version.csv"
-    from_less_recent_cdd_html = "../data_files/cdd_full_from_less_recent_better_version.csv"
+    x_file2_for_subset = "../input/new_recs_full_todo.tsv"
+    release = "../output/release_updated_table2.tsv"
+    from_more_recent_cdd_html = "../data_files/cdd_full_from_more_recent_worse_version.tsv"
+    from_less_recent_cdd_html = "../data_files/cdd_full_from_less_recent_better_version.tsv"
 
-    final_output = 'output/built_from_created2.csv'
-    sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.csv"
+    final_output = 'output/built_from_created2.tsv'
+    sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.tsv"
     sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
-    original_sheet_file_name1 = "data_files/CDD-11_2021-11-23.csv"
-    # values_to_use_table_file1 = 'output/final_output_file.csv'
-    sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.csv"
-    new_updated_table_file1 = 'output/new_updated_table_for_release.csv'
-    fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
+    original_sheet_file_name1 = "data_files/CDD-11_2021-11-23.tsv"
+    # values_to_use_table_file1 = 'output/final_output_file.tsv'
+    sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.tsv"
+    new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
+    fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
 
-    update_manual_fields_from_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.csv",
-                                    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv")
+    update_manual_fields_from_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/sub1_3_software.tsv",
+                                    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.tsv")
     # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
     #     _file1_sachiyo_recent,
-    #    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.csv")
+    #    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.tsv")
 # merge_tables(_file1_sachiyo_recent,"output/subset_table")

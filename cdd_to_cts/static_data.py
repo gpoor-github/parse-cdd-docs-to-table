@@ -23,7 +23,7 @@ RX_WORKING_OUTPUT_TABLE_TO_EDIT = "output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
 
 
 
-INPUT_TABLE_FILE_NAME_RX = "output/table_file_for_react_filtered.csv"
+INPUT_TABLE_FILE_NAME_RX = "output/table_file_for_react_filtered.tsv"
 
 
 TEST_FILES_TXT = "input_scripts/test-files.txt"
@@ -206,7 +206,7 @@ table_dialect='excel-tab'
 table_newline= ''
 table_encoding='UTF-8'
 table_lineterminator=table_newline
-
+re_tag = "re_tag:"
 def set_cts_path():
     os.environ['CTS_SOURCE_ROOT'] = CTS_SOURCE_ROOT
     os.environ['USER_HOME'] = '~/'

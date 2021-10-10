@@ -63,7 +63,6 @@ def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app
         raise_error("build_row: Exception ", err3)
     return None
 
-
 def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_log=True):
     cell_value = ""
     for key in header_as_keys:
@@ -233,21 +232,23 @@ def find_search_terms(search_info) -> dict:
     auto_search_terms = find_java_objects(requirement)
 
     key_split = full_key.split('/')
-    search_term_set = set()
     section_req = set()
     section_req.add(full_key)
     section_req.add(key_split[0])
     if len(key_split) > 1:
-        section_req.add(key_split[1])
-    auto_search_terms.update(section_req)
+        req_search = re.escape(key_split[1])
+        req_search= static_data.re_tag+"(?<!/)"+req_search
+        section_req.add(req_search)
     search_info[static_data.AUTO_SEARCH_TERMS] = auto_search_terms
 
     manual_search_terms = set(str(search_info.get(MANUAL_SEARCH_TERMS)).split(" "))
-    if len(manual_search_terms) > 0:
-        search_term_set.update(manual_search_terms)
+    search_term_set = set()
+    # ToDo Restore full search?
+    search_term_set.update(manual_search_terms)
+    #search_term_set.update(section_req)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
-    search_info[static_data.SEARCH_TERMS] = section_req.union(manual_search_terms)
+    search_info[static_data.SEARCH_TERMS] = search_term_set
     return search_info
 
 
@@ -331,12 +332,18 @@ class RxData:
             if logging:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
             for matched_term in search_terms:
-                matched_term = matched_term.strip(' ')
+                matched_term:str = matched_term.strip(' ')
 
                 if not matched_term:
                     continue
                 # File search
-                re_matches_from_file_search = re.findall(re.escape(matched_term), full_text_of_file_str,
+
+                if not matched_term.startswith(static_data.re_tag):
+                    search_string = re.escape(matched_term)
+                else:
+                    search_string = matched_term.removeprefix(static_data.re_tag)
+
+                re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
                                                          flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
 
                 is_found = len(re_matches_from_file_search) > 0
@@ -358,7 +365,7 @@ class RxData:
                         prepend = static_data.not_annotated_test_start
                     for method_text in method_text_splits_of_file:
                         method_text = prepend+method_text
-                        re_matches_from_method_search = re.findall(re.escape(matched_term), method_text,
+                        re_matches_from_method_search = re.findall(search_string, method_text,
                                                                    flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
                         if len(re_matches_from_method_search) > 0:
                             add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
@@ -419,7 +426,7 @@ class RxData:
                                 for method in method_results:
                                     if method.lower().find('is') != -1 or method.lower().find('test') != -1:
                                         qualified_method = f"[{class_name} {method} {test_case_name}]"
-                                        add_list_to_dict(qualified_method, search_result, QUALIFIED_METHOD)
+                                        add_list_to_count_dict(qualified_method, search_result, QUALIFIED_METHOD)
                                         self.match_count += 1
                                         break
                                     else:

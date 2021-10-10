@@ -6,8 +6,8 @@ from cdd_to_cts import helpers
 
 
 def update_release_table_with_changes(target_sheet_file_name: str,
-                                      values_to_use_table_file_local: str = "output/updated_table.csv",
-                                      new_updated_table_file: str = 'output/new_updated_table_file.csv',
+                                      values_to_use_table_file_local: str = "output/updated_table.tsv",
+                                      new_updated_table_file: str = 'output/new_updated_table_file.tsv',
                                       header_columns_to_copy:[] = static_data.merge_header):
     target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(target_sheet_file_name)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_target_header, values_to_use_duplicate_rows = \
@@ -76,19 +76,12 @@ def check_update(original_sheet_file_name, table_name_to_write):
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    # update_fullkey_table_with_only_new_changes()
-    # original_sheet_file_name = "sachiyoAugust 23, 2_49 PM - CDD 11.csv"
-    original_sheet_file_name1 = "data_files/version_up_there_sorted.csv"
-    values_to_use_table_file = 'output/updated_table.csv'
-    values_to_use_table_file1 = 'output/rx_build_final.csv'
-
-    new_updated_table_file1 = 'output/updated_table_recs_remaining_todo_input_rx.csv'
-    fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).csv"
-
-    final_output_file = "output/built_from_full_cdd_as_in_for_react.csv"
-    select_assigned_reqs = "input/FILTER_KEYS_DOWNLOADED_TABLE.csv"
-    #mapped_cdd_annotated =     "input/mapping_output_for_import.tsv"
-    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st,select_assigned_reqs,
-                                            static_data.FILTERED_TABLE_TO_SEARCH)
+    # from_table = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
+    # row_keys_from_table = "input/FILTER_KEYS_DOWNLOADED_TABLE.tsv"
+    # new_table_to_made = static_data.FILTERED_TABLE_TO_SEARCH
+    from_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
+    row_keys_from_table ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input1/items_not_filled_in_blank2.tsv"
+    new_table_to_made = "input1/blank_items_worksheet.tsv"
+    make_new_table_with_row_keys_from_table(from_table,row_keys_from_table,new_table_to_made)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
