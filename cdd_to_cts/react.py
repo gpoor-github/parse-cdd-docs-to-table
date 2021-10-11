@@ -340,6 +340,7 @@ class RxData:
 
             full_text_of_file_str = helpers.read_file_to_string(file_name).replace('\t',' ').replace('\n',' ')
 
+
             if logging:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
             for matched_term in search_terms:
@@ -348,7 +349,6 @@ class RxData:
                 if not matched_term:
                     continue
                 # File search
-
                 search_string = conditional_re_escape(matched_term)
 
                 re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
@@ -743,7 +743,7 @@ if __name__ == '__main__':
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_output.tsv"
     # input_file_name = "/a_working/9-16.tsv"
-    file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/blank_items_worksheet_out.tsv"
+    file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/7.3.13.tsv"
 
     ""
     # input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
