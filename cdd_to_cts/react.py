@@ -20,7 +20,7 @@ from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_
     convert_version_to_number_from_full_key, add_list_to_dict, remove_n_spaces_and_commas, CountDict
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
-    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT
+    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
 
 
 def build_dict(key_req: str):
@@ -627,7 +627,7 @@ class RxData:
         self.result_subject.on_completed()
         pass
 
-    def search_on_files(self, search_info:dict, logging: bool = True):
+    def search_on_files(self, search_info:dict, logging: bool = True) -> dict:
         list_of_test_files = self.get_list_of_at_test_files()
         list_of_test_files =list_of_test_files.union(helpers.get_list_void_public_test_files())
         self.progress_count += 1
@@ -644,6 +644,7 @@ class RxData:
             search_info[SEARCH_TERMS].difference_update(not_search_terms)
         except:
             pass
+
         if logging:
             self.end = time.perf_counter()
             print(f'\n {self.progress_count}) of {len(self.__input_table_keyed)} ')
@@ -651,6 +652,16 @@ class RxData:
             print(
                 f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
         # input("Do you want to continue?")
+        try:
+            test_availability = row[static_data.cdd_to_cts_app_header.index(static_data.TEST_AVAILABILITY)]
+            search_info[TEST_AVAILABILITY] = test_availability
+            if test_availability and len(test_availability) > 0:
+                print(
+                    f" NOTE: Test mapping complete = [{test_availability}] skipping {str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] ")
+                return search_info
+        except:
+            pass
+
         self.match_count = 0
 
         self.is_exact_match = False
@@ -731,8 +742,8 @@ if __name__ == '__main__':
     # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_output.tsv"
-    input_file_name = "/a_working/9-16.tsv"
-    output_file_name = "/a_working/9-16.tsv"
+    # input_file_name = "/a_working/9-16.tsv"
+    file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/blank_items_worksheet_out.tsv"
 
     ""
     # input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
@@ -746,13 +757,13 @@ if __name__ == '__main__':
         ,ops.filter(lambda flat_result: len(flat_result) !=0)
         ,ops.map(lambda flat_result: build_row(flat_result, header=static_data.cdd_to_cts_app_header,do_log=True))
         ,ops.to_list()
-        ,ops.map(lambda table: table_ops.write_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9-16_flat.tsv", table, static_data.cdd_to_cts_app_header)))\
+        ,ops.map(lambda table: table_ops.write_table(file_name+"_flat.tsv", table, static_data.cdd_to_cts_app_header)))\
     .subscribe( on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
         on_completed=lambda: print("complete result_subject"),
         on_error=lambda err: helpers.raise_error("result_subject", err))
 
-    rd.main_do_create_table(input_file_name, output_file_name).subscribe(
-        on_next=lambda table: my_print(f"react.py main created [{output_file_name}] from [{input_file_name}] "),
+    rd.main_do_create_table(file_name, file_name).subscribe(
+        on_next=lambda table: my_print(f"react.py main created [{file_name}] from [{file_name}] "),
         on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.raise_error("in main", err))
 
