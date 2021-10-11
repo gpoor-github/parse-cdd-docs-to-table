@@ -91,11 +91,15 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
             record_id_split = helpers.clean_html_anchors(record_id_split)
             record_id_count += 1
             total_requirement_count += 1
+            previous_value = key_to_full_requirement_text_param.get(key)
+            if previous_value:
+                print(f"Previous values {previous_value}")
+                key_to_full_requirement_text_param[key] = f"{previous_value} && { process_requirement_text(record_id_split,key_to_full_requirement_text_param.get(key)) }"
+            else:
+                key_to_full_requirement_text_param[key] = process_requirement_text(record_id_split,key_to_full_requirement_text_param.get(key))
             if logging: print(
                 f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text_param.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
-            key_to_full_requirement_text_param[key] = process_requirement_text(record_id_split,
-                                                                               key_to_full_requirement_text_param.get(
-                                                                                   key))
+
     return total_requirement_count
 
 

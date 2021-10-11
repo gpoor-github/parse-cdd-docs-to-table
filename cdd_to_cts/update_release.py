@@ -76,12 +76,12 @@ def check_update(original_sheet_file_name, table_name_to_write):
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    # from_table = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
+    from_table = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
     # row_keys_from_table = "input/FILTER_KEYS_DOWNLOADED_TABLE.tsv"
     # new_table_to_made = static_data.FILTERED_TABLE_TO_SEARCH
-    from_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
-    row_keys_from_table ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/items_not_filled_in_blank2.tsv"
-    new_table_to_made = "a_working/blank_items_worksheet_in.tsv"
+    # from_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
+    row_keys_from_table ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/2021-10-11-gpoor-todo.tsv"
+    new_table_to_made = "a_working/2021-10-11-gpoor-todo_built.tsv"
     make_new_table_with_row_keys_from_table(from_table,row_keys_from_table,new_table_to_made)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

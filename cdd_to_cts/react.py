@@ -742,8 +742,6 @@ if __name__ == '__main__':
     # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_output.tsv"
-    # input_file_name = "/a_working/9-16.tsv"
-    file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/7.3.13.tsv"
 
     ""
     # input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
@@ -752,14 +750,16 @@ if __name__ == '__main__':
     # test_output_exists = Path(output_file_name)
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
+    #input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
+    file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/6.1.tsv"
+
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))
         ,ops.filter(lambda flat_result: len(flat_result) !=0)
         ,ops.map(lambda flat_result: build_row(flat_result, header=static_data.cdd_to_cts_app_header,do_log=True))
         ,ops.to_list()
         ,ops.map(lambda table: table_ops.write_table(file_name+"_flat.tsv", table, static_data.cdd_to_cts_app_header)))\
-    .subscribe( on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
-        on_completed=lambda: print("complete result_subject"),
+    .subscribe( on_completed=lambda: print("complete result_subject"),
         on_error=lambda err: helpers.raise_error("result_subject", err))
 
     rd.main_do_create_table(file_name, file_name).subscribe(

@@ -9,7 +9,6 @@ import helpers
 import static_data
 from check_sheet import ReadSpreadSheet
 from react import RxData, my_print
-from update_release import make_new_table_with_row_keys_from_table
 
 if __name__ == '__main__':
     start = time.perf_counter()
