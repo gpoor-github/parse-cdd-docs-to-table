@@ -1,17 +1,15 @@
-import time
-
 import static_data
 import table_ops
 from cdd_to_cts import helpers
 
 
-def update_release_table_with_changes(target_sheet_file_name: str,
-                                      values_to_use_table_file_local: str = "output/updated_table.tsv",
-                                      new_updated_table_file: str = 'output/new_updated_table_file.tsv',
-                                      header_columns_to_copy:[] = static_data.merge_header):
-    target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(target_sheet_file_name)
+def update_release_table_with_changes(table_to_update_and_write_to_output_file : str,
+                                      values_to_use_for_update: str ,
+                                      output_file_to_write_updated_table: str,
+                                      header_columns_to_copy:[]):
+    target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(table_to_update_and_write_to_output_file)
     values_to_use_table, values_to_use_table_keys_to_index, values_to_use_target_header, values_to_use_duplicate_rows = \
-        table_ops.read_table_sect_and_req_key( values_to_use_table_file_local)
+        table_ops.read_table_sect_and_req_key( values_to_use_for_update)
 
     updated_table, key_key1, key_key2 = table_ops.update_table(target_table,
                                                                target_table_keys_to_index,
@@ -21,12 +19,11 @@ def update_release_table_with_changes(target_sheet_file_name: str,
                                                                header_columns_to_copy)
 
     # table_ops.compare_tables(updated_table,target_table)
-    new_updated_table_file = helpers.find_valid_path(new_updated_table_file)
-    table_ops.write_table(new_updated_table_file, updated_table, target_header)
+    table_ops.write_table(output_file_to_write_updated_table, updated_table, target_header)
 
     print(
         f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
-    check_update(target_sheet_file_name, new_updated_table_file)
+    check_update(output_file_to_write_updated_table, table_to_update_and_write_to_output_file)
     return updated_table, target_header
 
 
@@ -67,21 +64,25 @@ def check_update(original_sheet_file_name, table_name_to_write):
         original_sheet_file_name, table_name_to_write)
     if len(dif_1_2) != 0 or len(dif_2_1) != 0:
       print(f"Warning: diff 1-2{len(dif_1_2)} 2-1{dif_2_1} Original table and updated table should have same number of row/keys")
-    elif len(dif_1_2_dict_content) == 0 or len(dif_2_1_dict_content) == 0:
+    elif len(dif_1_2_dict_content) == 0 and len(dif_2_1_dict_content) == 0:
         helpers.raise_error(f"Error: NO difference from update... you should figure out why Original ")
     else:
         print( f"Table update seems to have updated correctly, no new or removed rows, content 1/2 {len(dif_1_2_dict_content)} updated \n details:{dif_1_2_dict_content}\n")
         print( f"Table update seems to have updated correctly, no new or removed rows, content 1/2 {len(dif_1_2_dict_content)} updated. Details of changes printed above")
 
+def make_new_table_with_row_keys_from_table_example():
+
+    row_keys_from_table = static_data.FILTER_KEYS_DOWNLOADED_TABLE
+    new_table_to_made = static_data.FILTERED_TABLE_TO_SEARCH
+    make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, row_keys_from_table, new_table_to_made)
+
+
+def update_release_table_with_changes_example():
+    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/fix_test_available.tsv"
+    source_for_data  ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/newr_test_avail.tsv"
+    new_table_to_made ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/fix_test_available_with_new_r.tsv"
+
+    update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,[static_data.TEST_AVAILABILITY])
 
 if __name__ == '__main__':
-    start = time.perf_counter()
-    from_table = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
-    # row_keys_from_table = "input/FILTER_KEYS_DOWNLOADED_TABLE.tsv"
-    # new_table_to_made = static_data.FILTERED_TABLE_TO_SEARCH
-    # from_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
-    row_keys_from_table ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/2021-10-11-gpoor-todo.tsv"
-    new_table_to_made = "a_working/2021-10-11-gpoor-todo_built.tsv"
-    make_new_table_with_row_keys_from_table(from_table,row_keys_from_table,new_table_to_made)
-    end = time.perf_counter()
-    print(f'Took time {end - start:0.4f}sec ')
+    update_release_table_with_changes_example()

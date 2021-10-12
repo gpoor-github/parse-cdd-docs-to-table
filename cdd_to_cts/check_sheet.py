@@ -112,4 +112,4 @@ if __name__ == '__main__':
     mapping_cdd = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-manual-for-import.tsv"
     #result_dict, not_found, found = rs.parse_data(mapping_cdd)
     #print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
-    table_ops.diff_tables_files(mapping_cdd,static_data.DATA_SOURCES_CSV_FROM_HTML_1st)
+    table_ops.diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/newr_test_avail.tsv","/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/fix_test_available_back.tsv")
