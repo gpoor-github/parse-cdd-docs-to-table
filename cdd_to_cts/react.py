@@ -334,11 +334,11 @@ class RxData:
         search_info: dict = search_info_and_file_tuple[0]
         try:
             # Get rid of tuple, change to a dict
-            file_name = search_info_and_file_tuple[1]
+            file_name_param = search_info_and_file_tuple[1]
 
             search_terms = search_info.get(SEARCH_TERMS)
 
-            full_text_of_file_str = helpers.read_file_to_string(file_name).replace('\t',' ').replace('\n',' ')
+            full_text_of_file_str = helpers.read_file_to_string(file_name_param).replace('\t', ' ')
 
 
             if logging:
@@ -350,15 +350,16 @@ class RxData:
                     continue
                 # File search
                 search_string = conditional_re_escape(matched_term)
+                search_string = search_string.replace("&",".*")
 
                 re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
-                                                         flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
-
-                is_found = len(re_matches_from_file_search) > 0
+                                                         flags=re.IGNORECASE|re.MULTILINE|re.DOTALL)  # full_text_of_file_str.count(matched_terms)
+                match_count_of_term_in_file = len(re_matches_from_file_search)
+                is_found = match_count_of_term_in_file > 0
                 if is_found:
                     if matched_term == search_info.get(FULL_KEY):
                         self.is_exact_match = True
-                    cts_file_path_name = str(file_name).partition('src')[2]
+                    cts_file_path_name = str(file_name_param).partition('src')[2]
                     search_result = search_info.get(SEARCH_RESULT)
                     if not search_result:
                         search_result = dict()
@@ -368,8 +369,8 @@ class RxData:
                     flat_result[REQUIREMENT] = search_info[REQUIREMENT]
                     flat_result[SEARCH_TERMS] = search_info[SEARCH_TERMS]
 
-                    search_result[static_data.PIPELINE_FILE_NAME] = file_name
-                    add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
+                    search_result[static_data.PIPELINE_FILE_NAME] = file_name_param
+                    add_list_to_count_dict(f"({match_count_of_term_in_file},{matched_term},{cts_file_path_name})", search_result, MATCHED_FILES)
                     method_text_splits_of_file = full_text_of_file_str.split("@Test")
                     prepend =""
                     if len(method_text_splits_of_file) <= 1:
@@ -381,9 +382,8 @@ class RxData:
                         re_matches_from_method_search = re.findall(search_string, method_text,
                                                                    flags=re.IGNORECASE)  # full_text_of_file_str.count(matched_terms)
                         if len(re_matches_from_method_search) > 0:
-                            add_list_to_count_dict(cts_file_path_name, search_result, MATCHED_FILES)
-                            add_list_to_count_dict(file_name, search_result, FILE_NAME)
-                            flat_result[FILE_NAME] = file_name
+                            add_list_to_count_dict(file_name_param, search_result, FILE_NAME)
+                            flat_result[FILE_NAME] = file_name_param
                             add_list_to_count_dict(matched_term, search_result, MATCHED_TERMS)
                             flat_result[MATCHED_TERMS] = matched_term
                             subset_text = find_method_text_subset(search_string, method_text)
@@ -699,8 +699,11 @@ class RxData:
 
         if results:
             if logging: print(f"\nresult =[{search_info.get(SEARCH_RESULT)}]\n")
-            matched =  sorted(results.get(MATCHED_TERMS).count_value_dict.items(), key=lambda x: x[1], reverse=True)
-            if logging: print(f"Matches!  {self.match_count} of {self.max_matches} allowed: matched  {matched}\n")
+            try:
+                matched =  sorted(results.get(MATCHED_TERMS).count_value_dict.items(), key=lambda x: x[1], reverse=True)
+                if logging: print(f"Matches!  {self.match_count} of {self.max_matches} allowed: matched  {matched}\n")
+            except:
+                pass
         else:
             print("No matches!")
 
@@ -751,7 +754,7 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     #input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
-    file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/6.1.tsv"
+    file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9s.tsv"
 
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))

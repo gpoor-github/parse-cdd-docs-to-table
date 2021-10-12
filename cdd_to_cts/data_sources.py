@@ -351,7 +351,7 @@ class SourceCrawlerReducer(object):
                     table[table_row_index][header.index('Test Availability')] = "Test Available"
 
                 if matched:
-                    table[table_row_index][header.index(static_data.MATCHED_FILES)] = matched
+                    table[table_row_index][header.index(static_data.MATCHED_FILES)] = a_single_test_file_name
                     table[table_row_index][header.index(static_data.MATCHED_TERMS)] = matched
 
                 if a_found_methods_string:
