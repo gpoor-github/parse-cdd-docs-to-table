@@ -1,0 +1,3295 @@
+"Section"	"section_id"	"req_id"	"Test Availability"	"class_def"	"method"	"module"	"method_text"	"full_key"	"requirement"	"key_as_number"	"search_terms"	"manual_search_terms"	"not_search_terms"	"not_files"	"matched_terms"	"search_roots"	"qualified_method"	"max_matches"	"file_name"	"matched_files"	"methods_string"	"urls"	"protected"	"Area"	"Shortened"	"Test Level"
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.permission.cts.LocationAccessCheckTest"	"getPermissionControllerPackageName"	"CtsPermissionTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/permission/src/android/permission/cts/LocationAccessCheckTest.java"	""	"/*
+ *.
+ */
+
+package android.permission.cts;
+
+import static android.Manifest.permission.ACCESS_BACKGROUND_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.app.Notification.EXTRA_TITLE;
+import static android.content.Context.BIND_AUTO_CREATE;
+import static android.content.Context.BIND_NOT_FOREGROUND;
+import static android.content.Intent.ACTION_BOOT_COMPLETED;
+import static android.content.Intent.FLAG_RECEIVER_FOREGROUND;
+import static android.location.Criteria.ACCURACY_FINE;
+import static android.provider.Settings.RESET_MODE_PACKAGE_DEFAULTS;
+import static android.provider.Settings.Secure.LOCATION_ACCESS_CHECK_DELAY_MILLIS;
+import static android.provider.Settings.Secure.LOCATION_ACCESS_CHECK_INTERVAL_MILLIS;
+
+import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
+import static com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import android.app.ActivityManager;
+import android.app.AppOpsManager;
+import android.app.UiAutomation;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.ResolveInfo;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.permission.cts.appthataccesseslocation.IAccessLocationOnCommand;
+import android.platform.test.annotations.AppModeFull;
+import android.platform.test.annotations.SecurityTest;
+import android.provider.DeviceConfig;
+import android.provider.Settings;
+import android.service.notification.NotificationListenerService;
+import android.service.notification.StatusBarNotification;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
+
+import com.android.compatibility.common.util.ProtoUtils;
+import com.android.server.job.nano.JobSchedulerServiceDumpProto;
+import com.android.server.job.nano.JobSchedulerServiceDumpProto.RegisteredJob;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+
+/**
+ * Tests the {@code LocationAccessCheck} in permission controller.
+ */
+@RunWith(AndroidJUnit4.class)
+@AppModeFull(reason = ""Cannot set system settings as instant app. Also we never show a location ""
+        + ""access check notification for instant apps."")
+public class LocationAccessCheckTest {
+    private static final String LOG_TAG = LocationAccessCheckTest.class.getSimpleName();
+
+    private static final String TEST_APP_PKG = ""android.permission.cts.appthataccesseslocation"";
+    private static final String TEST_APP_LABEL = ""CtsLocationAccess"";
+    private static final String TEST_APP_SERVICE = TEST_APP_PKG + "".AccessLocationOnCommand"";
+    private static final String TEST_APP_LOCATION_BG_ACCESS_APK =
+            ""/data/local/tmp/cts/permissions/CtsAppThatAccessesLocationOnCommand.apk"";
+    private static final String TEST_APP_LOCATION_FG_ACCESS_APK =
+            ""/data/local/tmp/cts/permissions/AppThatDoesNotHaveBgLocationAccess.apk"";
+
+    /** Whether to show location access check notifications. */
+    private static final String PROPERTY_LOCATION_ACCESS_CHECK_ENABLED =
+            ""location_access_check_enabled"";
+
+    private static final long UNEXPECTED_TIMEOUT_MILLIS = 10000;
+    private static final long EXPECTED_TIMEOUT_MILLIS = 1000;
+    private static final long LOCATION_ACCESS_TIMEOUT_MILLIS = 15000;
+    private static final long LOCATION_ACCESS_JOB_WAIT_MILLIS = 250;
+
+    // Same as in AccessLocationOnCommand
+    private static final long BACKGROUND_ACCESS_SETTLE_TIME = 11000;
+
+    private static final Context sContext = InstrumentationRegistry.getTargetContext();
+    private static final ActivityManager sActivityManager =
+            (ActivityManager) sContext.getSystemService(Context.ACTIVITY_SERVICE);
+    private static final UiAutomation sUiAutomation = InstrumentationRegistry.getInstrumentation()
+            .getUiAutomation();
+
+    private static final String PERMISSION_CONTROLLER_PKG = sContext.getPackageManager()
+            .getPermissionControllerPackageName();
+
+    /**
+     * The result of {@link #assumeCanGetFineLocation()}, so we don't have to run it over and over
+     * again.
+     */
+    private static Boolean sCanAccessFineLocation = null;
+
+    private static ServiceConnection sConnection;
+    private static IAccessLocationOnCommand sLocationAccessor;
+
+    /**
+     * Connected to {@value #TEST_APP_PKG} and make it access the location in the background
+     */
+    private void accessLocation() throws Throwable {
+        if (sConnection == null || sLocationAccessor == null) {
+            bindService();
+        }
+        eventually(() -> {
+            assertNotNull(sLocationAccessor);
+            sLocationAccessor.accessLocation();
+        }, EXPECTED_TIMEOUT_MILLIS);
+    }
+
+    /**
+     * A {@link java.util.concurrent.Callable} that can throw a {@link Throwable}
+     */
+    private interface ThrowingCallable<T> {
+        T call() throws Throwable;
+    }
+
+    /**
+     * A {@link Runnable} that can throw a {@link Throwable}
+     */
+    private interface ThrowingRunnable {
+        void run() throws Throwable;
+    }
+
+    /**
+     * Make sure that a {@link ThrowingRunnable} eventually finishes without throwing a {@link
+     * Exception}.
+     *
+     * @param r       The {@link ThrowingRunnable} to run.
+     * @param timeout the maximum time to wait
+     */
+    public static void eventually(@NonNull ThrowingRunnable r, long timeout) throws Throwable {
+        eventually(() -> {
+            r.run();
+            return 0;
+        }, timeout);
+    }
+
+    /**
+     * Make sure that a {@link ThrowingCallable} eventually finishes without throwing a {@link
+     * Exception}.
+     *
+     * @param r       The {@link ThrowingCallable} to run.
+     * @param timeout the maximum time to wait
+     * @return the return value from the callable
+     * @throws NullPointerException If the return value never becomes non-null
+     */
+    public static <T> T eventually(@NonNull ThrowingCallable<T> r, long timeout) throws Throwable {
+        long start = System.currentTimeMillis();
+
+        while (true) {
+            try {
+                T res = r.call();
+                if (res == null) {
+                    throw new NullPointerException(""No result"");
+                }
+
+                return res;
+            } catch (Throwable e) {
+                if (System.currentTimeMillis() - start < timeout) {
+                    Log.d(LOG_TAG, ""Ignoring exception"", e);
+
+                    Thread.sleep(500);
+                } else {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the state of the job scheduler
+     */
+    public static JobSchedulerServiceDumpProto getJobSchedulerDump() throws Exception {
+        return ProtoUtils.getProto(sUiAutomation, JobSchedulerServiceDumpProto.class,
+                ProtoUtils.DUMPSYS_JOB_SCHEDULER);
+    }
+
+    /**
+     * Clear all data of a package including permissions and files.
+     *
+     * @param pkg The name of the package to be cleared
+     */
+    private static void clearPackageData(@NonNull String pkg) {
+        unbindService();
+        runShellCommand(""pm clear --user -2 "" + pkg);
+    }
+
+    /**
+     * Force a run of the location check.
+     */
+    private static void runLocationCheck() {
+        runShellCommand(
+                ""cmd jobscheduler run -u "" + android.os.Process.myUserHandle().getIdentifier()
+                        + "" -f "" + PERMISSION_CONTROLLER_PKG + "" 0"");
+    }
+
+    /**
+     * Get a notification thrown by the permission controller that is currently visible.
+     *
+     * @return The notification or {@code null} if there is none
+     */
+    private @Nullable StatusBarNotification getPermissionControllerNotification() throws Exception {
+        NotificationListenerService notificationService = NotificationListener.getInstance();
+
+        for (StatusBarNotification notification : notificationService.getActiveNotifications()) {
+            if (notification.getPackageName().equals(PERMISSION_CONTROLLER_PKG)) {
+                return notification;
+            }
+        }
+
+        return null;
+    }
+
+    private StatusBarNotification getNotification(boolean cancelNotification) throws Throwable {
+        return getNotification(cancelNotification, false);
+    }
+
+    /**
+     * Get a location access notification that is currently visible.
+     *
+     * @param cancelNotification if {@code true} the notification is canceled inside this method
+     * @param returnImmediately if {@code true} this method returns immediately after checking once
+     *                          for the notification
+     * @return The notification or {@code null} if there is none
+     */
+    private StatusBarNotification getNotification(boolean cancelNotification,
+            boolean returnImmediately) throws Throwable {
+        NotificationListenerService notificationService = NotificationListener.getInstance();
+        long start = SystemClock.elapsedRealtime();
+        long timeout = returnImmediately ? 0 : LOCATION_ACCESS_TIMEOUT_MILLIS
+                + BACKGROUND_ACCESS_SETTLE_TIME;
+        while (true) {
+            runLocationCheck();
+            Thread.sleep(LOCATION_ACCESS_JOB_WAIT_MILLIS);
+
+            StatusBarNotification notification = getPermissionControllerNotification();
+            if (notification == null) {
+                // Sometimes getting a location takes some time, hence not getting a notification
+                // can be caused by not having gotten a location yet
+                if (SystemClock.elapsedRealtime() - start < timeout) {
+                    Thread.sleep(LOCATION_ACCESS_JOB_WAIT_MILLIS);
+                    continue;
+                }
+
+                return null;
+            }
+
+            if (notification.getNotification().extras.getString(EXTRA_TITLE, """")
+                    .contains(TEST_APP_LABEL)) {
+                if (cancelNotification) {
+                    notificationService.cancelNotification(notification.getKey());
+
+                    // Wait for notification to get canceled
+                    eventually(() -> assertFalse(
+                            Arrays.asList(notificationService.getActiveNotifications()).contains(
+                                    notification)), UNEXPECTED_TIMEOUT_MILLIS);
+                }
+
+                return notification;
+            } else {
+                notificationService.cancelNotification(notification.getKey());
+
+                // Wait until new notification can be shown
+                Thread.sleep(200);
+            }
+        }
+    }
+
+    /**
+     * Grant a permission to the {@value #TEST_APP_PKG}.
+     *
+     * @param permission The permission to grant
+     */
+    private void grantPermissionToTestApp(@NonNull String permission) {
+        sUiAutomation.grantRuntimePermission(TEST_APP_PKG, permission);
+    }
+
+    /**
+     * Register {@link NotificationListener}.
+     */
+    @BeforeClass
+    public static void allowNotificationAccess() {
+        runShellCommand(""cmd notification allow_listener "" + (new ComponentName(sContext,
+                NotificationListener.class).flattenToString()));
+    }
+
+    /**
+     * Change settings so that permission controller can show location access notifications more
+     * often.
+     */
+    @BeforeClass
+    public static void reduceDelays() {
+        runWithShellPermissionIdentity(() -> {
+            ContentResolver cr = sContext.getContentResolver();
+
+            // New settings will be applied in when permission controller is reset
+            Settings.Secure.putLong(cr, LOCATION_ACCESS_CHECK_INTERVAL_MILLIS, 100);
+            Settings.Secure.putLong(cr, LOCATION_ACCESS_CHECK_DELAY_MILLIS, 50);
+        });
+    }
+
+    @BeforeClass
+    public static void installBackgroundAccessApp() {
+        installBackgroundAccessApp(false);
+    }
+
+    private static void installBackgroundAccessApp(boolean isDowngrade) {
+        String command = ""pm install -r -g "";
+        if (isDowngrade) {
+            command = command + ""-d "";
+        }
+        String output = runShellCommand(command + TEST_APP_LOCATION_BG_ACCESS_APK);
+        assertTrue(output.contains(""Success""));
+    }
+
+    @AfterClass
+    public static void uninstallBackgroundAccessApp() {
+        unbindService();
+        runShellCommand(""pm uninstall "" + TEST_APP_PKG);
+    }
+
+    private static void unbindService() {
+        if (sConnection != null) {
+            sContext.unbindService(sConnection);
+        }
+        sConnection = null;
+        sLocationAccessor = null;
+    }
+
+
+    private static void installForegroundAccessApp() {
+        unbindService();
+        runShellCommand(""pm install -r -g "" + TEST_APP_LOCATION_FG_ACCESS_APK);
+    }
+
+    private static void uninstallForegroundAccessApp() {
+        runShellCommand(""pm uninstall "" + TEST_APP_LOCATION_FG_ACCESS_APK);
+    }
+
+    /**
+     * Skip each test for low ram device
+     */
+    @Before
+    public void assumeIsNotLowRamDevice() {
+        assumeFalse(sActivityManager.isLowRamDevice());
+    }
+
+    @Before
+    public void bindService() {
+        sConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                sLocationAccessor = IAccessLocationOnCommand.Stub.asInterface(service);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                sConnection = null;
+                sLocationAccessor = null;
+            }
+        };
+
+        Intent testAppService = new Intent();
+        testAppService.setComponent(new ComponentName(TEST_APP_PKG, TEST_APP_SERVICE));
+
+        sContext.bindService(testAppService, sConnection, BIND_AUTO_CREATE | BIND_NOT_FOREGROUND);
+    }
+
+    /**
+     * Reset the permission controllers state before each test
+     */
+    @Before
+    public void resetPermissionControllerBeforeEachTest() throws Throwable {
+        resetPermissionController();
+    }
+
+    /**
+     * Enable location access check
+     */
+    @Before
+    public void enableLocationAccessCheck() {
+        runWithShellPermissionIdentity(() -> DeviceConfig.setProperty(
+                DeviceConfig.NAMESPACE_PRIVACY,
+                PROPERTY_LOCATION_ACCESS_CHECK_ENABLED, ""true"", false));
+    }
+
+    /**
+     * Disable location access check
+     */
+    private void disableLocationAccessCheck() {
+        runWithShellPermissionIdentity(() -> DeviceConfig.setProperty(
+                DeviceConfig.NAMESPACE_PRIVACY,
+                PROPERTY_LOCATION_ACCESS_CHECK_ENABLED, ""false"", false));
+    }
+
+    /**
+     * Make sure fine location can be accessed at all.
+     */
+    @Before
+    public void assumeCanGetFineLocation() {
+        if (sCanAccessFineLocation == null) {
+            Criteria crit = new Criteria();
+            crit.setAccuracy(ACCURACY_FINE);
+
+            CountDownLatch locationCounter = new CountDownLatch(1);
+            sContext.getSystemService(LocationManager.class).requestSingleUpdate(crit,
+                    new LocationListener() {
+                        @Override
+                        public void onLocationChanged(Location location) {
+                            locationCounter.countDown();
+                        }
+
+                        @Override
+                        public void onStatusChanged(String provider, int status, Bundle extras) {
+                        }
+
+                        @Override
+                        public void onProviderEnabled(String provider) {
+                        }
+
+                        @Override
+                        public void onProviderDisabled(String provider) {
+                        }
+                    }, Looper.getMainLooper());
+
+
+            try {
+                sCanAccessFineLocation = locationCounter.await(LOCATION_ACCESS_TIMEOUT_MILLIS,
+                        MILLISECONDS);
+            } catch (InterruptedException ignored) {
+            }
+        }
+
+        assumeTrue(sCanAccessFineLocation);
+    }
+
+    /**
+     * Reset the permission controllers state.
+     */
+    private static void resetPermissionController() throws Throwable {
+        clearPackageData(PERMISSION_CONTROLLER_PKG);
+        int currentUserId = android.os.Process.myUserHandle().getIdentifier();
+
+        // Wait until jobs are cleared
+        eventually(() -> {
+            JobSchedulerServiceDumpProto dump = getJobSchedulerDump();
+
+            for (RegisteredJob job : dump.registeredJobs) {
+                if (job.dump.sourceUserId == currentUserId) {
+                    assertNotEquals(job.dump.sourcePackageName, PERMISSION_CONTROLLER_PKG);
+                }
+            }
+        }, UNEXPECTED_TIMEOUT_MILLIS);
+
+        // Setup up permission controller again (simulate a reboot)
+        Intent permissionControllerSetupIntent = null;
+        for (ResolveInfo ri : sContext.getPackageManager().queryBroadcastReceivers(
+                new Intent(ACTION_BOOT_COMPLETED), 0)) {
+            String pkg = ri.activityInfo.packageName;
+
+            if (pkg.equals(PERMISSION_CONTROLLER_PKG)) {
+                permissionControllerSetupIntent = new Intent()
+                        .setClassName(pkg, ri.activityInfo.name)
+                        .setFlags(FLAG_RECEIVER_FOREGROUND)
+                        .setPackage(PERMISSION_CONTROLLER_PKG);
+
+                sContext.sendBroadcast(permissionControllerSetupIntent);
+            }
+        }
+
+        // Wait until jobs are set up
+        eventually(() -> {
+            JobSchedulerServiceDumpProto dump = getJobSchedulerDump();
+
+            for (RegisteredJob job : dump.registeredJobs) {
+                if (job.dump.sourceUserId == currentUserId
+                        && job.dump.sourcePackageName.equals(PERMISSION_CONTROLLER_PKG)
+                        && job.dump.jobInfo.service.className.contains(""LocationAccessCheck"")) {
+                    return;
+                }
+            }
+
+            fail(""Permission controller jobs not found"");
+        }, UNEXPECTED_TIMEOUT_MILLIS);
+    }
+
+    /**
+     * Unregister {@link NotificationListener}.
+     */
+    @AfterClass
+    public static void disallowNotificationAccess() {
+        runShellCommand(""cmd notification disallow_listener "" + (new ComponentName(sContext,
+                NotificationListener.class)).flattenToString());
+    }
+
+    /**
+     * Reset settings so that permission controller runs normally.
+     */
+    @AfterClass
+    public static void resetDelays() throws Throwable {
+        runWithShellPermissionIdentity(() -> {
+            ContentResolver cr = sContext.getContentResolver();
+
+            Settings.Secure.resetToDefaults(cr, LOCATION_ACCESS_CHECK_INTERVAL_MILLIS);
+            Settings.Secure.resetToDefaults(cr, LOCATION_ACCESS_CHECK_DELAY_MILLIS);
+        });
+
+        resetPermissionController();
+    }
+
+    /**
+     * Reset location access check
+     */
+    @After
+    public void resetPrivacyConfig() {
+        runWithShellPermissionIdentity(
+                () -> DeviceConfig.resetToDefaults(RESET_MODE_PACKAGE_DEFAULTS,
+                        DeviceConfig.NAMESPACE_PRIVACY));
+    }
+
+    @After
+    public void locationUnbind() throws Throwable {
+        unbindService();
+        getNotification(true, true);
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.IncidentdTest"	"testIncidentReportDumpAuto"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/IncidentdTest.java"	""	"public void testIncidentReportDumpAuto() throws Exception {
+        testIncidentReportDump(PRIVACY_AUTO, ""AUTOMATIC"");
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.IncidentdTest"	"testIncidentReportDumpExplicit"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/IncidentdTest.java"	""	"public void testIncidentReportDumpExplicit() throws Exception {
+        testIncidentReportDump(PRIVACY_EXPLICIT, ""EXPLICIT"");
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.IncidentdTest"	"testIncidentReportDumpLocal"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/IncidentdTest.java"	""	"public void testIncidentReportDumpLocal() throws Exception {
+        testIncidentReportDump(PRIVACY_LOCAL, ""LOCAL"");
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.UsbIncidentTest"	"testUsbServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/UsbIncidentTest.java"	""	"public void testUsbServiceDump() throws Exception {
+        final UsbServiceDumpProto dump = getDump(UsbServiceDumpProto.parser(),
+                ""dumpsys usb --proto"");
+
+        verifyUsbServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyUsbServiceDumpProto(UsbServiceDumpProto dump, final int filterLevel) throws Exception {
+        verifyUsbDeviceManagerProto(dump.getDeviceManager(), filterLevel);
+        verifyUsbHostManagerProto(dump.getHostManager(), filterLevel);
+        verifyUsbSettingsManagerProto(dump.getSettingsManager(), filterLevel);
+    }
+
+    private static void verifyUsbDeviceManagerProto(UsbDeviceManagerProto udmp, final int filterLevel) throws Exception {
+        verifyUsbHandlerProto(udmp.getHandler(), filterLevel);
+        verifyUsbDebuggingManagerProto(udmp.getDebuggingManager(), filterLevel);
+    }
+
+    private static void verifyUsbHandlerProto(UsbHandlerProto uhp, final int filterLevel) throws Exception {
+        for (UsbHandlerProto.Function f : uhp.getCurrentFunctionsList()) {
+            assertTrue(UsbHandlerProto.Function.getDescriptor().getValues().contains(f.getValueDescriptor()));
+        }
+        for (UsbHandlerProto.Function f : uhp.getScreenUnlockedFunctionsList()) {
+            assertTrue(UsbHandlerProto.Function.getDescriptor().getValues().contains(f.getValueDescriptor()));
+        }
+        verifyUsbAccessoryProto(uhp.getCurrentAccessory(), filterLevel);
+    }
+
+    private static void verifyUsbAccessoryProto(UsbAccessoryProto uap, final int filterLevel) throws Exception {
+        if (filterLevel < PRIVACY_LOCAL) {
+            assertTrue(uap.getSerial().isEmpty());
+            if (filterLevel == PRIVACY_AUTO) {
+                assertTrue(uap.getUri().isEmpty());
+            }
+        }
+    }
+
+    private static void verifyUsbDebuggingManagerProto(UsbDebuggingManagerProto udmp, final int filterLevel) throws Exception {
+        if (filterLevel < PRIVACY_LOCAL) {
+            assertTrue(udmp.getSystemKeys().isEmpty());
+            assertTrue(udmp.getUserKeys().isEmpty());
+            if (filterLevel < PRIVACY_EXPLICIT) {
+                assertTrue(udmp.getLastKeyReceived().isEmpty());
+            }
+        }
+    }
+
+    private static void verifyUsbHostManagerProto(UsbHostManagerProto uhmp, final int filterLevel) throws Exception {
+        for (UsbDeviceProto udp : uhmp.getDevicesList()) {
+            verifyUsbDeviceProto(udp, filterLevel);
+        }
+    }
+
+    private static void verifyUsbDeviceProto(UsbDeviceProto udp, final int filterLevel) throws Exception {
+        if (filterLevel < PRIVACY_LOCAL) {
+            assertTrue(udp.getSerialNumber().isEmpty());
+        }
+    }
+
+    private static void verifyUsbSettingsManagerProto(UsbSettingsManagerProto usmp, final int filterLevel) throws Exception {
+        for (UsbProfileGroupSettingsManagerProto upgsmp : usmp.getProfileGroupSettingsList()) {
+            verifyUsbProfileGroupSettingsManagerProto(upgsmp, filterLevel);
+        }
+    }
+
+    private static void verifyUsbProfileGroupSettingsManagerProto(UsbProfileGroupSettingsManagerProto pgsp, final int filterLevel) throws Exception {
+        for (UsbSettingsDevicePreferenceProto usdp : pgsp.getDevicePreferencesList()) {
+            verifyUsbDeviceFilterProto(usdp.getFilter(), filterLevel);
+        }
+    }
+
+    private static void verifyUsbDeviceFilterProto(UsbDeviceFilterProto udfp, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(udfp.getSerialNumber().isEmpty());
+        }
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.google.android.cts.deviceowner.DeviceOwnerTest"	"disableWorkPolicyInfoActivity"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/settings/app/DeviceOwnerApp/src/com/google/android/cts/deviceowner/DeviceOwnerTest.java"	""	"public void test/*
+ *.
+ */
+package com.google.android.cts.deviceowner;
+
+import static android.server.wm.WindowManagerState.STATE_RESUMED;
+
+import android.app.admin.DeviceAdminReceiver;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.RemoteException;
+import android.provider.Settings;
+import android.server.wm.WindowManagerStateHelper;
+import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.Until;
+import android.test.InstrumentationTestCase;
+import androidx.test.InstrumentationRegistry;
+
+/**
+ * Class for device-owner based tests.
+ *
+ * <p>This class handles making sure that the test is the device owner and that it has an active
+ * admin registered if necessary. The admin component can be accessed through {@link #getWho()}.
+ */
+public class DeviceOwnerTest extends InstrumentationTestCase {
+
+    public static final int TIMEOUT = 2000;
+
+    protected Context mContext;
+    protected UiDevice mDevice;
+
+    /** Device Admin receiver for DO. */
+    public static class BasicAdminReceiver extends DeviceAdminReceiver {
+        /* empty */
+    }
+
+    static final String PACKAGE_NAME = DeviceOwnerTest.class.getPackage().getName();
+    static final ComponentName RECEIVER_COMPONENT =
+            new ComponentName(PACKAGE_NAME, BasicAdminReceiver.class.getName());
+
+    protected DevicePolicyManager mDevicePolicyManager;
+    protected PackageManager mPackageManager;
+    protected boolean mIsDeviceOwner;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mContext = getInstrumentation().getContext();
+        mDevice = UiDevice.getInstance(getInstrumentation());
+        mPackageManager = mContext.getPackageManager();
+        mDevicePolicyManager =
+                (DevicePolicyManager) mContext.getSystemService(Context.DEVICE_POLICY_SERVICE);
+
+        mIsDeviceOwner = mDevicePolicyManager.isDeviceOwnerApp(PACKAGE_NAME);
+        if (mIsDeviceOwner) {
+            assertTrue(mDevicePolicyManager.isAdminActive(RECEIVER_COMPONENT));
+
+            // Note DPM.getDeviceOwner() now always returns null on non-DO users as of NYC.
+            assertEquals(PACKAGE_NAME, mDevicePolicyManager.getDeviceOwner());
+        }
+
+        try {
+            mDevice.setOrientationNatural();
+        } catch (RemoteException e) {
+            throw new RuntimeException(""failed to freeze device orientation"", e);
+        }
+        wakeupDeviceAndPressHome();
+    }
+
+    private void wakeupDeviceAndPressHome() throws Exception {
+        mDevice.wakeUp();
+        mDevice.pressMenu();
+        mDevice.pressHome();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mDevice.pressBack();
+        mDevice.pressHome();
+        mDevice.waitForIdle(TIMEOUT); // give UI time to finish animating
+    }
+
+    private boolean launchPrivacyAndCheckWorkPolicyInfo() throws Exception {
+        // Launch Settings
+        launchSettingsPage(InstrumentationRegistry.getContext(), Settings.ACTION_PRIVACY_SETTINGS);
+
+        // Wait for loading permission usage data.
+        mDevice.waitForIdle(TIMEOUT);
+
+        return (null != mDevice.wait(Until.findObject(By.text(""Your work policy info"")), TIMEOUT));
+    }
+
+    private void launchSettingsPage(Context ctx, String pageName) throws Exception {
+        Intent intent = new Intent(pageName);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        ComponentName componentName =
+                ctx.getPackageManager()
+                        .resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                        .getComponentInfo()
+                        .getComponentName();
+        ctx.startActivity(intent);
+
+        new WindowManagerStateHelper().waitForActivityState(componentName, STATE_RESUMED);
+    }
+
+    private void disableWorkPolicyInfoActivity() {
+        mContext.getPackageManager()
+                .setComponentEnabledSetting(
+                        new ComponentName(mContext, WorkPolicyInfoActivity.class),
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP);
+    }
+
+    /**
+     * If the app is the active device owner and has work policy info, then we should have a Privacy
+     * entry for it.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.google.android.cts.deviceowner.DeviceOwnerTest"	"testDeviceOwnerWithInfo"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/settings/app/DeviceOwnerApp/src/com/google/android/cts/deviceowner/DeviceOwnerTest.java"	""	"public void testDeviceOwnerWithInfo() throws Exception {
+        assertTrue(mIsDeviceOwner);
+        assertTrue(
+                ""Couldn't find work policy info settings entry"",
+                launchPrivacyAndCheckWorkPolicyInfo());
+    }
+
+    /**
+     * If the app is the active device owner, but doesn't have work policy info, then we shouldn't
+     * have a Privacy entry for it.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.google.android.cts.deviceowner.DeviceOwnerTest"	"testDeviceOwnerWithoutInfo"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/settings/app/DeviceOwnerApp/src/com/google/android/cts/deviceowner/DeviceOwnerTest.java"	""	"public void testDeviceOwnerWithoutInfo() throws Exception {
+        assertTrue(mIsDeviceOwner);
+        disableWorkPolicyInfoActivity();
+        assertFalse(
+                ""Work policy info settings entry shouldn't be present"",
+                launchPrivacyAndCheckWorkPolicyInfo());
+    }
+
+    /**
+     * If the app is NOT the active device owner, then we should not have a Privacy entry for work
+     * policy info.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.google.android.cts.deviceowner.DeviceOwnerTest"	"testNonDeviceOwnerWithInfo"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/settings/app/DeviceOwnerApp/src/com/google/android/cts/deviceowner/DeviceOwnerTest.java"	""	"public void testNonDeviceOwnerWithInfo() throws Exception {
+        assertFalse(mIsDeviceOwner);
+        assertFalse(
+                ""Work policy info settings entry shouldn't be present"",
+                launchPrivacyAndCheckWorkPolicyInfo());
+    }
+
+    /**
+     * If the app is NOT the active device owner, and doesn't have work policy info, then we should
+     * not have a Privacy entry for work policy info.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.google.android.cts.deviceowner.DeviceOwnerTest"	"testNonDeviceOwnerWithoutInfo"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/settings/app/DeviceOwnerApp/src/com/google/android/cts/deviceowner/DeviceOwnerTest.java"	""	"public void testNonDeviceOwnerWithoutInfo() throws Exception {
+        assertFalse(mIsDeviceOwner);
+        disableWorkPolicyInfoActivity();
+        assertFalse(
+                ""Work policy info settings entry shouldn't be present"",
+                launchPrivacyAndCheckWorkPolicyInfo());
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.media.cts.MediaRecorderTest"	"testPrivacySensitive"	"CtsMediaTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/media/src/android/media/cts/MediaRecorderTest.java"	""	"public void testPrivacySensitive() throws Exception {
+        if (!MediaUtils.check(mIsAtLeastR, ""test needs Android 11"")) return;
+        if (!hasMicrophone() || !hasAac()) {
+            MediaUtils.skipTest(""no audio codecs or microphone"");
+            return;
+        }
+        for (final boolean privacyOn : new boolean[] { false, true} ) {
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mMediaRecorder.setPrivacySensitive(privacyOn);
+            assertEquals(privacyOn, mMediaRecorder.isPrivacySensitive());
+            mMediaRecorder.reset();
+        }
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.media.cts.MediaRecorderTest"	"testPrivacySensitiveDefaults"	"CtsMediaTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/media/src/android/media/cts/MediaRecorderTest.java"	""	"public void testPrivacySensitiveDefaults() throws Exception {
+        if (!MediaUtils.check(mIsAtLeastR, ""test needs Android 11"")) return;
+        if (!hasMicrophone() || !hasAac()) {
+            MediaUtils.skipTest(""no audio codecs or microphone"");
+            return;
+        }
+        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        assertFalse(mMediaRecorder.isPrivacySensitive());
+        mMediaRecorder.reset();
+
+        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION);
+        assertTrue(mMediaRecorder.isPrivacySensitive());
+    }
+
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.autofillservice.cts.inline.InlineFilteringTest"	"testFiltering_privacy"	"CtsAutoFillServiceTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/autofillservice/src/android/autofillservice/cts/inline/InlineFilteringTest.java"	""	"public void testFiltering_privacy() throws Exception {
+        enableService();
+
+        final CannedFillResponse.Builder builder = new CannedFillResponse.Builder()
+                .addDataset(new CannedFillResponse.CannedDataset.Builder()
+                        .setField(ID_USERNAME, ""sergey"")
+                        .setPresentation(createPresentation(""sergey""))
+                        .setInlinePresentation(createInlinePresentation(""sergey""))
+                        .build())
+                .addDataset(new CannedFillResponse.CannedDataset.Builder()
+                        .setField(ID_USERNAME, ""page"")
+                        .setPresentation(createPresentation(""page""))
+                        .setInlinePresentation(createInlinePresentation(""page""))
+                        .build());
+        sReplier.addResponse(builder.build());
+
+        // Trigger autofill and enter the correct first char, then make sure it's showing initially.
+        mUiBot.selectByRelativeId(ID_USERNAME);
+        mActivity.onUsername((v) -> v.setText(""s""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertDatasets(""sergey"");
+        sReplier.getNextFillRequest();
+
+        // Enter the wrong second char - filters out dataset.
+        mActivity.onUsername((v) -> v.setText(""sa""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertNoDatasets();
+
+        // Backspace to bring back the dataset.
+        mActivity.onUsername((v) -> v.setText(""s""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertDatasets(""sergey"");
+
+        // Enter the correct second char, then check that suggestions are no longer shown.
+        mActivity.onUsername((v) -> v.setText(""se""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertNoDatasets();
+
+        // Clear the text, then check that all suggestions are shown.
+        mActivity.onUsername((v) -> v.setText(""""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertDatasets(""sergey"", ""page"");
+    }
+
+    /**
+     * Tests that the privacy mechanism still works when the full text is replaced, as opposed to
+     * individual characters being added/removed.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.autofillservice.cts.inline.InlineFilteringTest"	"testFiltering_privacy_textReplacement"	"CtsAutoFillServiceTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/autofillservice/src/android/autofillservice/cts/inline/InlineFilteringTest.java"	""	"public void testFiltering_privacy_textReplacement() throws Exception {
+        enableService();
+
+        final CannedFillResponse.Builder builder = new CannedFillResponse.Builder()
+                .addDataset(new CannedFillResponse.CannedDataset.Builder()
+                        .setField(ID_USERNAME, ""sergey"")
+                        .setPresentation(createPresentation(""sergey""))
+                        .setInlinePresentation(createInlinePresentation(""sergey""))
+                        .build());
+        sReplier.addResponse(builder.build());
+
+        // Trigger autofill and enter a few correct chars, then make sure it's showing initially.
+        mUiBot.selectByRelativeId(ID_USERNAME);
+        mActivity.onUsername((v) -> v.setText(""ser""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertDatasets(""sergey"");
+        sReplier.getNextFillRequest();
+
+        // Enter a couple different strings, then check that suggestions are no longer shown.
+        mActivity.onUsername((v) -> v.setText(""aaa""));
+        mActivity.onUsername((v) -> v.setText(""bbb""));
+        mActivity.onUsername((v) -> v.setText(""ser""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertNoDatasets();
+        mActivity.onUsername((v) -> v.setText(""""));
+        mUiBot.waitForIdleSync();
+        mUiBot.assertDatasets(""sergey"");
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.ActivityManagerIncidentTest"	"testDumpServices"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/ActivityManagerIncidentTest.java"	""	"public void testDumpServices() throws Exception {
+        final ActivityManagerServiceDumpServicesProto dump = getDump(
+                ActivityManagerServiceDumpServicesProto.parser(),
+                ""dumpsys activity --proto service"");
+        ActiveServicesProto activeServices = dump.getActiveServices();
+        assertTrue(activeServices.getServicesByUsersCount() > 0);
+
+        for (ServicesByUser perUserServices : activeServices.getServicesByUsersList()) {
+            assertTrue(perUserServices.getServiceRecordsCount() >= 0);
+            for (ServiceRecordProto service : perUserServices.getServiceRecordsList()) {
+                assertFalse(service.getShortName().isEmpty());
+                assertFalse(service.getPackageName().isEmpty());
+                assertFalse(service.getProcessName().isEmpty());
+                assertFalse(service.getAppinfo().getBaseDir().isEmpty());
+                assertFalse(service.getAppinfo().getDataDir().isEmpty());
+            }
+        }
+
+        verifyActivityManagerServiceDumpServicesProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyActivityManagerServiceDumpServicesProto(ActivityManagerServiceDumpServicesProto dump, final int filterLevel) throws Exception {
+        for (ServicesByUser sbu : dump.getActiveServices().getServicesByUsersList()) {
+            for (ServiceRecordProto srp : sbu.getServiceRecordsList()) {
+                verifyServiceRecordProto(srp, filterLevel);
+            }
+        }
+    }
+
+    private static void verifyServiceRecordProto(ServiceRecordProto srp, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(srp.getAppinfo().getBaseDir().isEmpty());
+            assertTrue(srp.getAppinfo().getResDir().isEmpty());
+            assertTrue(srp.getAppinfo().getDataDir().isEmpty());
+        } else {
+            assertFalse(srp.getAppinfo().getBaseDir().isEmpty());
+            assertFalse(srp.getAppinfo().getDataDir().isEmpty());
+        }
+        for (ServiceRecordProto.StartItem si : srp.getDeliveredStartsList()) {
+            verifyServiceRecordProtoStartItem(si, filterLevel);
+        }
+        for (ServiceRecordProto.StartItem si : srp.getPendingStartsList()) {
+            verifyServiceRecordProtoStartItem(si, filterLevel);
+        }
+        for (ConnectionRecordProto crp : srp.getConnectionsList()) {
+            verifyConnectionRecordProto(crp, filterLevel);
+        }
+    }
+
+    private static void verifyServiceRecordProtoStartItem(ServiceRecordProto.StartItem si, final int filterLevel) throws Exception {
+        verifyNeededUriGrantsProto(si.getNeededGrants(), filterLevel);
+        verifyUriPermissionOwnerProto(si.getUriPermissions(), filterLevel);
+    }
+
+    private static void verifyNeededUriGrantsProto(NeededUriGrantsProto nugp, final int filterLevel) throws Exception {
+        for (GrantUriProto gup : nugp.getGrantsList()) {
+            verifyGrantUriProto(gup, filterLevel);
+        }
+    }
+
+    private static void verifyUriPermissionOwnerProto(UriPermissionOwnerProto upop, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(upop.getOwner().isEmpty());
+        }
+        for (GrantUriProto gup : upop.getReadPermsList()) {
+            verifyGrantUriProto(gup, filterLevel);
+        }
+        for (GrantUriProto gup : upop.getWritePermsList()) {
+            verifyGrantUriProto(gup, filterLevel);
+        }
+    }
+
+    private static void verifyGrantUriProto(GrantUriProto gup, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(gup.getUri().isEmpty());
+        }
+    }
+
+    private static void verifyConnectionRecordProto(ConnectionRecordProto crp, final int filterLevel) throws Exception {
+        for (ConnectionRecordProto.Flag f : crp.getFlagsList()) {
+            assertTrue(ConnectionRecordProto.Flag.getDescriptor().getValues().contains(f.getValueDescriptor()));
+        }
+    }
+
+    /**
+     * Tests activity manager dumps processes.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.ActivityManagerIncidentTest"	"testDumpProcesses"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/ActivityManagerIncidentTest.java"	""	"public void testDumpProcesses() throws Exception {
+        final ActivityManagerServiceDumpProcessesProto dump = getDump(
+                ActivityManagerServiceDumpProcessesProto.parser(),
+                ""dumpsys activity --proto processes"");
+
+        assertTrue(dump.getProcsCount() > 0);
+        boolean procFound = false;
+        for (ProcessRecordProto proc : dump.getProcsList()) {
+            if (proc.getProcessName().equals(SYSTEM_PROC) && proc.getUid() == SYSTEM_UID) {
+                procFound = true;
+                break;
+            }
+        }
+        assertTrue(procFound);
+
+        assertTrue(dump.getActiveUidsCount() > 0);
+        boolean uidFound = false;
+        for (UidRecordProto uid : dump.getActiveUidsList()) {
+            if (uid.getUid() == SYSTEM_UID) {
+                uidFound = true;
+                break;
+            }
+        }
+        assertTrue(uidFound);
+
+        LruProcesses lruProcs = dump.getLruProcs();
+        assertTrue(lruProcs.getSize() == lruProcs.getListCount());
+        assertTrue(dump.getUidObserversCount() > 0);
+        assertTrue(dump.getAdjSeq() > 0);
+        assertTrue(dump.getLruSeq() > 0);
+
+        verifyActivityManagerServiceDumpProcessesProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyActivityManagerServiceDumpProcessesProto(ActivityManagerServiceDumpProcessesProto dump, final int filterLevel) throws Exception {
+        for (ActiveInstrumentationProto aip : dump.getActiveInstrumentationsList()) {
+            verifyActiveInstrumentationProto(aip, filterLevel);
+        }
+        for (UidRecordProto urp : dump.getActiveUidsList()) {
+            verifyUidRecordProto(urp, filterLevel);
+        }
+        for (UidRecordProto urp : dump.getValidateUidsList()) {
+            verifyUidRecordProto(urp, filterLevel);
+        }
+        for (ImportanceTokenProto itp : dump.getImportantProcsList()) {
+            verifyImportanceTokenProto(itp, filterLevel);
+        }
+        verifyAppErrorsProto(dump.getAppErrors(), filterLevel);
+        verifyVrControllerProto(dump.getVrController(), filterLevel);
+        verifyAppTimeTrackerProto(dump.getCurrentTracker(), filterLevel);
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(dump.getMemWatchProcesses().getDump().getUri().isEmpty());
+        }
+    }
+
+    private static void verifyActiveInstrumentationProto(ActiveInstrumentationProto aip, final int filterLevel) throws Exception {
+    }
+
+    private static void verifyUidRecordProto(UidRecordProto urp, final int filterLevel) throws Exception {
+        for (UidRecordProto.Change c : urp.getLastReportedChangesList()) {
+            assertTrue(UidRecordProto.Change.getDescriptor().getValues().contains(c.getValueDescriptor()));
+        }
+        assertTrue(urp.getNumProcs() >= 0);
+    }
+
+    private static void verifyImportanceTokenProto(ImportanceTokenProto itp, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            // The entire message is tagged as EXPLICIT, so even the pid should be stripped out.
+            assertTrue(itp.getPid() == 0);
+            assertTrue(itp.getToken().isEmpty());
+            assertTrue(itp.getReason().isEmpty());
+        }
+    }
+
+    private static void verifyAppErrorsProto(AppErrorsProto aep, final int filterLevel) throws Exception {
+        assertTrue(aep.getNowUptimeMs() >= 0);
+        if (filterLevel == PRIVACY_AUTO) {
+            for (AppErrorsProto.BadProcess bp : aep.getBadProcessesList()) {
+                for (AppErrorsProto.BadProcess.Entry e : bp.getEntriesList()) {
+                    assertTrue(e.getLongMsg().isEmpty());
+                    assertTrue(e.getStack().isEmpty());
+                }
+            }
+        }
+    }
+
+    private static void verifyVrControllerProto(VrControllerProto vcp, final int filterLevel) throws Exception {
+        for (VrControllerProto.VrMode vm : vcp.getVrModeList()) {
+            assertTrue(VrControllerProto.VrMode.getDescriptor().getValues().contains(vm.getValueDescriptor()));
+        }
+    }
+
+    private static void verifyAppTimeTrackerProto(AppTimeTrackerProto attp, final int filterLevel) throws Exception {
+        assertTrue(attp.getTotalDurationMs() >= 0);
+        for (AppTimeTrackerProto.PackageTime pt : attp.getPackageTimesList()) {
+            assertTrue(pt.getDurationMs() >= 0);
+        }
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.AlarmManagerIncidentTest"	"testAlarmManagerServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/AlarmManagerIncidentTest.java"	""	"public void testAlarmManagerServiceDump() throws Exception {
+        final AlarmManagerServiceDumpProto dump =
+                getDump(AlarmManagerServiceDumpProto.parser(), ""dumpsys alarm --proto"");
+
+        verifyAlarmManagerServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyAlarmManagerServiceDumpProto(AlarmManagerServiceDumpProto dump, final int filterLevel) throws Exception {
+        // Times should be positive.
+        assertTrue(0 < dump.getCurrentTime());
+        assertTrue(0 < dump.getElapsedRealtime());
+        // Can be 0 if the time hasn't been changed yet.
+        assertTrue(0 <= dump.getLastTimeChangeClockTime());
+        assertTrue(0 <= dump.getLastTimeChangeRealtime());
+
+        // ConstantsProto
+        ConstantsProto settings = dump.getSettings();
+        assertTrue(0 < settings.getMinFuturityDurationMs());
+        assertTrue(0 < settings.getMinIntervalDurationMs());
+        assertTrue(0 < settings.getListenerTimeoutDurationMs());
+        assertTrue(0 < settings.getAllowWhileIdleShortDurationMs());
+        assertTrue(0 < settings.getAllowWhileIdleLongDurationMs());
+        assertTrue(0 < settings.getAllowWhileIdleWhitelistDurationMs());
+
+        // AppStateTrackerProto
+        AppStateTrackerProto appStateTracker = dump.getAppStateTracker();
+        for (int uid : appStateTracker.getForegroundUidsList()) {
+            // 0 is technically a valid UID.
+            assertTrue(0 <= uid);
+        }
+        for (int aid : appStateTracker.getPowerSaveWhitelistAppIdsList()) {
+            assertTrue(0 <= aid);
+        }
+        for (int aid : appStateTracker.getTempPowerSaveWhitelistAppIdsList()) {
+            assertTrue(0 <= aid);
+        }
+        for (RunAnyInBackgroundRestrictedPackages r : appStateTracker.getRunAnyInBackgroundRestrictedPackagesList()) {
+            assertTrue(0 <= r.getUid());
+        }
+
+        if (!dump.getIsInteractive()) {
+            // These are only valid if is_interactive is false.
+            assertTrue(0 < dump.getTimeSinceNonInteractiveMs());
+            assertTrue(0 < dump.getMaxWakeupDelayMs());
+            assertTrue(0 < dump.getTimeSinceLastDispatchMs());
+            // time_until_next_non_wakeup_delivery_ms could be negative if the delivery time is in the past.
+        }
+
+        assertTrue(0 < dump.getTimeUntilNextWakeupMs());
+        assertTrue(0 < dump.getTimeSinceLastWakeupMs());
+        assertTrue(0 < dump.getTimeSinceLastWakeupSetMs());
+        assertTrue(0 <= dump.getTimeChangeEventCount());
+
+        for (int aid : dump.getDeviceIdleUserWhitelistAppIdsList()) {
+            assertTrue(0 <= aid);
+        }
+
+        // AlarmClockMetadataProto
+        for (AlarmClockMetadataProto ac : dump.getNextAlarmClockMetadataList()) {
+            assertTrue(0 <= ac.getUser());
+            assertTrue(0 < ac.getTriggerTimeMs());
+        }
+
+        for (BatchProto b : dump.getPendingAlarmBatchesList()) {
+            final long start = b.getStartRealtime();
+            final long end = b.getEndRealtime();
+            assertTrue(""Batch start time ("" + start+ "") is negative"", 0 <= start);
+            assertTrue(""Batch end time ("" + end + "") is negative"", 0 <= end);
+            assertTrue(""Batch start time ("" + start + "") is after its end time ("" + end + "")"",
+                start <= end);
+            testAlarmProtoList(b.getAlarmsList(), filterLevel);
+        }
+
+        testAlarmProtoList(dump.getPendingUserBlockedBackgroundAlarmsList(), filterLevel);
+
+        testAlarmProto(dump.getPendingIdleUntil(), filterLevel);
+
+        testAlarmProtoList(dump.getPendingWhileIdleAlarmsList(), filterLevel);
+
+        testAlarmProto(dump.getNextWakeFromIdle(), filterLevel);
+
+        testAlarmProtoList(dump.getPastDueNonWakeupAlarmsList(), filterLevel);
+
+        assertTrue(0 <= dump.getDelayedAlarmCount());
+        assertTrue(0 <= dump.getTotalDelayTimeMs());
+        assertTrue(0 <= dump.getMaxDelayDurationMs());
+        assertTrue(0 <= dump.getMaxNonInteractiveDurationMs());
+
+        assertTrue(0 <= dump.getBroadcastRefCount());
+        assertTrue(0 <= dump.getPendingIntentSendCount());
+        assertTrue(0 <= dump.getPendingIntentFinishCount());
+        assertTrue(0 <= dump.getListenerSendCount());
+        assertTrue(0 <= dump.getListenerFinishCount());
+
+        for (InFlightProto f : dump.getOutstandingDeliveriesList())  {
+            assertTrue(0 <= f.getUid());
+            assertTrue(0 < f.getWhenElapsedMs());
+            testBroadcastStatsProto(f.getBroadcastStats());
+            testFilterStatsProto(f.getFilterStats(), filterLevel);
+            if (filterLevel == PRIVACY_AUTO) {
+                assertTrue(f.getTag().isEmpty());
+            }
+        }
+
+        for (AlarmManagerServiceDumpProto.LastAllowWhileIdleDispatch l : dump.getLastAllowWhileIdleDispatchTimesList()) {
+            assertTrue(0 <= l.getUid());
+            assertTrue(0 < l.getTimeMs());
+        }
+
+        for (AlarmManagerServiceDumpProto.TopAlarm ta : dump.getTopAlarmsList()) {
+            assertTrue(0 <= ta.getUid());
+            testFilterStatsProto(ta.getFilter(), filterLevel);
+        }
+
+        for (AlarmManagerServiceDumpProto.AlarmStat as : dump.getAlarmStatsList()) {
+            testBroadcastStatsProto(as.getBroadcast());
+            for (FilterStatsProto f : as.getFiltersList()) {
+                testFilterStatsProto(f, filterLevel);
+            }
+        }
+
+        for (IdleDispatchEntryProto id : dump.getAllowWhileIdleDispatchesList()) {
+            assertTrue(0 <= id.getUid());
+            assertTrue(0 <= id.getEntryCreationRealtime());
+            assertTrue(0 <= id.getArgRealtime());
+            if (filterLevel == PRIVACY_AUTO) {
+                assertTrue(id.getTag().isEmpty());
+            }
+        }
+
+        for (WakeupEventProto we : dump.getRecentWakeupHistoryList()) {
+            assertTrue(0 <= we.getUid());
+            assertTrue(0 <= we.getWhen());
+        }
+    }
+
+    private static void testAlarmProtoList(List<AlarmProto> alarms, final int filterLevel) throws Exception {
+        for (AlarmProto a : alarms) {
+            testAlarmProto(a, filterLevel);
+        }
+    }
+
+    private static void testAlarmProto(AlarmProto alarm, final int filterLevel) throws Exception {
+        assertNotNull(alarm);
+
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(alarm.getTag().isEmpty());
+            assertTrue(alarm.getListener().isEmpty());
+        }
+        // alarm.time_until_when_elapsed_ms can be negative if 'when' is in the past.
+        assertTrue(0 <= alarm.getWindowLengthMs());
+        assertTrue(0 <= alarm.getRepeatIntervalMs());
+        assertTrue(0 <= alarm.getCount());
+    }
+
+    private static void testBroadcastStatsProto(BroadcastStatsProto broadcast) throws Exception {
+        assertNotNull(broadcast);
+
+        assertTrue(0 <= broadcast.getUid());
+        assertTrue(0 <= broadcast.getTotalFlightDurationMs());
+        assertTrue(0 <= broadcast.getCount());
+        assertTrue(0 <= broadcast.getWakeupCount());
+        assertTrue(0 <= broadcast.getStartTimeRealtime());
+        // Nesting should be non-negative.
+        assertTrue(0 <= broadcast.getNesting());
+    }
+
+    private static void testFilterStatsProto(FilterStatsProto filter, final int filterLevel) throws Exception {
+        assertNotNull(filter);
+
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(filter.getTag().isEmpty());
+        }
+        assertTrue(0 <= filter.getLastFlightTimeRealtime());
+        assertTrue(0 <= filter.getTotalFlightDurationMs());
+        assertTrue(0 <= filter.getCount());
+        assertTrue(0 <= filter.getWakeupCount());
+        assertTrue(0 <= filter.getStartTimeRealtime());
+        // Nesting should be non-negative.
+        assertTrue(0 <= filter.getNesting());
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.PrintProtoTest"	"testDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/PrintProtoTest.java"	""	"public void testDump() throws Exception {
+        // If the device doesn't support printing, then pass.
+        if (!supportsPrinting(getDevice())) {
+            LogUtil.CLog.d(""Bypass as android.software.print is not supported."");
+            return;
+        }
+
+        PrintServiceDumpProto dump = getDump(PrintServiceDumpProto.parser(),
+                ""dumpsys print --proto"");
+
+        verifyPrintServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyPrintServiceDumpProto(PrintServiceDumpProto dump, final int filterLevel) throws Exception {
+        if (dump.getUserStatesCount() > 0) {
+            PrintUserStateProto userState = dump.getUserStatesList().get(0);
+            assertEquals(0, userState.getUserId());
+        }
+
+        for (PrintUserStateProto pus : dump.getUserStatesList()) {
+            for (ActivePrintServiceProto aps : pus.getActiveServicesList()) {
+                verifyActivePrintServiceProto(aps, filterLevel);
+            }
+            for (CachedPrintJobProto cpj : pus.getCachedPrintJobsList()) {
+                verifyPrintJobInfoProto(cpj.getPrintJob(), filterLevel);
+            }
+            for (PrinterDiscoverySessionProto pds : pus.getDiscoverySessionsList()) {
+                verifyPrinterDiscoverySessionProto(pds, filterLevel);
+            }
+            verifyPrintSpoolerStateProto(pus.getPrintSpoolerState(), filterLevel);
+        }
+    }
+
+    private static void verifyActivePrintServiceProto(ActivePrintServiceProto aps, final int filterLevel) throws Exception {
+        for (PrinterIdProto pip : aps.getTrackedPrintersList()) {
+            verifyPrinterIdProto(pip, filterLevel);
+        }
+    }
+
+    private static void verifyPrinterDiscoverySessionProto(PrinterDiscoverySessionProto pds, final int filterLevel) throws Exception {
+        for (PrinterIdProto pip : pds.getTrackedPrinterRequestsList()) {
+            verifyPrinterIdProto(pip, filterLevel);
+        }
+        for (PrinterInfoProto pip : pds.getPrinterList()) {
+            verifyPrinterInfoProto(pip, filterLevel);
+        }
+    }
+
+    private static void verifyPrintDocumentInfoProto(PrintDocumentInfoProto pdi, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(pdi.getName().isEmpty());
+        }
+        assertTrue(0 <= pdi.getPageCount());
+        assertTrue(0 <= pdi.getDataSize());
+    }
+
+    private static void verifyPrinterIdProto(PrinterIdProto pip, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(pip.getLocalId().isEmpty());
+        }
+    }
+
+    private static void verifyPrinterInfoProto(PrinterInfoProto pip, final int filterLevel) throws Exception {
+        verifyPrinterIdProto(pip.getId(), filterLevel);
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(pip.getName().isEmpty());
+            assertTrue(pip.getDescription().isEmpty());
+        }
+        assertTrue(
+                PrinterInfoProto.Status.getDescriptor().getValues()
+                        .contains(pip.getStatus().getValueDescriptor()));
+    }
+
+    private static void verifyPrintJobInfoProto(PrintJobInfoProto pji, final int filterLevel) throws Exception {
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(pji.getLabel().isEmpty());
+            assertTrue(pji.getPrintJobId().isEmpty());
+            assertTrue(pji.getTag().isEmpty());
+        }
+        assertTrue(
+                PrintJobInfoProto.State.getDescriptor().getValues()
+                        .contains(pji.getState().getValueDescriptor()));
+        verifyPrinterIdProto(pji.getPrinter(), filterLevel);
+        verifyPrintDocumentInfoProto(pji.getDocumentInfo(), filterLevel);
+    }
+
+    private static void verifyPrintSpoolerStateProto(PrintSpoolerStateProto pss, final int filterLevel) throws Exception {
+        verifyPrintSpoolerInternalStateProto(pss.getInternalState(), filterLevel);
+    }
+
+    private static void verifyPrintSpoolerInternalStateProto(PrintSpoolerInternalStateProto psis, final int filterLevel) throws Exception {
+        for (PrintJobInfoProto pji : psis.getPrintJobsList()) {
+            verifyPrintJobInfoProto(pji, filterLevel);
+        }
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(0 == psis.getPrintJobFilesCount());
+        }
+    }
+
+    static boolean supportsPrinting(ITestDevice device) throws DeviceNotAvailableException {
+        return device.hasFeature(""android.software.print"");
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.SettingsIncidentTest"	"testBasicStructure"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/SettingsIncidentTest.java"	""	"public void testBasicStructure() throws Exception {
+        SettingsServiceDumpProto dump = getDump(SettingsServiceDumpProto.parser(),
+                ""dumpsys settings --proto"");
+
+        verifySettingsServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifySettingsServiceDumpProto(SettingsServiceDumpProto dump, final int filterLevel) throws Exception {
+        if (dump.getUserSettingsCount() > 0) {
+            UserSettingsProto userSettings = dump.getUserSettings(0);
+            assertEquals(0, userSettings.getUserId());
+
+            CLog.logAndDisplay(LogLevel.INFO, ""#*#*#*#*#*#*#*#*#*#*# SECURE #*#*#*#*#*#*#*#*#*#*#"");
+            verifySettings(userSettings.getSecureSettings(), filterLevel);
+            CLog.logAndDisplay(LogLevel.INFO, ""#*#*#*#*#*#*#*#*#*#*# SYSTEM #*#*#*#*#*#*#*#*#*#*#"");
+            verifySettings(userSettings.getSystemSettings(), filterLevel);
+        }
+
+        CLog.logAndDisplay(LogLevel.INFO, ""#*#*#*#*#*#*#*#*#*#*# GLOBAL #*#*#*#*#*#*#*#*#*#*#"");
+        verifySettings(dump.getGlobalSettings(), filterLevel);
+    }
+
+    private static void verifySettings(Message settings, final int filterLevel) throws Exception {
+        verifySettings(getSettingProtos(settings), filterLevel);
+
+        final List<SettingsOperationProto> ops = invoke(settings, ""getHistoricalOperationsList"");
+        for (SettingsOperationProto op : ops) {
+            assertTrue(op.getTimestamp() >= 0);
+            assertNotNull(op.getOperation());
+            // setting is optional
+            if (filterLevel == PRIVACY_AUTO) {
+                // SettingOperationProto is EXPLICIT by default.
+                assertTrue(op.getOperation().isEmpty());
+                assertTrue(op.getSetting().isEmpty());
+            }
+        }
+    }
+
+    private static Map<SettingProto, Destination> getSettingProtos(Message settingsProto) {
+        CLog.d(""Checking out class: "" + settingsProto.getClass());
+
+        Map<SettingProto, Destination> settings = new HashMap<>();
+        for (FieldDescriptor fd : settingsProto.getDescriptorForType().getFields()) {
+            if (fd.getType() != FieldDescriptor.Type.MESSAGE) {
+                // Only looking for SettingProtos and messages that contain them. Skip any primitive
+                // fields.
+                continue;
+            }
+            List<Object> tmp;
+            if (fd.isRepeated()) {
+                tmp = (List) settingsProto.getField(fd);
+            } else {
+                tmp = new ArrayList<>();
+                tmp.add(settingsProto.getField(fd));
+            }
+            Destination dest = fd.getOptions().getExtension(Privacy.privacy).getDest();
+            for (Object o : tmp) {
+                if (""android.providers.settings.SettingProto"".equals(fd.getMessageType().getFullName())) {
+                    // The container's default privacy doesn't affect message types. However,
+                    // anotations on the field override the message's default annotation. If a
+                    // message field doesn't have an annotation, it is treated as EXPLICIT by
+                    // default.
+                    settings.put((SettingProto) o, dest == Destination.DEST_UNSET ? Destination.DEST_EXPLICIT : dest);
+                } else {
+                    // Sub messages don't inherit the container's default privacy. If the field had
+                    // an annotation, it would override the sub message's default privacy.
+                    settings.putAll(getSettingProtos((Message) o));
+                }
+            }
+        }
+
+        return settings;
+    }
+
+    private static <T> T invoke(Method method, Object instance, Object... args) {
+        method.setAccessible(true);
+        try {
+            return (T) method.invoke(instance, args);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static <T> T invoke(Message instance, String methodName, Object... args)
+            throws Exception {
+        final Class<?>[] inputParamTypes = Arrays.stream(args)
+                .map((arg) -> toPrimitive(arg.getClass()))
+                .toArray(Class[]::new);
+        return invoke(
+                instance.getClass().getDeclaredMethod(methodName, inputParamTypes),
+                instance, args);
+    }
+
+    private static Class<?> toPrimitive(Class<?> c) {
+        return c == Integer.class ? int.class : c;
+    }
+
+    private static void verifySettings(Map<SettingProto, Destination> settings, final int filterLevel) throws Exception {
+        assertFalse(settings.isEmpty());
+
+        CLog.d(""Field count: "" + settings.size());
+        for (Map.Entry<SettingProto, Destination> sDPair : settings.entrySet()) {
+            SettingProto setting = sDPair.getKey();
+            Destination dest = sDPair.getValue();
+            try {
+                final String id = setting.getId();
+                if (!id.isEmpty()) {
+                    // _ID has to be a long converted to a String
+                    Long.parseLong(id);
+                }
+                assertNotNull(setting.getName());
+                if (filterLevel < PRIVACY_LOCAL) {
+                    if  (dest == Destination.DEST_LOCAL) {
+                        // Any filter that is not LOCAL should make sure local isn't printed at all.
+                        String err = ""Setting '"" + setting.getName() + ""' with LOCAL privacy didn't strip data for filter level '"" + privacyToString(filterLevel) + ""'"";
+                        assertTrue(err, setting.getId().isEmpty());
+                        assertTrue(err, setting.getName().isEmpty());
+                        assertTrue(err, setting.getPkg().isEmpty());
+                        assertTrue(err, setting.getValue().isEmpty());
+                        assertTrue(err, setting.getDefaultValue().isEmpty());
+                    }
+                    if (filterLevel < PRIVACY_EXPLICIT) {
+                        if (dest == Destination.DEST_EXPLICIT) {
+                            String err = ""Setting '"" + setting.getName() + ""' with EXPLICIT privacy didn't strip data for filter level '"" + privacyToString(filterLevel) + ""'"";
+                            assertTrue(err, setting.getId().isEmpty());
+                            assertTrue(err, setting.getName().isEmpty());
+                            assertTrue(err, setting.getPkg().isEmpty());
+                            assertTrue(err, setting.getValue().isEmpty());
+                            assertTrue(err, setting.getDefaultValue().isEmpty());
+                        }
+                    }
+                }
+                // pkg is optional
+                // value can be anything
+                // default can be anything
+                // default from system reported only if optional default present
+            } catch (Throwable e) {
+                throw new AssertionError(""Failed for setting "" + setting, e);
+            }
+        }
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.autofillservice.cts.DatasetFilteringTest"	"testFilter"	"CtsAutoFillServiceTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/autofillservice/src/android/autofillservice/cts/DatasetFilteringTest.java"	""	"@AppModeFull(reason = ""testFilter() is enough"")
+    public void testFilter_differentPrefixes() throws Exception {
+        final String a = ""aaa"";
+        final String b = ""bra"";
+        final String c = ""cadabra"";
+
+        enableService();
+
+        // Set expectations.
+        sReplier.addResponse(new CannedFillResponse.Builder()
+                .addDataset(new CannedDataset.Builder()
+                        .setField(ID_USERNAME, a)
+                        .setPresentation(a, isInlineMode())
+                        .build())
+                .addDataset(new CannedDataset.Builder()
+                        .setField(ID_USERNAME, b)
+                        .setPresentation(b, isInlineMode())
+                        .build())
+                .addDataset(new CannedDataset.Builder()
+                        .setField(ID_USERNAME, c)
+                        .setPresentation(c, isInlineMode())
+                        .build())
+                .build());
+
+        // Trigger auto-fill.
+        mUiBot.selectByRelativeId(ID_USERNAME);
+        mUiBot.waitForIdle();
+        sReplier.getNextFillRequest();
+
+        // With no filter text all datasets should be shown
+        mUiBot.assertDatasets(a, b, c);
+
+        changeUsername(""a"");
+        mUiBot.assertDatasets(a);
+
+        changeUsername(""b"");
+        mUiBot.assertDatasets(b);
+
+        changeUsername(""c"");
+        if (!isInlineMode()) { // With inline, we don't show the datasets now to protect privacy.
+            mUiBot.assertDatasets(c);
+        }
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.autofillservice.cts.DatasetFilteringTest"	"testFilter"	"CtsAutoFillServiceTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/autofillservice/src/android/autofillservice/cts/DatasetFilteringTest.java"	""	"@AppModeFull(reason = ""testFilter() is enough"")
+    public void testFilter_disabledUsingNullRegex() throws Exception {
+        // Dataset presentations.
+        final String unfilterable = ""Unfilterabled"";
+        final String aOrW = ""A or W"";
+        final String w = ""Wazzup"";
+
+        enableService();
+
+        // Set expectations.
+        sReplier.addResponse(new CannedFillResponse.Builder()
+                // This dataset has a value but filter is disabled
+                .addDataset(new CannedDataset.Builder()
+                        .setUnfilterableField(ID_USERNAME, ""a am I"")
+                        .setPresentation(unfilterable, isInlineMode())
+                        .build())
+                // This dataset uses pattern to filter
+                .addDataset(new CannedDataset.Builder()
+                        .setField(ID_USERNAME, ""whatsoever"",
+                                Pattern.compile(""a|aw""))
+                        .setPresentation(aOrW, isInlineMode())
+                        .build())
+                // This dataset uses value to filter
+                .addDataset(new CannedDataset.Builder()
+                        .setField(ID_USERNAME, ""wazzup"")
+                        .setPresentation(w, isInlineMode())
+                        .build())
+                .build());
+
+        // Trigger auto-fill.
+        mUiBot.selectByRelativeId(ID_USERNAME);
+        mUiBot.waitForIdle();
+        sReplier.getNextFillRequest();
+
+        // With no filter text all datasets should be shown
+        mUiBot.assertDatasets(unfilterable, aOrW, w);
+
+        // Only one dataset start with 'a'
+        changeUsername(""a"");
+        mUiBot.assertDatasets(aOrW);
+
+        // No dataset starts with 'aa'
+        changeUsername(""aa"");
+        mUiBot.assertNoDatasets();
+
+        // Only one datasets start with 'a'
+        changeUsername(""a"");
+        mUiBot.assertDatasets(aOrW);
+
+        // With no filter text all datasets should be shown
+        changeUsername("""");
+        mUiBot.assertDatasets(unfilterable, aOrW, w);
+
+        // Only one datasets start with 'w'
+        changeUsername(""w"");
+        if (!isInlineMode()) { // With inline, we don't show the datasets now to protect privacy.
+            mUiBot.assertDatasets(w);
+        }
+
+        // No dataset start with 'aaa'
+        final MyAutofillCallback callback = mActivity.registerCallback();
+        changeUsername(""aaa"");
+        callback.assertUiHiddenEvent(mActivity.getUsername());
+        mUiBot.assertNoDatasets();
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.telecom.cts.CallDetailsTest"	"testCallPropertyPropagation"	"CtsTelecomTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/telecom/src/android/telecom/cts/CallDetailsTest.java"	""	"public void testCallPropertyPropagation() {
+        if (!mShouldTestTelecom) {
+            return;
+        }
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_EMERGENCY_CALLBACK_MODE);
+        assertCallProperties(mCall, Call.Details.PROPERTY_EMERGENCY_CALLBACK_MODE);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_GENERIC_CONFERENCE);
+        assertCallProperties(mCall, Call.Details.PROPERTY_GENERIC_CONFERENCE);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_HIGH_DEF_AUDIO);
+        assertCallProperties(mCall, Call.Details.PROPERTY_HIGH_DEF_AUDIO);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_WIFI);
+        assertCallProperties(mCall, Call.Details.PROPERTY_WIFI);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_IS_EXTERNAL_CALL);
+        assertCallProperties(mCall, Call.Details.PROPERTY_IS_EXTERNAL_CALL);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_HAS_CDMA_VOICE_PRIVACY);
+        assertCallProperties(mCall, Call.Details.PROPERTY_HAS_CDMA_VOICE_PRIVACY);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_IS_DOWNGRADED_CONFERENCE);
+        // Not propagated
+        assertCallProperties(mCall, 0);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_IS_RTT);
+        assertCallProperties(mCall, Call.Details.PROPERTY_RTT);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_ASSISTED_DIALING);
+        assertCallProperties(mCall, Call.Details.PROPERTY_ASSISTED_DIALING);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_NETWORK_IDENTIFIED_EMERGENCY_CALL);
+        assertCallProperties(mCall, Call.Details.PROPERTY_NETWORK_IDENTIFIED_EMERGENCY_CALL);
+
+        mConnection.setConnectionProperties(Connection.PROPERTY_REMOTELY_HOSTED);
+        // Not propagated
+        assertCallProperties(mCall, 0);
+    }
+
+    /**
+     * Tests whether the getCallerDisplayName() getter returns the correct object.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.media.cts.AudioRecordTest"	"testPrivacySensitiveBuilder"	"CtsMediaTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/media/src/android/media/cts/AudioRecordTest.java"	""	"public void testPrivacySensitiveBuilder() throws Exception {
+        if (!hasMicrophone()) {
+            return;
+        }
+
+        for (final boolean privacyOn : new boolean[] { false, true} ) {
+            AudioRecord record = new AudioRecord.Builder()
+            .setAudioFormat(new AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                    .setSampleRate(8000)
+                    .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                    .build())
+            .setPrivacySensitive(privacyOn)
+            .build();
+            assertEquals(privacyOn, record.isPrivacySensitive());
+            record.release();
+        }
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.media.cts.AudioRecordTest"	"testPrivacySensitiveDefaults"	"CtsMediaTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/media/src/android/media/cts/AudioRecordTest.java"	""	"public void testPrivacySensitiveDefaults() throws Exception {
+        if (!hasMicrophone()) {
+            return;
+        }
+
+        AudioRecord record = new AudioRecord.Builder()
+            .setAudioSource(MediaRecorder.AudioSource.MIC)
+            .setAudioFormat(new AudioFormat.Builder()
+                 .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                 .setSampleRate(8000)
+                 .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                 .build())
+            .build();
+        assertFalse(record.isPrivacySensitive());
+        record.release();
+
+        record = new AudioRecord.Builder()
+            .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
+            .setAudioFormat(new AudioFormat.Builder()
+                 .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                 .setSampleRate(8000)
+                 .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                 .build())
+            .build();
+        assertTrue(record.isPrivacySensitive());
+        record.release();
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.webkit.cts.WebViewTest"	"testStartSafeBrowsingInvokesCallback"	"CtsWebkitTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/webkit/src/android/webkit/cts/WebViewTest.java"	""	"public void testStartSafeBrowsingInvokesCallback() throws Exception {
+        if (!NullWebViewUtils.isWebViewAvailable()) {
+            return;
+        }
+
+        final SettableFuture<Boolean> startSafeBrowsingFuture = SettableFuture.create();
+        WebView.startSafeBrowsing(getActivity().getApplicationContext(),
+                new ValueCallback<Boolean>() {
+            @Override
+            public void onReceiveValue(Boolean value) {
+                startSafeBrowsingFuture.set(Looper.getMainLooper().isCurrentThread());
+                return;
+            }
+        });
+        assertTrue(WebkitUtils.waitForFuture(startSafeBrowsingFuture));
+    }
+
+    private void savePrintedPage(final PrintDocumentAdapter adapter,
+            final ParcelFileDescriptor descriptor, final PageRange[] pageRanges,
+            final SettableFuture<Void> result) {
+        adapter.onWrite(pageRanges, descriptor,
+                new CancellationSignal(),
+                new WriteResultCallback() {
+                    @Override
+                    public void onWriteFinished(PageRange[] pages) {
+                        try {
+                            descriptor.close();
+                            result.set(null);
+                        } catch (IOException ex) {
+                            result.setException(ex);
+                        }
+                    }
+                });
+    }
+
+    private void printDocumentStart(final PrintDocumentAdapter adapter) {
+        WebkitUtils.onMainThreadSync(() -> {
+            adapter.onStart();
+        });
+    }
+
+    private void printDocumentLayout(final PrintDocumentAdapter adapter,
+            final PrintAttributes oldAttributes, final PrintAttributes newAttributes,
+            final LayoutResultCallback layoutResultCallback) {
+        WebkitUtils.onMainThreadSync(() -> {
+            adapter.onLayout(oldAttributes, newAttributes, new CancellationSignal(),
+                    layoutResultCallback, null);
+        });
+    }
+
+    private static class HrefCheckHandler extends Handler {
+        private boolean mHadRecieved;
+
+        private String mResultUrl;
+
+        public HrefCheckHandler(Looper looper) {
+            super(looper);
+        }
+
+        public boolean hasCalledHandleMessage() {
+            return mHadRecieved;
+        }
+
+        public String getResultUrl() {
+            return mResultUrl;
+        }
+
+        public void reset(){
+            mResultUrl = null;
+            mHadRecieved = false;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            mResultUrl = msg.getData().getString(""url"");
+            mHadRecieved = true;
+        }
+    }
+
+    private void moveFocusDown() throws Throwable {
+        // send down key and wait for idle
+        getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_TAB);
+        // waiting for idle isn't always sufficient for the key to be fully processed
+        Thread.sleep(500);
+    }
+
+    private void pollingCheckWebBackForwardList(final String currUrl, final int currIndex,
+            final int size) {
+        new PollingCheck() {
+            @Override
+            protected boolean check() {
+                WebBackForwardList list = mWebView.copyBackForwardList();
+                return checkWebBackForwardList(list, currUrl, currIndex, size);
+            }
+        }.run();
+    }
+
+    private boolean checkWebBackForwardList(WebBackForwardList list, String currUrl,
+            int currIndex, int size) {
+        return (list != null)
+                && (list.getSize() == size)
+                && (list.getCurrentIndex() == currIndex)
+                && list.getItemAtIndex(currIndex).getUrl().equals(currUrl);
+    }
+
+    private void assertGoBackOrForwardBySteps(boolean expected, int steps) {
+        // skip if steps equals to 0
+        if (steps == 0)
+            return;
+
+        int start = steps > 0 ? 1 : steps;
+        int end = steps > 0 ? steps : -1;
+
+        // check all the steps in the history
+        for (int i = start; i <= end; i++) {
+            assertEquals(expected, mWebView.canGoBackOrForward(i));
+
+            // shortcut methods for one step
+            if (i == 1) {
+                assertEquals(expected, mWebView.canGoForward());
+            } else if (i == -1) {
+                assertEquals(expected, mWebView.canGoBack());
+            }
+        }
+    }
+
+    private boolean isPictureFilledWithColor(Picture picture, int color) {
+        if (picture.getWidth() == 0 || picture.getHeight() == 0)
+            return false;
+
+        Bitmap bitmap = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(),
+                Config.ARGB_8888);
+        picture.draw(new Canvas(bitmap));
+
+        for (int i = 0; i < bitmap.getWidth(); i ++) {
+            for (int j = 0; j < bitmap.getHeight(); j ++) {
+                if (color != bitmap.getPixel(i, j)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Waits at least MIN_SCROLL_WAIT_MS for scrolling to start. Once started,
+     * scrolling is checked every SCROLL_WAIT_INTERVAL_MS for changes. Once
+     * changes have stopped, the function exits. If no scrolling has happened
+     * then the function exits after MIN_SCROLL_WAIT milliseconds.
+     * @param previousScrollY The Y scroll position prior to waiting.
+     */
+    private void waitForScrollingComplete(int previousScrollY)
+            throws InterruptedException {
+        int scrollY = previousScrollY;
+        // wait at least MIN_SCROLL_WAIT for something to happen.
+        long noChangeMinWait = SystemClock.uptimeMillis() + MIN_SCROLL_WAIT_MS;
+        boolean scrollChanging = false;
+        boolean scrollChanged = false;
+        boolean minWaitExpired = false;
+        while (scrollChanging || (!scrollChanged && !minWaitExpired)) {
+            Thread.sleep(SCROLL_WAIT_INTERVAL_MS);
+            int oldScrollY = scrollY;
+            scrollY = mOnUiThread.getScrollY();
+            scrollChanging = (scrollY != oldScrollY);
+            scrollChanged = (scrollY != previousScrollY);
+            minWaitExpired = (SystemClock.uptimeMillis() > noChangeMinWait);
+        }
+    }
+
+    /**
+     * This should remain functionally equivalent to
+     * androidx.webkit.WebViewCompatTest#testGetSafeBrowsingPrivacyPolicyUrl. Modifications to this
+     * test should be reflected in that test as necessary. See http://go/modifying-webview-cts.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.webkit.cts.WebViewTest"	"testGetSafeBrowsingPrivacyPolicyUrl"	"CtsWebkitTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/webkit/src/android/webkit/cts/WebViewTest.java"	""	"public void testGetSafeBrowsingPrivacyPolicyUrl() throws Exception {
+        if (!NullWebViewUtils.isWebViewAvailable()) {
+            return;
+        }
+
+        assertNotNull(WebView.getSafeBrowsingPrivacyPolicyUrl());
+        try {
+            new URL(WebView.getSafeBrowsingPrivacyPolicyUrl().toString());
+        } catch (MalformedURLException e) {
+            fail(""The privacy policy URL should be a well-formed URL"");
+        }
+    }"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.PowerIncidentTest"	"testPowerServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/PowerIncidentTest.java"	""	"public void testPowerServiceDump() throws Exception {
+        final PowerManagerServiceDumpProto dump =
+                getDump(PowerManagerServiceDumpProto.parser(), ""dumpsys power --proto"");
+
+        verifyPowerManagerServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyPowerManagerServiceDumpProto(PowerManagerServiceDumpProto dump, int filterLevel) {
+        assertTrue(dump.getBatteryLevel() >= 0);
+        assertTrue(dump.getBatteryLevel() <= 100);
+
+        assertTrue(
+                PowerManagerInternalProto.Wakefulness.getDescriptor()
+                        .getValues()
+                        .contains(dump.getWakefulness().getValueDescriptor()));
+        assertTrue(
+                BatteryPluggedStateEnum.getDescriptor()
+                        .getValues()
+                        .contains(dump.getPlugType().getValueDescriptor()));
+        assertTrue(
+                IntentProto.DockState.getDescriptor()
+                        .getValues()
+                        .contains(dump.getDockState().getValueDescriptor()));
+
+        final PowerServiceSettingsAndConfigurationDumpProto settingsAndConfiguration =
+                dump.getSettingsAndConfiguration();
+        assertTrue(settingsAndConfiguration.getMinimumScreenOffTimeoutConfigMs() > 0);
+        assertTrue(settingsAndConfiguration.getMaximumScreenDimDurationConfigMs() >= 0);
+        assertTrue(settingsAndConfiguration.getMaximumScreenDimRatioConfig() > 0);
+        assertTrue(settingsAndConfiguration.getScreenOffTimeoutSettingMs() > 0);
+        // Default value is -1.
+        assertTrue(settingsAndConfiguration.getSleepTimeoutSettingMs() >= -1);
+        assertTrue(settingsAndConfiguration.getMaximumScreenOffTimeoutFromDeviceAdminMs() > 0);
+        // -1 is used to disable, so is valid.
+        assertTrue(settingsAndConfiguration.getUserActivityTimeoutOverrideFromWindowManagerMs() >= -1);
+        final PowerServiceSettingsAndConfigurationDumpProto.ScreenBrightnessSettingLimitsProto
+                brightnessLimits = settingsAndConfiguration.getScreenBrightnessSettingLimits();
+        float settingMax = brightnessLimits.getSettingMaximumFloat();
+        float settingMin = brightnessLimits.getSettingMinimumFloat();
+        assertTrue(settingMin >= 0);
+        assertTrue(settingMax > 0);
+        assertTrue(""Brightness limit max setting ("" + settingMax + "") is less than min setting ("" + settingMin + "")"",
+                settingMax >= settingMin);
+        assertTrue(brightnessLimits.getSettingDefaultFloat() > 0);
+
+        final PowerManagerServiceDumpProto.UidStateProto uid = dump.getUidStates(0);
+        assertEquals(uid.getUid(), SYSTEM_UID);
+        assertEquals(uid.getUidString(), Integer.toString(SYSTEM_UID));
+        assertTrue(uid.getIsActive());
+
+        for (PowerManagerServiceDumpProto.UidStateProto us : dump.getUidStatesList()) {
+            assertTrue(0 <= us.getUid());
+            assertTrue(0 <= us.getNumWakeLocks());
+            assertTrue(ProcessStateEnum.getDescriptor()
+                    .getValues()
+                    .contains(us.getProcessState().getValueDescriptor()));
+        }
+
+        final LooperProto looper = dump.getLooper();
+        assertNotNull(looper.getThreadName());
+        assertTrue(looper.getThreadId() > 0);
+
+        assertTrue(dump.getSuspendBlockersCount() > 0);
+
+        // Check that times/durations are not incorrectly negative.
+        assertTrue(dump.getNotifyLongScheduledMs() >= 0);
+        assertTrue(dump.getNotifyLongDispatchedMs() >= 0);
+        assertTrue(dump.getNotifyLongNextCheckMs() >= 0);
+        assertTrue(dump.getLastWakeTimeMs() >= 0);
+        assertTrue(dump.getLastSleepTimeMs() >= 0);
+        assertTrue(dump.getLastUserActivityTimeMs() >= 0);
+        assertTrue(dump.getLastUserActivityTimeNoChangeLightsMs() >= 0);
+        assertTrue(dump.getLastInteractivePowerHintTimeMs() >= 0);
+        assertTrue(dump.getLastScreenBrightnessBoostTimeMs() >= 0);
+        // -1 is a valid value.
+        assertTrue(dump.getSleepTimeoutMs() >= -1);
+        assertTrue(dump.getScreenOffTimeoutMs() >= 0);
+        assertTrue(dump.getScreenDimDurationMs() >= 0);
+
+        for (WakeLockProto wl : dump.getWakeLocksList()) {
+            assertTrue(0 <= wl.getAcqMs());
+            assertTrue(0 <= wl.getUid());
+            assertTrue(0 <= wl.getPid());
+        }
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.NotificationIncidentTest"	"testRankingConfig"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/NotificationIncidentTest.java"	""	"public void testRankingConfig() throws Exception {
+        final NotificationServiceDumpProto dump = getDump(NotificationServiceDumpProto.parser(),
+                ""dumpsys notification --proto"");
+
+        verifyRankingHelperProto(dump.getRankingConfig(), PRIVACY_NONE);
+    }
+
+    private static void verifyRankingHelperProto(RankingHelperProto rhProto, final int filterLevel) throws Exception {
+        for (RecordProto rp : rhProto.getRecordsList()) {
+            verifyRecordProto(rp);
+        }
+        for (RecordProto rp : rhProto.getRecordsRestoredWithoutUidList()) {
+            verifyRecordProto(rp);
+        }
+    }
+
+    private static void verifyRecordProto(RecordProto rp) throws Exception {
+        assertTrue(!rp.getPackage().isEmpty());
+        assertTrue(rp.getUid() == -10000 || rp.getUid() >= 0 || rp.getUid() == -1);
+        assertTrue(""Record importance is an invalid value: "" + rp.getImportance(),
+                rp.getImportance() == IMPORTANCE_UNSPECIFIED ||
+                (rp.getImportance() >= IMPORTANCE_NONE && rp.getImportance() <= IMPORTANCE_MAX));
+        assertTrue(rp.getPriority() >= PRIORITY_MIN && rp.getPriority() <= PRIORITY_MAX);
+        assertTrue(""Record visibility is an invalid value: "" + rp.getVisibility(),
+                rp.getVisibility() == VISIBILITY_NO_OVERRIDE ||
+                (rp.getVisibility() >= VISIBILITY_SECRET &&
+                 rp.getVisibility() <= VISIBILITY_PUBLIC));
+    }
+
+    // Tests default state: zen mode is a valid/expected value"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.NotificationIncidentTest"	"testZenMode"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/NotificationIncidentTest.java"	""	"public void testZenMode() throws Exception {
+        final NotificationServiceDumpProto dump = getDump(NotificationServiceDumpProto.parser(),
+                ""dumpsys notification --proto"");
+
+        verifyZenModeProto(dump.getZen(), PRIVACY_NONE);
+    }
+
+    private static void verifyZenModeProto(ZenModeProto zenProto, final int filterLevel) throws Exception {
+        assertTrue(""Unexpected ZenMode value"",
+                ZenMode.getDescriptor().getValues().contains(zenProto.getZenMode().getValueDescriptor()));
+
+        List<ZenRuleProto> zenRules = zenProto.getEnabledActiveConditionsList();
+        for (int i = 0; i < zenRules.size(); ++i) {
+            ZenRuleProto zr = zenRules.get(i);
+            ConditionProto cp = zr.getCondition();
+            if (filterLevel == PRIVACY_AUTO) {
+                assertTrue(zr.getId().isEmpty());
+                assertTrue(zr.getName().isEmpty());
+                assertTrue(zr.getConditionId().isEmpty());
+
+                assertTrue(cp.getId().isEmpty());
+                assertTrue(cp.getSummary().isEmpty());
+                assertTrue(cp.getLine1().isEmpty());
+                assertTrue(cp.getLine2().isEmpty());
+            } else if (i > 0) {
+                // There will be at most one manual rule, the rest will be automatic. The fields
+                // tested here are required for automatic rules.
+                assertFalse(zr.getId().isEmpty());
+                assertFalse(zr.getName().isEmpty());
+                assertTrue(zr.getCreationTimeMs() > 0);
+                assertFalse(zr.getConditionId().isEmpty());
+            }
+
+            assertTrue(ConditionProto.State.getDescriptor().getValues()
+                    .contains(cp.getState().getValueDescriptor()));
+        }
+
+        PolicyProto policy = zenProto.getPolicy();
+        for (PolicyProto.Category c : policy.getPriorityCategoriesList()) {
+            assertTrue(PolicyProto.Category.getDescriptor().getValues()
+                    .contains(c.getValueDescriptor()));
+        }
+        assertTrue(PolicyProto.Sender.getDescriptor().getValues()
+                .contains(policy.getPriorityCallSender().getValueDescriptor()));
+        assertTrue(PolicyProto.Sender.getDescriptor().getValues()
+                .contains(policy.getPriorityMessageSender().getValueDescriptor()));
+        for (PolicyProto.SuppressedVisualEffect sve : policy.getSuppressedVisualEffectsList()) {
+            assertTrue(PolicyProto.SuppressedVisualEffect.getDescriptor().getValues()
+                    .contains(sve.getValueDescriptor()));
+        }
+    }
+
+    static void verifyNotificationServiceDumpProto(NotificationServiceDumpProto dump, final int filterLevel) throws Exception {
+        for (NotificationRecordProto nr : dump.getRecordsList()) {
+            verifyNotificationRecordProto(nr, filterLevel);
+        }
+        verifyZenModeProto(dump.getZen(), filterLevel);
+        verifyManagedServicesProto(dump.getNotificationListeners(), filterLevel);
+        verifyManagedServicesProto(dump.getNotificationAssistants(), filterLevel);
+        verifyManagedServicesProto(dump.getConditionProviders(), filterLevel);
+        verifyRankingHelperProto(dump.getRankingConfig(), filterLevel);
+    }
+
+    private static void verifyManagedServicesProto(ManagedServicesProto ms, final int filterLevel) throws Exception {
+        for (ManagedServicesProto.ServiceProto sp : ms.getApprovedList()) {
+            for (String n : sp.getNameList()) {
+                assertFalse(n.isEmpty());
+            }
+            assertTrue(sp.getUserId() >= 0);
+        }
+    }
+
+    private static void verifyNotificationRecordProto(NotificationRecordProto record, final int filterLevel) throws Exception {
+        // Ensure these fields exist, at least
+        record.getFlags();
+        record.getChannelId();
+        record.getSound();
+        record.getAudioAttributes();
+        record.getCanVibrate();
+        record.getCanShowLight();
+        record.getGroupKey();
+
+        if (filterLevel == PRIVACY_AUTO) {
+            assertTrue(record.getChannelId().isEmpty());
+            assertTrue(record.getSound().isEmpty());
+            assertTrue(record.getGroupKey().isEmpty());
+        }
+
+        assertTrue(NotificationRecordProto.State.getDescriptor().getValues()
+                .contains(record.getState().getValueDescriptor()));
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.FingerprintIncidentTest"	"testFingerprintServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/FingerprintIncidentTest.java"	""	"public void testFingerprintServiceDump() throws Exception {
+        // If the device doesn't support fingerprints, then pass.
+        if (!supportsFingerprint(getDevice())) {
+            return;
+        }
+
+        final FingerprintServiceDumpProto dump =
+                getDump(FingerprintServiceDumpProto.parser(), ""dumpsys fingerprint --proto"");
+
+        verifyFingerprintServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyFingerprintServiceDumpProto(FingerprintServiceDumpProto dump, int filterLevel) {
+        for (int i = 0; i < dump.getUsersCount(); ++i) {
+            final FingerprintUserStatsProto userStats = dump.getUsers(i);
+            assertTrue(0 <= userStats.getUserId());
+            assertTrue(0 <= userStats.getNumFingerprints());
+
+            verifyPerformanceStatsProto(userStats.getNormal());
+            verifyPerformanceStatsProto(userStats.getCrypto());
+        }
+    }
+
+    private static void verifyPerformanceStatsProto(PerformanceStatsProto psp) {
+        assertTrue(0 <= psp.getAccept());
+        assertTrue(0 <= psp.getReject());
+        assertTrue(0 <= psp.getAcquire());
+        assertTrue(0 <= psp.getLockout());
+        assertTrue(0 <= psp.getPermanentLockout());
+    }
+
+    static boolean supportsFingerprint(ITestDevice device) throws DeviceNotAvailableException {
+        if (!device.hasFeature(""android.hardware.fingerprint"")) {
+            CLog.d(""Bypass as android.hardware.fingerprint is not supported."");
+            return false;
+        }
+        return true;
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.app.cts.ActivityManagerApi29Test"	"clearHistory"	"CtsAndroidAppTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/app/src/android/app/cts/ActivityManagerApi29Test.java"	""	"/*
+ *.
+ */
+package android.app.cts;
+
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.AppOpsManager.MODE_ALLOWED;
+import static android.app.AppOpsManager.MODE_FOREGROUND;
+import static android.app.AppOpsManager.MODE_IGNORED;
+import static android.app.AppOpsManager.OPSTR_CAMERA;
+import static android.app.AppOpsManager.OPSTR_COARSE_LOCATION;
+import static android.app.AppOpsManager.OPSTR_RECORD_AUDIO;
+import static android.app.AppOpsManager.OP_FLAGS_ALL;
+import static android.app.AppOpsManager.UID_STATE_FOREGROUND_SERVICE;
+import static android.app.AppOpsManager.UID_STATE_TOP;
+
+import static com.android.compatibility.common.util.SystemUtil.callWithShellPermissionIdentity;
+import static com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity;
+
+import static org.junit.Assert.assertEquals;
+
+import android.app.AppOpsManager;
+import android.app.AppOpsManager.HistoricalOp;
+import android.app.AppOpsManager.HistoricalOps;
+import android.app.AppOpsManager.HistoricalOpsRequest;
+import android.app.Instrumentation;
+import android.app.cts.android.app.cts.tools.WaitForBroadcast;
+import android.app.cts.android.app.cts.tools.WatchUidRunner;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.permission.cts.PermissionUtils;
+import android.provider.DeviceConfig;
+import android.provider.Settings;
+
+import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * AppOpsManager.MODE_FOREGROUND is introduced in API level 29. This test class specifically tests
+ * ActivityManagerService's interaction with AppOpsService regarding MODE_FOREGROUND operation.
+ * If an operation's mode is MODE_FOREGROUND, this operation is allowed only when the process is in
+ * one of the foreground state (including foreground_service state), this operation will be denied
+ * when the process is in background state.
+ */
+@RunWith(AndroidJUnit4.class)
+//@Suppress
+public class ActivityManagerApi29Test {
+    private static final String PACKAGE_NAME = ""android.app.cts.activitymanager.api29"";
+    private static final String SIMPLE_ACTIVITY = "".SimpleActivity"";
+    private static final String ACTION_SIMPLE_ACTIVITY_START_RESULT =
+            ""android.app.cts.activitymanager.api29.SimpleActivity.RESULT"";
+    private static final String ACTION_SERVICE_START_RESULT =
+            ""android.app.cts.activitymanager.api29.LocationForegroundService.RESULT"";
+    private static final String SERVICE_NAME = "".LocationForegroundService"";
+    private static final String PROPERTY_PERMISSIONS_HUB_ENABLED = ""permissions_hub_enabled"";
+    private static final int WAITFOR_MSEC = 10000;
+    private static final int NOTEOP_COUNT = 5;
+
+    private static final Instrumentation sInstrumentation =
+            InstrumentationRegistry.getInstrumentation();
+    private static final Context sContext = sInstrumentation.getContext();
+    private static final Context sTargetContext = sInstrumentation.getTargetContext();
+    private static final AppOpsManager sAppOps =
+            (AppOpsManager) sContext.getSystemService(AppOpsManager.class);
+    private static Intent sActivityIntent;
+    private static Intent sServiceIntent = new Intent().setClassName(
+            PACKAGE_NAME, PACKAGE_NAME + SERVICE_NAME);
+    private static int sUid;
+    static {
+        try {
+            sUid = sContext.getPackageManager().getApplicationInfo(PACKAGE_NAME, 0).uid;
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException(""NameNotFoundException:"" + e);
+        }
+    }
+
+    private String mOldAppOpsSettings;
+    private boolean mWasPermissionsHubEnabled = false;
+    private WatchUidRunner mUidWatcher;
+
+    @Before
+    public void setUp() throws Exception {
+        CtsAppTestUtils.turnScreenOn(sInstrumentation, sContext);
+        CtsAppTestUtils.makeUidIdle(sInstrumentation, PACKAGE_NAME);
+        // PACKAGE_NAME's targetSdkVersion is 29, when ACCESS_COARSE_LOCATION is granted, appOp is
+        // MODE_FOREGROUND (In API level lower than 29, appOp is MODE_ALLOWED).
+        assertEquals(MODE_FOREGROUND,
+                PermissionUtils.getAppOp(PACKAGE_NAME, ACCESS_COARSE_LOCATION));
+        runWithShellPermissionIdentity(()-> {
+            mOldAppOpsSettings = Settings.Global.getString(sContext.getContentResolver(),
+                    Settings.Global.APP_OPS_CONSTANTS);
+            Settings.Global.putString(sContext.getContentResolver(),
+                    Settings.Global.APP_OPS_CONSTANTS,
+                    ""top_state_settle_time=0,fg_service_state_settle_time=0,""
+                    + ""bg_state_settle_time=0"");
+            mWasPermissionsHubEnabled = DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
+                    PROPERTY_PERMISSIONS_HUB_ENABLED, false);
+            DeviceConfig.setProperty(DeviceConfig.NAMESPACE_PRIVACY,
+                    PROPERTY_PERMISSIONS_HUB_ENABLED, Boolean.toString(true), false);
+            sAppOps.clearHistory();
+            sAppOps.resetHistoryParameters(); }
+        );
+        mUidWatcher = new WatchUidRunner(sInstrumentation, sUid, WAITFOR_MSEC);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        CtsAppTestUtils.makeUidIdle(sInstrumentation, PACKAGE_NAME);
+        runWithShellPermissionIdentity(() -> {
+            // restore old AppOps settings.
+            Settings.Global.putString(sContext.getContentResolver(),
+                    Settings.Global.APP_OPS_CONSTANTS, mOldAppOpsSettings);
+            DeviceConfig.setProperty(DeviceConfig.NAMESPACE_PRIVACY,
+                    PROPERTY_PERMISSIONS_HUB_ENABLED, Boolean.toString(mWasPermissionsHubEnabled),
+                    false);
+            sAppOps.clearHistory();
+            sAppOps.resetHistoryParameters(); }
+        );
+        mUidWatcher.finish();
+    }
+
+    private void startSimpleActivity() {
+        sActivityIntent = new Intent(Intent.ACTION_MAIN)
+                .setClassName(PACKAGE_NAME, PACKAGE_NAME + SIMPLE_ACTIVITY)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        sTargetContext.startActivity(sActivityIntent);
+    }
+
+    private void stopSimpleActivity() {
+        sActivityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra(""finish"", true);
+        sTargetContext.startActivity(sActivityIntent);
+    }
+
+    private void startSimpleService() {
+        sTargetContext.startForegroundService(sServiceIntent);
+    }
+
+    private void stopSimpleService() {
+        sTargetContext.stopService(sServiceIntent);
+    }
+
+    /**
+     * This tests app in PROCESS_STATE_TOP state can have location access.
+     * The app's permission is AppOpsManager.MODE_FOREGROUND. If the process is in PROCESS_STATE_TOP
+     * , even its capability is zero, it still has location access.
+     * @throws Exception
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.DiskStatsProtoTest"	"testDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/DiskStatsProtoTest.java"	""	"public void testDump() throws Exception {
+        final DiskStatsServiceDumpProto dump = getDump(DiskStatsServiceDumpProto.parser(),
+                ""dumpsys diskstats --proto"");
+
+        verifyDiskStatsServiceDumpProto(dump, PRIVACY_NONE, getDevice());
+    }
+
+    static void verifyDiskStatsServiceDumpProto(DiskStatsServiceDumpProto dump, final int filterLevel, ITestDevice device) throws Exception {
+        // At least one partition listed
+        assertTrue(dump.getPartitionsFreeSpaceCount() > 0);
+        // Test latency
+        boolean testError = dump.getHasTestError();
+        if (testError) {
+            assertNotNull(dump.getErrorMessage());
+            if (filterLevel == PRIVACY_AUTO) {
+                assertTrue(dump.getErrorMessage().isEmpty());
+            }
+        } else {
+            assertTrue(dump.getWrite512BLatencyMillis() < 100); // Less than 100ms
+        }
+        assertTrue(dump.getWrite512BLatencyMillis() >= 0); // Non-negative
+        assertTrue(dump.getBenchmarkedWriteSpeedKbps() >= 0); // Non-negative
+
+        for (DiskStatsFreeSpaceProto dsfs : dump.getPartitionsFreeSpaceList()) {
+            verifyDiskStatsFreeSpaceProto(dsfs);
+        }
+
+        DiskStatsServiceDumpProto.EncryptionType encryptionType = dump.getEncryption();
+        if (""file"".equals(device.getProperty(""ro.crypto.type""))) {
+            assertEquals(DiskStatsServiceDumpProto.EncryptionType.ENCRYPTION_FILE_BASED,
+                    encryptionType);
+        }
+        assertTrue(DiskStatsServiceDumpProto.EncryptionType.getDescriptor().getValues()
+                .contains(encryptionType.getValueDescriptor()));
+
+        verifyDiskStatsCachedValuesProto(dump.getCachedFolderSizes());
+    }
+
+    private static void verifyDiskStatsAppSizesProto(DiskStatsAppSizesProto dsas) throws Exception {
+        assertTrue(dsas.getAppSizeKb() >= 0);
+        assertTrue(dsas.getCacheSizeKb() >= 0);
+        assertTrue(dsas.getAppDataSizeKb() >= 0);
+    }
+
+    private static void verifyDiskStatsCachedValuesProto(DiskStatsCachedValuesProto dscv) throws Exception {
+        assertTrue(dscv.getAggAppsSizeKb() >= 0);
+        assertTrue(dscv.getAggAppsCacheSizeKb() >= 0);
+        assertTrue(dscv.getPhotosSizeKb() >= 0);
+        assertTrue(dscv.getVideosSizeKb() >= 0);
+        assertTrue(dscv.getAudioSizeKb() >= 0);
+        assertTrue(dscv.getDownloadsSizeKb() >= 0);
+        assertTrue(dscv.getSystemSizeKb() >= 0);
+        assertTrue(dscv.getOtherSizeKb() >= 0);
+        assertTrue(dscv.getAggAppsDataSizeKb() >= 0);
+
+        for (DiskStatsAppSizesProto dsas : dscv.getAppSizesList()) {
+            verifyDiskStatsAppSizesProto(dsas);
+        }
+    }
+
+    private static void verifyDiskStatsFreeSpaceProto(DiskStatsFreeSpaceProto dsfs) throws Exception {
+        assertTrue(DiskStatsFreeSpaceProto.Folder.getDescriptor().getValues()
+                .contains(dsfs.getFolder().getValueDescriptor()));
+        assertTrue(dsfs.getAvailableSpaceKb() >= 0);
+        assertTrue(dsfs.getTotalSpaceKb() >= 0);
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.PackageIncidentTest"	"testPackageServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/PackageIncidentTest.java"	""	"public void testPackageServiceDump() throws Exception {
+        final long st = System.currentTimeMillis();
+
+        installPackage(DEVICE_SIDE_TEST_APK, /* grantPermissions= */ true);
+
+        // Find the package UID, version code, and version string.
+        final Matcher matcher =
+                execCommandAndFind(
+                        ""dumpsys package "" + DEVICE_SIDE_TEST_PACKAGE,
+                        ""userId=(\\d+).*versionCode=(\\d+).*versionName=([^\\n]*)"",
+                        Pattern.DOTALL);
+        final int uid = Integer.parseInt(matcher.group(1));
+        final int versionCode = Integer.parseInt(matcher.group(2));
+        final String versionString = matcher.group(3).trim();
+
+        final PackageServiceDumpProto dump =
+                getDump(PackageServiceDumpProto.parser(), ""dumpsys package --proto"");
+
+        PackageProto testPackage = null;
+        for (PackageProto pkg : dump.getPackagesList()) {
+            if (pkg.getName().equals(DEVICE_SIDE_TEST_PACKAGE)) {
+                testPackage = pkg;
+                break;
+            }
+        }
+        assertNotNull(testPackage);
+        assertEquals(testPackage.getName(), DEVICE_SIDE_TEST_PACKAGE);
+        assertEquals(testPackage.getUid(), uid);
+        assertEquals(testPackage.getVersionCode(), versionCode);
+        assertEquals(testPackage.getVersionString(), versionString);
+        assertPositive(""install_time_ms"", testPackage.getInstallTimeMs());
+        assertEquals(testPackage.getInstallTimeMs(), testPackage.getUpdateTimeMs());
+        assertEquals(testPackage.getSplits(0).getName(), ""base"");
+        assertEquals(testPackage.getSplits(0).getRevisionCode(), 0);
+        assertEquals(testPackage.getUsers(0).getId(), 0);
+        assertEquals(
+                testPackage.getUsers(0).getInstallType(),
+                PackageProto.UserInfoProto.InstallType.FULL_APP_INSTALL);
+        assertFalse(testPackage.getUsers(0).getIsHidden());
+        assertFalse(testPackage.getUsers(0).getIsLaunched());
+        assertFalse(
+                testPackage.getUsers(0).getEnabledState()
+                        == PackageProto.UserInfoProto.EnabledState
+                                .COMPONENT_ENABLED_STATE_DISABLED_USER);
+
+        verifyPackageServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyPackageServiceDumpProto(PackageServiceDumpProto dump, final int filterLevel) throws Exception {
+        assertNotNull(dump.getVerifierPackage().getName());
+        assertNotNull(dump.getSharedLibraries(0).getName());
+        if (dump.getSharedLibraries(0).getIsJar()) {
+            assertNotNull(dump.getSharedLibraries(0).getPath());
+        } else {
+            assertNotNull(dump.getSharedLibraries(0).getApk());
+        }
+        assertNotNull(dump.getFeatures(0).getName());
+
+        PackageServiceDumpProto.SharedUserProto systemUser = null;
+        for (PackageServiceDumpProto.SharedUserProto user : dump.getSharedUsersList()) {
+            if (user.getUid() == 1000) {
+                systemUser = user;
+                break;
+            }
+        }
+        assertNotNull(systemUser);
+        assertEquals(""android.uid.system"", systemUser.getName());
+
+        if (filterLevel == PRIVACY_AUTO) {
+            for (String msg : dump.getMessagesList()) {
+                assertTrue(msg.isEmpty());
+            }
+        }
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.telecom.cts.ConferenceTest"	"testConferenceProperties"	"CtsTelecomTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/telecom/src/android/telecom/cts/ConferenceTest.java"	""	"public void testConferenceProperties() {
+        if (!mShouldTestTelecom) {
+            return;
+        }
+        final Call conf = mInCallService.getLastConferenceCall();
+        assertCallState(conf, Call.STATE_ACTIVE);
+
+        int properties  = mConferenceObject.getConnectionProperties();
+        properties |= Connection.PROPERTY_HAS_CDMA_VOICE_PRIVACY;
+
+        mConferenceObject.setConnectionProperties(properties);
+
+        // Wait for 2nd properties change; the first will be when the conference is marked with
+        // Call.Details.PROPERTY_CONFERENCE.
+        assertCallProperties(conf, Call.Details.PROPERTY_HAS_CDMA_VOICE_PRIVACY);
+        assertTrue(conf.getDetails().hasProperty(Call.Details.PROPERTY_HAS_CDMA_VOICE_PRIVACY));
+    }
+
+    /**
+     * Verifies {@link Conference#putExtras(Bundle)} calls are propagated to
+     * {@link android.telecom.Call.Callback#onDetailsChanged(Call, Call.Details)}.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.BatteryIncidentTest"	"testBatteryServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/BatteryIncidentTest.java"	""	"public void testBatteryServiceDump() throws Exception {
+        if (!hasBattery(getDevice())) {
+            return;
+        }
+
+        final BatteryServiceDumpProto dump =
+                getDump(BatteryServiceDumpProto.parser(), ""dumpsys battery --proto"");
+
+        verifyBatteryServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyBatteryServiceDumpProto(BatteryServiceDumpProto dump, final int filterLevel) {
+        if (!dump.getIsPresent()) {
+            /* If the battery isn't present, no need to run this test. */
+            return;
+        }
+
+        assertTrue(dump.getPlugged() != BatteryPluggedStateEnum.BATTERY_PLUGGED_WIRELESS);
+        assertTrue(dump.getMaxChargingCurrent() >= 0);
+        assertTrue(dump.getMaxChargingVoltage() >= 0);
+        assertTrue(dump.getChargeCounter() >= 0);
+        assertTrue(
+                dump.getStatus() != BatteryStatusEnum.BATTERY_STATUS_INVALID);
+        assertTrue(
+                dump.getHealth() != BatteryHealthEnum.BATTERY_HEALTH_INVALID);
+        int scale = dump.getScale();
+        assertTrue(scale > 0);
+        int level = dump.getLevel();
+        assertTrue(level >= 0 && level <= scale);
+        assertTrue(dump.getVoltage() >= 0);
+    }
+
+    static boolean hasBattery(ITestDevice device) throws DeviceNotAvailableException  {
+        final String batteryinfo = device.executeShellCommand(""dumpsys battery"");
+        boolean hasBattery = batteryinfo.contains(""present: true"");
+        return hasBattery;
+    }
+
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.BatteryStatsIncidentTest"	"testBatteryStatsServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/BatteryStatsIncidentTest.java"	""	"public void testBatteryStatsServiceDump() throws Exception {
+        batteryOnScreenOff();
+        Thread.sleep(5000); // Allow some time for battery data to accumulate.
+
+        final BatteryStatsServiceDumpProto dump = getDump(BatteryStatsServiceDumpProto.parser(),
+                ""dumpsys batterystats --proto"");
+
+        if (BatteryIncidentTest.hasBattery(getDevice())) {
+            verifyBatteryStatsServiceDumpProto(dump, PRIVACY_NONE);
+        }
+
+        batteryOffScreenOn();
+    }
+
+    static void verifyBatteryStatsServiceDumpProto(BatteryStatsServiceDumpProto dump, final int filterLevel) throws Exception {
+        final BatteryStatsProto bs = dump.getBatterystats();
+        assertNotNull(bs);
+
+        // Proto dumps were finalized when the batterystats report version was ~29 and the parcel
+        // version was ~172.
+        assertTrue(29 <= bs.getReportVersion());
+        assertTrue(172 <= bs.getParcelVersion());
+        assertNotNull(bs.getStartPlatformVersion());
+        assertFalse(bs.getStartPlatformVersion().isEmpty());
+        assertNotNull(bs.getEndPlatformVersion());
+        assertFalse(bs.getEndPlatformVersion().isEmpty());
+
+        for (UidProto u : bs.getUidsList()) {
+            testUidProto(u, filterLevel);
+        }
+
+        testSystemProto(bs.getSystem());
+    }
+
+    private static void testControllerActivityProto(ControllerActivityProto ca) throws Exception {
+        assertNotNull(ca);
+
+        assertTrue(0 <= ca.getIdleDurationMs());
+        assertTrue(0 <= ca.getRxDurationMs());
+        assertTrue(0 <= ca.getPowerMah());
+        for (ControllerActivityProto.TxLevel tx : ca.getTxList()) {
+            assertTrue(0 <= tx.getDurationMs());
+        }
+    }
+
+    private static void testBatteryLevelStep(SystemProto.BatteryLevelStep bls) throws Exception {
+        assertNotNull(bls);
+
+        assertTrue(0 < bls.getDurationMs());
+        assertTrue(0 <= bls.getLevel());
+        assertTrue(100 >= bls.getLevel());
+
+        assertTrue(SystemProto.BatteryLevelStep.DisplayState.getDescriptor().getValues()
+                .contains(bls.getDisplayState().getValueDescriptor()));
+        assertTrue(SystemProto.BatteryLevelStep.PowerSaveMode.getDescriptor().getValues()
+                .contains(bls.getPowerSaveMode().getValueDescriptor()));
+        assertTrue(SystemProto.BatteryLevelStep.IdleMode.getDescriptor().getValues()
+                .contains(bls.getIdleMode().getValueDescriptor()));
+    }
+
+    private static void testSystemProto(SystemProto s) throws Exception {
+        final long epsilon = 500; // Allow ~500 ms of error when comparing times.
+        assertNotNull(s);
+
+        SystemProto.Battery b = s.getBattery();
+        assertTrue(0 < b.getStartClockTimeMs());
+        assertTrue(0 <= b.getStartCount());
+        long totalRealtimeMs = b.getTotalRealtimeMs();
+        long totalUptimeMs = b.getTotalUptimeMs();
+        assertTrue(0 <= totalUptimeMs);
+        assertTrue(totalUptimeMs <= totalRealtimeMs + epsilon);
+        long batteryRealtimeMs = b.getBatteryRealtimeMs();
+        long batteryUptimeMs = b.getBatteryUptimeMs();
+        assertTrue(0 <= batteryUptimeMs);
+        assertTrue(batteryUptimeMs <= batteryRealtimeMs + epsilon);
+        assertTrue(""Battery realtime ("" + batteryRealtimeMs + "") is greater than total realtime ("" + totalRealtimeMs + "")"",
+            batteryRealtimeMs <= totalRealtimeMs + epsilon);
+        assertTrue(batteryUptimeMs <= totalUptimeMs + epsilon);
+        long screenOffRealtimeMs = b.getScreenOffRealtimeMs();
+        long screenOffUptimeMs = b.getScreenOffUptimeMs();
+        assertTrue(0 <= screenOffUptimeMs);
+        assertTrue(screenOffUptimeMs <= screenOffRealtimeMs + epsilon);
+        assertTrue(screenOffRealtimeMs <= totalRealtimeMs + epsilon);
+        assertTrue(screenOffUptimeMs <= totalUptimeMs + epsilon);
+        long screenDozeDurationMs = b.getScreenDozeDurationMs();
+        assertTrue(0 <= screenDozeDurationMs);
+        assertTrue(screenDozeDurationMs <= screenOffRealtimeMs + epsilon);
+        assertTrue(0 < b.getEstimatedBatteryCapacityMah());
+        long minLearnedCapacityUah = b.getMinLearnedBatteryCapacityUah();
+        long maxLearnedCapacityUah = b.getMaxLearnedBatteryCapacityUah();
+        assertTrue(0 <= minLearnedCapacityUah);
+        assertTrue(minLearnedCapacityUah <= maxLearnedCapacityUah);
+
+        SystemProto.BatteryDischarge bd = s.getBatteryDischarge();
+        int lowerBound = bd.getLowerBoundSinceCharge();
+        int upperBound = bd.getUpperBoundSinceCharge();
+        assertTrue(0 <= lowerBound);
+        assertTrue(lowerBound <= upperBound);
+        assertTrue(0 <= bd.getScreenOnSinceCharge());
+        int screenOff = bd.getScreenOffSinceCharge();
+        int screenDoze = bd.getScreenDozeSinceCharge();
+        assertTrue(0 <= screenDoze);
+        assertTrue(screenDoze <= screenOff);
+        long totalMah = bd.getTotalMah();
+        long totalMahScreenOff = bd.getTotalMahScreenOff();
+        long totalMahScreenDoze = bd.getTotalMahScreenDoze();
+        long totalMahLightDoze = bd.getTotalMahLightDoze();
+        long totalMahDeepDoze = bd.getTotalMahDeepDoze();
+        assertTrue(0 <= totalMahScreenDoze);
+        assertTrue(0 <= totalMahLightDoze);
+        assertTrue(0 <= totalMahDeepDoze);
+        assertTrue(totalMahScreenDoze <= totalMahScreenOff);
+        assertTrue(totalMahLightDoze <= totalMahScreenOff);
+        assertTrue(totalMahDeepDoze <= totalMahScreenOff);
+        assertTrue(totalMahScreenOff <= totalMah);
+
+        assertTrue(-1 <= s.getChargeTimeRemainingMs());
+        assertTrue(-1 <= s.getDischargeTimeRemainingMs());
+
+        for (SystemProto.BatteryLevelStep bls : s.getChargeStepList()) {
+            testBatteryLevelStep(bls);
+        }
+        for (SystemProto.BatteryLevelStep bls : s.getDischargeStepList()) {
+            testBatteryLevelStep(bls);
+        }
+
+        for (SystemProto.DataConnection dc : s.getDataConnectionList()) {
+            // If isNone is not set, then the name will be a valid network type.
+            if (!dc.getIsNone()) {
+                assertTrue(NetworkTypeEnum.getDescriptor().getValues()
+                        .contains(dc.getName().getValueDescriptor()));
+            }
+            testTimerProto(dc.getTotal());
+        }
+
+        testControllerActivityProto(s.getGlobalBluetoothController());
+        testControllerActivityProto(s.getGlobalModemController());
+        testControllerActivityProto(s.getGlobalWifiController());
+
+        SystemProto.GlobalNetwork gn = s.getGlobalNetwork();
+        assertTrue(0 <= gn.getMobileBytesRx());
+        assertTrue(0 <= gn.getMobileBytesTx());
+        assertTrue(0 <= gn.getWifiBytesRx());
+        assertTrue(0 <= gn.getWifiBytesTx());
+        assertTrue(0 <= gn.getMobilePacketsRx());
+        assertTrue(0 <= gn.getMobilePacketsTx());
+        assertTrue(0 <= gn.getWifiPacketsRx());
+        assertTrue(0 <= gn.getWifiPacketsTx());
+        assertTrue(0 <= gn.getBtBytesRx());
+        assertTrue(0 <= gn.getBtBytesTx());
+
+        SystemProto.GlobalWifi gw = s.getGlobalWifi();
+        assertTrue(0 <= gw.getOnDurationMs());
+        assertTrue(0 <= gw.getRunningDurationMs());
+
+        for (SystemProto.KernelWakelock kw : s.getKernelWakelockList()) {
+            testTimerProto(kw.getTotal());
+        }
+
+        SystemProto.Misc m = s.getMisc();
+        assertTrue(0 <= m.getScreenOnDurationMs());
+        assertTrue(0 <= m.getPhoneOnDurationMs());
+        assertTrue(0 <= m.getFullWakelockTotalDurationMs());
+        assertTrue(0 <= m.getPartialWakelockTotalDurationMs());
+        assertTrue(0 <= m.getMobileRadioActiveDurationMs());
+        assertTrue(0 <= m.getMobileRadioActiveAdjustedTimeMs());
+        assertTrue(0 <= m.getMobileRadioActiveCount());
+        assertTrue(0 <= m.getMobileRadioActiveUnknownDurationMs());
+        assertTrue(0 <= m.getInteractiveDurationMs());
+        assertTrue(0 <= m.getBatterySaverModeEnabledDurationMs());
+        assertTrue(0 <= m.getNumConnectivityChanges());
+        assertTrue(0 <= m.getDeepDozeEnabledDurationMs());
+        assertTrue(0 <= m.getDeepDozeCount());
+        assertTrue(0 <= m.getDeepDozeIdlingDurationMs());
+        assertTrue(0 <= m.getDeepDozeIdlingCount());
+        assertTrue(0 <= m.getLongestDeepDozeDurationMs());
+        assertTrue(0 <= m.getLightDozeEnabledDurationMs());
+        assertTrue(0 <= m.getLightDozeCount());
+        assertTrue(0 <= m.getLightDozeIdlingDurationMs());
+        assertTrue(0 <= m.getLightDozeIdlingCount());
+        assertTrue(0 <= m.getLongestLightDozeDurationMs());
+
+        for (SystemProto.PhoneSignalStrength pss : s.getPhoneSignalStrengthList()) {
+            testTimerProto(pss.getTotal());
+        }
+
+        for (SystemProto.PowerUseItem pui : s.getPowerUseItemList()) {
+            assertTrue(SystemProto.PowerUseItem.Sipper.getDescriptor().getValues()
+                    .contains(pui.getName().getValueDescriptor()));
+            assertTrue(0 <= pui.getUid());
+            assertTrue(0 <= pui.getComputedPowerMah());
+            assertTrue(0 <= pui.getScreenPowerMah());
+            assertTrue(0 <= pui.getProportionalSmearMah());
+        }
+
+        SystemProto.PowerUseSummary pus = s.getPowerUseSummary();
+        assertTrue(0 < pus.getBatteryCapacityMah());
+        assertTrue(0 <= pus.getComputedPowerMah());
+        double minDrained = pus.getMinDrainedPowerMah();
+        double maxDrained = pus.getMaxDrainedPowerMah();
+        assertTrue(0 <= minDrained);
+        assertTrue(minDrained <= maxDrained);
+
+        for (SystemProto.ResourcePowerManager rpm : s.getResourcePowerManagerList()) {
+            assertNotNull(rpm.getName());
+            assertFalse(rpm.getName().isEmpty());
+            testTimerProto(rpm.getTotal());
+            testTimerProto(rpm.getScreenOff());
+        }
+
+        for (SystemProto.ScreenBrightness sb : s.getScreenBrightnessList()) {
+            testTimerProto(sb.getTotal());
+        }
+
+        testTimerProto(s.getSignalScanning());
+
+        for (SystemProto.WakeupReason wr : s.getWakeupReasonList()) {
+            testTimerProto(wr.getTotal());
+        }
+
+        SystemProto.WifiMulticastWakelockTotal wmwl = s.getWifiMulticastWakelockTotal();
+        assertTrue(0 <= wmwl.getDurationMs());
+        assertTrue(0 <= wmwl.getCount());
+
+        for (SystemProto.WifiSignalStrength wss : s.getWifiSignalStrengthList()) {
+            testTimerProto(wss.getTotal());
+        }
+
+        for (SystemProto.WifiState ws : s.getWifiStateList()) {
+            assertTrue(SystemProto.WifiState.Name.getDescriptor().getValues()
+                    .contains(ws.getName().getValueDescriptor()));
+            testTimerProto(ws.getTotal());
+        }
+
+        for (SystemProto.WifiSupplicantState wss : s.getWifiSupplicantStateList()) {
+            assertTrue(SystemProto.WifiSupplicantState.Name.getDescriptor().getValues()
+                    .contains(wss.getName().getValueDescriptor()));
+            testTimerProto(wss.getTotal());
+        }
+    }
+
+    private static void testTimerProto(TimerProto t) throws Exception {
+        assertNotNull(t);
+
+        long duration = t.getDurationMs();
+        long curDuration = t.getCurrentDurationMs();
+        long maxDuration = t.getMaxDurationMs();
+        long totalDuration = t.getTotalDurationMs();
+        assertTrue(0 <= duration);
+        assertTrue(0 <= t.getCount());
+        // Not all TimerProtos will have max duration, current duration, or total duration
+        // populated, so must tread carefully. Regardless, they should never be negative.
+        assertTrue(0 <= curDuration);
+        assertTrue(0 <= maxDuration);
+        assertTrue(0 <= totalDuration);
+        if (maxDuration > 0) {
+            assertTrue(curDuration <= maxDuration);
+        }
+        if (totalDuration > 0) {
+            assertTrue(maxDuration <= totalDuration);
+            assertTrue(""Duration "" + duration + "" is greater than totalDuration "" + totalDuration,
+                    duration <= totalDuration);
+        }
+    }
+
+    private static void testByFrequency(UidProto.Cpu.ByFrequency bf) throws Exception {
+        assertNotNull(bf);
+
+        assertTrue(1 <= bf.getFrequencyIndex());
+        long total = bf.getTotalDurationMs();
+        long screenOff = bf.getScreenOffDurationMs();
+        assertTrue(0 <= screenOff);
+        assertTrue(screenOff <= total);
+    }
+
+    private static void testUidProto(UidProto u, final int filterLevel) throws Exception {
+        assertNotNull(u);
+
+        assertTrue(0 <= u.getUid());
+
+        for (UidProto.Package p : u.getPackagesList()) {
+            assertNotNull(p.getName());
+            assertFalse(p.getName().isEmpty());
+
+            for (UidProto.Package.Service s : p.getServicesList()) {
+                assertNotNull(s.getName());
+                assertFalse(s.getName().isEmpty());
+                assertTrue(0 <= s.getStartDurationMs());
+                assertTrue(0 <= s.getStartCount());
+                assertTrue(0 <= s.getLaunchCount());
+            }
+        }
+
+        testControllerActivityProto(u.getBluetoothController());
+        testControllerActivityProto(u.getModemController());
+        testControllerActivityProto(u.getWifiController());
+
+        UidProto.BluetoothMisc bm = u.getBluetoothMisc();
+        testTimerProto(bm.getApportionedBleScan());
+        testTimerProto(bm.getBackgroundBleScan());
+        testTimerProto(bm.getUnoptimizedBleScan());
+        testTimerProto(bm.getBackgroundUnoptimizedBleScan());
+        assertTrue(0 <= bm.getBleScanResultCount());
+        assertTrue(0 <= bm.getBackgroundBleScanResultCount());
+
+        UidProto.Cpu c = u.getCpu();
+        assertTrue(0 <= c.getUserDurationMs());
+        assertTrue(0 <= c.getSystemDurationMs());
+        for (UidProto.Cpu.ByFrequency bf : c.getByFrequencyList()) {
+            testByFrequency(bf);
+        }
+        for (UidProto.Cpu.ByProcessState bps : c.getByProcessStateList()) {
+            assertTrue(UidProto.Cpu.ProcessState.getDescriptor().getValues()
+                    .contains(bps.getProcessState().getValueDescriptor()));
+            for (UidProto.Cpu.ByFrequency bf : bps.getByFrequencyList()) {
+                testByFrequency(bf);
+            }
+        }
+
+        testTimerProto(u.getAudio());
+        testTimerProto(u.getCamera());
+        testTimerProto(u.getFlashlight());
+        testTimerProto(u.getForegroundActivity());
+        testTimerProto(u.getForegroundService());
+        testTimerProto(u.getVibrator());
+        testTimerProto(u.getVideo());
+
+        for (UidProto.Job j : u.getJobsList()) {
+            assertNotNull(j.getName());
+            assertFalse(j.getName().isEmpty());
+
+            testTimerProto(j.getTotal());
+            testTimerProto(j.getBackground());
+        }
+
+        for (UidProto.JobCompletion jc : u.getJobCompletionList()) {
+            assertNotNull(jc.getName());
+            assertFalse(jc.getName().isEmpty());
+
+            for (UidProto.JobCompletion.ReasonCount rc : jc.getReasonCountList()) {
+                assertTrue(0 <= rc.getCount());
+            }
+        }
+
+        UidProto.Network n = u.getNetwork();
+        assertTrue(0 <= n.getMobileBytesRx());
+        assertTrue(0 <= n.getMobileBytesTx());
+        assertTrue(0 <= n.getWifiBytesRx());
+        assertTrue(0 <= n.getWifiBytesTx());
+        assertTrue(0 <= n.getBtBytesRx());
+        assertTrue(0 <= n.getBtBytesTx());
+        assertTrue(0 <= n.getMobilePacketsRx());
+        assertTrue(0 <= n.getMobilePacketsTx());
+        assertTrue(0 <= n.getWifiPacketsRx());
+        assertTrue(0 <= n.getWifiPacketsTx());
+        assertTrue(0 <= n.getMobileActiveDurationMs());
+        assertTrue(0 <= n.getMobileActiveCount());
+        assertTrue(0 <= n.getMobileWakeupCount());
+        assertTrue(0 <= n.getWifiWakeupCount());
+        assertTrue(0 <= n.getMobileBytesBgRx());
+        assertTrue(0 <= n.getMobileBytesBgTx());
+        assertTrue(0 <= n.getWifiBytesBgRx());
+        assertTrue(0 <= n.getWifiBytesBgTx());
+        assertTrue(0 <= n.getMobilePacketsBgRx());
+        assertTrue(0 <= n.getMobilePacketsBgTx());
+        assertTrue(0 <= n.getWifiPacketsBgRx());
+        assertTrue(0 <= n.getWifiPacketsBgTx());
+
+        UidProto.PowerUseItem pui = u.getPowerUseItem();
+        assertTrue(0 <= pui.getComputedPowerMah());
+        assertTrue(0 <= pui.getScreenPowerMah());
+        assertTrue(0 <= pui.getProportionalSmearMah());
+
+        for (UidProto.Process p : u.getProcessList()) {
+            assertNotNull(p.getName());
+            assertFalse(p.getName().isEmpty());
+            assertTrue(0 <= p.getUserDurationMs());
+            assertTrue(""Process system duration is negative: "" + p.getSystemDurationMs(),
+                    0 <= p.getSystemDurationMs());
+            assertTrue(0 <= p.getForegroundDurationMs());
+            assertTrue(0 <= p.getStartCount());
+            assertTrue(0 <= p.getAnrCount());
+            assertTrue(0 <= p.getCrashCount());
+        }
+
+        for (UidProto.StateTime st : u.getStatesList()) {
+            assertTrue(UidProto.StateTime.State.getDescriptor().getValues()
+                    .contains(st.getState().getValueDescriptor()));
+            assertTrue(0 <= st.getDurationMs());
+        }
+
+        for (UidProto.Sensor s : u.getSensorsList()) {
+            testTimerProto(s.getApportioned());
+            testTimerProto(s.getBackground());
+        }
+
+        for (UidProto.Sync s : u.getSyncsList()) {
+            assertFalse(s.getName().isEmpty());
+
+            testTimerProto(s.getTotal());
+            testTimerProto(s.getBackground());
+        }
+
+        for (UidProto.UserActivity ua : u.getUserActivityList()) {
+            assertTrue(0 <= ua.getCount());
+        }
+
+        UidProto.AggregatedWakelock aw = u.getAggregatedWakelock();
+        long awPartial = aw.getPartialDurationMs();
+        long awBgPartial = aw.getBackgroundPartialDurationMs();
+        assertTrue(0 <= awBgPartial);
+        assertTrue(awBgPartial <= awPartial);
+
+        for (UidProto.Wakelock w : u.getWakelocksList()) {
+            // Unfortunately, apps can legitimately pass an empty string as the wakelock name, so we
+            // can't guarantee that wakelock names will be non-empty.
+            testTimerProto(w.getFull());
+            testTimerProto(w.getPartial());
+            testTimerProto(w.getBackgroundPartial());
+            testTimerProto(w.getWindow());
+        }
+
+        for (UidProto.WakeupAlarm wa : u.getWakeupAlarmList()) {
+            assertTrue(0 <= wa.getCount());
+        }
+
+        UidProto.Wifi w = u.getWifi();
+        assertTrue(0 <= w.getFullWifiLockDurationMs());
+        assertTrue(0 <= w.getRunningDurationMs());
+        testTimerProto(w.getApportionedScan());
+        testTimerProto(w.getBackgroundScan());
+
+        testTimerProto(u.getWifiMulticastWakelock());
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.permission.cts.ProviderPermissionTest"	"testManageDocuments"	"CtsPermissionTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/tests/permission/src/android/permission/cts/ProviderPermissionTest.java"	""	"public void testManageDocuments() {
+        final PackageManager pm = getContext().getPackageManager();
+
+        final Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(""*/*"");
+        final ResolveInfo ri = pm.resolveActivity(intent, 0);
+
+        if (ri != null) {
+            final String validPkg = ri.activityInfo.packageName;
+
+            final List<PackageInfo> holding = pm.getPackagesHoldingPermissions(new String[] {
+                    android.Manifest.permission.MANAGE_DOCUMENTS
+                    }, PackageManager.MATCH_UNINSTALLED_PACKAGES);
+            for (PackageInfo pi : holding) {
+                if (!Objects.equals(pi.packageName, validPkg)) {
+                    fail(""Exactly one package (must be "" + validPkg
+                            + "") can request the MANAGE_DOCUMENTS permission; found package ""
+                            + pi.packageName + "" which must be revoked for security reasons"");
+                }
+            }
+        }
+    }
+
+    /**
+     * The {@link android.Manifest.permission#WRITE_MEDIA_STORAGE} permission is
+     * a very powerful permission that grants raw storage access to all devices,
+     * and as such it's only appropriate to be granted to the media stack.
+     * <p>
+     * CDD now requires that all apps requesting this permission also hold the
+     * ""Storage"" runtime permission, to give users visibility into the
+     * capabilities of each app, and control over those capabilities.
+     * <p>
+     * If the end user revokes the ""Storage"" permission from an app, but that
+     * app still has raw access to storage via {@code WRITE_MEDIA_STORAGE}, that
+     * would be a CDD violation and a privacy incident.
+     */"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"com.android.server.cts.JobSchedulerIncidentTest"	"testJobSchedulerServiceDump"	""	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/hostsidetests/incident/src/com/android/server/cts/JobSchedulerIncidentTest.java"	""	"public void testJobSchedulerServiceDump() throws Exception {
+        final JobSchedulerServiceDumpProto dump =
+                getDump(JobSchedulerServiceDumpProto.parser(), ""dumpsys jobscheduler --proto"");
+
+        verifyJobSchedulerServiceDumpProto(dump, PRIVACY_NONE);
+    }
+
+    static void verifyJobSchedulerServiceDumpProto(JobSchedulerServiceDumpProto dump, final int filterLevel) throws Exception {
+        testConstantsProto(dump.getSettings());
+
+        for (int u : dump.getStartedUsersList()) {
+            assertTrue(0 <= u);
+        }
+
+        for (JobSchedulerServiceDumpProto.RegisteredJob rj : dump.getRegisteredJobsList()) {
+            testJobStatusShortInfoProto(rj.getInfo(), filterLevel);
+            testJobStatusDumpProto(rj.getDump());
+        }
+
+        for (StateControllerProto c : dump.getControllersList()) {
+            testStateControllerProto(c, filterLevel);
+        }
+
+        for (JobSchedulerServiceDumpProto.PriorityOverride po : dump.getPriorityOverridesList()) {
+            assertTrue(0 <= po.getUid());
+        }
+
+        for (int buu : dump.getBackingUpUidsList()) {
+            assertTrue(0 <= buu);
+        }
+
+        testJobPackageHistoryProto(dump.getHistory(), filterLevel);
+
+        testJobPackageTrackerDumpProto(dump.getPackageTracker());
+
+        for (JobSchedulerServiceDumpProto.PendingJob pj : dump.getPendingJobsList()) {
+            testJobStatusShortInfoProto(pj.getInfo(), filterLevel);
+            testJobStatusDumpProto(pj.getDump());
+            assertTrue(0 <= pj.getPendingDurationMs());
+        }
+
+        for (JobSchedulerServiceDumpProto.ActiveJob aj : dump.getActiveJobsList()) {
+            JobSchedulerServiceDumpProto.ActiveJob.InactiveJob ajIj = aj.getInactive();
+            assertTrue(0 <= ajIj.getTimeSinceStoppedMs());
+
+            JobSchedulerServiceDumpProto.ActiveJob.RunningJob ajRj = aj.getRunning();
+            testJobStatusShortInfoProto(ajRj.getInfo(), filterLevel);
+            assertTrue(0 <= ajRj.getRunningDurationMs());
+            assertTrue(0 <= ajRj.getTimeUntilTimeoutMs());
+            testJobStatusDumpProto(ajRj.getDump());
+            assertTrue(0 <= ajRj.getTimeSinceMadeActiveMs());
+            assertTrue(0 <= ajRj.getPendingDurationMs());
+        }
+
+        assertTrue(0 <= dump.getMaxActiveJobs());
+    }
+
+    private static void testConstantsProto(ConstantsProto c) throws Exception {
+        assertNotNull(c);
+
+        assertTrue(0 <= c.getHeavyUseFactor());
+        assertTrue(0 <= c.getModerateUseFactor());
+        assertTrue(0 <= c.getFgJobCount());
+        assertTrue(0 <= c.getBgNormalJobCount());
+        assertTrue(0 <= c.getBgModerateJobCount());
+        assertTrue(0 <= c.getBgLowJobCount());
+        assertTrue(0 <= c.getBgCriticalJobCount());
+        assertTrue(0 <= c.getMinLinearBackoffTimeMs());
+        assertTrue(0 <= c.getMinExpBackoffTimeMs());
+    }
+
+    private static void testDataSetProto(DataSetProto ds) throws Exception {
+        assertNotNull(ds);
+
+        assertTrue(0 <= ds.getStartClockTimeMs());
+        assertTrue(0 <= ds.getElapsedTimeMs());
+        assertTrue(0 <= ds.getPeriodMs());
+
+        for (DataSetProto.PackageEntryProto pe : ds.getPackageEntriesList()) {
+            assertTrue(0 <= pe.getUid());
+
+            assertTrue(0 <= pe.getPendingState().getDurationMs());
+            assertTrue(0 <= pe.getPendingState().getCount());
+            assertTrue(0 <= pe.getActiveState().getDurationMs());
+            assertTrue(0 <= pe.getActiveState().getCount());
+            assertTrue(0 <= pe.getActiveTopState().getDurationMs());
+            assertTrue(0 <= pe.getActiveTopState().getCount());
+
+            for (DataSetProto.PackageEntryProto.StopReasonCount src : pe.getStopReasonsList()) {
+                assertTrue(StopReasonEnum.getDescriptor().getValues()
+                        .contains(src.getReason().getValueDescriptor()));
+                assertTrue(0 <= src.getCount());
+            }
+        }
+        assertTrue(0 <= ds.getMaxConcurrency());
+        assertTrue(0 <= ds.getMaxForegroundConcurrency());
+    }
+
+    private static void testJobPackageHistoryProto(JobPackageHistoryProto jph, int filterLevel) throws Exception {
+        assertNotNull(jph);
+
+        for (JobPackageHistoryProto.HistoryEvent he : jph.getHistoryEventList()) {
+            assertTrue(JobPackageHistoryProto.Event.getDescriptor().getValues()
+                    .contains(he.getEvent().getValueDescriptor()));
+            assertTrue(0 <= he.getTimeSinceEventMs()); // Should be positive.
+            assertTrue(0 <= he.getUid());
+            assertTrue(StopReasonEnum.getDescriptor().getValues()
+                    .contains(he.getStopReason().getValueDescriptor()));
+        }
+    }
+
+    private static void testJobPackageTrackerDumpProto(JobPackageTrackerDumpProto jptd) throws Exception {
+        assertNotNull(jptd);
+
+        for (DataSetProto ds : jptd.getHistoricalStatsList()) {
+            testDataSetProto(ds);
+        }
+        testDataSetProto(jptd.getCurrentStats());
+    }
+
+    private static void testJobStatusShortInfoProto(JobStatusShortInfoProto jssi, final int filterLevel) throws Exception {
+        assertNotNull(jssi);
+
+        assertTrue(0 <= jssi.getCallingUid());
+    }
+
+    private static void testJobStatusDumpProto(JobStatusDumpProto jsd) throws Exception {
+        assertNotNull(jsd);
+
+        assertTrue(0 <= jsd.getCallingUid());
+        assertTrue(0 <= jsd.getSourceUid());
+        assertTrue(0 <= jsd.getSourceUserId());
+
+        JobStatusDumpProto.JobInfo ji = jsd.getJobInfo();
+        if (ji.getIsPeriodic()) {
+            assertTrue(0 <= ji.getPeriodIntervalMs());
+            assertTrue(0 <= ji.getPeriodFlexMs());
+        }
+        assertTrue(0 <= ji.getTriggerContentUpdateDelayMs());
+        assertTrue(0 <= ji.getTriggerContentMaxDelayMs());
+        testNetworkRequestProto(ji.getRequiredNetwork());
+        // JobInfo.NETWORK_BYTES_UNKNOWN (= -1) is a valid value.
+        assertTrue(-1 <= ji.getTotalNetworkDownloadBytes());
+        assertTrue(-1 <= ji.getTotalNetworkUploadBytes());
+        assertTrue(0 <= ji.getMaxExecutionDelayMs());
+        JobStatusDumpProto.JobInfo.Backoff bp = ji.getBackoffPolicy();
+        assertTrue(JobStatusDumpProto.JobInfo.Backoff.Policy.getDescriptor().getValues()
+                .contains(bp.getPolicy().getValueDescriptor()));
+        assertTrue(0 <= bp.getInitialBackoffMs());
+
+        for (ConstraintEnum c : jsd.getRequiredConstraintsList()) {
+            assertTrue(ConstraintEnum.getDescriptor().getValues()
+                    .contains(c.getValueDescriptor()));
+        }
+        for (ConstraintEnum c : jsd.getSatisfiedConstraintsList()) {
+            assertTrue(ConstraintEnum.getDescriptor().getValues()
+                    .contains(c.getValueDescriptor()));
+        }
+        for (ConstraintEnum c : jsd.getUnsatisfiedConstraintsList()) {
+            assertTrue(ConstraintEnum.getDescriptor().getValues()
+                    .contains(c.getValueDescriptor()));
+        }
+
+        for (JobStatusDumpProto.TrackingController tc : jsd.getTrackingControllersList()) {
+            assertTrue(JobStatusDumpProto.TrackingController.getDescriptor().getValues()
+                    .contains(tc.getValueDescriptor()));
+        }
+
+        for (JobStatusDumpProto.JobWorkItem jwi : jsd.getPendingWorkList()) {
+            assertTrue(0 <= jwi.getDeliveryCount());
+        }
+        for (JobStatusDumpProto.JobWorkItem jwi : jsd.getExecutingWorkList()) {
+            assertTrue(0 <= jwi.getDeliveryCount());
+        }
+
+        assertTrue(JobStatusDumpProto.Bucket.getDescriptor().getValues()
+                .contains(jsd.getStandbyBucket().getValueDescriptor()));
+
+        assertTrue(0 <= jsd.getEnqueueDurationMs());
+
+        assertTrue(0 <= jsd.getNumFailures());
+
+        assertTrue(0 <= jsd.getLastSuccessfulRunTime());
+        assertTrue(0 <= jsd.getLastFailedRunTime());
+    }
+
+    private static void testNetworkRequestProto(NetworkRequestProto nr) throws Exception {
+        assertNotNull(nr);
+
+        assertTrue(NetworkRequestProto.Type.getDescriptor().getValues()
+                .contains(nr.getType().getValueDescriptor()));
+        testNetworkCapabilitesProto(nr.getNetworkCapabilities());
+    }
+
+    private static void testNetworkCapabilitesProto(NetworkCapabilitiesProto nc) throws Exception {
+        assertNotNull(nc);
+
+        for (NetworkCapabilitiesProto.Transport t : nc.getTransportsList()) {
+            assertTrue(NetworkCapabilitiesProto.Transport.getDescriptor().getValues()
+                .contains(t.getValueDescriptor()));
+        }
+        for (NetworkCapabilitiesProto.NetCapability c : nc.getCapabilitiesList()) {
+            assertTrue(NetworkCapabilitiesProto.NetCapability.getDescriptor().getValues()
+                .contains(c.getValueDescriptor()));
+        }
+
+        assertTrue(0 <= nc.getLinkUpBandwidthKbps());
+        assertTrue(0 <= nc.getLinkDownBandwidthKbps());
+    }
+
+    private static void testStateControllerProto(StateControllerProto sc, int filterLevel) throws Exception {
+        assertNotNull(sc);
+
+        StateControllerProto.BackgroundJobsController bjc = sc.getBackground();
+        for (StateControllerProto.BackgroundJobsController.TrackedJob tj : bjc.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+        }
+        StateControllerProto.BatteryController bc = sc.getBattery();
+        for (StateControllerProto.BatteryController.TrackedJob tj : bc.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+        }
+        StateControllerProto.ConnectivityController cc = sc.getConnectivity();
+        for (StateControllerProto.ConnectivityController.TrackedJob tj : cc.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+            testNetworkRequestProto(tj.getRequiredNetwork());
+        }
+        StateControllerProto.ContentObserverController coc = sc.getContentObserver();
+        for (StateControllerProto.ContentObserverController.TrackedJob tj : coc.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+        }
+        for (StateControllerProto.ContentObserverController.Observer o : coc.getObserversList()) {
+            assertTrue(0 <= o.getUserId());
+
+            for (StateControllerProto.ContentObserverController.Observer.TriggerContentData tcd : o.getTriggersList()) {
+                if (filterLevel == PRIVACY_AUTO) {
+                    assertTrue(tcd.getUri().isEmpty());
+                }
+                for (StateControllerProto.ContentObserverController.Observer.TriggerContentData.JobInstance ji : tcd.getJobsList()) {
+                    testJobStatusShortInfoProto(ji.getInfo(), filterLevel);
+
+                    assertTrue(0 <= ji.getSourceUid());
+                    assertTrue(0 <= ji.getTriggerContentUpdateDelayMs());
+                    assertTrue(0 <= ji.getTriggerContentMaxDelayMs());
+
+                    if (filterLevel == PRIVACY_AUTO) {
+                        for (String ca : ji.getChangedAuthoritiesList()) {
+                            assertTrue(ca.isEmpty());
+                        }
+                        for (String ca : ji.getChangedUrisList()) {
+                            assertTrue(ca.isEmpty());
+                        }
+                    }
+                }
+            }
+        }
+        StateControllerProto.DeviceIdleJobsController dijc = sc.getDeviceIdle();
+        for (StateControllerProto.DeviceIdleJobsController.TrackedJob tj : dijc.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+        }
+        StateControllerProto.IdleController ic = sc.getIdle();
+        for (StateControllerProto.IdleController.TrackedJob tj : ic.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+        }
+        StateControllerProto.StorageController scr = sc.getStorage();
+        for (StateControllerProto.StorageController.TrackedJob tj : scr.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+        }
+        StateControllerProto.TimeController tc = sc.getTime();
+        assertTrue(0 <=  tc.getNowElapsedRealtime());
+        for (StateControllerProto.TimeController.TrackedJob tj : tc.getTrackedJobsList()) {
+            testJobStatusShortInfoProto(tj.getInfo(), filterLevel);
+            assertTrue(0 <= tj.getSourceUid());
+        }
+    }
+}"	""	""	""	""	""
+"256:742768) 9.8.10  . Connectivity Bug Report"	"9.8.10"	"C-1-4"	""	"android.hardware.cts.SensorTest"	"testRegisterTwiceWithSameSensor"	"CtsSensorTestCases"	""	"9.8.10/C-1-4"	"""C-1-4] MUST NOT include the following in the generated reports: Any kind of information unrelated to connectivity debugging. Any kind of user-installed application traffic logs or detailed profiles of user-installed applications/packages (UIDs are okay, package names are not). MAY include additional information that is not associated with any user identity. (e.g. vendor logs). If device implementations include additional information (e.g vendor logs) in the bug report and that information has privacy/security/battery/storage/memory impact, they: """	""	"re_tag:privacy&debug privacy"	""	""	""	"privacy"	""	""	""	"/home/gpoor/cts-source/cts/tests/sensor/src/android/hardware/cts/SensorTest.java"	""	"public void testRegisterTwiceWithSameSensor() {
+        Sensor sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (sensor == null) {
+            throw new SensorNotSupportedException(Sensor.TYPE_ACCELEROMETER);
+        }
+
+        boolean result = mSensorManager.registerListener(mNullSensorEventListener, sensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        assertTrue(result);
+
+        result = mSensorManager.registerListener(mNullSensorEventListener, sensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        assertFalse(result);
+    }
+
+    /**
+     * Verifies that if the UID is idle the continuous events are being reported
+     * but sanitized - all events are the same as the first one delivered except
+     * for their timestamps. From the point of view of an idle app these events are
+     * being properly generated but the sensor reading does not change - privacy.
+     */
+    // TODO: remove when parametrized tests are supported and EventTimestampSynchronization"	""	""	""	""	""
