@@ -3,11 +3,13 @@
 import os
 import re
 
+import react
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import process_requirement_text, find_java_objects, find_urls, build_composite_key, \
     find_full_key, bag_from_text, remove_non_determinative_words, find_valid_path
 from cdd_to_cts.static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE, composite_key_string_re, req_id_re_str, \
     full_key_string_for_re, CDD_REQUIREMENTS_FROM_HTML_FILE
+from class_graph import parse_dependency_file
 
 
 def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE, logging=False):
@@ -24,7 +26,10 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
     with open(cdd_html_file, "r") as text_file:
         print(f"CDD HTML to csv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()
-        section_re_str: str = r'"(?:\d{1,3}_)+'
+        #  section_re_str: str = r'"(?:\d{1,3}_)+'
+        section_marker: str = "data-text=\""
+        section_id_re_str: str = "(?:\d{1,3}\.)+"
+        section_re_str: str = section_marker + section_id_re_str
         cdd_sections_splits = re.split('(?={})'.format(section_re_str), cdd_requirements_file_as_string,
                                        flags=re.DOTALL)
         section_count = 0
@@ -33,19 +38,19 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
             section_count += 1
             char_count += len(section)
             section = helpers.clean_html_anchors(section)
-            cdd_section_id_search_results = re.search(section_re_str, section)
+            cdd_section_id_search_results = re.search(section_id_re_str, section)
             if not cdd_section_id_search_results:
                 continue
             cdd_section_id = cdd_section_id_search_results[0]
-            cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
-            cdd_section_id = cdd_section_id.replace('_', '.')
-            section_re = "\. ([\w \.]*)\s*"# _([a-zA-Z_]+)"
+            cdd_section_id = cdd_section_id.replace(section_marker, '').rstrip('.')
+            section_re = "\. ([\w \.]*)\s*"  # _([a-zA-Z_]+)"
             section_to_section_data[cdd_section_id] = cdd_section_id
-            section_text_result = re.search(section_re,section)
+            section_text_result = re.search(section_re, section)
             if section_text_result:
                 section_text = section_text_result[0]
                 section_text = section_text.strip()
-                section_to_section_data[cdd_section_id] = f'{section_count}:{char_count}) {section_to_section_data[cdd_section_id]}  {section_text}'
+                section_to_section_data[
+                    cdd_section_id] = f'{section_count}:{char_count}) {section_to_section_data[cdd_section_id]}  {section_text}'
 
             if '13' == cdd_section_id:
                 # section 13 is "Contact us" and has characters that cause issues at lest for git
@@ -63,8 +68,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
 
                 total_requirement_count = process_section(build_composite_key, req_id_re_str, cdd_section_id,
                                                           key_to_full_requirement_text_local, req_id_splits,
-                                                          section_count, total_requirement_count,logging)
-
+                                                          section_count, total_requirement_count, logging)
 
         for key in key_to_full_requirement_text_local:
             requirement_text = key_to_full_requirement_text_local.get(key)
@@ -82,7 +86,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count, logging = False):
+                    record_id_splits, section_id_count, total_requirement_count, logging=False):
     record_id_count = 0
 
     for record_id_split in record_id_splits:
@@ -94,9 +98,12 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
             previous_value = key_to_full_requirement_text_param.get(key)
             if previous_value:
                 print(f"Previous values {previous_value}")
-                key_to_full_requirement_text_param[key] = f"{previous_value} && { process_requirement_text(record_id_split,key_to_full_requirement_text_param.get(key)) }"
+                key_to_full_requirement_text_param[
+                    key] = f"{previous_value} && {process_requirement_text(record_id_split, key_to_full_requirement_text_param.get(key))}"
             else:
-                key_to_full_requirement_text_param[key] = process_requirement_text(record_id_split,key_to_full_requirement_text_param.get(key))
+                key_to_full_requirement_text_param[key] = process_requirement_text(record_id_split,
+                                                                                   key_to_full_requirement_text_param.get(
+                                                                                       key))
             if logging: print(
                 f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text_param.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
 
@@ -106,7 +113,8 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
 def get_file_dependencies():
     # if not testfile_dependencies_to_words:
     try:
-        testfile_dependencies_to_words_local = persist.read(TEST_FILES_TO_DEPENDENCIES_STORAGE)
+        testfile_dependencies_to_words_local = parse_dependency_file()
+        # testfile_dependencies_to_words_local = persist.read(TEST_FILES_TO_DEPENDENCIES_STORAGE)
     except IOError:
         print("Could not open android_studio_dependencies_for_cts, recreating ")
         testfile_dependencies_to_words_local = class_graph.parse_dependency_file()
@@ -182,6 +190,9 @@ def make_bags_of_word(root_cts_source_directory):
 
     return files_to_words_local, method_to_words_local, files_to_method_calls_local
 
+
 if __name__ == '__main__':
-    key_to_full_requirement, key_to_java_objects, key_to_urls, cdd_as_string, section_to_section_data_test =\
-        parse_cdd_html_to_requirements()
+    key_to_full_requirement, key_to_java_objects, key_to_urls, cdd_as_string, section_to_section_data_test = \
+        parse_cdd_html_to_requirements(
+            cdd_html_file="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd-12.html")
+    react.write_table_from_dictionary(key_to_full_requirement, "a_working/test_just_parse_html.tsv")

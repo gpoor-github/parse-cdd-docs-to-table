@@ -33,10 +33,10 @@ def predicate2(target, source) -> bool:
     print("predicate 2 " + str(target))
     file_name = target.split(" :")[0]
     thing_to_search = helpers.read_file_to_string(file_name)
-    is_found = False
-    isMatch = rx.Observable(source).pipe(ops.find(predicate=predicate3)).run()
+    is_match = False
+    is_match = rx.Observable(source).pipe(ops.find(predicate=predicate3)).run()
 
-    return isMatch
+    return is_match
 
 
 def my_map_dict(key: str, m_list: list) -> list:

@@ -3,12 +3,12 @@ import time
 
 USER_HOME = "/home/gpoor/"
 
-CTS_SOURCE_PARENT = USER_HOME + "cts-source/"
+CTS_SOURCE_PARENT = USER_HOME + "cts-12-source/"
 
 CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 WORKING_ROOT = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source"
-#os.getcwd().replace("cdd_to_cts","")
+# os.getcwd().replace("cdd_to_cts","")
 
 # Remember these 2 files must exit before the program is run
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
@@ -21,14 +21,11 @@ DATA_SOURCES_UPDATED_CSV_2nd = "output/DATA_SOURCES_UPDATED_CSV_2nd.tsv"
 FILTERED_TABLE_TO_SEARCH = "output/FILTERED_TABLE_TO_SEARCH.tsv"
 RX_WORKING_OUTPUT_TABLE_TO_EDIT = "output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
 
-
-
 INPUT_TABLE_FILE_NAME_RX = "output/table_file_for_react_filtered.tsv"
 
-
 TEST_FILES_TXT = "input_scripts/test-files.txt"
-TEST_CASE_MODULES ="input_scripts/testcases-modules.txt"
-INPUT_DEPENDENCIES_FOR_CTS_TXT =  'input_scripts/cts-deps-from-static_code_analysis,txt'
+TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
+INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/cts-deps-from-static_code_analysis.txt'
 
 SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
 composite_key_string_re = "\s*(?:<li>)?\["
@@ -40,7 +37,7 @@ java_methods_re_str = '(?:[a-zA-Z]\w+\() ?\w* ?\)'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
 java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
 find_url_re_str = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
-spurious_terms ={'None','',""," ",' ','()',')','(',':','1','2','3','4','5','6','7','8','9','0'}
+spurious_terms = {'None', '', "", " ", ' ', '()', ')', '(', ':', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
 cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'implementations)', 'device',
                     'condition',
                     'Condition', 'any', 'unconditional;', '-', 'SR]', 'C:', 'Type', 'Tab:', 'implementation', '1',
@@ -54,13 +51,14 @@ cdd_common_words = {'Requirement', 'Android', 'same', 'Types)', 'H:', 'The', 'im
                     'implementations', 'least', 'high', 'API', 'they:', 'If', 'launched', 'third', 'range'  "MUST",
                     "SHOULD",
                     "API", 'source.android.com', 'NOT', 'SDK', 'AND', 'MAY', 'AOSP', 'STRONGLY',
-                    'developer.android.com', 'Test', '@Test', 'app,data','1','2','3','4','5','6','7','8','9','0'}
+                    'developer.android.com', 'Test', '@Test', 'app,data', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                    '0'}
 
 common_methods = {'getFile', 'super', 'get', 'close', 'set', 'test', 'using', 'value', 'more' 'open', 'getType',
                   'getMessage', 'equals', 'not', 'find', 'search', 'length', 'size', 'getName', 'ToDo', 'from',
                   'String', 'HashMap', "None", "no"}
 
-common_english_words = {'AND','the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on',
+common_english_words = {'AND', 'the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on',
                         'are', 'as', 'with', 'his', 'they', 'I', 'at', 'be', 'this', 'have', 'from', 'or', 'one',
                         'had', 'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can',
                         'said', 'there', 'use', 'an', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will',
@@ -121,64 +119,64 @@ all_words_to_skip: set = set().union(cdd_common_words).union(common_methods).uni
     .union(license_words)
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
-HEADER_KEY ='header_key'
-ROW ='row'
-SEARCH_RESULT ='search_result'
+HEADER_KEY = 'header_key'
+ROW = 'row'
+SEARCH_RESULT = 'search_result'
 
-SECTION ='Section'
+SECTION = 'Section'
 DEFAULT_SECTION_INDEX = 0
 
-SECTION_ID ='section_id'
+SECTION_ID = 'section_id'
 DEFAULT_SECTION_ID_INDEX = 1
 
-REQ_ID ='req_id'
+REQ_ID = 'req_id'
 DEFAULT_REQ_ID_INDEX = 2
 
-FULL_KEY ='full_key'
-DEFAULT_FULL_KEY_INDEX= 3
+FULL_KEY = 'full_key'
+DEFAULT_FULL_KEY_INDEX = 3
 
-REQUIREMENT ='requirement'
-KEY_AS_NUMBER ='key_as_number'
+REQUIREMENT = 'requirement'
+KEY_AS_NUMBER = 'key_as_number'
 TEST_AVAILABILITY = 'Test Availability'
-FILE_NAME ='file_name'
-PIPELINE_FILE_NAME ='pipeline_file_name'
-PIPELINE_METHOD_TEXT ='pipeline_method_text'
-METHOD_TEXT ='method_text'
-MANUAL_SEARCH_TERMS ='manual_search_terms'
-AUTO_SEARCH_TERMS ='auto_search_terms'
-SEARCH_TERMS ='search_terms'
-NOT_SEARCH_TERMS ='not_search_terms'
-NOT_METHODS ='not_methods'
-NOT_FILES ='not_files'
-SEARCH_ROOTS ='search_roots'
-NOT_SEARCH_ROOTS ='not_search_roots'
+FILE_NAME = 'file_name'
+PIPELINE_FILE_NAME = 'pipeline_file_name'
+PIPELINE_METHOD_TEXT = 'pipeline_method_text'
+METHOD_TEXT = 'method_text'
+MANUAL_SEARCH_TERMS = 'manual_search_terms'
+AUTO_SEARCH_TERMS = 'auto_search_terms'
+SEARCH_TERMS = 'search_terms'
+NOT_SEARCH_TERMS = 'not_search_terms'
+NOT_METHODS = 'not_methods'
+NOT_FILES = 'not_files'
+SEARCH_ROOTS = 'search_roots'
+NOT_SEARCH_ROOTS = 'not_search_roots'
 
-
-MODULE ='module'
-METHOD ='method'
-CLASS_DEF ='class_def'
-MATCHED_TERMS ='matched_terms'
-QUALIFIED_METHOD ='qualified_method'
-URLS ='urls'
-METHODS_STRING ='methods_string'
-MATCHED_FILES ='matched_files'
-MAX_MATCHES ='max_matches'
+MODULE = 'module'
+METHOD = 'method'
+CLASS_DEF = 'class_def'
+MATCHED_TERMS = 'matched_terms'
+QUALIFIED_METHOD = 'qualified_method'
+URLS = 'urls'
+METHODS_STRING = 'methods_string'
+MATCHED_FILES = 'matched_files'
+MAX_MATCHES = 'max_matches'
 MAX_MATCHES_DEFAULT = 5
 # Protect a set of columns in the row or the whole row
-PROTECTED ='protected'
-AREA='Area'
-SHORTENED ='Shortened'
-TEST_LEVEL= 'Test Level'
+PROTECTED = 'protected'
+AREA = 'Area'
+SHORTENED = 'Shortened'
+TEST_LEVEL = 'Test Level'
 FLAT_RESULT = 'FLAT_RESULT'
-#SCRIPT_OPTIONS = 'SCRIPT_OPTIONS'
+# SCRIPT_OPTIONS = 'SCRIPT_OPTIONS'
 SO_ONLY_SEARCH_KEYS = "ONLY_SEARCH_KEYS"
 not_annotated_test_start = "public void test"
 
 # Contains all the fields that are used to review and iterate on mappings.
-cdd_to_cts_app_header:[]  = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
-                              METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
-                              NOT_SEARCH_TERMS, NOT_FILES, MATCHED_TERMS,SEARCH_ROOTS, QUALIFIED_METHOD, MAX_MATCHES, FILE_NAME,
-                              MATCHED_FILES, METHODS_STRING, URLS, PROTECTED, AREA, SHORTENED,TEST_LEVEL]
+cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
+                             METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
+                             NOT_SEARCH_TERMS, NOT_FILES, MATCHED_TERMS, SEARCH_ROOTS, QUALIFIED_METHOD, MAX_MATCHES,
+                             FILE_NAME,
+                             MATCHED_FILES, METHODS_STRING, URLS, PROTECTED, AREA, SHORTENED, TEST_LEVEL]
 
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (
@@ -200,14 +198,16 @@ merge_header: [] = (
 
 # Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
 update_manual_header: [] = (
-    [PROTECTED, MANUAL_SEARCH_TERMS,SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS,NOT_FILES, NOT_METHODS])
+    [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS, NOT_FILES, NOT_METHODS])
 
-table_delimiter='\t'
-table_dialect='excel-tab'
-table_newline= ''
-table_encoding='UTF-8'
-table_lineterminator=table_newline
+table_delimiter = '\t'
+table_dialect = 'excel-tab'
+table_newline = ''
+table_encoding = 'UTF-8'
+table_lineterminator = table_newline
 re_tag = "re_tag:"
+
+
 def set_cts_path():
     os.environ['CTS_SOURCE_ROOT'] = CTS_SOURCE_ROOT
     os.environ['USER_HOME'] = '~/'
@@ -219,4 +219,3 @@ if __name__ == '__main__':
     set_cts_path()
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
-

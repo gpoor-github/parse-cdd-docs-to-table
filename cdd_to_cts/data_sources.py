@@ -1,18 +1,17 @@
 import os
 import random
-from cdd_to_cts.helpers import convert_version_to_number, convert_version_to_number_from_full_key
-from table_ops import write_table
-from cdd_to_cts import class_graph, persist, static_data
-from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, \
-    parse_cdd_html_to_requirements, make_bags_of_word
-from cdd_to_cts.helpers import make_files_to_string, build_test_cases_module_dictionary
-from cdd_to_cts.static_data import CTS_SOURCE_ROOT, DATA_SOURCES_CSV_FROM_HTML_1st
-
 import time
 
+from cdd_to_cts import class_graph, persist, static_data
 from cdd_to_cts import helpers
+from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, \
+    parse_cdd_html_to_requirements, make_bags_of_word
+from cdd_to_cts.helpers import convert_version_to_number, convert_version_to_number_from_full_key
+from cdd_to_cts.helpers import make_files_to_string, build_test_cases_module_dictionary
 from cdd_to_cts.static_data import CTS_SOURCE_PARENT, MANUAL_SEARCH_TERMS
+from cdd_to_cts.static_data import CTS_SOURCE_ROOT, DATA_SOURCES_CSV_FROM_HTML_1st
 from cdd_to_cts.table_ops import read_table_sect_and_req_key
+from table_ops import write_table
 
 
 def diff_set_of_search_values_against_sets_of_words_from_files(count: int, file_and_path: str, word_set: set,
@@ -55,7 +54,7 @@ def get_random_method_name(a_found_methods_string):
 class SourceCrawlerReducer(object):
     def __init__(self,
                  cdd_requirements_html_source: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''),
-                 global_table_input_file_build_from_html = DATA_SOURCES_CSV_FROM_HTML_1st,
+                 global_table_input_file_build_from_html=DATA_SOURCES_CSV_FROM_HTML_1st,
                  cts_root_directory: str = CTS_SOURCE_ROOT,
                  do_search=False):
 
@@ -76,8 +75,6 @@ class SourceCrawlerReducer(object):
         self.__test_files_to_strings = self.make_test_file_to_dependency_strings()
         #    class DataSources:
         self.files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
-
-
 
     files_to_words_storage = 'storage/files_to_words.pickle'
     method_to_words_storage = 'storage/method_to_words.pickle'
@@ -166,7 +163,8 @@ class SourceCrawlerReducer(object):
                     class_name_split_src = a_single_test_file_name.split('/src/')
                     # Module
                     if len(class_name_split_src) > 0:
-                            test_case_name = class_graph.search_for_test_case_name(a_single_test_file_name, self.files_to_test_cases)
+                        test_case_name = class_graph.search_for_test_case_name(a_single_test_file_name,
+                                                                               self.files_to_test_cases)
 
                     if len(class_name_split_src) > 1:
                         class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
@@ -326,6 +324,9 @@ class SourceCrawlerReducer(object):
         table[table_row_index][header.index('full_key')] = key_str
         if section_data:
             section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
+            if len(section_data_cleaned) > 110000:
+                print(f"Warning line to long truncating ")
+                section_data_cleaned = section_data_cleaned[0:110000]
             table[table_row_index][header.index(static_data.REQUIREMENT)] = section_data_cleaned
 
         if len(key_split) > 1:
@@ -362,6 +363,7 @@ class SourceCrawlerReducer(object):
             table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number_from_full_key(
                 key_split[0])
             print(f"Only a major key? {key_str}")
+
     # The new table ops merge table functions make this obsoleet
     # def update_table_table_from_cdd(self, created_table_file=static_data.WORKING_ROOT + "output/created_table.csv",
     #                                 update_table_file=static_data.WORKING_ROOT + "output/updated_table.csv",
@@ -396,10 +398,10 @@ if __name__ == '__main__':
     start = time.perf_counter()
 
     scr = SourceCrawlerReducer(
-        cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+        cdd_requirements_html_source="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd-12.html",
         global_table_input_file_build_from_html=static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
         cts_root_directory=static_data.CTS_SOURCE_ROOT,
         do_search=False)
-    scr.create_full_table_from_cdd("output/out_test.tsv",static_data.cdd_info_only_header)
+    scr.create_full_table_from_cdd("output/out_test.tsv", static_data.cdd_info_only_header)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

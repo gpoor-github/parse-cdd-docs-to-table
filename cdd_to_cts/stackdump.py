@@ -5,8 +5,8 @@ import traceback
 from itertools import chain
 
 
-def stackdump(id='', msg='HERE'):
-    print('ENTERING STACK_DUMP' + (': '+id) if id else '')
+def stackdump(sd_id='', msg='HERE'):
+    print('ENTERING STACK_DUMP' + (': ' + sd_id) if sd_id else '')
     raw_tb = traceback.extract_stack()
     entries = traceback.format_list(raw_tb)
 
@@ -20,18 +20,19 @@ def stackdump(id='', msg='HERE'):
     lines = list(chain.from_iterable(line.splitlines() for line in entries))
     if msg:  # Append it to last line with name of caller function.
         lines[-1] += ' <-- ' + msg
-        lines.append('LEAVING STACK_DUMP' + (': '+id) if id else '')
+        lines.append('LEAVING STACK_DUMP' + (': ' + sd_id) if sd_id else '')
     print('\n'.join(lines))
     print()
 
+
 if __name__ == '__main__':
-
-
     def func1():
         stackdump('A')
 
+
     def func2():
         func1()
+
 
     func1()
     print()

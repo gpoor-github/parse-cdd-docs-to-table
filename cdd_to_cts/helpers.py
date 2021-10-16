@@ -21,7 +21,7 @@ def get_list_void_public_test_files(results_grep_public_test: str = "input_scrip
             while count < len(file_content):
                 line = file_content[count]
                 count += 1
-                test_file_set.add( line.split(":")[0])
+                test_file_set.add(line.split(":")[0])
         grep_of_test_files.close()
     except FileNotFoundError as e:
         raise_error(f" Could not find {results_grep_public_test} ", e)
@@ -240,7 +240,6 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 
 
 def find_valid_path(file_name: str) -> str:
-
     if file_name.find(static_data.WORKING_ROOT[0:10]) != -1:
         return file_name
 

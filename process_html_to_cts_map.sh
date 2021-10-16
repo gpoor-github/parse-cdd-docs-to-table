@@ -4,25 +4,8 @@ echo This script should be run in the root directory of the CTS source.
 echo getting the cdd requirments from  https://source.android.com/compatibility/11/android-11-cdd
 echo overwrite with another version if desired.
 cdd_version=n
-read -p "Do you want to download the requirements? enter version number (n) for no. " cdd_version
-if [[ "$cdd_version" != n ]]
-  then
-    echo getting https://source.android.com/compatibility/"$cdd_version"/android-"$cdd_version-cdd"
-    wget -O ./input/cdd.html  https://source.android.com/compatibility/""$cdd_version""/android-"$cdd_version"-cdd
+./download_requirments.sh
 
-fi
-
-#read -p "Clone the CTS source in this directory? " $clone_cts
-#echo value read = $clone_cts
-#if [[ $clone_cts == "Y" ]]
-#  then
-#    git clone https://android.googlesource.com/platform/cts
-#    echo Checking out main.
-#    git checkout main
-# echo verify the tag https://source.android.com/compatibility/cts/downloads
-#    git describe --tags --abbrev=0
-#     android-cts-11.0_r5
-#fi
 python3 ./cdd_to_cts/static_data_holder.py
 
 $ctsdir=$CTS_SOURCE_DIR
@@ -34,13 +17,17 @@ if [[ $ctsdir != "n" ]]
       echo now the CTS source root dir is CTS_SOURCE_DIR ="$CTS_SOURCE_DIR"
 fi
 
-#
-# This script should be run in CTS source directory.
-echo this is what was entered $ctsdir
-#/home/gpoor/cts-source/cts
-echo grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_scripts/test-files.txt
-grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_scripts/test-files.txt
-
-echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_scripts/testcases-modules.txt
-grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_scripts/testcases-modules.txt
+read -p "Clone the CTS source in this directory? " $clone_cts
+echo value read = $clone_cts
+if [[ $clone_cts == "Y" ]]
+  then
+    git clone https://android.googlesource.com/platform/cts
+    echo Checking out main.
+    git checkout main
+ echo verify the tag https://source.android.com/compatibility/cts/downloads
+    git describe --tags --abbrev=0 android-cts-12.0_r1
+fi
+# android-cts-11.0_r5
+# #android-cts-12.0_r1
+./update_grep_of_cts_source.sh
 python3 ./cdd_to_cts/do_map.py
