@@ -4,6 +4,7 @@ import sys
 
 from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
+from check_sheet import diff_tables_files
 
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],
@@ -104,13 +105,13 @@ def remove_none_requirements(table_target: [[str]], key_to_index_target: dict) -
 
         try:
             if key.find("/") == -1:
-                none_key_count+=1
+                none_key_count += 1
                 continue
             table_index_target = int(key_to_index_target.get(key))
             t_target_row = table_target[table_index_target]
             new_table.append(t_target_row)
             new_key_indexes[key] = key_count
-            key_count+=1
+            key_count += 1
 
         except Exception as err:
             print(
@@ -495,6 +496,16 @@ def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output
 
     write_table(output_file, table_out, header2_for_subset)
     return table_out, header2_for_subset
+
+
+def make_new_table_from_keys(keys_to_use: iter, file_name_of_table_input: str, file_name_table_output: str):
+    table, key_fields, header, duplicate_rows = read_table_sect_and_req_key(
+        file_name_of_table_input)
+    new_table = filter_first_table_by_keys_of_second(table, key_fields, keys_to_use)
+    write_table(
+        file_name_table_output,
+        new_table,
+        header)
 
 
 def merge_table_example():

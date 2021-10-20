@@ -486,39 +486,7 @@ class RxData:
             return self.__replay_at_test_files_to_methods
         else:
             self.__replay_at_test_files_to_methods = ReplaySubject(9999, scheduler=scheduler)
-
-        results_grep_at_test = helpers.find_valid_path(results_grep_at_test)
-
-        re_annotations = re.compile('@Test.*?$')
-        try:
-            with open(results_grep_at_test, "r") as grep_of_test_files:
-                file_content = grep_of_test_files.readlines()
-                count = 0
-                while count < len(file_content):
-                    line = file_content[count]
-                    count += 1
-                    result = re_annotations.search(line)
-                    # Skip lines without annotations
-                    if result:
-                        test_annotated_file_name_absolute_path = line.split(":")[0]
-                        # test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
-                        # requirement = result.group(0)
-                        # noinspection DuplicatedCode
-                        line_method = file_content.pop()
-                        count += 1
-                        class_def, method = parse_class_or_method(line_method)
-                        if class_def == "" and method == "":
-                            line_method = file_content.pop()
-                            count += 1
-                            class_def, method = parse_class_or_method(line_method)
-                        if method:
-                            self.__replay_at_test_files_to_methods.on_next(
-                                '{} :{}'.format(test_annotated_file_name_absolute_path, method.strip(' ')))
-
-                self.__replay_at_test_files_to_methods.on_completed()
-                return self.__replay_at_test_files_to_methods
-        except FileNotFoundError as e:
-            raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
+            self.__replay_at_test_files_to_methods.pipe(rx.from_list(self.get_list_of_at_test_files(results_grep_at_test)))
 
     def get_list_of_at_test_files(self,
                                   results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:

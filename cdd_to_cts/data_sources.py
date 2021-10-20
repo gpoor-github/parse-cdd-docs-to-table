@@ -361,7 +361,7 @@ class SourceCrawlerReducer(object):
                 key_split[0])
             print(f"Only a major key? {key_str}")
 
-    # The new table ops merge table functions make this obsoleet
+    # The new table ops merge table functions make this obsolete
     # def update_table_table_from_cdd(self, created_table_file=static_data.WORKING_ROOT + "output/created_table.csv",
     #                                 update_table_file=static_data.WORKING_ROOT + "output/updated_table.csv",
     #                                 header: [] = static_data.cdd_to_cts_app_header):
@@ -378,8 +378,7 @@ class SourceCrawlerReducer(object):
     #                                                      static_data.merge_header)
     #     write_table(update_table_file, updated_table, self.global_input_header)
     #
-    #     print(
-    #         f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
+    #     print( f'keys missing 1  {key_key1} keys missing 2 {key_key2}\keys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
 
     def create_full_table_from_cdd(self,
                                    key_to_full_requirement_text:[str,str], keys_to_find_and_write,

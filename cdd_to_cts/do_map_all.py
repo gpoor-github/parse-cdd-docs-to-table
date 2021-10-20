@@ -2,9 +2,10 @@
 
 import time
 
+import data_sources
 import helpers
 import static_data
-from do_map import do_prep, do_on_complete
+from do_map import do_on_complete
 from react import RxData, my_print
 
 # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
@@ -15,14 +16,16 @@ if __name__ == '__main__':
     downloaded_filter_table = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
     all_for_cdd_12_ds = "output/cdd_12_from_data_sources_all.tsv"
     all_for_cdd_12_rx = "output/cdd_12_from_react_all.tsv"
+    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"
 
-    cdd_requirements_downloaded_html_file, keys_for_requirements_to_map_downloaded_csv_table, \
-    requirements_generated_from_html, requirements_to_search_generated_table = \
-        do_prep(cdd_requirements_downloaded_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-                keys_for_requirements_to_map_downloaded_csv_table=downloaded_filter_table,
-                requirements_generated_from_html=static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
-                requirements_to_search_generated_table=all_for_cdd_12_ds)
 
+    scr = data_sources.SourceCrawlerReducer(
+            cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+            global_table_input_file_build_from_html=static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
+            cts_root_directory=static_data.CTS_SOURCE_ROOT,
+            do_search=False)
+    scr.create_full_table_from_cdd(scr.key_to_full_requirement_text,scr.key_to_full_requirement_text,
+                                   cdd_12_created)
     rd = RxData()
     rd.main_do_create_table(input_table_file=all_for_cdd_12_ds,
                             output_file=all_for_cdd_12_rx) \

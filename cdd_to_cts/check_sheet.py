@@ -139,8 +139,8 @@ def handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2):
 def diff_tables_files(file_path1, file_path2):
     table1, _key_fields1, header1, duplicate_rows1 = table_ops.read_table_sect_and_req_key(file_path1)
     table2, _key_fields2, header2, duplicate_rows2 = table_ops.read_table_sect_and_req_key(file_path2)
-    table1, _key_fields1 = table_ops.remove_none_requirements(table1, _key_fields1)
-    table2, _key_fields2 = table_ops.remove_none_requirements(table2, _key_fields2)
+    # table1, _key_fields1 = table_ops.remove_none_requirements(table1, _key_fields1)
+    # table2, _key_fields2 = table_ops.remove_none_requirements(table2, _key_fields2)
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables(table1, _key_fields1,
                                                                                              table2, _key_fields2)
 
@@ -219,12 +219,12 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
     cdd_11_before_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Working copy of CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - Before gpoor (2).csv"
-    cdd_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/CDD-12-only-req.tsv"
     cdd_11 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
     cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_created.tsv"
+    cdd_12_with_sections ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/DATA_SOURCES_cdd-12_CSV_FROM_HTML_1st.tsv"
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"
     annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/mapping_output_for_import.tsv"
     cdd_12_to_do ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Differences between and CDD_11 and CDD12 - Requirements in CDD 12 but not in CDD-11 (1).tsv"
     # result_dict, not_found, found = rs.parse_data(mapping_cdd)
     # print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
-    diff_tables_files(cdd_11_created, cdd_12_created)
+    diff_tables_files(annotation_12, cdd_12_with_sections)
