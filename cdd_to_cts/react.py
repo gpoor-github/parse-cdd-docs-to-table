@@ -754,7 +754,7 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9s.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/test_make_table_dict_by_keys.tsv"
 
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))

@@ -219,10 +219,12 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
     cdd_11_before_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Working copy of CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - Before gpoor (2).csv"
-    cdd_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/CDD-12.tsv"
+    cdd_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/CDD-12-only-req.tsv"
     cdd_11 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
-    cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11.tsv"
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_12.tsv"
+    cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_created.tsv"
+    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"
+    annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/mapping_output_for_import.tsv"
+    cdd_12_to_do ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Differences between and CDD_11 and CDD12 - Requirements in CDD 12 but not in CDD-11 (1).tsv"
     # result_dict, not_found, found = rs.parse_data(mapping_cdd)
     # print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
-    table_ops.diff_tables_files(cdd_11_created, cdd_12_created)
+    diff_tables_files(cdd_11_created, cdd_12_created)

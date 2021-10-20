@@ -27,7 +27,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
         print(f"CDD HTML to csv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()
         #  section_re_str: str = r'"(?:\d{1,3}_)+'
-        section_marker: str = "data-text=\""
+        section_marker: str = "data-text=\"\s*"
         section_id_re_str: str = "(?:\d{1,3}\.)+"
         section_re_str: str = section_marker + section_id_re_str
         cdd_sections_splits = re.split('(?={})'.format(section_re_str), cdd_requirements_file_as_string,
@@ -192,7 +192,12 @@ def make_bags_of_word(root_cts_source_directory):
 
 
 if __name__ == '__main__':
+    cdd_11_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_download.html"
+    cdd_11_table_generated_from_html_all = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_full_table_from_html.tsv"
+
+
+
     key_to_full_requirement, key_to_java_objects, key_to_urls, cdd_as_string, section_to_section_data_test = \
         parse_cdd_html_to_requirements(
-            cdd_html_file="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd-12.html")
-    react.write_table_from_dictionary(key_to_full_requirement, "a_working/test_just_parse_html.tsv")
+            cdd_html_file=cdd_11_html_file)
+    react.write_table_from_dictionary(key_to_full_requirement, cdd_11_table_generated_from_html_all)

@@ -4,7 +4,6 @@ import sys
 
 from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
-from check_sheet import diff_tables_files
 
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],
@@ -81,7 +80,8 @@ def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_tar
     new_table: [[str]] = list()
     for key in key_indexes_to_use:
         try:
-            if not key_to_index_target.get(key):
+            value = key_to_index_target.get(key)
+            if value is None:
                 continue
             table_index_target = int(key_to_index_target.get(key))
             t_target_row = table_target[table_index_target]
@@ -105,8 +105,6 @@ def remove_none_requirements(table_target: [[str]], key_to_index_target: dict) -
         try:
             if key.find("/") == -1:
                 none_key_count+=1
-                continue
-            if not key_to_index_target.get(key):
                 continue
             table_index_target = int(key_to_index_target.get(key))
             t_target_row = table_target[table_index_target]

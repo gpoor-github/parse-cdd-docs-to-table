@@ -65,7 +65,7 @@ class SourceCrawlerReducer(object):
             cts_root_directory)
         self.key_to_full_requirement_text, self.key_to_java_objects, self.key_to_urls, self.cdd_string, self.section_to_data = parse_cdd_html_to_requirements(
             cdd_requirements_html_source)
-        self.create_full_table_from_cdd(global_table_input_file_build_from_html)
+        self.create_full_table_from_cdd(self.key_to_full_requirement_text,self.key_to_full_requirement_text,global_table_input_file_build_from_html)
 
         self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table_sect_and_req_key(
             global_table_input_file_build_from_html)
@@ -286,14 +286,14 @@ class SourceCrawlerReducer(object):
                 persist.writep(self.__testfile_dependencies_to_words, self.testfile_dependencies_to_words_storage)
         return self.__testfile_dependencies_to_words
 
-    def create_populated_table(self, keys_to_find_and_write, header: [] = static_data.cdd_to_cts_app_header):
+    def create_populated_table(self, key_to_full_requirement_text:[str,str], keys_to_find_and_write:iter, header: []):
         table: [[str]] = []
         keys_to_table_index: dict[str, int] = dict()
         table_row_index = 0
         for temp_key in keys_to_find_and_write:
             key_str: str = temp_key
             key_str = key_str.rstrip(".").strip(' ')
-            self.write_new_data_line_to_table(key_str, self.key_to_full_requirement_text, table,
+            self.write_new_data_line_to_table(key_str, key_to_full_requirement_text, table,
                                               table_row_index, header)  # test_file_to_dependencies)
             keys_to_table_index[key_str] = table_row_index
             table_row_index += 1
@@ -304,8 +304,7 @@ class SourceCrawlerReducer(object):
 
     def write_new_data_line_to_table(self, key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int,
                                      header: [] = static_data.cdd_to_cts_app_header, logging=False):
-        key_to_java_objects = self.key_to_java_objects
-        key_to_urls = self.key_to_urls
+
         section_data = keys_to_sections.get(key_str)
         row: [str] = list(header)
         for i in range(len(row)):
@@ -333,8 +332,6 @@ class SourceCrawlerReducer(object):
             table[table_row_index][header.index(static_data.REQ_ID)] = key_split[1]
             table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number(
                 key_split[0], key_split[1])
-            table[table_row_index][header.index('urls')] = key_to_urls.get(key_str)
-            table[table_row_index][header.index('search_terms')] = key_to_java_objects.get(key_str)
 
             # This function takes a long time
             # This is handled in the React Side now
@@ -349,7 +346,7 @@ class SourceCrawlerReducer(object):
                         'file_name')] = static_data.CTS_SOURCE_PARENT + a_single_test_file_name
                 if a_method:
                     table[table_row_index][header.index('method')] = a_method
-                    table[table_row_index][header.index('Test Availability')] = "Test Available"
+                    table[table_row_index][header.index('Test Availability')] = ""
 
                 if matched:
                     table[table_row_index][header.index(static_data.MATCHED_FILES)] = a_single_test_file_name
@@ -384,9 +381,13 @@ class SourceCrawlerReducer(object):
     #     print(
     #         f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
 
-    def create_full_table_from_cdd(self, output_file: str = DATA_SOURCES_CSV_FROM_HTML_1st,
-                                   output_header: str = static_data.cdd_to_cts_app_header):
-        table_for_sheet, keys_to_table_indexes = self.create_populated_table(self.key_to_full_requirement_text)
+    def create_full_table_from_cdd(self,
+                                   key_to_full_requirement_text:[str,str], keys_to_find_and_write,
+                                   output_file: str,
+                                   output_header: str = static_data.cdd_to_cts_app_header ):
+        table_for_sheet, keys_to_table_indexes = self.create_populated_table( key_to_full_requirement_text,
+                                                                              keys_to_find_and_write,
+                                                                              output_header)
         print(f"CDD csv file to write to output is [{output_file}] output header is [{str(output_header)}]")
 
         write_table(output_file, table_for_sheet, output_header)
@@ -396,12 +397,19 @@ class SourceCrawlerReducer(object):
 
 if __name__ == '__main__':
     start = time.perf_counter()
+    cdd_11_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_download.html"
+    cdd_11_table_generated_from_html_all = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_full_table_from_html.tsv"
+    cdd_11_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_created.tsv" # So no filter
+    cdd_12_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html"
+    cdd_12_table_generated_from_html_all = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_full_table_from_html.tsv"
+    cdd_12_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"  # So no filter
 
     scr = SourceCrawlerReducer(
-        cdd_requirements_html_source="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd-12.html",
-        global_table_input_file_build_from_html=static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
+        cdd_requirements_html_source=cdd_12_html_file,
+        global_table_input_file_build_from_html=cdd_12_table_generated_from_html_all,
         cts_root_directory=static_data.CTS_SOURCE_ROOT,
         do_search=False)
-    scr.create_full_table_from_cdd("output/out_test.tsv", static_data.cdd_info_only_header)
+    scr.create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text,
+                                   cdd_12_table_created,static_data.cdd_info_only_header)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

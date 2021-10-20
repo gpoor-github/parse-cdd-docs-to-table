@@ -9,33 +9,29 @@ def do_on_complete():
     print("completed")
 
 
-# Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
-
-def do_prep(cdd_requirements_downloaded_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-            keys_for_requirements_to_map_downloaded_csv_table: str = static_data.FILTER_KEYS_DOWNLOADED_TABLE,
-            requirements_generated_from_html: str = static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
-            requirements_to_search_generated_table: str = static_data.FILTERED_TABLE_TO_SEARCH):
-    data_sources.SourceCrawlerReducer(
-        cdd_requirements_html_source=cdd_requirements_downloaded_html_file,
-        # Remember CDD_REQUIREMENTS_FROM_HTML_FILE needs to be download
-        global_table_input_file_build_from_html=requirements_generated_from_html,
-        cts_root_directory=static_data.CTS_SOURCE_ROOT,
-        do_search=False)
-
-    # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
-    make_new_table_with_row_keys_from_table(requirements_generated_from_html,
-                                            keys_for_requirements_to_map_downloaded_csv_table,
-                                            requirements_to_search_generated_table)
-    return cdd_requirements_downloaded_html_file, keys_for_requirements_to_map_downloaded_csv_table, requirements_generated_from_html, requirements_to_search_generated_table
-
 
 # noinspection DuplicatedCode
 if __name__ == '__main__':
     start = time.perf_counter()
-    m_cdd_requirements_downloaded_html_file, m_keys_for_requirements_to_map_downloaded_csv_table, \
-    m_requirements_generated_from_html, m_requirements_to_search_generated_table = \
-        do_prep()
+    cdd_11_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_download.html"
+    cdd_11_table_generated_from_html_all = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_full_table_from_html.tsv"
+    cdd_11_filter_by_table = cdd_11_table_generated_from_html_all #So no filter
+
+
+    scr = data_sources.SourceCrawlerReducer(
+            cdd_requirements_html_source=cdd_11_html_file,
+            global_table_input_file_build_from_html=cdd_11_table_generated_from_html_all,
+            cts_root_directory=static_data.CTS_SOURCE_ROOT,
+            do_search=False)
+    scr.create_full_table_from_cdd(scr.key_to_full_requirement_text,scr.key_to_full_requirement_text,
+                                   cdd_11_table_generated_from_html_all)
     rx_output_file = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
+
+    # Remember FILTER_KEYS_DOWNLOADED_TABLE file  must exit before the program is run
+    make_new_table_with_row_keys_from_table(cdd_11_table_generated_from_html_all,
+                                            keys_for_requirements_to_map_downloaded_csv_table,
+                                            rx_output_file)
+
 
     rd = RxData()
     rd.main_do_create_table(input_table_file=m_requirements_to_search_generated_table,
