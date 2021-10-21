@@ -71,7 +71,7 @@ def check_update(original_sheet_file_name, table_name_to_write):
         print(
             f"Warning: diff 1-2{len(dif_1_2)} 2-1{dif_2_1} Original table and updated table should have same number of row/keys")
     elif len(dif_1_2_dict_content) == 0 and len(dif_2_1_dict_content) == 0:
-        helpers.raise_error(f"Error: NO difference from update... you should figure out why Original ")
+       print(f"Note: NO difference between {original_sheet_file_name} and {table_name_to_write} from update. Ignore if expected ")
     else:
         print(
             f"Table update seems to have updated correctly, no new or removed rows, content 1/2 {len(dif_1_2_dict_content)} updated \n details:{dif_1_2_dict_content}\n")
@@ -86,12 +86,12 @@ def make_new_table_with_row_keys_from_table_example():
                                             new_table_to_made)
 
 def update_release_table_with_changes_example():
-    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/fix_test_available.tsv"
-    source_for_data = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/newr_test_avail.tsv"
-    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_fix_testable/fix_test_available_with_new_r.tsv"
+    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_created.tsv"
+    source_for_data = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_all_manual.tsv"
+    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_all_manual_updated.tsv"
 
     update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
-                                      [static_data.TEST_AVAILABILITY])
+                                      [static_data.TEST_AVAILABILITY,static_data.CLASS_DEF,static_data.METHOD,static_data.MODULE])
 
 
 if __name__ == '__main__':

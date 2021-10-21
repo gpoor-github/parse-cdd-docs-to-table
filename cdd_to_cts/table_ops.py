@@ -50,11 +50,12 @@ This will take table_target and update missing values in the specified key_to_in
                     else:
                         missingkeys_target.add(key)
             else:
-                helpers.raise_error(f"Error: key {key} No index found")
+                print(
+                    f"Note: key {key} it is probably okay, the tables for update should not match ")
 
         except Exception as err:
             print(
-                f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+                f"Note: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
 
     return table_target, missingkeys_target, missingkeys_source
 

@@ -449,7 +449,6 @@ class RxData:
                                         qualified_method = f"[{class_name} {method} {test_case_name}]"
                                         add_list_to_count_dict(qualified_method, search_result, QUALIFIED_METHOD)
                                         flat_result[METHOD] = method
-                                        self.result_subject.on_next(search_info)
                                         self.match_count += 1
                                         break
                                     else:
@@ -595,7 +594,10 @@ class RxData:
                                                                 static_data.TEST_AVAILABILITY) == ""),
                                                             ops.map(lambda search_info: find_search_terms(search_info)),
                                                             ops.map(
-                                                                lambda search_info: self.search_on_files(search_info)))
+                                                                lambda search_info: self.search_on_files(search_info)),
+                                                            ops.map(
+                                                                lambda search_info: self.publish_each_result(search_info))
+                                                            )
 
     def do_on_complete(self):
         self.result_subject.on_completed()
@@ -685,6 +687,11 @@ class RxData:
 
         return search_info
 
+    def publish_each_result(self, search_info:dict)->dict:
+        if search_info.get(SEARCH_RESULT):
+            self.result_subject.on_next(search_info)
+        return search_info
+
 
 def my_print(v: Any, f: Any = '{}') -> Any:
     print(f.format(v))
@@ -728,8 +735,8 @@ if __name__ == '__main__':
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
     current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9.9.3.tsv"
-    temp_result= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9.9.3_result.tsv"
-    final_result= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9.9.3_final_result.tsv"
+    temp_result= current_file+".tmp.tsv"
+    final_result= current_file
 
 
     rd.result_subject.pipe(

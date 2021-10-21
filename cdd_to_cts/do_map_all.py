@@ -13,15 +13,15 @@ from react import RxData, my_print
 if __name__ == '__main__':
     start = time.perf_counter()
     # When this is all we can use our own generated table
-    downloaded_filter_table = static_data.DATA_SOURCES_CSV_FROM_HTML_1st
+    downloaded_filter_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_full_table_from_html.tsv"
     all_for_cdd_12_ds = "output/cdd_12_from_data_sources_all.tsv"
     all_for_cdd_12_rx = "output/cdd_12_from_react_all.tsv"
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"
 
 
     scr = data_sources.SourceCrawlerReducer(
-            cdd_requirements_html_source=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-            global_table_input_file_build_from_html=static_data.DATA_SOURCES_CSV_FROM_HTML_1st,
+            cdd_requirements_html_source="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html",
+            global_table_input_file_build_from_html=downloaded_filter_table,
             cts_root_directory=static_data.CTS_SOURCE_ROOT,
             do_search=False)
     scr.create_full_table_from_cdd(scr.key_to_full_requirement_text,scr.key_to_full_requirement_text,
