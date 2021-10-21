@@ -20,6 +20,7 @@ from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
+from update_release import update_release_table_with_changes
 
 
 def build_dict(key_req: str):
@@ -172,7 +173,9 @@ def process_section(key_to_section: str):
     return rx.empty()
 
 
-def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [], header: []) -> dict:
+def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [str, [str]], header: [str],
+                                                         columns_to_copy: [
+                                                             str] = static_data.fields_for_search_info_header) -> dict:
     search_info = dict()
     try:
         full_key: str = str(tuple_of_key_and_row[0]).strip()
@@ -180,12 +183,11 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
         search_info[ROW] = row
 
         header_as_string = " ".join(header)
-        for column in static_data.update_manual_header:
+        for column in columns_to_copy:
             if header_as_string.find(column) != -1:
                 index = header.index(column)
                 search_info[column] = row[index]
 
-        search_info[REQUIREMENT] = row[header.index(REQUIREMENT)]
         urls = helpers.find_urls(search_info[REQUIREMENT])
         if len(urls) > 0:
             search_info[static_data.URLS] = urls
@@ -486,7 +488,8 @@ class RxData:
             return self.__replay_at_test_files_to_methods
         else:
             self.__replay_at_test_files_to_methods = ReplaySubject(9999, scheduler=scheduler)
-            self.__replay_at_test_files_to_methods.pipe(rx.from_list(self.get_list_of_at_test_files(results_grep_at_test)))
+            self.__replay_at_test_files_to_methods.pipe(
+                rx.from_list(self.get_list_of_at_test_files(results_grep_at_test)))
 
     def get_list_of_at_test_files(self,
                                   results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:
@@ -588,6 +591,8 @@ class RxData:
                                                             ops.map(lambda
                                                                         full_key_row: created_and_populated_search_info_from_key_row_tuple(
                                                                 full_key_row, header)),
+                                                            ops.filter(lambda search_info: search_info.get(
+                                                                static_data.TEST_AVAILABILITY) == ""),
                                                             ops.map(lambda search_info: find_search_terms(search_info)),
                                                             ops.map(
                                                                 lambda search_info: self.search_on_files(search_info)))
@@ -722,7 +727,10 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/test_make_table_dict_by_keys.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9.9.3.tsv"
+    temp_result= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9.9.3_result.tsv"
+    final_result= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9.9.3_final_result.tsv"
+
 
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))
@@ -730,15 +738,16 @@ if __name__ == '__main__':
         , ops.map(lambda flat_result: build_row(flat_result, header=static_data.cdd_to_cts_app_header, do_log=True))
         , ops.to_list()
         ,
-        ops.map(lambda table: table_ops.write_table(current_file + "_flat.tsv", table, static_data.cdd_to_cts_app_header))) \
+        ops.map(
+            lambda table: table_ops.write_table(current_file + "_flat.tsv", table, static_data.cdd_to_cts_app_header))) \
         .subscribe(on_completed=lambda: print("complete result_subject"),
                    on_error=lambda err: helpers.raise_error("result_subject", err))
 
-    rd.main_do_create_table(current_file, current_file).subscribe(
-        on_next=lambda table: my_print(f"react.py main created [{current_file}] from [{current_file}] "),
+    rd.main_do_create_table(current_file, temp_result).subscribe(
+        on_next=lambda table: my_print(f"react.py main created [{temp_result}] from [{current_file}] "),
         on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.raise_error("in main", err))
-
+    update_release_table_with_changes(current_file,temp_result,final_result,static_data.results_header)
     # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()

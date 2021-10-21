@@ -171,12 +171,11 @@ FLAT_RESULT = 'FLAT_RESULT'
 SO_ONLY_SEARCH_KEYS = "ONLY_SEARCH_KEYS"
 not_annotated_test_start = "public void test"
 
+results_header: [] = [CLASS_DEF, METHOD, MODULE, FILE_NAME,  MATCHED_FILES, METHODS_STRING, URLS,  METHOD_TEXT,  MATCHED_TERMS,QUALIFIED_METHOD,]
 # Contains all the fields that are used to review and iterate on mappings.
-cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,
-                             METHOD_TEXT, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
-                             NOT_SEARCH_TERMS, NOT_FILES, MATCHED_TERMS, SEARCH_ROOTS, QUALIFIED_METHOD, MAX_MATCHES,
-                             FILE_NAME,
-                             MATCHED_FILES, METHODS_STRING, URLS, PROTECTED, AREA, SHORTENED, TEST_LEVEL]
+cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBER, REQUIREMENT, TEST_AVAILABILITY, SEARCH_ROOTS, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
+                             NOT_SEARCH_TERMS, NOT_FILES,MAX_MATCHES,
+                             PROTECTED, AREA, SHORTENED, TEST_LEVEL] + results_header
 
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (
@@ -199,6 +198,8 @@ merge_header: [] = (
 # Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
 update_manual_header: [] = (
     [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS, NOT_FILES, NOT_METHODS])
+# What data is to be copied from each row to the search_info dictionary
+fields_for_search_info_header: [] = update_manual_header+[REQUIREMENT,TEST_AVAILABILITY]
 
 table_delimiter = '\t'
 table_dialect = 'excel-tab'
