@@ -61,7 +61,7 @@ class TestUpdate(TestCase):
     cdd_11_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_created.tsv"  # So no filter
     cdd_12_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html"
     cdd_12_table_generated_from_html_all = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_full_table_from_html.tsv"
-    cdd_12_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"  # So no filter
+    cdd_12_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"  # So no filter
 
     def test_make_table_keys_in_11_but_not_in_12(self, ):
         keys = ['4/C-0-1', '4/C-0-8', '9.5/C-1-1', '4/C-0-4', '9.9.3.1/C-1-9', '4/C-0-9', '3.15/C-1-4',

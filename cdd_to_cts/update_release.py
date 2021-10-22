@@ -3,6 +3,21 @@ import table_ops
 from cdd_to_cts import helpers
 
 
+def update_table_column_subset(input_table_to_find_source_columns: str,
+                               header_columns_to_copy: [],
+                               output_file_to_write_updated_table: str) :
+    source_table, source_table_keys_to_index, source_header, duplicate_rows = table_ops.read_table_sect_and_req_key(
+        input_table_to_find_source_columns)
+
+    column_subset_table, column_subset_key_to_index= table_ops.remove_table_columns(source_table,
+                                                               source_table_keys_to_index,
+                                                               source_header,
+                                                               header_columns_to_copy)
+
+    table_ops.write_table(output_file_to_write_updated_table,column_subset_table, header_columns_to_copy)
+
+    return column_subset_table, column_subset_key_to_index
+
 def update_release_table_with_changes(table_to_update_and_write_to_output_file: str,
                                       values_to_use_for_update: str,
                                       output_file_to_write_updated_table: str,

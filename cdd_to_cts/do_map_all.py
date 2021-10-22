@@ -16,7 +16,7 @@ if __name__ == '__main__':
     downloaded_filter_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_full_table_from_html.tsv"
     all_for_cdd_12_ds = "output/cdd_12_from_data_sources_all.tsv"
     all_for_cdd_12_rx = "output/cdd_12_from_react_all.tsv"
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"
+    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"
 
 
     scr = data_sources.SourceCrawlerReducer(

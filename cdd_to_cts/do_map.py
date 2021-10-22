@@ -15,7 +15,7 @@ def do_on_complete():
 if __name__ == '__main__':
     start = time.perf_counter()
     cdd_12_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html"
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_created.tsv"
+    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"
 
     scr = data_sources.SourceCrawlerReducer(
             cdd_requirements_html_source=cdd_12_html_file,

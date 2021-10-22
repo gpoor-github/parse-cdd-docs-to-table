@@ -222,7 +222,7 @@ if __name__ == '__main__':
     cdd_11 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
     cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_created.tsv"
     cdd_12_with_sections ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/DATA_SOURCES_cdd-12_CSV_FROM_HTML_1st.tsv"
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_created.tsv"
+    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_all_manual.tsv"
     annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/mapping_output_for_import.tsv"
     cdd_12_to_do ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Differences between and CDD_11 and CDD12 - Requirements in CDD 12 but not in CDD-11 (1).tsv"
     # result_dict, not_found, found = rs.parse_data(mapping_cdd)

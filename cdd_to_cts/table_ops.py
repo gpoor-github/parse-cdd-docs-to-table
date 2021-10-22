@@ -6,6 +6,41 @@ from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
 from check_sheet import diff_tables_files
 
+def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str,int], header_column_source:[str], columns_to_use: [str])\
+        -> ([[str]], dict[str,int]):
+    """ This will take table_source and make a new table only using the columns specified.
+    :return  ([[str]], dict):
+    """
+    column_subset_table = list()
+    column_subset_key_to_index = dict()
+    test_source_index_str = " ".join(header_column_source)+' '
+    column_subset_table_idx_count = 0
+    for key in key_to_index_source:
+        try:
+            table_index_source: int = key_to_index_source.get(key)
+            if table_index_source is not None:
+                source_row = table_source[table_index_source]
+                # Section,section_id,req_id
+                column_subset_row = list()
+                for column in columns_to_use:
+                    if test_source_index_str.find(column+' ') > -1: #Add space so names have less chance of overlap
+                        header_column_source_idx = header_column_source.index(column)
+                        source_value_to_use = source_row[header_column_source_idx]
+                        column_subset_row.append(source_value_to_use)
+                column_subset_table.append(column_subset_row)
+                column_subset_key_to_index[key]= column_subset_table_idx_count
+                column_subset_table_idx_count+=1
+
+            else:
+                helpers.raise_error(
+                    f"Error: key {key} Not found shouldn't happen in this class ")
+
+        except Exception as err:
+            helpers.raise_error(
+                f"Note: key {key} errors {str(err)} on removing columns... should not happen ")
+
+    return column_subset_table, column_subset_key_to_index
+
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],
                  key_to_index_source: dict,
@@ -24,13 +59,13 @@ This will take table_target and update missing values in the specified key_to_in
     """
     missingkeys_target: set = set()
     missingkeys_source: set = set()
+    test_target_index_str = static_data.table_delimiter.join(header_target)
+    test_source_index_str = static_data.table_delimiter.join(header_source)
     for key in key_to_index_target:
         try:
             table_index_source: int = key_to_index_source.get(key)
             table_index_target: int = key_to_index_target.get(key)
             if (table_index_source is not None) and (table_index_target is not None):
-                test_target_index_str = static_data.table_delimiter.join(header_target)
-                test_source_index_str = static_data.table_delimiter.join(header_source)
                 t_target_row = table_target[table_index_target]
                 t_source_row = table_source[table_index_source]
                 # Section,section_id,req_id
