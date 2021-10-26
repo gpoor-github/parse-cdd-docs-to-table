@@ -16,7 +16,7 @@ import table_ops
 from cdd_to_cts.class_graph import parse_class_or_method, re_method
 from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_test_cases_module_dictionary, \
     raise_error, \
-    convert_version_to_number_from_full_key, remove_n_spaces_and_commas, CountDict
+    convert_version_to_number_from_full_key, CountDict
 from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
@@ -528,35 +528,37 @@ class RxData:
             except FileNotFoundError as e:
                 raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
 
-    #
-    # def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-    #                                  scheduler: rx.typing.Scheduler = None):
-    #
-    #     if not self.__replay_cdd_requirements:
-    #         self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
-    #         cdd_html_file = helpers.find_valid_path(cdd_html_file)
-    #
-    #         with open(cdd_html_file, "r") as text_file:
-    #             cdd_requirements_file_as_string = text_file.read()
-    #             section_id_re_str: str = SECTION_ID_RE_STR
-    #             cdd_sections_splits = re.split('(?={})'.format(section_id_re_str), cdd_requirements_file_as_string,
-    #                                            flags=re.DOTALL)
-    #             # Start at 0 to don't skip for tests and unknown input
-    #             for i in range(0, len(cdd_sections_splits)):
-    #                 section = cdd_sections_splits[i]
-    #                 cdd_section_id = helpers.find_section_id(section)
-    #                 if cdd_section_id:
-    #                     if '13' == cdd_section_id:
-    #                         # section 13 is "Contact us" and has characters that cause issues at lest for git
-    #                         print(f"Warning skipping section 13 just the end no requirments")
-    #                         continue
-    #                     section = re.sub('\s\s+', ' ', section)
-    #                     section = section.replace("<\a>", "")
-    #                     self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
-    #         self.__replay_cdd_requirements.on_completed()
-    #         # if all ready read, just return it.
-    #     return self.__replay_cdd_requirements.pipe(
-    #         ops.flat_map(lambda section_and_key: process_section(section_and_key)))
+
+    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+                                     scheduler: rx.typing.Scheduler = None):
+
+        if not self.__replay_cdd_requirements:
+            self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
+            cdd_html_file = helpers.find_valid_path(cdd_html_file)
+
+            with open(cdd_html_file, "r") as text_file:
+                cdd_requirements_file_as_string = text_file.read()
+                #  section_re_str: str = r'"(?:\d{1,3}_)+'
+                section_marker: str = "data-text=\"\s*"
+                section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
+                cdd_sections_splits = re.split('(?={})'.format(section_re_str), cdd_requirements_file_as_string,
+                                               flags=re.DOTALL)
+                # Start at 0 to don't skip for tests and unknown input
+                for i in range(0, len(cdd_sections_splits)):
+                    section = cdd_sections_splits[i]
+                    cdd_section_id = helpers.find_section_id(section)
+                    if cdd_section_id:
+                        if '13' == cdd_section_id:
+                            # section 13 is "Contact us" and has characters that cause issues at lest for git
+                            print(f"Warning skipping section 13 just the end no requirements")
+                            continue
+                        section = re.sub('\s\s+', ' ', section)
+                        section = section.replace("<\a>", "")
+                        self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
+            self.__replay_cdd_requirements.on_completed()
+            # if all ready read, just return it.
+        return self.__replay_cdd_requirements.pipe(
+            ops.flat_map(lambda section_and_key: process_section(section_and_key)))
 
     def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT,
                                  scheduler: rx.typing.Scheduler = None):
@@ -734,7 +736,7 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/9.9.3.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2.2.7.1.tsv"
     temp_result= current_file+".tmp.tsv"
     final_result= current_file
 

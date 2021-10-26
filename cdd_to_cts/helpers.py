@@ -70,13 +70,18 @@ def raise_error(message: str = "ERROR.. default cdd parser message.", a_exceptio
     traceback.print_exc()
 
 
-def process_requirement_text(text_for_requirement_value: str, previous_value: str = None):
+def process_requirement_text(text_for_requirement_value: str):
     value = cleanhtml(text_for_requirement_value)
-    value = remove_n_spaces_and_commas(value)
+    value = remove_n_spaces_and_delimiter(value)
+    return value
+
+
+def prepend_any_previous_value(text_for_requirement_value: str, previous_value: str = None):
+
     if previous_value:
-        return '{} | {}'.format(previous_value, value)
+        return '{} | {}'.format(previous_value, text_for_requirement_value)
     else:
-        return value
+        return text_for_requirement_value
 
 
 def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str) -> dict:
@@ -174,7 +179,7 @@ def find_section_id(section: str) -> str:
     return ""
 
 
-def remove_n_spaces_and_commas(value):
+def remove_n_spaces_and_delimiter(value):
     value = re.sub("\\s\\s+", " ", value)
     value = re.sub(static_data.table_delimiter, " ", value)
     return value
@@ -223,7 +228,7 @@ def read_file_to_string(file: str, prepend_path_if_needed: str = CTS_SOURCE_PARE
 def build_composite_key(key_string_for_re, record_id_split, section_id):
     record_id_result = re.search(key_string_for_re, record_id_split)
     if record_id_result:
-        record_id = record_id_result[0].rstrip(']')
+        record_id = record_id_result[0].rstrip(']').strip(" ").strip(']').strip('>').strip('[')
         return '{}/{}'.format(section_id, record_id)
     else:
         return None
@@ -232,9 +237,8 @@ def build_composite_key(key_string_for_re, record_id_split, section_id):
 def find_full_key(key_string_for_re, record_id_split, section_id=None):
     record_id_result = re.search(key_string_for_re, record_id_split)
     if record_id_result:
-        record_id_string = record_id_result[0]
-
-        return record_id_string.rstrip(']').lstrip('>')
+        record_id_string = record_id_result[0].strip(" ").strip(']').strip('>').strip('[')
+        return record_id_string
     else:
         return None
 

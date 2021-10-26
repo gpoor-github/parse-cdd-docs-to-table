@@ -27,7 +27,7 @@ TEST_FILES_TXT = "input_scripts/test-files.txt"
 TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
 INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/cts-deps-from-static_code_analysis.txt'
 
-SECTION_ID_RE_STR = '"(?:\d{1,3}_)+'
+SECTION_ID_RE_STR ="(?:\d{1,3}\.)+"
 composite_key_string_re = "\s*(?:<li>)?\["
 req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
 full_key_string_for_re = '>(?:[0-9]{1,3}.)*[0-9]?[0-9]/' + req_id_re_str

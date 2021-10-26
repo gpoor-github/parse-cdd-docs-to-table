@@ -4,6 +4,7 @@ import os
 import re
 
 import react
+import static_data
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import process_requirement_text, find_java_objects, find_urls, build_composite_key, \
     find_full_key, bag_from_text, remove_non_determinative_words, find_valid_path
@@ -28,9 +29,8 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
         cdd_requirements_file_as_string = text_file.read()
         #  section_re_str: str = r'"(?:\d{1,3}_)+'
         section_marker: str = "data-text=\"\s*"
-        section_id_re_str: str = "(?:\d{1,3}\.)+"
-        section_re_str: str = section_marker + section_id_re_str
-        cdd_sections_splits = re.split('(?={})'.format(section_re_str), cdd_requirements_file_as_string,
+        section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
+        cdd_sections_splits = re.split('(?={})'.format(section_marker), cdd_requirements_file_as_string,
                                        flags=re.DOTALL)
         section_count = 0
         char_count = 0
@@ -38,7 +38,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
             section_count += 1
             char_count += len(section)
             section = helpers.clean_html_anchors(section)
-            cdd_section_id_search_results = re.search(section_id_re_str, section)
+            cdd_section_id_search_results = re.search(static_data.SECTION_ID_RE_STR, section)
             if not cdd_section_id_search_results:
                 continue
             cdd_section_id = cdd_section_id_search_results[0]
@@ -56,10 +56,15 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
                 # section 13 is "Contact us" and has characters that cause issues at lest for git
                 print(f"Warning skipping section 13 {section}")
                 continue
-            key_to_full_requirement_text_local[cdd_section_id] = process_requirement_text(section, None)
-            req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
+            section = helpers.process_requirement_text(section)
+            key_to_full_requirement_text_local[cdd_section_id] = helpers.prepend_any_previous_value(section, key_to_full_requirement_text_local.get(cdd_section_id))
+            section_and_req_re = "(([0-9]+\.[0-9])+/(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?])"
+            section_and_req_re_2 = "[\[>][\d+\.]+\d+/(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?]"
+            re_comp = re.compile(section_and_req_re_2)
+            req_id_findall = re.findall(section_and_req_re_2, section,flags=re.DOTALL)
+            req_id_splits = re.split('(?={})'.format(section_and_req_re_2), section)
 
-            total_requirement_count = process_section(find_full_key, full_key_string_for_re, cdd_section_id,
+            total_requirement_count = process_section(find_full_key, section_and_req_re_2, cdd_section_id,
                                                       key_to_full_requirement_text_local, req_id_splits,
                                                       section_count, total_requirement_count, logging)
             # Only build a key if you can't find any...
@@ -70,6 +75,7 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
                                                           key_to_full_requirement_text_local, req_id_splits,
                                                           section_count, total_requirement_count, logging)
 
+            section_count += 1
         for key in key_to_full_requirement_text_local:
             requirement_text = key_to_full_requirement_text_local.get(key)
             key_to_urls_local[key] = find_urls(requirement_text)
@@ -86,24 +92,16 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count, logging=False):
+                    record_id_splits, section_id_count, total_requirement_count, logging=True):
     record_id_count = 0
 
     for record_id_split in record_id_splits:
         key = record_key_method(key_string_for_re, record_id_split, section_id)
         if key:
-            record_id_split = helpers.clean_html_anchors(record_id_split)
             record_id_count += 1
             total_requirement_count += 1
-            previous_value = key_to_full_requirement_text_param.get(key)
-            if previous_value:
-                print(f"Previous values {previous_value}")
-                key_to_full_requirement_text_param[
-                    key] = f"{previous_value} && {process_requirement_text(record_id_split, key_to_full_requirement_text_param.get(key))}"
-            else:
-                key_to_full_requirement_text_param[key] = process_requirement_text(record_id_split,
-                                                                                   key_to_full_requirement_text_param.get(
-                                                                                       key))
+            key_to_full_requirement_text_param[key] = helpers.prepend_any_previous_value(record_id_split,
+                                                                                         key_to_full_requirement_text_param.get(key))
             if logging: print(
                 f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text_param.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
 
