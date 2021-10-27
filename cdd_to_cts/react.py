@@ -17,7 +17,7 @@ from cdd_to_cts.class_graph import parse_class_or_method, re_method
 from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_test_cases_module_dictionary, \
     raise_error, \
     convert_version_to_number_from_full_key, CountDict
-from cdd_to_cts.static_data import FULL_KEY_RE_WITH_ANCHOR, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
+from cdd_to_cts.static_data import full_key_string_for_re, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
 from update_release import update_release_table_with_changes
@@ -31,7 +31,7 @@ def build_dict(key_req: str):
         row_dict[REQUIREMENT] = "None found"
         print("error build_dict " + key_req)
     else:
-        row_dict[REQUIREMENT] = remove_n_spaces_and_commas(key_req_spits[1])
+        row_dict[REQUIREMENT] = helpers.remove_n_spaces_and_delimiter(key_req_spits[1])
     return row_dict
 
 
@@ -123,7 +123,7 @@ def write_table_from_dictionary(table_dict: dict, file_name: str, header: [str] 
 
 
 def find_full_key_callable(record_id_split: [[int], str]) -> str:
-    record_id_result = re.search(FULL_KEY_RE_WITH_ANCHOR, record_id_split)
+    record_id_result = re.search(full_key_string_for_re, record_id_split)
     if record_id_result:
         record_id_string = record_id_result[0]
         record_id_string = record_id_string.replace("</a>", "")
@@ -160,7 +160,7 @@ def process_section(key_to_section: str):
     try:
         key_to_section_split = key_to_section.split(':', 1)
         section_id = key_to_section[0]
-        section = helpers.remove_n_spaces_and_commas(key_to_section_split[1])
+        section = helpers.remove_n_spaces_and_delimiter(key_to_section_split[1])
         req_id_splits = re.split('(?={})'.format(static_data.full_key_string_for_re), section)
         if req_id_splits and len(req_id_splits) > 1:
             return rx.for_in(req_id_splits, find_full_key_callable)

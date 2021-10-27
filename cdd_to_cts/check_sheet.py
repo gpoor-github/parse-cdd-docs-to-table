@@ -1,6 +1,10 @@
 import csv
 import os
+import re
 
+import rx
+
+import helpers
 import static_data
 import table_ops
 from helpers import find_valid_path
@@ -57,10 +61,8 @@ class ReadSpreadSheet:
                         class_path = split_path[1]
                     self.file_dict[class_path] = full_path
 
-    def parse_data(self, ccd_csv_file_name):
-        # sheet_file = open('CDD11_CTS.tsv')
-        # for line in sheet_file:
-        #     print(line)
+    def does_class_ref_file_exist(self, ccd_csv_file_name):
+
         table = []
         header = []
         self.crawl()
@@ -103,6 +105,44 @@ class ReadSpreadSheet:
             print('No files {}'.format(self.not_found_count))
             print('Files {}'.format(self.found_count))
             return self.file_name_to_result, self.not_found_count, self.found_count
+
+def observable_rows(table_file_name) -> rx.Observable:
+    try:
+        table_file_name = find_valid_path(table_file_name)
+
+        with open(table_file_name, newline=static_data.table_newline) as csv_file:
+            print(f"Opened {table_file_name}")
+            csv_reader = csv.reader(csv_file, delimiter=static_data.table_delimiter,
+                                    dialect=static_data.table_dialect)
+            return rx.from_iterable(csv_reader)
+
+    except IOError as e:
+        helpers.raise_error(f"Failed to open file {table_file_name} exception -= {type(e)} exiting...")
+        return rx.just(e)
+
+def check_row_for_requirement_match(key:str, row:[], header:[str]):
+    requirement_text = row[header.index[static_data.REQUIREMENT]]
+    requirement_start = requirement_text[0:50]
+
+    full_key = row[header.index[static_data.full_key_string_for_re]]
+    results_section = re.findall(static_data.section_id_re_str, requirement_start)
+    results_full = re.findall(static_data.full_key_string_for_re,requirement_start)
+    results_req = re.findall(static_data.req_id_re_str,requirement_start)
+
+
+    if len(results_full) > 0:
+       if requirement_start.find(full_key) == -1:
+           helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
+    elif len(results_section) > 0:
+        if requirement_start.find(full_key) == -1:
+            helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
+    elif len(results_req) > 0:
+        if requirement_start.find(full_key) == -1:
+            helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
+
+def do_ids_match_requirements( ccd_csv_file_name):
+
+    observable_rows(ccd_csv_file_name).pipe(rx.of()).subscribe(on_next= lambda key_row_tuple: check_row_for_requirement_match() )
 
 
 def handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2):
@@ -225,6 +265,6 @@ if __name__ == '__main__':
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_all_manual.tsv"
     annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/mapping_output_for_import.tsv"
     cdd_12_to_do ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Differences between and CDD_11 and CDD12 - Requirements in CDD 12 but not in CDD-11 (1).tsv"
-    # result_dict, not_found, found = rs.parse_data(mapping_cdd)
+    # result_dict, not_found, found = rs.does_class_ref_file_exist(mapping_cdd)
     # print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
     diff_tables_files(annotation_12, cdd_12_created)

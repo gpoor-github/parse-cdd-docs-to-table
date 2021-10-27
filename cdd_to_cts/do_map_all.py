@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # table_ops.diff_tables_files(rx_output_file, requirements_to_search_generated_table)
 
     # rs = ReadSpreadSheet()
-    # result, not_found, found = rs.parse_data(rx_output_file)
+    # result, not_found, found = rs.does_class_ref_file_exist(rx_output_file)
     # print('results {}\n found={} not found={}'.format(json.dumps(result, indent=4), rs.found_count, rs.not_found_count))
 
     end = time.perf_counter()
