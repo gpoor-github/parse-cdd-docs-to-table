@@ -528,37 +528,37 @@ class RxData:
             except FileNotFoundError as e:
                 raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
 
-
-    def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
-                                     scheduler: rx.typing.Scheduler = None):
-
-        if not self.__replay_cdd_requirements:
-            self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
-            cdd_html_file = helpers.find_valid_path(cdd_html_file)
-
-            with open(cdd_html_file, "r") as text_file:
-                cdd_requirements_file_as_string = text_file.read()
-                #  section_re_str: str = r'"(?:\d{1,3}_)+'
-                section_marker: str = "data-text=\"\s*"
-                section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
-                cdd_sections_splits = re.split('(?={})'.format(section_re_str), cdd_requirements_file_as_string,
-                                               flags=re.DOTALL)
-                # Start at 0 to don't skip for tests and unknown input
-                for i in range(0, len(cdd_sections_splits)):
-                    section = cdd_sections_splits[i]
-                    cdd_section_id = helpers.find_section_id(section)
-                    if cdd_section_id:
-                        if '13' == cdd_section_id:
-                            # section 13 is "Contact us" and has characters that cause issues at lest for git
-                            print(f"Warning skipping section 13 just the end no requirements")
-                            continue
-                        section = re.sub('\s\s+', ' ', section)
-                        section = section.replace("<\a>", "")
-                        self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
-            self.__replay_cdd_requirements.on_completed()
-            # if all ready read, just return it.
-        return self.__replay_cdd_requirements.pipe(
-            ops.flat_map(lambda section_and_key: process_section(section_and_key)))
+    #
+    # def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
+    #                                  scheduler: rx.typing.Scheduler = None):
+    #
+    #     if not self.__replay_cdd_requirements:
+    #         self.__replay_cdd_requirements = ReplaySubject(buffer_size=2000, scheduler=scheduler)
+    #         cdd_html_file = helpers.find_valid_path(cdd_html_file)
+    #
+    #         with open(cdd_html_file, "r") as text_file:
+    #             cdd_requirements_file_as_string = text_file.read()
+    #             #  section_re_str: str = r'"(?:\d{1,3}_)+'
+    #             section_marker: str = "data-text=\"\s*"
+    #             section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
+    #             cdd_sections_splits = re.split('(?={})'.format(section_re_str), cdd_requirements_file_as_string,
+    #                                            flags=re.DOTALL)
+    #             # Start at 0 to don't skip for tests and unknown input
+    #             for i in range(0, len(cdd_sections_splits)):
+    #                 section = cdd_sections_splits[i]
+    #                 cdd_section_id = helpers.find_section_id(section)
+    #                 if cdd_section_id:
+    #                     if '13' == cdd_section_id:
+    #                         # section 13 is "Contact us" and has characters that cause issues at lest for git
+    #                         print(f"Warning skipping section 13 just the end no requirements")
+    #                         continue
+    #                     section = re.sub('\s\s+', ' ', section)
+    #                     section = section.replace("<\a>", "")
+    #                     self.__replay_cdd_requirements.on_next('{}:{}'.format(cdd_section_id, section))
+    #         self.__replay_cdd_requirements.on_completed()
+    #         # if all ready read, just return it.
+    #     return self.__replay_cdd_requirements.pipe(
+    #         ops.flat_map(lambda section_and_key: process_section(section_and_key)))
 
     def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT,
                                  scheduler: rx.typing.Scheduler = None):
