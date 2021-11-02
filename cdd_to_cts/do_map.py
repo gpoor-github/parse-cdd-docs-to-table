@@ -4,6 +4,7 @@ import table_ops
 from cdd_to_cts import static_data, helpers, data_sources
 from cdd_to_cts.react import RxData, my_print
 from check_sheet import diff_tables_files
+from data_sources_helper import create_full_table_from_cdd
 
 
 def do_on_complete():
@@ -18,7 +19,7 @@ def do_map_12():
         global_table_input_file_build_from_html=cdd_12_created,
         cts_root_directory=static_data.CTS_SOURCE_ROOT,
         do_search=False)
-    scr.create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text,
+    create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text, scr.section_to_data,
                                    cdd_12_created)
     cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_all_1678.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_created,
@@ -43,7 +44,7 @@ def do_map_11():
         global_table_input_file_build_from_html=cdd_11_created,
         cts_root_directory=static_data.CTS_SOURCE_ROOT,
         do_search=False)
-    scr.create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text,
+    create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text, scr.section_to_data,
                                    cdd_11_created)
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_created,

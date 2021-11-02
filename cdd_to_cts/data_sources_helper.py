@@ -7,7 +7,8 @@ import react
 import static_data
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import find_java_objects, find_urls, build_composite_key, \
-    find_full_key, bag_from_text, remove_non_determinative_words, find_valid_path
+    find_full_key, bag_from_text, remove_non_determinative_words, find_valid_path, convert_version_to_number, \
+    convert_version_to_number_from_full_key
 from cdd_to_cts.static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE, composite_key_string_re, req_id_re_str, \
     full_key_string_for_re, CDD_REQUIREMENTS_FROM_HTML_FILE
 from class_graph import parse_dependency_file
@@ -86,6 +87,77 @@ def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE
         raise SystemExit("Less than 1 requirements!? " + str(key_to_full_requirement_text_local))
     return key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data
 
+
+def create_populated_table(key_to_full_requirement_text:[str,str], keys_to_find_and_write:iter,  section_to_data:dict, header: []):
+    table: [[str]] = []
+    keys_to_table_index: dict[str, int] = dict()
+    table_row_index = 0
+    for temp_key in keys_to_find_and_write:
+        key_str: str = temp_key
+        key_str = key_str.rstrip(".").strip(' ')
+        write_new_data_line_to_table(key_str, key_to_full_requirement_text, table, table_row_index, section_to_data, header)  # test_file_to_dependencies)
+        keys_to_table_index[key_str] = table_row_index
+        table_row_index += 1
+    return table, keys_to_table_index
+
+# Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,
+# ['Section', SECTION_ID, 'req_id', 'Test Availability','class_def', 'method', 'module','full_key','requirement', 'key_as_number','search_terms','urls','file_name'])
+
+def write_new_data_line_to_table( key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int,
+                                 section_to_data: dict, header: [] = static_data.cdd_to_cts_app_header, search_func:()=None, logging=False):
+
+    section_data = keys_to_sections.get(key_str)
+    row: [str] = list(header)
+    for i in range(len(row)):
+        row[i] = ''
+    if len(table) <= table_row_index:
+        table.append(row)
+
+    if logging: print(f"keys from  {table_row_index} [{key_str}]")
+    key_str = key_str.rstrip(".").strip(' ')
+    key_split = key_str.split('/')
+    table[table_row_index][header.index('Section')] = section_to_data.get(
+        key_split[0])
+
+    table[table_row_index][header.index(static_data.SECTION_ID)] = key_split[0]
+
+    table[table_row_index][header.index('full_key')] = key_str
+    if section_data:
+        section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
+        if len(section_data_cleaned) > 110000:
+            print(f"Warning line to long truncating ")
+            section_data_cleaned = section_data_cleaned[0:110000]
+        table[table_row_index][header.index(static_data.REQUIREMENT)] = section_data_cleaned
+
+    if len(key_split) > 1:
+        table[table_row_index][header.index(static_data.REQ_ID)] = key_split[1]
+        table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number(
+            key_split[0], key_split[1])
+
+        # This function takes a long time
+        # This is handled in the React Side now
+        if search_func:
+            search_func(key_str)
+    else:
+        # This function handles having just a section_id
+        table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number_from_full_key(
+            key_split[0])
+        print(f"Only a major key? {key_str}")
+
+def create_full_table_from_cdd(
+        key_to_full_requirement_text: [str, str], keys_to_find_and_write:iter,
+        data_sources: dict,
+        output_file: str,
+        output_header: str = static_data.cdd_to_cts_app_header):
+
+    table_for_sheet, keys_to_table_indexes = create_populated_table(key_to_full_requirement_text,
+                                                                    keys_to_find_and_write,
+                                                                    data_sources,
+                                                                    output_header)
+    print(f"CDD csv file to write to output is [{output_file}] output header is [{str(output_header)}]")
+
+    from table_ops import write_table
+    write_table(output_file, table_for_sheet, output_header)
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
                     record_id_splits, section_id_count, total_requirement_count, logging=True):

@@ -5,6 +5,7 @@ import time
 import data_sources
 import helpers
 import static_data
+from data_sources_helper import create_full_table_from_cdd
 from do_map import do_on_complete
 from react import RxData, my_print
 
@@ -24,7 +25,7 @@ if __name__ == '__main__':
             global_table_input_file_build_from_html=downloaded_filter_table,
             cts_root_directory=static_data.CTS_SOURCE_ROOT,
             do_search=False)
-    scr.create_full_table_from_cdd(scr.key_to_full_requirement_text,scr.key_to_full_requirement_text,
+    create_full_table_from_cdd(scr.key_to_full_requirement_text,scr.key_to_full_requirement_text,scr.section_to_data,
                                    cdd_12_created)
     rd = RxData()
     rd.main_do_create_table(input_table_file=all_for_cdd_12_ds,

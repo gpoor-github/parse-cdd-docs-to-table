@@ -9,8 +9,8 @@ CTS_SOURCE_NAME = 'cts'
 CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
 WORKING_ROOT = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source"
 # os.getcwd().replace("cdd_to_cts","")
-AOSP_ROOT  ="/home/gpoor/aosp_platform_source"
-CDD_MD_ROOT= AOSP_ROOT+"/compatibility/cdd"
+AOSP_ROOT  ="/home/gpoor/aosp_cdd"
+CDD_MD_ROOT= AOSP_ROOT+"/cdd"
 # Remember these 2 files must exit before the program is run
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
 FILTER_KEYS_DOWNLOADED_TABLE = 'input/FILTER_KEYS_DOWNLOADED_TABLE.tsv'

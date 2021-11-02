@@ -87,16 +87,6 @@ class BrokenTestsToFixSomeday(unittest.TestCase):
     #         ops.map(lambda v: my_print2(v, "find_downstream_search_result[{}]")),
     #         ops.count()).subscribe(lambda count: self.assertEqual(count, 32))
 
-    def test_get_cdd_html_to_requirements_table_rx(self, ):
-        a_7_line_table = "test/input/section_id_length_one_issue.html"
-
-        rd = RxData()
-        rd.get_cdd_html_to_requirements((a_7_line_table,"../output/a_test.cvs")). \
-            subscribe(lambda table_dict: self.assertEqual('3', table_dict[2][DEFAULT_SECTION_ID_INDEX]))
-        # table_ops.write_table("output/try_table1.csv", table, header=static_data.cdd_to_cts_app_header)
-        # my_print2(table_dict) write_table("output/try_table1.csv", table_dict, static_data.cdd_to_cts_app_header)
-
-
     def test_do_search(self, ):
         rd = RxData()
         table, header = rd.init_input_table_keyed("/input/four_line_created.csv")
@@ -190,78 +180,6 @@ class BrokenTestsToFixSomeday(unittest.TestCase):
         self.assertEqual("2.2.1/H-7-11", search_info.get(FULL_KEY))
 
 
-
-    def test_parse_cdd_html_full(self, ):
-
-        os.chdir('../')
-        cwd = os.getcwd()
-        static_data.WORKING_ROOT = cwd+"/"
-        scr = data_sources.SourceCrawlerReducer()
-
-        from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
-        key_to_full_requirement_text_local = scr.key_to_full_requirement_text
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-1"))
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-2"))
-        self.assertEqual(1593, len(key_to_full_requirement_text_local))
-
-    def test_parse_cdd_html_to_short_file_only_7(self, ):
-
-        a_7_line_table = "input/just_one_section_id_digit_issue.html"
-        cwd = os.getcwd()
-        static_data.WORKING_ROOT = cwd + "/"
-        scr = data_sources.SourceCrawlerReducer(a_7_line_table)
-
-
-        from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
-        key_to_full_requirement_text_local = scr.key_to_full_requirement_text
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-1"))
-        self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-2"))
-        self.assertEqual(4, len(key_to_full_requirement_text_local))
-
-        def test_parse_cdd_html_to_requirements(self):
-            full_cdd_html = helpers.find_valid_path("/input/cdd.html")
-
-            from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
-            key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, \
-            cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
-
-            value = key_to_full_requirement_text_local.get("3/C-0-1")
-
-            self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
-            self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-1"))
-            self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-2"))
-            self.assertRegex(key_to_full_requirement_text_local.get("3.1/C-0-1"),
-                             "MUST provide complete implementations, including all documented behaviors, of any documented API exposed by the Android SDK or any API decorated with the ".replace(
-                                 ',', ';'))
-            self.assertRegex(key_to_full_requirement_text_local.get("9.16/C-1-2"),
-                             "MUST securely confirm the primary authentication on the source device and confirm with the user intent to copy the data on the source device before any data is transferred.")
-            self.assertEqual(1593, len(key_to_full_requirement_text_local))
-
-    def test_get_cdd_html_to_requirements(self, ):
-        rd = RxData()
-        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) \
-            .pipe(ops.map(lambda v: my_print(v)),
-                  ops.count()). \
-            subscribe(lambda count: self.assertEqual(count, 1317))
-
-    def test_get_cdd_html_to_requirements_values(self, ):
-        rd = RxData()
-        a_7_line_table = "../test/input/section_id_length_one_issue.html"
-
-        rd.get_cdd_html_to_requirements(a_7_line_table)
-
-    def test_get_cdd_html_to_requirements_dict(self, ):
-        rd = RxData()
-        # table_dict:dict
-        rd.get_cdd_html_to_requirements(static_data.CDD_REQUIREMENTS_FROM_HTML_FILE) \
-            .pipe(ops.filter(lambda wv: not wv or len(str(wv).split(':')) < 2), ops.map(lambda v: my_print(v)),
-                  ops.to_dict(key_mapper=lambda key_req: key_req.split(':')[0],
-                              element_mapper=lambda key_req: build_dict(key_req))
-                  #    ,ops.map(  lambda tdict: react.write_table_from_dictionary(tdict,"output/tdict.csv")),
-                  , ops.map(lambda v: my_print2(v))).subscribe(
-            lambda table_dict: self.assertEqual(1, len(dict(table_dict).keys())))
 
 if __name__ == '__main__':
     unittest.main()
