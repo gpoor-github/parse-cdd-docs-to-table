@@ -5,6 +5,8 @@ from cdd_to_cts import static_data, helpers, data_sources
 from cdd_to_cts.react import RxData, my_print
 from check_sheet import diff_tables_files
 from data_sources_helper import create_full_table_from_cdd
+from parse_cdd_md import parse_cdd_md
+from static_data import CDD_MD_ROOT
 
 
 def do_on_complete():
@@ -12,16 +14,19 @@ def do_on_complete():
 
 
 def do_map_12():
-    cdd_12_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html"
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"
-    scr = data_sources.SourceCrawlerReducer(
-        cdd_requirements_html_source=cdd_12_html_file,
-        global_table_input_file_build_from_html=cdd_12_created,
-        cts_root_directory=static_data.CTS_SOURCE_ROOT,
-        do_search=False)
-    create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text, scr.section_to_data,
-                                   cdd_12_created)
-    cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_all_1678.tsv"
+    # cdd_12_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html"
+    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_md.tsv"
+    # scr = data_sources.SourceCrawlerReducer(
+    #     cdd_requirements_html_source=cdd_12_html_file,
+    #     global_table_input_file_build_from_html=cdd_12_created,
+    #     cts_root_directory=static_data.CTS_SOURCE_ROOT,
+    #     do_search=False)
+    key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md(CDD_MD_ROOT)
+    create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
+                               section_to_section_data,
+                               cdd_12_created, static_data.cdd_info_only_header)
+
+    # cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_all_1678.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_created,
                                                                                                    cdd_11_created)
     cdd_12_todo_output_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_output.tsv"
