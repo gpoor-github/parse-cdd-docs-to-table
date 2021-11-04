@@ -21,3 +21,5 @@ grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_scripts/test-files.
 echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_scripts/testcases-modules.txt
 grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_scripts/testcases-modules.txt
 
+echo grep -r "public void test" --include \*.java "$ctsdir"/* > input_scripts/public_void_test_files.txt
+grep -r "public void test" --include \*.java "$ctsdir"/* > input_scripts/public_void_test_files.txt

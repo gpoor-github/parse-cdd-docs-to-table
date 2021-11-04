@@ -142,7 +142,7 @@ def write_new_data_line_to_table( key_str: str, keys_to_sections: dict, table: [
         # This function handles having just a section_id
         table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number_from_full_key(
             key_split[0])
-        print(f"Only a major key? {key_str}")
+        if logging: print(f"Only a major key? {key_str}")
 
 def create_full_table_from_cdd(
         key_to_full_requirement_text: [str, str], keys_to_find_and_write:iter,

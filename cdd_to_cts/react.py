@@ -250,7 +250,7 @@ def find_search_terms(search_info) -> dict:
     # ToDo Restore full search?
     search_term_set.update(manual_search_terms)
     # Section requirements search on or off
-    # search_term_set.update(section_req)
+    search_term_set.update(section_req)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
     search_info[static_data.SEARCH_TERMS] = search_term_set
@@ -432,12 +432,15 @@ class RxData:
                     import class_graph
                     test_case_name = class_graph.search_for_test_case_name(file_name,
                                                                            self.get_test_case_dict())
-                    add_list_to_count_dict(test_case_name, search_result, MODULE)
+                    add_list_to_count_dict(test_case_name, search_result, static_data.MODULES)
+                    search_result[MODULE] = test_case_name  # This will just get the last module, overwriting
                     flat_result[MODULE] = test_case_name
 
                     if len(class_name_split_src) > 1:
                         class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
-                        add_list_to_count_dict(class_name, search_result, CLASS_DEF)
+                        add_list_to_count_dict(class_name, search_result, static_data.CLASS_DEFS)
+                        search_result[CLASS_DEF] = class_name  # This will just get the last class_def, overwriting
+
                         flat_result[CLASS_DEF] = class_name
 
                         try:
@@ -456,7 +459,9 @@ class RxData:
                                         # result = re.search(r'\s*public.+?\w+?(?=\(\w*?\))(?=.*?{)', method_text)
                                         # ToDo search dependencies
                                         if logging: print(f"result No method with test in the name {method}.")
-                                    add_list_to_count_dict(method, search_result, METHOD)
+
+                                    add_list_to_count_dict(method, search_result, static_data.METHODS)
+                                    search_result[METHOD] = method # This will just get the last method, overwriting
                             else:
                                 method = ""
                                 # ToDo figure out adding to the dictionary
@@ -736,7 +741,7 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2.2.7.1.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/4.tsv"
     temp_result= current_file+".tmp.tsv"
     final_result= current_file
 

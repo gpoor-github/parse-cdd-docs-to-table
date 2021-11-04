@@ -22,13 +22,9 @@ def search_for_test_case_name(full_path_to_file, testcase_dictionary: dict, logg
     module = None
     try:
         full_path = os.path.dirname(os.path.abspath(full_path_to_file))
-        cts_root_split = str(full_path).split(static_data.CTS_SOURCE_ROOT)
-        if len(cts_root_split) > 1:
-            relative_path = cts_root_split[1]
-        else:
-            relative_path = cts_root_split[0]
+        relative_path = str(full_path).removeprefix(static_data.CTS_SOURCE_ROOT).replace("/",".").strip(".")
 
-        # cts_splitter = f".{static_data.CTS_SOURCE_NAME}."
+
         src_splits = relative_path.split('src')
         key = src_splits[0]
         if key:

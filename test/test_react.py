@@ -160,7 +160,7 @@ class TestRxData(TestCase):
         logging = True
         search_terms = set("\... H-1-3 5\.1 codec  'H-1-3' 5.1.?H-1-3 decoder Advertise video".split(' '))
 
-        mediapc_test_file = "/home/gpoor/cts-source/cts/tests/tests/media/src/android/media/cts/MediaCodecCapabilitiesTest.java"
+        mediapc_test_file = "/home/gpoor/cts-12-source-12/cts/tests/tests/media/src/android/media/cts/MediaCodecCapabilitiesTest.java"
         full_text_of_file_str = helpers.read_file_to_string(mediapc_test_file)
 
         search_terms.difference_update(static_data.spurious_terms)

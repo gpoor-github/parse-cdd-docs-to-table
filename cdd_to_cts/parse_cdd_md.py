@@ -41,11 +41,12 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
                     md_file_contents = helpers.read_file_to_string(file,section_dir+'/')
                     key_to_full_requirement_text_local[sub_cdd_section_id] =md_file_contents
                     if logging: print(sub_cdd_section_id)
-                    section_md_splits = re.split("(?=####?)",md_file_contents)
+                    section_md_splits = re.split("(?=###?#?)",md_file_contents)
                     for section in section_md_splits:
-                        section_id_result = re.search('####? ([0-9\.])+', section)
+                        section_id_result = re.search('([0-9\.])+', section)
                         if section_id_result:
-                            cdd_section_id = section_id_result[0].removeprefix('### ')
+                            just_id_result =section_id_result[0]
+                            cdd_section_id = just_id_result
                         remove_link_re_str= "\]\(#.+?\)"
                         section = re.sub(remove_link_re_str,"",section)
                         req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)

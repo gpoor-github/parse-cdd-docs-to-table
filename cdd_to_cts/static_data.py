@@ -153,9 +153,14 @@ NOT_FILES = 'not_files'
 SEARCH_ROOTS = 'search_roots'
 NOT_SEARCH_ROOTS = 'not_search_roots'
 
+MODULES = 'modules'
+METHODS = 'methods'
+CLASS_DEFS = 'class_defs'
+
 MODULE = 'module'
 METHOD = 'method'
 CLASS_DEF = 'class_def'
+
 MATCHED_TERMS = 'matched_terms'
 QUALIFIED_METHOD = 'qualified_method'
 URLS = 'urls'
@@ -175,8 +180,10 @@ not_annotated_test_start = "public void test"
 
 results_header: [] = [CLASS_DEF, METHOD, MODULE, FILE_NAME,  MATCHED_FILES, METHODS_STRING, URLS,  METHOD_TEXT,  MATCHED_TERMS,QUALIFIED_METHOD,]
 # Contains all the fields that are used to review and iterate on mappings.
-cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBER, REQUIREMENT, TEST_AVAILABILITY, SEARCH_ROOTS, SEARCH_TERMS, MANUAL_SEARCH_TERMS,
+cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBER, REQUIREMENT, TEST_AVAILABILITY, SEARCH_ROOTS, SEARCH_TERMS,
+                             MANUAL_SEARCH_TERMS,
                              NOT_SEARCH_TERMS, NOT_FILES,MAX_MATCHES,
+                             CLASS_DEFS, METHODS, MODULES,
                              PROTECTED, AREA, SHORTENED, TEST_LEVEL] + results_header
 
 # Used in merge_tables to populate missing fields in the the target release sheets.

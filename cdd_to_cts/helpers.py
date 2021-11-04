@@ -275,9 +275,8 @@ def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_C
             split_line = line.split(":")
             file_and_path = split_line[0]
             path: str = os.path.dirname(file_and_path)
-            path_split = path.split("tests/", 1)
-            path = path_split[1]
-            path = path.replace("/", ".")
+            path = path.removeprefix(static_data.CTS_SOURCE_ROOT)
+            path = path.replace("/", ".").strip('.')
 
             value = split_line[2]
             re_value = re.search("(\w+)TestCases", value)

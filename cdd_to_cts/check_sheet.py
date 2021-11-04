@@ -263,16 +263,17 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
 if __name__ == '__main__':
     rs = ReadSpreadSheet()
     cdd_11_before_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Working copy of CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - Before gpoor (2).csv"
-    cdd_11_gpor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
+    cdd_11_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
     cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/cdd_11_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
     cdd_12_with_sections ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/DATA_SOURCES_cdd-12_CSV_FROM_HTML_1st.tsv"
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/cdd_12_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
-    annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/mapping_output_for_import.tsv"
-    cdd_12_to_do ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/Differences between and CDD_11 and CDD12 - Requirements in CDD 12 but not in CDD-11 (1).tsv"
+    annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/mapping_output_for_import.tsv"
+    cdd_12_to_do ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_created.tsv"
     md_11="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_android11-release.tsv"
     md_12="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_master.tsv"
-    cdd_11_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (9).tsv"
-    cdd_12_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 (Not yet updated - Nov 4th targeted).tsv"
+    cdd_11_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
+    cdd_12_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_12_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12_nov_2021_for_diff.tsv"
     # result_dict, not_found, found = rs.does_class_ref_file_exist(mapping_cdd)
     # print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
-    diff_tables_files(md_11, md_12)
+    # diff_tables_files(cdd_11_downloaded_tsv, cdd_12_downloaded_tsv)
+    diff_tables_files(cdd_12_to_do, annotation_12)

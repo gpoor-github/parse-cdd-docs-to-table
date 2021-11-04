@@ -239,7 +239,7 @@
 /home/gpoor/cts-12-source/cts/tests/mediapc/AndroidTest.xml:34:        <option name="test-file-name" value="CtsMediaPerformanceClassTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/AlarmManager/AndroidTest.xml:26:        <option name="test-file-name" value="CtsAlarmManagerTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/media/AndroidTest.xml:24:        <option name="config-filename" value="CtsMediaV2TestCases" />
-/home/gpoor/cts-12-source/cts/tests/media/AndroidTest.xml:29:        <option name="media-folder-name" value="CtsMediaV2TestCases-1.13" />
+/home/gpoor/cts-12-source/cts/tests/media/AndroidTest.xml:29:        <option name="media-folder-name" value="CtsMediaV2TestCases-1.14" />
 /home/gpoor/cts-12-source/cts/tests/media/AndroidTest.xml:30:        <option name="dynamic-config-module" value="CtsMediaV2TestCases" />
 /home/gpoor/cts-12-source/cts/tests/media/AndroidTest.xml:34:        <option name="test-file-name" value="CtsMediaV2TestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/perfetto/AndroidTest.xml:25:        <option name="push" value="CtsPerfettoTestCases->/data/local/tmp/CtsPerfettoTestCases" />
@@ -295,7 +295,7 @@
 /home/gpoor/cts-12-source/cts/tests/devicestate/AndroidTest.xml:28:        <option name="test-file-name" value="CtsDeviceStateManagerTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/devicestate/AndroidTest.xml:38:        <option name="directory-keys" value="/sdcard/CtsDeviceStateManagerTestCases" />
 /home/gpoor/cts-12-source/cts/tests/video/AndroidTest.xml:24:        <option name="config-filename" value="CtsVideoTestCases" />
-/home/gpoor/cts-12-source/cts/tests/video/AndroidTest.xml:29:        <option name="media-folder-name" value="CtsVideoTestCases-1.2" />
+/home/gpoor/cts-12-source/cts/tests/video/AndroidTest.xml:29:        <option name="media-folder-name" value="CtsVideoTestCases-1.3" />
 /home/gpoor/cts-12-source/cts/tests/video/AndroidTest.xml:30:        <option name="dynamic-config-module" value="CtsVideoTestCases" />
 /home/gpoor/cts-12-source/cts/tests/video/AndroidTest.xml:34:        <option name="test-file-name" value="CtsVideoTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/providerui/AndroidTest.xml:25:        <option name="test-file-name" value="CtsProviderUiTestCases.apk" />
@@ -313,7 +313,7 @@
 /home/gpoor/cts-12-source/cts/tests/accessibilityservice/testsdk29/AndroidTest.xml:28:        <option name="test-file-name" value="CtsAccessibilityServiceSdk29TestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/sensor/AndroidTest.xml:25:        <option name="test-file-name" value="CtsSensorTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/input/AndroidTest.xml:23:        <option name="test-file-name" value="CtsInputTestCases.apk" />
-/home/gpoor/cts-12-source/cts/tests/netlegacy22.api/AndroidTest.xml:25:        <option name="test-file-name" value="CtsNetTestCasesLegacyApi22.apk" />
+/home/gpoor/cts-12-source/cts/tests/netlegacy22.api/AndroidTest.xml:26:        <option name="test-file-name" value="CtsNetTestCasesLegacyApi22.apk" />
 /home/gpoor/cts-12-source/cts/tests/autofillservice/AndroidTest.xml:25:    <option name="test-file-name" value="CtsAutoFillServiceTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/autofillservice/AndroidTest.xml:64:    <option name="directory-keys" value="/sdcard/CtsAutoFillServiceTestCases" />
 /home/gpoor/cts-12-source/cts/tests/tests/libthermalndk/AndroidTest.xml:24:        <option name="test-file-name" value="CtsThermalTestCases.apk" />
@@ -351,6 +351,7 @@
 /home/gpoor/cts-12-source/cts/tests/tests/networksecurityconfig/networksecurityconfig-debug-basic-enabled/AndroidTest.xml:25:        <option name="test-file-name" value="CtsNetSecConfigBasicDebugEnabledTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/networksecurityconfig/networksecurityconfig-debug-basic-enabled/AndroidTest.xml:28:        <option name="package" value="android.security.net.config.cts.CtsNetSecConfigBasicDebugEnabledTestCases" />
 /home/gpoor/cts-12-source/cts/tests/tests/selinux/selinuxTargetSdk25/AndroidTest.xml:25:        <option name="test-file-name" value="CtsSelinuxTargetSdk25TestCases.apk" />
+/home/gpoor/cts-12-source/cts/tests/tests/selinux/selinuxTargetSdk30/AndroidTest.xml:25:        <option name="test-file-name" value="CtsSelinuxTargetSdk30TestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/selinux/selinuxTargetSdk29/AndroidTest.xml:25:        <option name="test-file-name" value="CtsSelinuxTargetSdk29TestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/selinux/selinuxEphemeral/AndroidTest.xml:25:        <option name="test-file-name" value="CtsSelinuxEphemeralTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/selinux/selinuxTargetSdk27/AndroidTest.xml:25:        <option name="test-file-name" value="CtsSelinuxTargetSdk27TestCases.apk" />
@@ -371,7 +372,7 @@
 /home/gpoor/cts-12-source/cts/tests/tests/uirendering/AndroidTest.xml:24:        <option name="test-file-name" value="CtsUiRenderingTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/libcorefileio/AndroidTest.xml:24:        <option name="test-file-name" value="CtsLibcoreFileIOTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/bionic/AndroidTest.xml:28:        <option name="push" value="CtsBionicTestCases->/data/local/tmp/CtsBionicTestCases" />
-/home/gpoor/cts-12-source/cts/tests/tests/bionic/AndroidTest.xml:34:        <option name="module-name" value="CtsBionicTestCases" />
+/home/gpoor/cts-12-source/cts/tests/tests/bionic/AndroidTest.xml:32:        <option name="module-name" value="CtsBionicTestCases" />
 /home/gpoor/cts-12-source/cts/tests/tests/sensorprivacy/AndroidTest.xml:26:        <option name="test-file-name" value="CtsSensorPrivacyTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/webkit/AndroidTest.xml:27:        <option name="test-file-name" value="CtsWebkitTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/telecom/AndroidTest.xml:26:        <option name="test-file-name" value="CtsTelecomTestCases.apk" />
@@ -414,6 +415,12 @@
 /home/gpoor/cts-12-source/cts/tests/tests/telephony/sdk28/AndroidTest.xml:35:        <option name="test-file-name" value="CtsTelephonySdk28TestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/telephony/current/AndroidTest.xml:34:        <option name="test-file-name" value="CtsTelephonyTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/telephony/current/permissions/AndroidTest.xml:28:        <option name="test-file-name" value="CtsTelephonyTestCasesPermissionReadPhoneState.apk" />
+/home/gpoor/cts-12-source/cts/tests/tests/mediadrm/AndroidTest.xml:24:        <option name="config-filename" value="CtsMediaDrmTestCases" />
+/home/gpoor/cts-12-source/cts/tests/tests/mediadrm/AndroidTest.xml:25:        <option name="dynamic-config-name" value="CtsMediaDrmTestCases" />
+/home/gpoor/cts-12-source/cts/tests/tests/mediadrm/AndroidTest.xml:30:        <option name="media-folder-name" value="CtsMediaDrmTestCases-1.4" />
+/home/gpoor/cts-12-source/cts/tests/tests/mediadrm/AndroidTest.xml:31:        <option name="dynamic-config-module" value="CtsMediaDrmTestCases" />
+/home/gpoor/cts-12-source/cts/tests/tests/mediadrm/AndroidTest.xml:35:        <option name="test-file-name" value="CtsMediaDrmTestCases.apk" />
+/home/gpoor/cts-12-source/cts/tests/tests/mediadrm/AndroidTest.xml:43:        <option name="config-filename" value="CtsMediaDrmTestCases" />
 /home/gpoor/cts-12-source/cts/tests/tests/car/AndroidTest.xml:28:        <option name="test-file-name" value="CtsCarTestCases.apk"/>
 /home/gpoor/cts-12-source/cts/tests/tests/security/AndroidTest.xml:26:        <option name="test-file-name" value="CtsSecurityTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/security/native/verified_boot/AndroidTest.xml:24:        <option name="push" value="CtsNativeVerifiedBootTestCases->/data/local/tmp/CtsNativeVerifiedBootTestCases" />
@@ -460,7 +467,7 @@
 /home/gpoor/cts-12-source/cts/tests/tests/contactsprovider/AndroidTest.xml:27:        <option name="test-file-name" value="CtsContactsProviderTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/simphonebookprovider/AndroidTest.xml:28:        <option name="test-file-name" value="CtsSimPhonebookProviderTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/content/AndroidTest.xml:36:        <option name="push" value="CtsContentTestCases.apk->/data/local/tmp/cts/content/CtsContentTestCases.apk" />
-/home/gpoor/cts-12-source/cts/tests/tests/content/AndroidTest.xml:106:        <option name="test-file-name" value="CtsContentTestCases.apk" />
+/home/gpoor/cts-12-source/cts/tests/tests/content/AndroidTest.xml:105:        <option name="test-file-name" value="CtsContentTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/content/CtsSyncAccountAccessOtherCertTests/AndroidTest.xml:27:        <option name="test-file-name" value="CtsSyncAccountAccessOtherCertTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/content/pm/SecureFrp/AndroidTest.xml:31:        <option name="test-file-name" value="CtsSecureFrpInstallTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/mediastress/AndroidTest.xml:30:        <option name="config-filename" value="CtsMediaStressTestCases" />
@@ -516,6 +523,7 @@
 /home/gpoor/cts-12-source/cts/tests/tests/rscpp/AndroidTest.xml:24:        <option name="test-file-name" value="CtsRsCppTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/binder_ndk/AndroidTest.xml:25:        <option name="test-file-name" value="CtsNdkBinderTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/match_flags/AndroidTest.xml:26:        <option name="test-file-name" value="CtsMatchFlagTestCases.apk" />
+/home/gpoor/cts-12-source/cts/tests/tests/cronet/AndroidTest.xml:24:        <option name="test-file-name" value="CtsCronetTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/appcomponentfactory/AndroidTest.xml:24:        <option name="test-file-name" value="CtsAppComponentFactoryTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/resolverservice/AndroidTest.xml:29:        <option name="test-file-name" value="CtsResolverServiceTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/opengl/AndroidTest.xml:24:        <option name="test-file-name" value="CtsOpenGLTestCases.apk" />
@@ -532,6 +540,7 @@
 /home/gpoor/cts-12-source/cts/tests/tests/telephony3/AndroidTest.xml:25:        <option name="test-file-name" value="CtsTelephony3TestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/text/AndroidTest.xml:28:        <option name="test-file-name" value="CtsTextTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/accounts/AndroidTest.xml:29:        <option name="test-file-name" value="CtsAccountManagerTestCases.apk" />
+/home/gpoor/cts-12-source/cts/tests/tests/art/AndroidTest.xml:25:        <option name="test-file-name" value="CtsArtTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/activityrecognition/AndroidTest.xml:32:        <option name="test-file-name" value="CtsActivityRecognitionTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/gamemanager/AndroidTest.xml:26:        <option name="test-file-name" value="CtsGameManagerTestCases.apk" />
 /home/gpoor/cts-12-source/cts/tests/tests/voiceRecognition/AndroidTest.xml:25:        <option name="test-file-name" value="CtsVoiceRecognitionTestCases.apk"/>
