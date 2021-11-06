@@ -723,14 +723,14 @@ if __name__ == '__main__':
     rd.max_matches = 200
     result_table = [[str]]
 
-    # input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/sub1_3_software.csv"
+    # input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/sub1_3_software.csv"
     # output_file_name1 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
     #
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/3_2.3.5_output.tsv"
     # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
-    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/3.2.3.5_input.tsv"
+    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/3.2.3.5_input.tsv"
     # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_output.tsv"
 
     ""
@@ -740,8 +740,8 @@ if __name__ == '__main__':
     # test_output_exists = Path(output_file_name)
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
-    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/4.tsv"
+    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/2021-10-11-gpoor-todo_built.tsv"
+    current_file = "/a1_working/4.tsv"
     temp_result= current_file+".tmp.tsv"
     final_result= current_file
 

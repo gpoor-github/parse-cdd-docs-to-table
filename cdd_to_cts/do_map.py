@@ -29,9 +29,9 @@ def do_map_12():
     cdd_11_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
     cdd_12_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_12_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12_nov_2021_for_diff.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_downloaded_tsv,cdd_11_downloaded_tsv )
-    cdd_12_todo_output_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_output.tsv"
+    cdd_12_todo_output_file = "/a1_working/cdd_12_todo_output.tsv"
     table_ops.make_new_table_from_keys(dif_1_2, cdd_12_created, cdd_12_todo_output_file)
-    rx_output_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_12_todo_created.tsv"
+    rx_output_file = "/a1_working/cdd_12_todo_created.tsv"
     # noinspection DuplicatedCode
     rd = RxData()
     rd.main_do_create_table(input_table_file=cdd_12_todo_output_file, output_file=rx_output_file) \
@@ -54,9 +54,9 @@ def do_map_11():
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_created,
                                                                                                    cdd_11_created)
-    cdd_11_todo_output_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_11_todo_output.tsv"
+    cdd_11_todo_output_file = "/a1_working/cdd_11_todo_output.tsv"
     table_ops.make_new_table_from_keys(dif_2_1, cdd_11_created, cdd_11_todo_output_file)
-    rx_output_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_working/cdd_11_to_12_dif.tsv"
+    rx_output_file = "/a1_working/cdd_11_to_12_dif.tsv"
     # noinspection DuplicatedCode
     rd = RxData()
     rd.main_do_create_table(input_table_file=cdd_11_todo_output_file, output_file=rx_output_file) \

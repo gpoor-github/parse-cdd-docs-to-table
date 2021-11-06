@@ -581,7 +581,7 @@ if __name__ == '__main__':
     new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
 
-    update_manual_fields_from_files("/a_working/sub1_3_software.tsv",
+    update_manual_fields_from_files("/a1_working/sub1_3_software.tsv",
                                     "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.tsv")
     # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
     #     _file1_sachiyo_recent,
