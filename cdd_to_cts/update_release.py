@@ -1,7 +1,5 @@
 import static_data
 import table_ops
-from cdd_to_cts import helpers
-
 
 def update_table_column_subset(input_table_to_find_source_columns: str,
                                header_columns_to_copy: [],
@@ -80,7 +78,8 @@ def make_new_table_with_row_keys_from_table(original_sheet_file_name: str = stat
 
 
 def check_update(original_sheet_file_name, table_name_to_write):
-    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = table_ops.diff_tables_files(
+    from check_sheet import diff_tables_files
+    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(
         original_sheet_file_name, table_name_to_write)
     if len(dif_1_2) != 0 or len(dif_2_1) != 0:
         print(
@@ -101,13 +100,17 @@ def make_new_table_with_row_keys_from_table_example():
                                             new_table_to_made)
 
 def update_release_table_with_changes_example():
-    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_12_CTS_downloaded_full_working.tsv"
-    source_for_data = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/7.1.4.2.tsv"
-    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_12_CTS_downloaded_full_working_updated.tsv"
+    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_todo_output.tsv"
+    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_12_nov-9-updated_for-merge.tsv"
+    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/diff_from_table.tsv"
 
     update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
                                       [static_data.TEST_AVAILABILITY,static_data.CLASS_DEF,static_data.METHOD,static_data.MODULE])
 
+def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2, table_for_source, output_file_for_results):
+    from check_sheet import diff_tables_files
+    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(table_for_diff_1,table_for_diff_2 )
+    table_ops.make_new_table_from_keys(dif_2_1, table_for_source, output_file_for_results)
 
 if __name__ == '__main__':
     update_release_table_with_changes_example()

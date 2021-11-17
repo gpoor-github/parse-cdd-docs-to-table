@@ -4,7 +4,6 @@ import sys
 
 from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
-from check_sheet import diff_tables_files
 
 def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str,int], header_column_source:[str], columns_to_use: [str])\
         -> ([[str]], dict[str,int]):
@@ -158,13 +157,52 @@ def remove_none_requirements(table_target: [[str]], key_to_index_target: dict) -
     return new_table, new_key_indexes
 
 
-def merge_tables(file1, file2):
+def merge_tables(file1, file2, output_file):
     table1, key_fields1, header1, duplicate_rows1 = read_table_sect_and_req_key(file1)
     table2, key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(file2)
-    updated_table, missingkeys1, missingkeys1 = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
+    table_target, missing_keys_target, missing_keys_source = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
                                                              static_data.merge_header)
-    write_table("output/update_test.cvs", updated_table, static_data.current_cdd_11_header)
-    return table1, key_fields1, header1, table2, key_fields2, header2
+    write_table(output_file, table_target, header1)
+    return table_target, header1
+
+
+def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str,int], header_target: [str],
+                       table_new_row_source: list[[str]], key_to_new_row_source: dict[str,int], header_source: [str] ) -> ([[str]], dict[str,int]):
+
+    test_target_index_str = static_data.table_delimiter.join(header_target)
+    test_source_index_str = static_data.table_delimiter.join(header_source)
+    for key in key_to_new_row_source:
+        try:
+            target_row_index = key_to_table_target.get(key)
+            if target_row_index is None:
+                source_row_index = key_to_new_row_source.get(key)
+                source_row = table_new_row_source[source_row_index]
+                new_target_row = list()
+                for column_target in header_target:
+                    new_target_row.append("")
+                for column in header_target:
+                    if test_target_index_str.find(column) > -1 and test_source_index_str.find(column) > -1:
+                        column_target_idx = header_target.index(column)
+                        column_source_idx = header_source.index(column)
+                        # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
+                        #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
+                        new_target_row[column_target_idx] = source_row[column_source_idx]
+
+                key_to_table_target[key] = len(table_target)
+                table_target.append(source_row)
+
+        except Exception as err:
+            helpers.raise_error(
+                f"Note: key {key} errors {str(err)} on removing columns... should not happen ")
+
+    return table_target, key_to_table_target
+
+def merge_tables_rows(target_table, source_table, output_file):
+    table_target, key_fields_target, header_target, duplicate_rows_target = read_table_sect_and_req_key(target_table)
+    table_source, key_fields_source, header_source, duplicate_rows_source = read_table_sect_and_req_key(source_table)
+    table_target, key_to_table_target = add_table_new_rows(table_target, key_fields_target, header_target, table_source, key_fields_source, header_source)
+    write_table(output_file, table_target, header_target)
+    return table_target, header_target
 
 
 def update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms: str,
@@ -512,6 +550,8 @@ def read_table_to_dictionary_key_index(file_name: str, key_index: int, logging: 
 
 def create_table_subset_for_release(_file1_for_subset, _file2_for_subset, output_file, columns_to_copy_header) -> (
         [[str]], [str]):
+    from check_sheet import diff_tables_files
+
     _dif_1_2, _dif_2_1, intersection, dif_1_2_dict, dif_2_1_dict = diff_tables_files(_file1_for_subset,
                                                                                      _file2_for_subset)
     table2_for_subset, key_fields2_for_subset, header2_for_subset, duplicate_rows2 = read_table_sect_and_req_key(
@@ -545,18 +585,11 @@ def make_new_table_from_keys(keys_to_use: iter, file_name_of_table_input: str, f
 
 
 def merge_table_example():
-    _file1 = "input/new_recs_remaining_todo.tsv"
-    _file2 = "data_files/created_output.tsv"
-    _table1, _key_fields1, _header1, _table2, _key_fields2, _header2 = merge_tables(_file1, _file2)
-    _key_set1 = set(_key_fields1.keys())
-    _key_set2 = set(_key_fields2.keys())
-    _dif_2_1 = _key_set2.difference(_key_set1)
-    _dif_1_2 = _key_set1.difference(_key_set2)
-    _inter_1_2 = _key_set1.intersection(_key_set2)
+    _file_table_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
+    _file_table_to_use_as_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_master_diff_md_11.tsv"
+    _file_output="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 -update.tsv"
+    _table_merged, header_from_table_to_update = merge_tables_rows(_file_table_to_update, _file_table_to_use_as_input,_file_output)
 
-    print(f"\n\nIntersection={len(_inter_1_2)} 1=[{_file1}] ^ 2=[{_file2}] _intersection = {_inter_1_2}")
-    print(f"\nDifference 1st-2nd={len(_dif_1_2)} [{_file1}] - 2=[{_file2}]  diff={_dif_1_2}")
-    print(f"\nDifference 2nd-1st={len(_dif_2_1)} [{_file2}] - 1=[{_file1}] diff= {_dif_2_1}")
 
 
 if __name__ == '__main__':
@@ -581,8 +614,7 @@ if __name__ == '__main__':
     new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
 
-    update_manual_fields_from_files("/a1_working/sub1_3_software.tsv",
-                                    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.tsv")
+    merge_table_example()
     # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
     #     _file1_sachiyo_recent,
     #    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.tsv")

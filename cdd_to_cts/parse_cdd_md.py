@@ -56,7 +56,7 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
                                                                   section_count, total_requirement_count, logging)
                         # Only build a key if you can't find any...
                         if len(req_id_splits) < 2:
-                            req_id_splits = re.split("\[", str(section))
+                            req_id_splits = re.split("(\*\s*?\[)", str(section))
 
                             total_requirement_count = process_section(helpers.build_composite_key, req_id_re_str, cdd_section_id,
                                                                       key_to_full_requirement_text_local, req_id_splits,

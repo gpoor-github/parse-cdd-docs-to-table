@@ -250,7 +250,7 @@ def find_search_terms(search_info) -> dict:
     # ToDo Restore full search?
     search_term_set.update(manual_search_terms)
     # Section requirements search on or off
-    search_term_set.update(section_req)
+    # search_term_set.update(section_req)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
     search_info[static_data.SEARCH_TERMS] = search_term_set
@@ -718,6 +718,7 @@ def translate_flat(result: dict) -> dict:
 
 
 if __name__ == '__main__':
+    search_for_req =False
     start = time.perf_counter()
     rd = RxData()
     rd.max_matches = 200
@@ -741,7 +742,7 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/a1_working/4.tsv"
+    current_file = "/a1_working/3.2.3.5_c-11-1.tsv"
     temp_result= current_file+".tmp.tsv"
     final_result= current_file
 

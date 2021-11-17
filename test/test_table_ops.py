@@ -168,3 +168,6 @@ class TestUpdate(TestCase):
         input_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/o_cdd-cts-tracker - 3_2.3.5_out.tsv"
         table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(input_table)
         print(str(table))
+
+    def test_merge_table(self):
+        table_ops.merge_table_example()
