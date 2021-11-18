@@ -4,12 +4,12 @@ import time
 
 from cdd_to_cts import class_graph, persist, static_data
 from cdd_to_cts import helpers
-from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, \
-    parse_cdd_html_to_requirements, make_bags_of_word, create_full_table_from_cdd
+from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, make_bags_of_word, create_full_table_from_cdd
 from cdd_to_cts.helpers import make_files_to_string, build_test_cases_module_dictionary
 from cdd_to_cts.static_data import CTS_SOURCE_PARENT, MANUAL_SEARCH_TERMS
 from cdd_to_cts.static_data import CTS_SOURCE_ROOT, DATA_SOURCES_CSV_FROM_HTML_1st
 from cdd_to_cts.table_ops import read_table_sect_and_req_key
+from parse_cdd_md import parse_cdd_md
 
 
 def diff_set_of_search_values_against_sets_of_words_from_files(count: int, file_and_path: str, word_set: set,
@@ -51,22 +51,20 @@ def get_random_method_name(a_found_methods_string):
 
 class SourceCrawlerReducer(object):
     def __init__(self,
-                 cdd_requirements_html_source: str = static_data.CDD_REQUIREMENTS_FROM_HTML_FILE.replace('../', ''),
-                 global_table_input_file_build_from_html=DATA_SOURCES_CSV_FROM_HTML_1st,
+                 md_file_root: str = static_data.CDD_MD_ROOT,
+                 global_table_input_file_built_from_requirment_md_files=DATA_SOURCES_CSV_FROM_HTML_1st,
                  cts_root_directory: str = CTS_SOURCE_ROOT,
                  do_search=False):
 
         self.global_to_data_sources_do_search = do_search
         self.test_files_to_aggregated_dependency_string = dict()
 
-        self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.get_cached_crawler_data(
-            cts_root_directory)
-        self.key_to_full_requirement_text, self.key_to_java_objects, self.key_to_urls, self.cdd_string, self.section_to_data = parse_cdd_html_to_requirements(
-            cdd_requirements_html_source)
-        create_full_table_from_cdd(self.key_to_full_requirement_text,self.key_to_full_requirement_text,self.section_to_data,global_table_input_file_build_from_html)
+        self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.get_cached_crawler_data(cts_root_directory)
+        self.key_to_full_requirement_text, self.key_to_java_objects, self.key_to_urls, self.cdd_string, self.section_to_data = parse_cdd_md(md_file_root)
+        create_full_table_from_cdd(self.key_to_full_requirement_text, self.key_to_full_requirement_text, self.section_to_data, global_table_input_file_built_from_requirment_md_files)
 
         self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table_sect_and_req_key(
-            global_table_input_file_build_from_html)
+            global_table_input_file_built_from_requirment_md_files)
 
         self.__testfile_dependencies_to_words = get_file_dependencies()
 
@@ -79,28 +77,28 @@ class SourceCrawlerReducer(object):
     files_to_method_calls_storage = 'storage/files_to_method_calls.pickle'
     testfile_dependencies_to_words_storage = 'storage/testfile_dependencies_to_words_storage.pickle'
     # The following is a back up. Not tested, getting search out of parsing.
-    def do_search(self,keys_to_sections: dict, table: [[str]], table_row_index: int,
-                                 section_to_data: dict, header: [] = static_data.cdd_to_cts_app_header):
-
-        key_str = "dummy"
-        a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = self.handle_java_files_data(
-            key_str)
-
-        table[table_row_index][header.index('module')] = test_case_name
-        if a_single_test_file_name:
-            table[table_row_index][header.index('class_def')] = class_name
-            table[table_row_index][header.index(
-                'file_name')] = static_data.CTS_SOURCE_PARENT + a_single_test_file_name
-        if a_method:
-            table[table_row_index][header.index('method')] = a_method
-            table[table_row_index][header.index('Test Availability')] = ""
-
-        if matched:
-            table[table_row_index][header.index(static_data.MATCHED_FILES)] = a_single_test_file_name
-            table[table_row_index][header.index(static_data.MATCHED_TERMS)] = matched
-
-        if a_found_methods_string:
-            table[table_row_index][header.index('methods_string')] = a_found_methods_string
+    # def do_search(self,keys_to_sections: dict, table: [[str]], table_row_index: int,
+    #                              section_to_data: dict, header: [] = static_data.cdd_to_cts_app_header):
+    #
+    #     key_str = "dummy"
+    #     a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched = self.handle_java_files_data(
+    #         key_str)
+    #
+    #     table[table_row_index][header.index('module')] = test_case_name
+    #     if a_single_test_file_name:
+    #         table[table_row_index][header.index('class_def')] = class_name
+    #         table[table_row_index][header.index(
+    #             'file_name')] = static_data.CTS_SOURCE_PARENT + a_single_test_file_name
+    #     if a_method:
+    #         table[table_row_index][header.index('method')] = a_method
+    #         table[table_row_index][header.index('Test Availability')] = ""
+    #
+    #     if matched:
+    #         table[table_row_index][header.index(static_data.MATCHED_FILES)] = a_single_test_file_name
+    #         table[table_row_index][header.index(static_data.MATCHED_TERMS)] = matched
+    #
+    #     if a_found_methods_string:
+    #         table[table_row_index][header.index('methods_string')] = a_found_methods_string
     def __make_bags_of_testfile_dependency_word(self, files_to_words_inner: dict):
         # traverse root directory, and list directories as dirs and cts_files as cts_files
 
@@ -339,8 +337,8 @@ if __name__ == '__main__':
     cdd_12_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"  # So no filter
 
     scr = SourceCrawlerReducer(
-        cdd_requirements_html_source=cdd_12_html_file,
-        global_table_input_file_build_from_html=cdd_12_table_generated_from_html_all,
+        md_file_root=static_data.CDD_MD_ROOT,
+        global_table_input_file_built_from_requirment_md_files=cdd_12_table_generated_from_html_all,
         cts_root_directory=static_data.CTS_SOURCE_ROOT,
         do_search=False)
     create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text,

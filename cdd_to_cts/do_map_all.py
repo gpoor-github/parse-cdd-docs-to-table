@@ -21,8 +21,8 @@ if __name__ == '__main__':
 
 
     scr = data_sources.SourceCrawlerReducer(
-            cdd_requirements_html_source="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html",
-            global_table_input_file_build_from_html=downloaded_filter_table,
+            md_file_root="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html",
+            global_table_input_file_built_from_requirment_md_files=downloaded_filter_table,
             cts_root_directory=static_data.CTS_SOURCE_ROOT,
             do_search=False)
     create_full_table_from_cdd(scr.key_to_full_requirement_text,scr.key_to_full_requirement_text,scr.section_to_data,

@@ -156,7 +156,7 @@ def observable_to_dict(obs: rx.Observable) -> dict:
     return a_dic
 
 
-def process_section(key_to_section: str):
+def process_section_str_data(key_to_section: str):
     try:
         key_to_section_split = key_to_section.split(':', 1)
         section_id = key_to_section[0]
@@ -169,7 +169,7 @@ def process_section(key_to_section: str):
             if req_id_splits and len(req_id_splits) > 1:
                 return rx.from_list(list_map(section_id, req_id_splits))  # build_composite_key_callable).pipe()
     except Exception as exception_process:
-        helpers.raise_error(f" process_section {exception_process}", exception_process)
+        helpers.raise_error(f" process_section_md {exception_process}", exception_process)
     return rx.empty()
 
 
@@ -563,7 +563,7 @@ class RxData:
     #         self.__replay_cdd_requirements.on_completed()
     #         # if all ready read, just return it.
     #     return self.__replay_cdd_requirements.pipe(
-    #         ops.flat_map(lambda section_and_key: process_section(section_and_key)))
+    #         ops.flat_map(lambda section_and_key: process_section_md(section_and_key)))
 
     def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT,
                                  scheduler: rx.typing.Scheduler = None):
@@ -742,7 +742,7 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/a1_working/3.2.3.5_c-11-1.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_todo_created.tsv"
     temp_result= current_file+".tmp.tsv"
     final_result= current_file
 

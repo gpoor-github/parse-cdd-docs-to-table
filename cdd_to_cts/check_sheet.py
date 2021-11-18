@@ -1,6 +1,5 @@
 import csv
 import os
-import re
 
 import rx
 
@@ -119,30 +118,30 @@ def observable_rows(table_file_name) -> rx.Observable:
     except IOError as e:
         helpers.raise_error(f"Failed to open file {table_file_name} exception -= {type(e)} exiting...")
         return rx.just(e)
-
-def check_row_for_requirement_match(key:str, row:[], header:[str]):
-    requirement_text = row[header.index[static_data.REQUIREMENT]]
-    requirement_start = requirement_text[0:50]
-
-    full_key = row[header.index[static_data.full_key_string_for_re]]
-    results_section = re.findall(static_data.section_id_re_str, requirement_start)
-    results_full = re.findall(static_data.full_key_string_for_re,requirement_start)
-    results_req = re.findall(static_data.req_id_re_str,requirement_start)
-
-
-    if len(results_full) > 0:
-       if requirement_start.find(full_key) == -1:
-           helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
-    elif len(results_section) > 0:
-        if requirement_start.find(full_key) == -1:
-            helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
-    elif len(results_req) > 0:
-        if requirement_start.find(full_key) == -1:
-            helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
-
-def do_ids_match_requirements( ccd_csv_file_name):
-
-    observable_rows(ccd_csv_file_name).pipe(rx.of()).subscribe(on_next= lambda key_row_tuple: check_row_for_requirement_match() )
+#
+# def check_row_for_requirement_match(key:str, row:[], header:[str]):
+#     requirement_text = row[header.index[static_data.REQUIREMENT]]
+#     requirement_start = requirement_text[0:50]
+#
+#     full_key = row[header.index[static_data.full_key_string_for_re]]
+#     results_section = re.findall(static_data.section_id_re_str, requirement_start)
+#     results_full = re.findall(static_data.full_key_string_for_re,requirement_start)
+#     results_req = re.findall(static_data.req_id_re_str,requirement_start)
+#
+#
+#     if len(results_full) > 0:
+#        if requirement_start.find(full_key) == -1:
+#            helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
+#     elif len(results_section) > 0:
+#         if requirement_start.find(full_key) == -1:
+#             helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
+#     elif len(results_req) > 0:
+#         if requirement_start.find(full_key) == -1:
+#             helpers.raise_error(f"Mismatch key and requirements: {full_key} {requirement_text} ")
+#
+# def do_ids_match_requirements( ccd_csv_file_name):
+#
+#     observable_rows(ccd_csv_file_name).pipe(rx.of()).subscribe(on_next= lambda key_row_tuple: check_row_for_requirement_match() )
 
 
 def handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2):
@@ -271,7 +270,7 @@ if __name__ == '__main__':
     cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/cdd_11_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
     md_11="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_android11-release.tsv"
     md_11B="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd-11.tsv"
-    md_12="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_12_master.tsv"
+    md_12="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd_12_master.tsv"
     md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper.tsv"
     cdd_11_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
     cdd_12_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD-12 Nov-9-downloaded.tsv"

@@ -26,10 +26,10 @@ def do_map_12():
                                section_to_section_data,
                                cdd_12_created, static_data.cdd_to_cts_app_header)
 
-    cdd_11_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
-    cdd_12_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_12_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12_nov_2021_for_diff.tsv"
-    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_downloaded_tsv,cdd_11_downloaded_tsv )
-    cdd_12_todo_output_file = "/a1_working/cdd_12_todo_output.tsv"
+    cdd_11_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd-11.tsv"
+    cdd_12_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd_12_master.tsv"
+    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_tsv,cdd_11_tsv )
+    cdd_12_todo_output_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_master_diff_md_11_output.tsv"
     table_ops.make_new_table_from_keys(dif_1_2, cdd_12_created, cdd_12_todo_output_file)
     rx_output_file = "/a1_working/cdd_12_todo_created.tsv"
     # noinspection DuplicatedCode
@@ -42,16 +42,15 @@ def do_map_12():
 
 
 def do_map_11():
-    cdd_11_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_download.html"
     cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_all_1678.tsv"
     scr = data_sources.SourceCrawlerReducer(
-        cdd_requirements_html_source=cdd_11_html_file,
-        global_table_input_file_build_from_html=cdd_11_created,
+        md_file_root=static_data.CDD_MD_ROOT,
+        global_table_input_file_built_from_requirment_md_files=cdd_11_created,
         cts_root_directory=static_data.CTS_SOURCE_ROOT,
         do_search=False)
     create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text, scr.section_to_data,
                                    cdd_11_created)
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"
+    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_12_diff_11_full_created.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_created,
                                                                                                    cdd_11_created)
     cdd_11_todo_output_file = "/a1_working/cdd_11_todo_output.tsv"
