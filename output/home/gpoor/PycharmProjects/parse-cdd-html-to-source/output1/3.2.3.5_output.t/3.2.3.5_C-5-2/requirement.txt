@@ -1,0 +1,16 @@
+C-5-2]
+
+MUST
+honor
+the
+‘n.REQUEST_DISCOVERABLE’
+intent
+and
+show
+a
+system
+activity
+that
+requests
+discoverable
+mode

@@ -1,0 +1,301 @@
+"Section"	"section_id"	"req_id"	"full_key"	"key_as_number"	"requirement"	"Test Availability"	"search_roots"	"search_terms"	"manual_search_terms"	"not_search_terms"	"not_files"	"max_matches"	"class_defs"	"methods"	"modules"	"protected"	"Area"	"Shortened"	"Test Level"	"class_def"	"method"	"module"	"class_defs"	"methods"	"modules"	"file_name"	"matched_files"	"methods_string"	"urls"	"method_text"	"matched_terms"	"qualified_method"
+"4_application-packaging"	"4"	"C-0-2"	"4/C-0-2"	""	"""C-0-2] MUST support verifying “.apk” files using the [APK Signature Scheme v3](https://source.android.com/security/apksigning/v3.html) , [APK Signature Scheme v2](https://source.android.com/security/apksigning/v2.html) and [JAR signing]( https://source.android.com/security/apksigning/v2.html#v1-verification). """	""	""	"JAR v2.html v3.html 509 v3"	""	""	""	""	""	""	""	""	""	""	""	"android.appsecurity.cts.PkgInstallSignatureVerificationTest"	"testInstallV4UpdateAfterRotation"	"CtsAppSecurityHostTestCases"	""	""	""	"/home/gpoor/cts-12-source/cts/hostsidetests/appsecurity/src/android/appsecurity/cts/PkgInstallSignatureVerificationTest.java"	""	"public void testInstallV4UpdateAfterRotation() throws Exception {
+        // This test performs an end to end verification of the update of an app with a rotated
+        // key. The app under test exports a bound service that performs its own PackageManager key
+        // rotation API verification, and the instrumentation test binds to the service and invokes
+        // the verifySignatures method to verify that the key rotation APIs return the expected
+        // results. The instrumentation test app is signed with the same key and lineage as the
+        // app under test to also provide a second app that can be used for the checkSignatures
+        // verification.
+
+        // Install the initial versions of the apps; the test method verifies the app under test is
+        // signed with the original signing key.
+        assertInstallV4FromBuildSucceeds(""CtsSignatureQueryService.apk"");
+        assertInstallV4FromBuildSucceeds(""CtsSignatureQueryServiceTest.apk"");
+        Utils.runDeviceTests(getDevice(), SERVICE_TEST_PKG, SERVICE_TEST_CLASS,
+                ""verifySignatures_noRotation_succeeds"");
+
+        // Install the second version of the app signed with the rotated key. This test verifies the
+        // app still functions as expected after the update with the rotated key. The
+        // instrumentation test app is not updated here to allow verification of the pre-key
+        // rotation behavior for the checkSignatures APIs. These APIs should behave similar to the
+        // GET_SIGNATURES flag in that if one or both apps have a signing lineage if the oldest
+        // signers in the lineage match then the methods should return that the signatures match
+        // even if one is signed with a newer key in the lineage.
+        assertInstallV4FromBuildSucceeds(""CtsSignatureQueryService_v2.apk"");
+        Utils.runDeviceTests(getDevice(), SERVICE_TEST_PKG, SERVICE_TEST_CLASS,
+                ""verifySignatures_withRotation_succeeds"");
+
+        // Installs the third version of the app under test and the instrumentation test, both
+        // signed with the same rotated key and lineage. This test is intended to verify that the
+        // app can still be updated and function as expected after an update with a rotated key.
+        assertInstallV4FromBuildSucceeds(""CtsSignatureQueryService_v3.apk"");
+        assertInstallV4FromBuildSucceeds(""CtsSignatureQueryServiceTest_v2.apk"");
+        Utils.runDeviceTests(getDevice(), SERVICE_TEST_PKG, SERVICE_TEST_CLASS,
+                ""verifySignatures_withRotation_succeeds"");
+    }
+
+    private boolean hasIncrementalFeature() throws Exception {
+        return ""true\n"".equals(getDevice().executeShellCommand(
+                ""pm has-feature android.software.incremental_delivery""));
+    }
+
+    private void assertInstallSucceeds(String apkFilenameInResources) throws Exception {
+        String installResult = installPackageFromResource(apkFilenameInResources);
+        if (installResult != null) {
+            fail(""Failed to install "" + apkFilenameInResources + "": "" + installResult);
+        }
+    }
+
+    private void assertInstallEphemeralSucceeds(String apkFilenameInResources) throws Exception {
+        String installResult = installEphemeralPackageFromResource(apkFilenameInResources);
+        if (installResult != null) {
+            fail(""Failed to install "" + apkFilenameInResources + "": "" + installResult);
+        }
+    }
+
+    private void assertInstallSucceedsForEach(
+            String apkFilenamePatternInResources, String[] args) throws Exception {
+        for (String arg : args) {
+            String apkFilenameInResources =
+                    String.format(Locale.US, apkFilenamePatternInResources, arg);
+            String installResult = installPackageFromResource(apkFilenameInResources);
+            if (installResult != null) {
+                fail(""Failed to install "" + apkFilenameInResources + "": "" + installResult);
+            }
+            try {
+                uninstallPackage();
+            } catch (Exception e) {
+                throw new RuntimeException(
+                        ""Failed to uninstall after installing "" + apkFilenameInResources, e);
+            }
+        }
+    }
+
+    private void assertInstallV4Succeeds(String apkFilenameInResources) throws Exception {
+        String installResult = installV4PackageFromResource(apkFilenameInResources);
+        if (!installResult.equals(""Success\n"")) {
+            fail(""Failed to install "" + apkFilenameInResources + "": "" + installResult);
+        }
+    }
+
+    private void assertInstallV4FromBuildSucceeds(String apkName) throws Exception {
+        String installResult = installV4PackageFromBuild(apkName);
+        if (!installResult.equals(""Success\n"")) {
+            fail(""Failed to install "" + apkName + "": "" + installResult);
+        }
+    }
+
+    private void assertInstallV4SucceedsAndUninstall(String apkFilenameInResources)
+            throws Exception {
+        assertInstallV4Succeeds(apkFilenameInResources);
+        try {
+            uninstallPackage();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    ""Failed to uninstall after installing "" + apkFilenameInResources, e);
+        }
+    }
+
+    private void assertInstallV4FailsWithError(String apkFilenameInResources, String errorSubstring)
+            throws Exception {
+        String installResult = installV4PackageFromResource(apkFilenameInResources);
+        if (installResult.equals(""Success\n"")) {
+            fail(""Install of "" + apkFilenameInResources + "" succeeded but was expected to fail""
+                    + "" with \"""" + errorSubstring + ""\"""");
+        }
+        assertContains(
+                ""Install failure message of "" + apkFilenameInResources,
+                errorSubstring,
+                installResult);
+    }
+
+    private void assertInstallFailsWithError(
+            String apkFilenameInResources, String errorSubstring) throws Exception {
+        String installResult = installPackageFromResource(apkFilenameInResources);
+        if (installResult == null) {
+            fail(""Install of "" + apkFilenameInResources + "" succeeded but was expected to fail""
+                    + "" with \"""" + errorSubstring + ""\"""");
+        }
+        assertContains(
+                ""Install failure message of "" + apkFilenameInResources,
+                errorSubstring,
+                installResult);
+    }
+
+    private void assertInstallEphemeralFailsWithError(
+            String apkFilenameInResources, String errorSubstring) throws Exception {
+        String installResult = installEphemeralPackageFromResource(apkFilenameInResources);
+        if (installResult == null) {
+            fail(""Install of "" + apkFilenameInResources + "" succeeded but was expected to fail""
+                    + "" with \"""" + errorSubstring + ""\"""");
+        }
+        assertContains(
+                ""Install failure message of "" + apkFilenameInResources,
+                errorSubstring,
+                installResult);
+    }
+
+    private void assertInstallFails(String apkFilenameInResources) throws Exception {
+        String installResult = installPackageFromResource(apkFilenameInResources);
+        if (installResult == null) {
+            fail(""Install of "" + apkFilenameInResources + "" succeeded but was expected to fail"");
+        }
+    }
+
+    private static void assertContains(String message, String expectedSubstring, String actual) {
+        String errorPrefix = ((message != null) && (message.length() > 0)) ? (message + "": "") : """";
+        if (actual == null) {
+            fail(errorPrefix + ""Expected to contain \"""" + expectedSubstring + ""\"", but was null"");
+        }
+        if (!actual.contains(expectedSubstring)) {
+            fail(errorPrefix + ""Expected to contain \"""" + expectedSubstring + ""\"", but was \""""
+                    + actual + ""\"""");
+        }
+    }
+
+    private void installDeviceTestPkg() throws Exception {
+        assertInstallFromBuildSucceeds(DEVICE_TESTS_APK);
+    }
+
+    private void assertInstallFromBuildSucceeds(String apkName) throws Exception {
+        String result = installApkFromBuild(apkName);
+        assertNull(""failed to install "" + apkName + "", Reason: "" + result, result);
+    }
+
+    private void assertInstallFromBuildFails(String apkName) throws Exception {
+        String result = installApkFromBuild(apkName);
+        assertNotNull(""Successfully installed "" + apkName + "" when failure was expected"", result);
+    }
+
+    private String installApkFromBuild(String apkName) throws Exception {
+        CompatibilityBuildHelper buildHelper = new CompatibilityBuildHelper(mCtsBuild);
+        File apk = buildHelper.getTestFile(apkName);
+        return getDevice().installPackage(apk, true, INSTALL_ARG_FORCE_QUERYABLE);
+    }
+
+    private String installPackageFromResource(String apkFilenameInResources, boolean ephemeral)
+            throws IOException, DeviceNotAvailableException {
+        // ITestDevice.installPackage API requires the APK to be install to be a File. We thus
+        // copy the requested resource into a temporary file, attempt to install it, and delete the
+        // file during cleanup.
+        File apkFile = null;
+        try {
+            apkFile = getFileFromResource(apkFilenameInResources);
+            if (ephemeral) {
+                return getDevice().installPackage(apkFile, true, ""--ephemeral"",
+                        INSTALL_ARG_FORCE_QUERYABLE);
+            } else {
+                return getDevice().installPackage(apkFile, true, INSTALL_ARG_FORCE_QUERYABLE);
+            }
+        } finally {
+            cleanUpFile(apkFile);
+        }
+    }
+
+    private String installV4PackageFromResource(String apkFilenameInResources)
+            throws IOException, DeviceNotAvailableException {
+        File apkFile = null;
+        File v4SignatureFile = null;
+        try {
+            apkFile = getFileFromResource(apkFilenameInResources);
+            v4SignatureFile = getFileFromResource(apkFilenameInResources + "".idsig"");
+            String remoteApkFilePath = pushFileToRemote(apkFile);
+            pushFileToRemote(v4SignatureFile);
+            return installV4Package(remoteApkFilePath);
+        } finally {
+            cleanUpFile(apkFile);
+            cleanUpFile(v4SignatureFile);
+        }
+    }
+
+    private String installV4PackageFromBuild(String apkName)
+            throws IOException, DeviceNotAvailableException {
+        CompatibilityBuildHelper buildHelper = new CompatibilityBuildHelper(mCtsBuild);
+        File apkFile = buildHelper.getTestFile(apkName);
+        File v4SignatureFile = buildHelper.getTestFile(apkName + "".idsig"");
+        String remoteApkFilePath = pushFileToRemote(apkFile);
+        pushFileToRemote(v4SignatureFile);
+        return installV4Package(remoteApkFilePath);
+    }
+
+    private String pushFileToRemote(File localFile) throws DeviceNotAvailableException {
+        String remotePath = ""/data/local/tmp/pkginstalltest-"" + localFile.getName();
+        getDevice().pushFile(localFile, remotePath);
+        return remotePath;
+    }
+
+    private String installV4Package(String remoteApkPath)
+            throws DeviceNotAvailableException {
+        String command = ""pm install-incremental --force-queryable -t -g "" + remoteApkPath;
+        return getDevice().executeShellCommand(command);
+    }
+
+    private File getFileFromResource(String filenameInResources)
+            throws IOException, IllegalArgumentException {
+        String fullResourceName = TEST_APK_RESOURCE_PREFIX + filenameInResources;
+        File tempDir = FileUtil.createTempDir(""pkginstalltest"");
+        File file = new File(tempDir, filenameInResources);
+        InputStream in = getClass().getResourceAsStream(fullResourceName);
+        if (in == null) {
+            throw new IllegalArgumentException(""Resource not found: "" + fullResourceName);
+        }
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+        byte[] buf = new byte[65536];
+        int chunkSize;
+        while ((chunkSize = in.read(buf)) != -1) {
+            out.write(buf, 0, chunkSize);
+        }
+        out.close();
+        return file;
+    }
+
+    private void cleanUpFile(File file) {
+        if (file != null && file.exists()) {
+            file.delete();
+        }
+    }
+
+    private String installPackageFromResource(String apkFilenameInResources)
+            throws IOException, DeviceNotAvailableException {
+        return installPackageFromResource(apkFilenameInResources, false);
+    }
+
+    private String installEphemeralPackageFromResource(String apkFilenameInResources)
+            throws IOException, DeviceNotAvailableException {
+        return installPackageFromResource(apkFilenameInResources, true);
+    }
+
+    private String uninstallPackage() throws DeviceNotAvailableException {
+        return getDevice().uninstallPackage(TEST_PKG);
+    }
+
+    private String uninstallCompanionPackages() throws DeviceNotAvailableException {
+        String result1 = getDevice().uninstallPackage(COMPANION_TEST_PKG);
+        String result2 = getDevice().uninstallPackage(COMPANION2_TEST_PKG);
+        return result1 != null ? result1 : result2;
+    }
+
+    private String uninstallDeviceTestPackage() throws DeviceNotAvailableException {
+        return getDevice().uninstallPackage(DEVICE_TESTS_PKG);
+    }
+
+    private void uninstallServicePackages() throws DeviceNotAvailableException {
+        getDevice().uninstallPackage(SERVICE_PKG);
+        getDevice().uninstallPackage(SERVICE_TEST_PKG);
+    }
+
+    private void uninstallPackages() throws DeviceNotAvailableException {
+        uninstallPackage();
+        uninstallCompanionPackages();
+        uninstallDeviceTestPackage();
+        uninstallServicePackages();
+    }
+}"	""	""	"v3"	""
+"4_application-packaging"	"4"	"C-0-1"	"4/C-0-1"	""	"""C-0-1] MUST be capable of installing and running Android “.apk” files as generated by the “aapt” tool included in the [official Android SDK]( http://developer.android.com/tools/help/index.html).    *   As the above requirement may be challenging, device implementations are    RECOMMENDED to use the AOSP reference implementation's package management    system.  Device implementations:  """	""	""	"run install apk index.html RECOMMENDED aapt"	""	""	""	""	""	""	""	""	""	""	""	"android.appsecurity.cts.ReadableSettingsFieldsTest"	"testGlobalHiddenSettingsKeysReadableWhenTestOnly"	"CtsAppSecurityHostTestCases"	""	""	""	"/home/gpoor/cts-12-source/cts/hostsidetests/appsecurity/src/android/appsecurity/cts/ReadableSettingsFieldsTest.java"	""	"public void testGlobalHiddenSettingsKeysReadableWhenTestOnly()
+            throws DeviceNotAvailableException, FileNotFoundException {
+        new InstallMultiple().addFile(TEST_APK_TEST_ONLY).addArg(""-t"").run();
+        runDeviceTests(TEST_PACKAGE, TEST_CLASS,
+                ""testGlobalHiddenSettingsKeysReadableWithoutAnnotation"");
+    }
+}"	""	""	"apk"	""

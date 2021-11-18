@@ -1,0 +1,8 @@
+[('/android/content/cts/AvailableIntentsTest.java',
+8),
+('/android/content/pm/cts/shortcutmanager/ShortcutManagerClientApiTest.java',
+6),
+('/android/content/cts/ContentProviderTest.java',
+6),
+('/android/content/cts/IntentTest.java',
+4)]

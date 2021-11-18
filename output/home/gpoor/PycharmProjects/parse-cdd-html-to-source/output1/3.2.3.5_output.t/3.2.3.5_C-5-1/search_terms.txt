@@ -1,0 +1,3 @@
+bluetooth
+anmdroid.bluetooth.adapter.action.REQUEST
+REQUEST_ENABLE
