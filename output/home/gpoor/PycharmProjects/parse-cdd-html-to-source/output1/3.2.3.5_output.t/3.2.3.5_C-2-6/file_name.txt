@@ -1,8 +1,0 @@
-[('/home/gpoor/cts-source/cts/tests/tests/content/src/android/content/cts/AvailableIntentsTest.java',
-6),
-('/home/gpoor/cts-source/cts/tests/tests/shortcutmanager/src/android/content/pm/cts/shortcutmanager/ShortcutManagerClientApiTest.java',
-4),
-('/home/gpoor/cts-source/cts/tests/tests/content/src/android/content/cts/ContentProviderTest.java',
-4),
-('/home/gpoor/cts-source/cts/tests/tests/content/src/android/content/cts/IntentTest.java',
-2)]

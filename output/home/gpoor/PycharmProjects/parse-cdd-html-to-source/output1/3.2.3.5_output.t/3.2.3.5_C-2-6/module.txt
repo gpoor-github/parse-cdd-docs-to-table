@@ -1,4 +1,0 @@
-[('CtsContentTestCases',
-12),
-('CtsShortcutManagerTestCases',
-4)]

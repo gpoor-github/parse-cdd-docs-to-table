@@ -1,2 +1,0 @@
-[('/android/content/cts/AvailableIntentsTest.java',
-8)]

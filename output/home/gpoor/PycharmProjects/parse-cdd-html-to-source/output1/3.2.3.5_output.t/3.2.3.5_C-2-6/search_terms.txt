@@ -1,4 +1,0 @@
-android.intent.action.SENDTO
-android.intent.action.VIEW
-SENDTO
-SMS

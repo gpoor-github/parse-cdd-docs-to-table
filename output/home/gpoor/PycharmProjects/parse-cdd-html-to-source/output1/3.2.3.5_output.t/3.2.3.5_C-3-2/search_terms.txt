@@ -1,5 +1,0 @@
-android.nfc.cardemulation.action.ACTION
-Service
-ACTION_CHANGE_DEFAULT
-android.hardware.nfc
-Payment

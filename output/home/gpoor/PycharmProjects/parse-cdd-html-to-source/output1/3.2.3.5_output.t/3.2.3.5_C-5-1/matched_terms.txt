@@ -1,4 +1,0 @@
-[('bluetooth',
-2),
-('REQUEST_ENABLE',
-2)]

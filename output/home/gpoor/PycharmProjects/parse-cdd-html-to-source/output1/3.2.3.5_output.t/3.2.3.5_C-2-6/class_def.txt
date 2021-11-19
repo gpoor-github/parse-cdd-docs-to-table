@@ -1,8 +1,0 @@
-[('android.content.cts.AvailableIntentsTest',
-6),
-('android.content.pm.cts.shortcutmanager.ShortcutManagerClientApiTest',
-4),
-('android.content.cts.ContentProviderTest',
-4),
-('android.content.cts.IntentTest',
-2)]

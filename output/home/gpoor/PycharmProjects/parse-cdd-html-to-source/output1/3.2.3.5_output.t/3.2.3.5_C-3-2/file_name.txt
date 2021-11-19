@@ -1,2 +1,0 @@
-[('/home/gpoor/cts-source/cts/tests/tests/nfc/src/android/nfc/cts/NfcPreferredPaymentTest.java',
-8)]

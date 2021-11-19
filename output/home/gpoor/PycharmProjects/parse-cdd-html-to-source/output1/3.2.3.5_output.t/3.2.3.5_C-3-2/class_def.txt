@@ -1,2 +1,0 @@
-[('android.nfc.cts.NfcPreferredPaymentTest',
-8)]

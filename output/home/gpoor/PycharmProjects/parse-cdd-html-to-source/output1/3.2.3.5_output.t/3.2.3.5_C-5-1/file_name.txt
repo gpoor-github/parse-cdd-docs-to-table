@@ -1,2 +1,0 @@
-[('/home/gpoor/cts-source/cts/tests/tests/content/src/android/content/cts/AvailableIntentsTest.java',
-4)]

@@ -63,7 +63,6 @@ def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app
         raise_error("build_row: Exception ", err3)
     return None
 
-
 def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_log=True):
     cell_value = ""
     for key in header_as_keys:
@@ -366,7 +365,7 @@ class RxData:
                         search_result = dict()
                     search_info[SEARCH_RESULT] = search_result
                     flat_result = dict()
-                    search_result[FLAT_RESULT] = flat_result
+                    search_result[FLAT_RESULT] =flat_result
                     flat_result[REQUIREMENT] = search_info[REQUIREMENT]
                     flat_result[SEARCH_TERMS] = search_info[SEARCH_TERMS]
 
@@ -451,7 +450,8 @@ class RxData:
                                     if method.lower().find('is') != -1 or method.lower().find('test') != -1:
                                         qualified_method = f"[{class_name} {method} {test_case_name}]"
                                         add_list_to_count_dict(qualified_method, search_result, QUALIFIED_METHOD)
-                                        flat_result[METHOD] = method
+                                        flat_result[METHOD] =  method
+                                        self.result_subject.on_next(search_info)
                                         self.match_count += 1
                                         break
                                     else:
@@ -461,7 +461,7 @@ class RxData:
                                         if logging: print(f"result No method with test in the name {method}.")
 
                                     add_list_to_count_dict(method, search_result, static_data.METHODS)
-                                    search_result[METHOD] = method # This will just get the last method, overwriting
+                                    search_result[METHOD] = method  # This will just get the last method, overwriting
                             else:
                                 method = ""
                                 # ToDo figure out adding to the dictionary
@@ -718,7 +718,7 @@ def translate_flat(result: dict) -> dict:
 
 
 if __name__ == '__main__':
-    search_for_req =False
+    search_for_req = False
     start = time.perf_counter()
     rd = RxData()
     rd.max_matches = 200
@@ -742,9 +742,9 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_todo_created.tsv"
-    temp_result= current_file+".tmp.tsv"
-    final_result= current_file
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a0_3-2-3-5/3.2.3.5.tsv"
+    temp_result = current_file + ".tmp.tsv"
+    final_result = current_file
 
 
     rd.result_subject.pipe(
@@ -754,15 +754,17 @@ if __name__ == '__main__':
         , ops.to_list()
         ,
         ops.map(
-            lambda table: table_ops.write_table(current_file + "_flat.tsv", table, static_data.cdd_to_cts_app_header))) \
-        .subscribe(on_completed=lambda: print("complete result_subject"),
+            lambda table: table_ops.write_table(current_file + "_flatty.tsv", table,
+                                                static_data.cdd_to_cts_app_header))) \
+        .subscribe(on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
+                   on_completed=lambda: print("complete result_subject"),
                    on_error=lambda err: helpers.raise_error("result_subject", err))
 
     rd.main_do_create_table(current_file, temp_result).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{temp_result}] from [{current_file}] "),
         on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.raise_error("in main", err))
-    update_release_table_with_changes(current_file,temp_result,final_result,static_data.results_header)
+    update_release_table_with_changes(current_file, temp_result, final_result, static_data.results_header)
     # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()

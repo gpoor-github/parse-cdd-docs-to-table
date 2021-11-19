@@ -1,4 +1,0 @@
-[('SMS',
-10),
-('android.intent.action.VIEW',
-6)]
