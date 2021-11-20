@@ -100,9 +100,9 @@ def make_new_table_with_row_keys_from_table_example():
                                             new_table_to_made)
 
 def update_release_table_with_changes_example():
-    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_todo_output.tsv"
-    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_12_nov-9-updated_for-merge.tsv"
-    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/diff_from_table.tsv"
+    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/d1_working/cdd_12_todo_output.tsv"
+    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/d1_working/CDD_12_nov-9-updated_for-merge.tsv"
+    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/d1_working/diff_from_table.tsv"
 
     update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
                                       [static_data.TEST_AVAILABILITY,static_data.CLASS_DEF,static_data.METHOD,static_data.MODULE])

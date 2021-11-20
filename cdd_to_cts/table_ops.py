@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 
 from cdd_to_cts import static_data, helpers
@@ -94,7 +93,7 @@ This will take table_target and update missing values in the specified key_to_in
     return table_target, missingkeys_target, missingkeys_source
 
 
-def filter_able_by_removing_keys(table_target: [[str]], key_to_index_target: dict, key_indexes_to_use: list):
+def remove_keys(table_target: [[str]], key_to_index_target: dict, key_indexes_to_use: list):
     new_table: [[str]] = list()
     valid_keys_str = " ".join(key_indexes_to_use)
     for key in key_to_index_target:
@@ -110,6 +109,22 @@ def filter_able_by_removing_keys(table_target: [[str]], key_to_index_target: dic
 
     return new_table
 
+
+def move_last_row_to_new_table(table_to_get_row:str):
+        key_fields1_org: dict
+        table1_org, key_fields1_org, header1_org, duplicate_rows1_org = read_table_sect_and_req_key(
+            table_to_get_row)
+        fields_to_write: list = list()
+        key_to_row = ""
+        for key in key_fields1_org:
+            key_to_row = key
+        new_table_file_name: str =f"{table_to_get_row.replace('.tsv','')}_{key_to_row.replace('/','_')}.{'tsv'}"
+        fields_to_write.append(key_to_row)
+        new_table=filter_first_table_by_keys_of_second(table1_org,key_fields1_org,fields_to_write)
+        write_table(new_table_file_name, new_table,header1_org)
+        table1_org_minus_row = remove_keys(table1_org,key_fields1_org,fields_to_write)
+        write_table(table_to_get_row,table1_org_minus_row,header1_org)
+        return new_table_file_name
 
 def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_target: dict,
                                          key_indexes_to_use: list) -> [[str]]:
@@ -240,34 +255,34 @@ def add_columns(manual_fields_header, updated_header):
         except ValueError:
             updated_header.append(column)
 
-
-def write_file_fields_to_files(source_to_use_values: str,
-                               fields_to_write: [str] = static_data.cdd_to_cts_app_header) -> [[str]]:
-    table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key(source_to_use_values)
-    fields_to_write_str = " ".join(fields_to_write)
-    path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
-
-    for i in range(0, len(table)):
-        row = table[i]
-        key: str = row[header.index(static_data.FULL_KEY)]
-        key_f = key.replace('/', '_')
-        req_path = f"{path_for_files_root}/{key_f}"
-        os.makedirs(req_path, exist_ok=True)
-        for j in range(0, len(row) - 1):
-            if j >= len(header):
-                print("Error header and data out of sync")
-                break
-            if fields_to_write_str.find(header[j]) > -1:
-                value: str = row[j]
-                if len(value) > 10:
-                    col = header[j]
-                    file_path = rf"{req_path}/{col}.txt"
-                    text_file = open(file_path, "w")
-                    if col != static_data.METHODS_STRING:
-                        value = value.replace(' ', '\n')
-                    value = value.replace(']', ']\n')
-                    text_file.write(value)
-                    text_file.close()
+# Not in use, before conversion to tabs
+# def write_file_fields_to_files(source_to_use_values: str,
+#                                fields_to_write: [str] = static_data.cdd_to_cts_app_header) -> [[str]]:
+#     table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key(source_to_use_values)
+#     fields_to_write_str = " ".join(fields_to_write)
+#     path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
+#
+#     for i in range(0, len(table)):
+#         row = table[i]
+#         key: str = row[header.index(static_data.FULL_KEY)]
+#         key_f = key.replace('/', '_')
+#         req_path = f"{path_for_files_root}/{key_f}"
+#         os.makedirs(req_path, exist_ok=True)
+#         for j in range(0, len(row) - 1):
+#             if j >= len(header):
+#                 print("Error header and data out of sync")
+#                 break
+#             if fields_to_write_str.find(header[j]) > -1:
+#                 value: str = row[j]
+#                 if len(value) > 10:
+#                     col = header[j]
+#                     file_path = rf"{req_path}/{col}.txt"
+#                     text_file = open(file_path, "w")
+#                     if col != static_data.METHODS_STRING:
+#                         value = value.replace(' ', '\n')
+#                     value = value.replace(']', ']\n')
+#                     text_file.write(value)
+#                     text_file.close()
 
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
@@ -585,9 +600,9 @@ def make_new_table_from_keys(keys_to_use: iter, file_name_of_table_input: str, f
 
 
 def merge_table_example():
-    _file_table_to_update = "/a1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
-    _file_table_to_use_as_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_master_diff_md_11.tsv"
-    _file_output= "/a1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 -update.tsv"
+    _file_table_to_update = "/d1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
+    _file_table_to_use_as_input = "/d1_working/cdd_12_master_diff_md_11.tsv"
+    _file_output= "/d1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 -update.tsv"
     _table_merged, header_from_table_to_update = merge_tables_rows(_file_table_to_update, _file_table_to_use_as_input,_file_output)
 
 
@@ -613,8 +628,8 @@ if __name__ == '__main__':
     sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.tsv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
-
-    merge_table_example()
+    move_last_row_to_new_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/d0_cdd12_3-2-3-5-part1/3.2.3.5_part1_up_to_C-9-1.tsv")
+    #merge_table_example()
     # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
     #     _file1_sachiyo_recent,
     #    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.tsv")
