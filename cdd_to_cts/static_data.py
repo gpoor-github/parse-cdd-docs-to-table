@@ -24,9 +24,9 @@ RX_WORKING_OUTPUT_TABLE_TO_EDIT = "output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
 
 INPUT_TABLE_FILE_NAME_RX = "output/table_file_for_react_filtered.tsv"
 
-TEST_FILES_TXT = "input_scripts/test-files.txt"
-TEST_CASE_MODULES = "input_scripts/testcases-modules.txt"
-INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_scripts/cts-deps-from-static_code_analysis.txt'
+TEST_FILES_TXT = "input_data_from_cts/test-files.txt"
+TEST_CASE_MODULES = "input_data_from_cts/testcases-modules.txt"
+INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_data_from_cts/cts-deps-from-static_code_analysis.txt'
 
 SECTION_ID_RE_STR ="(?:\d{1,3}\.)+"
 composite_key_string_re = "\s*(?:<li>)?\["
@@ -178,7 +178,7 @@ FLAT_RESULT = 'FLAT_RESULT'
 SO_ONLY_SEARCH_KEYS = "ONLY_SEARCH_KEYS"
 not_annotated_test_start = "public void test"
 
-results_header: [] = [CLASS_DEF, METHOD, MODULE,CLASS_DEFS, METHODS, MODULES, FILE_NAME,  MATCHED_FILES, METHODS_STRING, URLS,  METHOD_TEXT,  MATCHED_TERMS,QUALIFIED_METHOD,]
+results_header: [] = [CLASS_DEF, METHOD, MODULE,CLASS_DEFS, METHODS, MODULES, FILE_NAME,  MATCHED_FILES, METHODS_STRING, URLS,  METHOD_TEXT,  MATCHED_TERMS,QUALIFIED_METHOD]
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBER, REQUIREMENT, TEST_AVAILABILITY, SEARCH_ROOTS, SEARCH_TERMS,
                              MANUAL_SEARCH_TERMS,

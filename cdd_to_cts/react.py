@@ -273,7 +273,7 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self) -> None:
-        self.max_matches = 100
+        self.max_matches = 1000
         self.progress_count = 0
         self.is_exact_match: bool = False
 
@@ -368,6 +368,7 @@ class RxData:
                     search_result[FLAT_RESULT] =flat_result
                     flat_result[REQUIREMENT] = search_info[REQUIREMENT]
                     flat_result[SEARCH_TERMS] = search_info[SEARCH_TERMS]
+                    flat_result[static_data.KEY_AS_NUMBER] = search_info[static_data.KEY_AS_NUMBER]
 
                     search_result[static_data.PIPELINE_FILE_NAME] = file_name_param
                     add_list_to_count_dict(f"({match_count_of_term_in_file},{matched_term},{cts_file_path_name})",
@@ -386,6 +387,11 @@ class RxData:
                             add_list_to_count_dict(file_name_param, search_result, FILE_NAME)
                             flat_result[FILE_NAME] = file_name_param
                             add_list_to_count_dict(matched_term, search_result, MATCHED_TERMS)
+                            # matched = sorted(search_result.get(MATCHED_TERMS).count_value_dict.items(), key=lambda x: x[1],
+                            #                  reverse=True)
+                            # for matches in matched:
+                            #     if matches[1] > 100:
+                            #         helpers.add_list_to_dict(matches[0], search_result, static_data.NOT_SEARCH_TERMS)
                             flat_result[MATCHED_TERMS] = matched_term
                             subset_text = find_method_text_subset(search_string, method_text)
                             # add_list_to_count_dict(subset_text, search_result, static_data.METHOD_TEXT)#," || ")
@@ -721,7 +727,7 @@ if __name__ == '__main__':
     search_for_req = False
     start = time.perf_counter()
     rd = RxData()
-    rd.max_matches = 200
+    rd.max_matches = 1200
     result_table = [[str]]
 
     # input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/sub1_3_software.csv"
@@ -742,7 +748,7 @@ if __name__ == '__main__':
     # if test_output_exists.exists():
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/2021-10-11-gpoor-todo_built.tsv"
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a0_3-2-3-5/3.2.3.5.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a0_cdd12_3-2-3-5-part1/3.2.3.5_part1_up_to_C-9-1.tsv"
     temp_result = current_file + ".tmp.tsv"
     final_result = current_file
 
@@ -754,7 +760,7 @@ if __name__ == '__main__':
         , ops.to_list()
         ,
         ops.map(
-            lambda table: table_ops.write_table(current_file + "_flatty.tsv", table,
+            lambda table: table_ops.write_table(current_file + "_flat.tsv", table,
                                                 static_data.cdd_to_cts_app_header))) \
         .subscribe(on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
                    on_completed=lambda: print("complete result_subject"),

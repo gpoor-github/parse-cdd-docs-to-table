@@ -10,7 +10,7 @@ from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_ob
 from stackdump import stackdump
 
 
-def get_list_void_public_test_files(results_grep_public_test: str = "input_scripts/public_void_test_files.txt") -> set:
+def get_list_void_public_test_files(results_grep_public_test: str = "input_data_from_cts/public_void_test_files.txt") -> set:
     results_grep_public_test = find_valid_path(results_grep_public_test)
     test_file_set = set()
 
@@ -111,6 +111,9 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
         raise_error(f"add_list_to_dict no key for [{key}] in {str(header)}")
     try:
         pre_existing_value = dictionary_with_existing_values.get(key)
+        if isinstance(pre_existing_value,str) and isinstance(new_value_to_add,str):
+            if pre_existing_value.index(new_value_to_add) > -1:
+                return
     except Exception as err:
         raise_error(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
 
