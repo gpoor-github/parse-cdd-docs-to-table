@@ -600,9 +600,9 @@ def make_new_table_from_keys(keys_to_use: iter, file_name_of_table_input: str, f
 
 
 def merge_table_example():
-    _file_table_to_update = "/d1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
-    _file_table_to_use_as_input = "/d1_working/cdd_12_master_diff_md_11.tsv"
-    _file_output= "/d1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 -update.tsv"
+    _file_table_to_update = "/a1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
+    _file_table_to_use_as_input = "/a1_working/cdd_12_master_diff_md_11.tsv"
+    _file_output= "/a1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 -update.tsv"
     _table_merged, header_from_table_to_update = merge_tables_rows(_file_table_to_update, _file_table_to_use_as_input,_file_output)
 
 

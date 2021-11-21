@@ -177,28 +177,18 @@ FLAT_RESULT = 'FLAT_RESULT'
 # SCRIPT_OPTIONS = 'SCRIPT_OPTIONS'
 SO_ONLY_SEARCH_KEYS = "ONLY_SEARCH_KEYS"
 not_annotated_test_start = "public void test"
-
-results_header: [] = [CLASS_DEF, METHOD, MODULE,CLASS_DEFS, METHODS, MODULES, FILE_NAME,  MATCHED_FILES, METHODS_STRING, URLS,  METHOD_TEXT,  MATCHED_TERMS,QUALIFIED_METHOD]
-# Contains all the fields that are used to review and iterate on mappings.
-cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBER, REQUIREMENT, TEST_AVAILABILITY, SEARCH_ROOTS, SEARCH_TERMS,
-                             MANUAL_SEARCH_TERMS,
-                             NOT_SEARCH_TERMS, NOT_FILES,MAX_MATCHES,
-                             CLASS_DEFS, METHODS, MODULES,
-                             PROTECTED, AREA, SHORTENED, TEST_LEVEL] + results_header
-
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, 'Annotation?', 'New Req for R?', 'New CTS for R?',
-     CLASS_DEF, METHOD, MODULE,
-     'Comment(internal) e.g. why a test is not possible ',
-     'Comment (external)', 'New vs Updated(Q)', 'CTS Bug Id ', 'CDD Bug Id', 'CDD CL', 'Area', 'Shortened',
-     'Test Level',
-     '', 'external version', '', '', ''])
+     CLASS_DEF, METHOD, MODULE])
+ccd_12_full_header_for_ref = ["Section","section_id","req_id","Test Availability","Annotation? ","New Req for S?","New CTS for S?","class_def","method","module","Comment(internal) e.g. why a test is not possible ","Comment (external) ","New vs Updated(Q)","CTS Bug Id ","CDD Bug Id","CDD CL","Area","Shortened","Test Level","","external version","","",""]
+ccd_12_subset_target_field_header = ["Annotation? ","New Req for S?","New CTS for S?","Comment(internal) e.g. why a test is not possible ","CTS Bug Id ","CDD Bug Id","Area","Shortened","Test Level"]
 
 #  Used in create_full_table_from_cdd create a full table from the CDD, containing all the information from the CDD but not doing any processing (besides to the keys)
 cdd_info_only_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
      '', ''])
+
 
 # Used in several methods that take data from a table cdd_to_cts_app_header header and copy just those columns for release.
 merge_header: [] = (
@@ -207,6 +197,14 @@ merge_header: [] = (
 # Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
 update_manual_header: [] = (
     [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS, NOT_FILES, NOT_METHODS])
+results_header: [] = [CLASS_DEF, METHOD, MODULE, FILE_NAME,  MATCHED_FILES, METHODS_STRING, URLS,  METHOD_TEXT,  MATCHED_TERMS,QUALIFIED_METHOD,]
+# Contains all the fields that are used to review and iterate on mappings.
+cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBER, REQUIREMENT, TEST_AVAILABILITY, SEARCH_ROOTS, SEARCH_TERMS,
+                             MANUAL_SEARCH_TERMS,
+                             NOT_SEARCH_TERMS, NOT_FILES,MAX_MATCHES,
+                             CLASS_DEFS, METHODS, MODULES,
+                             PROTECTED] + results_header + ccd_12_subset_target_field_header
+
 # What data is to be copied from each row to the search_info dictionary
 fields_for_search_info_header: [] = update_manual_header+[REQUIREMENT,TEST_AVAILABILITY]
 

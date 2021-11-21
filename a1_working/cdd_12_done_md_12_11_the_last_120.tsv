@@ -1,0 +1,19 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	Area	Shortened	Test Level	class_def	method	module	class_defs	methods	modules	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method
+3.2.3.5  Conditional Application Intents	3.2.3.5	C-2-6	3.2.3.5/C-2-6	03020305.670206	"""C-2-6] MUST honor the [android.intent.action.SENDTO](https://developer.android.com/reference/android/content/Intent#ACTION_SENDTO) and [android.intent.action.VIEW](https://developer.android.com/reference/android/content/Intent#ACTION_VIEW) intents and provide an activity to send/display SMS messages. """	Test Available, Incomplete	""	SENDTO ACTION_VIEW android.intent.action.VIEW ACTION_SENDTO SMS android.intent.action.SENDTO	""	""	""	""	""	""	""	""	""	""	""	android.telephony.cts.CellBroadcastIntentsTest	testGetIntentForBackgroundReceivers	CtsTelephonyTestCases	""	""	""	/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/cts/CellBroadcastIntentsTest.java	""	"public void testGetIntentForBackgroundReceivers() {
+        try {
+            SmsCbMessage message = new SmsCbMessage(TEST_MESSAGE_FORMAT, TEST_GEO_SCOPE,
+                    TEST_SERIAL, TEST_LOCATION, TEST_SERVICE_CATEGORY, TEST_LANGUAGE, TEST_DCS,
+                    TEST_BODY, TEST_PRIORITY, TEST_ETWS_INFO, null,
+                    TEST_MAX_WAIT_TIME, TEST_GEOS, TEST_RECEIVED_TIME, TEST_SLOT, TEST_SUB_ID);
+
+            CellBroadcastIntents.sendSmsCbReceivedBroadcast(
+                    InstrumentationRegistry.getContext(), UserHandle.ALL, message,
+                    null, null, 0, TEST_SLOT);
+        } catch (SecurityException e) {
+            // expected
+            return;
+        }
+        fail();
+    }
+}"	""	""	SMS	""
+3.2.3.5  Conditional Application Intents	3.2.3.5	C-7-1	3.2.3.5/C-7-1	03020305.670701	"""C-7-1] MUST provide a user-accessible mechanism to add and configure third-party input methods in response to the [`android.settings.INPUT_METHOD_SETTINGS`](https://developer.android.com/reference/android/provider/Settings#ACTION_INPUT_METHOD_SETTINGS) intent.  If device implementations support third-party accessibility services, they:  """	Test Missing, Manually Testable	""	INPUT_METHOD_SETTINGS ACTION_INPUT_METHOD_SETTINGS android.settings.INPUT	""	""	""	""	[('android.systemintents.cts.TestSystemIntents', 2)]	[('create', 2), ('setUp', 2), ('getInstrumentation', 2), ('getContext', 2), ('getPackageManager', 2)]	[('CtsSystemIntentTestCases', 2)]	""	""	""	""	android.systemintents.cts.TestSystemIntents	getPackageManager	CtsSystemIntentTestCases	""	""	""	[('/home/gpoor/cts-12-source/cts/tests/tests/systemintents/src/android/systemintents/cts/TestSystemIntents.java', 2)]	[('(1,INPUT_METHOD_SETTINGS,/android/systemintents/cts/TestSystemIntents.java)', 1), ('(1,ACTION_INPUT_METHOD_SETTINGS,/android/systemintents/cts/TestSystemIntents.java)', 1)]	[('([1:/android/systemintents/cts/TestSystemIntents.java]:[INPUT_METHOD_SETTINGS]:[1]:method_text:[etInstrumentation().getContext();        mPackageManager = mContext.getPackageManager();    }   ])', 1), ('([1:/android/systemintents/cts/TestSystemIntents.java]:[ACTION_INPUT_METHOD_SETTINGS]:[1]:method_text:[etInstrumentation().getContext();        mPackageManager = mContext.getPackageManager();    }   ])', 1)]	https://developer.android.com	""	[('INPUT_METHOD_SETTINGS', 1), ('ACTION_INPUT_METHOD_SETTINGS', 1)]	Though the intent is tested. The requirement says the user can change to a third party input device. This could be manually tested, but a true end to end test would require a hardware HID.

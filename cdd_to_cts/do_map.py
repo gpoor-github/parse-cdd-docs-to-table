@@ -14,8 +14,9 @@ def do_on_complete():
 
 
 def do_map_12():
-    # cdd_12_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html"
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_md.tsv"
+    directory = "/a1_working_12/"
+
+    cdd_12_created = f"{directory}/cdd_12_table_all_md.tsv"
     # scr = data_sources.SourceCrawlerReducer(
     #     cdd_requirements_html_source=cdd_12_html_file,
     #     global_table_input_file_build_from_html=cdd_12_created,
@@ -29,9 +30,9 @@ def do_map_12():
     cdd_11_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd-11.tsv"
     cdd_12_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd_12_master.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_tsv,cdd_11_tsv )
-    cdd_12_todo_output_file = "/d1_working/cdd_12_master_diff_md_11_output.tsv"
+    cdd_12_todo_output_file = f"{directory}cdd_12_master_diff_md_11_output.tsv"
     table_ops.make_new_table_from_keys(dif_1_2, cdd_12_created, cdd_12_todo_output_file)
-    rx_output_file = "/d1_working/cdd_12_todo_created.tsv"
+    rx_output_file = f"{directory}cdd_12_todo_created.tsv"
     # noinspection DuplicatedCode
     rd = RxData()
     rd.main_do_create_table(input_table_file=cdd_12_todo_output_file, output_file=rx_output_file) \
@@ -42,7 +43,8 @@ def do_map_12():
 
 
 def do_map_11():
-    cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_table_all_1678.tsv"
+    directory = "/a1_working_11/"
+    cdd_11_created = f"{directory}cdd_11_table_all.tsv"
     scr = data_sources.SourceCrawlerReducer(
         md_file_root=static_data.CDD_MD_ROOT,
         global_table_input_file_built_from_requirment_md_files=cdd_11_created,
@@ -50,12 +52,12 @@ def do_map_11():
         do_search=False)
     create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text, scr.section_to_data,
                                    cdd_11_created)
-    cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_12_diff_11_full_created.tsv"
+    cdd_12_created = f"{directory}md_12_diff_11_full_created.tsv"
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_created,
                                                                                                    cdd_11_created)
     cdd_11_todo_output_file = "/d1_working/cdd_11_todo_output.tsv"
     table_ops.make_new_table_from_keys(dif_2_1, cdd_11_created, cdd_11_todo_output_file)
-    rx_output_file = "/d1_working/cdd_11_to_12_dif.tsv"
+    rx_output_file = f"{directory}cdd_11_to_12_dif.tsv"
     # noinspection DuplicatedCode
     rd = RxData()
     rd.main_do_create_table(input_table_file=cdd_11_todo_output_file, output_file=rx_output_file) \
