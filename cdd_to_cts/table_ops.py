@@ -628,7 +628,6 @@ if __name__ == '__main__':
     sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.tsv"
     new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
     fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
-    move_last_row_to_new_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/d0_cdd12_3-2-3-5-part1/3.2.3.5_part1_up_to_C-9-1.tsv")
     #merge_table_example()
     # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
     #     _file1_sachiyo_recent,

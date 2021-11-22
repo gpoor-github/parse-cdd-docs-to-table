@@ -749,7 +749,7 @@ if __name__ == '__main__':
     #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
     # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/2021-10-11-gpoor-todo_built.tsv"
 
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/3.2.3.5_part1_up_to_C-9-1_3.2.3.5_C-7-1.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9_3.2.3.5_C-9-1.tsv"
     temp_result = current_file.replace('.tsv', "_tmp.tsv")
     final_result = current_file
 
