@@ -5,7 +5,7 @@
 from unittest import TestCase
 
 
-import release_for_release
+import table_functions_for_release
 from check_sheet import ReadSpreadSheet
 
 cdd_11_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
@@ -29,4 +29,4 @@ class TestCheckSheets(TestCase):
 
     def test_check_create_table_from_difference_and_source(self):
 
-        release_for_release.create_table_from_differences_and_source(md_11B, md_12, md_12, cdd_12_master_diff_md_11)
+        table_functions_for_release.create_table_from_differences_and_source(md_11B, md_12, md_12, cdd_12_master_diff_md_11)

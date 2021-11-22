@@ -110,7 +110,7 @@ def remove_keys(table_target: [[str]], key_to_index_target: dict, key_indexes_to
     return new_table
 
 
-def move_last_row_to_new_table(table_to_get_row:str):
+def move_last_row_to_new_table(table_to_get_row:str)-> str:
         key_fields1_org: dict
         table1_org, key_fields1_org, header1_org, duplicate_rows1_org = read_table_sect_and_req_key(
             table_to_get_row)
@@ -600,36 +600,32 @@ def make_new_table_from_keys(keys_to_use: iter, file_name_of_table_input: str, f
 
 
 def merge_table_example():
-    _file_table_to_update = "/X_a1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
-    _file_table_to_use_as_input = "/X_a1_working/cdd_12_master_diff_md_11.tsv"
-    _file_output= "/X_a1_working/release/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 -update.tsv"
+    _file_table_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
+    _file_table_to_use_as_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9_3.2.3.5_C-9-1_flat.tsv"
+    _file_output= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
     _table_merged, header_from_table_to_update = merge_tables_rows(_file_table_to_update, _file_table_to_use_as_input,_file_output)
 
 
 
 if __name__ == '__main__':
-    _file1_before_g_eddy = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.tsv"
-    _file1_sachiyo_recent = "../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.tsv"
-    _file2_after_g = "../data_files/gpoor-updated-sept-11-2021.tsv"
-    before_graham = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.tsv"
-    latest_sheet = "../data_files/dups_removed.tsv"
-    latest2 = "../data_files/version_up_there_sorted.tsv"
-    x_file1_for_subset = "../output/created_output.cvs"
-    x_file2_for_subset = "../input/new_recs_full_todo.tsv"
-    release = "../output/release_updated_table2.tsv"
-    from_more_recent_cdd_html = "../data_files/cdd_full_from_more_recent_worse_version.tsv"
-    from_less_recent_cdd_html = "../data_files/cdd_full_from_less_recent_better_version.tsv"
-
-    final_output = 'output/built_from_created2.tsv'
-    sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.tsv"
-    sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
-    original_sheet_file_name1 = "data_files/CDD-11_2021-11-23.tsv"
-    # values_to_use_table_file1 = 'output/final_output_file.tsv'
-    sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.tsv"
-    new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
-    fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
-    #merge_table_example()
-    # x_dif_1_2, x_dif_2_1, x_intersection, x_dif_1_2_dict, x_dif_2_1_dict = diff_tables_files(
-    #     _file1_sachiyo_recent,
-    #    "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/full_cdd.tsv")
-# merge_tables(_file1_sachiyo_recent,"output/subset_table")
+    # _file1_before_g_eddy = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.tsv"
+    # _file1_sachiyo_recent = "../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.tsv"
+    # _file2_after_g = "../data_files/gpoor-updated-sept-11-2021.tsv"
+    # before_graham = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.tsv"
+    # latest_sheet = "../data_files/dups_removed.tsv"
+    # latest2 = "../data_files/version_up_there_sorted.tsv"
+    # x_file1_for_subset = "../output/created_output.cvs"
+    # x_file2_for_subset = "../input/new_recs_full_todo.tsv"
+    # release = "../output/release_updated_table2.tsv"
+    # from_more_recent_cdd_html = "../data_files/cdd_full_from_more_recent_worse_version.tsv"
+    # from_less_recent_cdd_html = "../data_files/cdd_full_from_less_recent_better_version.tsv"
+    #
+    # final_output = 'output/built_from_created2.tsv'
+    # sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.tsv"
+    # sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
+    # original_sheet_file_name1 = "data_files/CDD-11_2021-11-23.tsv"
+    # # values_to_use_table_file1 = 'output/final_output_file.tsv'
+    # sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.tsv"
+    # new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
+    # fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
+    merge_table_example()

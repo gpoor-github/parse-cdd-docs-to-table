@@ -1,5 +1,21 @@
 #  Block to comment
+import sys
+
+import react
 from table_ops import move_last_row_to_new_table
 
 if __name__ == '__main__':
-    move_last_row_to_new_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w.tsv")
+    keep_trying = True
+    remove_line = False
+    while keep_trying:
+        result = input("Select 'y' to start new file! ")
+        if result.find("y") == -1:
+            remove_line = True
+        if remove_line:
+            target_file = move_last_row_to_new_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w.tsv")
+        react.do_map_with_flat_file(target_file)
+        result = input("Select 'y' to continue ")
+        if result.find("y") == -1:
+            keep_trying = False
+
+    print(f" Completed processing {target_file}")

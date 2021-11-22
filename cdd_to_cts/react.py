@@ -20,7 +20,7 @@ from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_
 from cdd_to_cts.static_data import full_key_string_for_re, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
-from release_for_release import update_release_table_with_changes
+from table_functions_for_release import update_release_table_with_changes
 
 
 def build_dict(key_req: str):
@@ -368,6 +368,7 @@ class RxData:
                     search_result[FLAT_RESULT] =flat_result
                     flat_result[REQUIREMENT] = search_info[REQUIREMENT]
                     flat_result[SEARCH_TERMS] = search_info[SEARCH_TERMS]
+
                     flat_result[static_data.KEY_AS_NUMBER] = search_info[static_data.KEY_AS_NUMBER]
 
                     search_result[static_data.PIPELINE_FILE_NAME] = file_name_param
@@ -475,6 +476,7 @@ class RxData:
                         except Exception as err:
                             print("Not fatal but should improve exception find_data_for_csv_dict " + str(err))
                             if logging: print(f'Could not find {static_data.METHOD_RE} in text [{method_text}]')
+                self.publish_each_result(search_result)
 
         except Exception as e:
             helpers.raise_error(f"find_data_for_csv_dict at {full_key}", e)
@@ -723,33 +725,12 @@ def translate_flat(result: dict) -> dict:
     return flat_result
 
 
-if __name__ == '__main__':
+def do_map_with_flat_file(file_to_process:str ) :
     search_for_req = False
     start = time.perf_counter()
     rd = RxData()
     rd.max_matches = 1200
-    result_table = [[str]]
-
-    # input_file_name1= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/sub1_3_software.csv"
-    # output_file_name1 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/results_sub1_3_software.csv"
-    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/FILTERED_TABLE_TO_SEARCH.csv"
-    #
-    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/3.2.3.5_input.tsv"
-    # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/3_2.3.5_output.tsv"
-    # output_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3_2.3.5-c-12-1_out.csv"
-    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/3.2.3.5_input.tsv"
-    # output_file_name= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/3.2.3.5_output.tsv"
-
-    ""
-    # input_file_name= static_data.FILTERED_TABLE_TO_SEARCH
-    # output_file_name = static_data.RX_WORKING_OUTPUT_TABLE_TO_EDIT
-    # #
-    # test_output_exists = Path(output_file_name)
-    # if test_output_exists.exists():
-    #         table_ops.update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms=input_file_name,output_file_to_take_as_input_for_update=output_file_name)
-    # input_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/2021-10-11-gpoor-todo_built.tsv"
-
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9_3.2.3.5_C-9-1.tsv"
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-2.tsv"
     temp_result = current_file.replace('.tsv', "_tmp.tsv")
     final_result = current_file
 
@@ -776,3 +757,7 @@ if __name__ == '__main__':
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
+
+if __name__ == '__main__':
+    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-2.tsv"
+    do_map_with_flat_file(current_file)
