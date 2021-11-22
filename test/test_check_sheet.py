@@ -15,14 +15,14 @@ md_11B = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd-11.
 md_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_12_master.tsv"
 md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper.tsv"
 cdd_11_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
-cdd_12_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD-12 Nov-9-downloaded.tsv"
-cdd_12_working = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_12_CTS_downloaded_full_working_updated.tsv"
-cdd_12_master_diff_md_11 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_master_diff_md_11.tsv"
+cdd_12_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD-12 Nov-9-downloaded.tsv"
+cdd_12_working = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD_12_CTS_downloaded_full_working_updated.tsv"
+cdd_12_master_diff_md_11 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/cdd_12_master_diff_md_11.tsv"
 
 
 class TestCheckSheets(TestCase):
     def test_does_class_ref_file_exist(self):
-        annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/mapping_output_for_import.tsv"
+        annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/mapping_output_for_import.tsv"
 
         rs = ReadSpreadSheet()
         result_dict, not_found, found = rs.does_class_ref_file_exist(annotation_12)

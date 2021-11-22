@@ -48,7 +48,7 @@ class TestUpdate(TestCase):
                 '7.1.1.1/C-0-2',
                 '5.4.5/C-1-1', '5.10/C-3-1', '7.6.1/H-10-1', '11/C-1-1', '11/C-0-3', '9.5/T-3-1', '7.3.4/H-3-1',
                 '9.5/T-1-1']
-        table_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD-12-only-req.tsv"
+        table_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD-12-only-req.tsv"
         table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(table_input)
         new_table = filter_first_table_by_keys_of_second(table, key_fields, keys)
         table_ops.write_table(
@@ -75,7 +75,7 @@ class TestUpdate(TestCase):
             cdd_11_table_generated_from_html_all)
         new_table = filter_first_table_by_keys_of_second(table, key_fields, keys)
         table_ops.write_table(
-            "/a1_working/cdd_11_diff_12.tsv",
+            "/X_a1_working/cdd_11_diff_12.tsv",
             new_table,
             header)
         self.assertIs(len(keys), len(new_table))
@@ -115,13 +115,13 @@ class TestUpdate(TestCase):
         new_table = filter_first_table_by_keys_of_second(table, key_fields, keys)
         new_header = ["Section", 'section_id', 'req_id', 'full_key', 'requirement', 'key_as_number', 'search_terms']
         table_ops.write_table(
-            "/a1_working/cdd_12_diff_11.tsv",
+            "/X_a1_working/cdd_12_diff_11.tsv",
             new_table,
             header)
         self.assertIs(len(keys), len(new_table))
 
     def test_filter_by_table_files(self, ):
-        table_out = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/to_do_undone_subset.csv"
+        table_out = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/to_do_undone_subset.csv"
         table_source = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/to_do_undone.csv"
         table_target = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.csv"
         release_for_release.make_new_table_with_row_keys_from_table(table_target, table_source, table_out)
@@ -154,7 +154,7 @@ class TestUpdate(TestCase):
         self.assertIs(len(table), len(key_fields))
 
     def test_read_table_sect_and_req_key_no_req(self):
-        input_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/Working copy of CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - Undon.csv"
+        input_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/Working copy of CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - Undon.csv"
         table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(file_name=input_table,
                                                                                           logging=True)
         table_ops.write_table(
