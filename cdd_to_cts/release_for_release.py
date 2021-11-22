@@ -54,7 +54,7 @@ def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, so
                                                                full_before_gvp_sheet_header, values_to_use_table,
                                                                values_to_use_table_keys_to_index,
                                                                values_to_use_full_before_gvp_sheet_header,
-                                                               static_data.merge_header)
+                                                               static_data.update_release_header)
 
     table_ops.write_table(table_name_to_write, updated_table, full_before_gvp_sheet_header)
 
@@ -100,12 +100,12 @@ def make_new_table_with_row_keys_from_table_example():
                                             new_table_to_made)
 
 def update_release_table_with_changes_example():
-    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_todo_output.tsv"
-    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/CDD_12_nov-9-updated_for-merge.tsv"
-    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/diff_from_table.tsv"
+    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_table_all_md.tsv"
+    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/cdd_12_done_md_12_11_the_last_120.tsv"
+    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_table_all_md_updates.tsv"
 
     update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
-                                      [static_data.TEST_AVAILABILITY,static_data.CLASS_DEF,static_data.METHOD,static_data.MODULE])
+                                      static_data.update_release_header)
 
 def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2, table_for_source, output_file_for_results):
     from check_sheet import diff_tables_files

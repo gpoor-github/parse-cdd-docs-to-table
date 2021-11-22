@@ -1,9 +1,9 @@
 from unittest import TestCase
 
 import table_ops
-import update_release
+import release_for_release
 from table_ops import filter_first_table_by_keys_of_second
-from update_release import update_release_table_with_changes
+from release_for_release import update_release_table_with_changes
 
 
 class TestUpdate(TestCase):
@@ -124,7 +124,7 @@ class TestUpdate(TestCase):
         table_out = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working/to_do_undone_subset.csv"
         table_source = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/to_do_undone.csv"
         table_target = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.csv"
-        update_release.make_new_table_with_row_keys_from_table(table_target, table_source, table_out)
+        release_for_release.make_new_table_with_row_keys_from_table(table_target, table_source, table_out)
 
     def test_filter_table_by_removing_keys(self, ):
         keys_to_filter_by = ['3.18/C-1-5', '7.1.4.2/C-1-9', '7.1.4.2/C-1-8', '3.18/C-1-3', '3.18/C-1-4', '9.10/C-0-3',

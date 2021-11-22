@@ -20,7 +20,7 @@ from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_
 from cdd_to_cts.static_data import full_key_string_for_re, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
-from update_release import update_release_table_with_changes
+from release_for_release import update_release_table_with_changes
 
 
 def build_dict(key_req: str):

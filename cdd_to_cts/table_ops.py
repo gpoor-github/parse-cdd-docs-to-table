@@ -176,7 +176,7 @@ def merge_tables(file1, file2, output_file):
     table1, key_fields1, header1, duplicate_rows1 = read_table_sect_and_req_key(file1)
     table2, key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(file2)
     table_target, missing_keys_target, missing_keys_source = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
-                                                             static_data.merge_header)
+                                                                          static_data.update_release_header)
     write_table(output_file, table_target, header1)
     return table_target, header1
 

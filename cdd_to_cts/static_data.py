@@ -1,6 +1,24 @@
 import os
 import time
 
+TEST_LEVEL = "Test Level"
+
+SHORTEND = "Shortened"
+
+AREA = "Area"
+
+CDD_BUG_ID = "CDD Bug Id"
+
+CTS_BUG_ID = "CTS Bug Id"
+
+COMMENT_INTERNAL = "Comment(internal) e.g. why a test is not possible"
+
+NEW_CTS_FOR_S_ = "New CTS for S?"
+
+NEW_REQ_FOR_S_ = "New Req for S?"
+
+ANNOTATION_ = "Annotation?"
+
 USER_HOME = "/home/gpoor/"
 
 CTS_SOURCE_PARENT = USER_HOME + "cts-12-source/"
@@ -170,29 +188,28 @@ MAX_MATCHES = 'max_matches'
 MAX_MATCHES_DEFAULT = 5
 # Protect a set of columns in the row or the whole row
 PROTECTED = 'protected'
-AREA = 'Area'
-SHORTENED = 'Shortened'
-TEST_LEVEL = 'Test Level'
+SHORTENED = "Shortened"
 FLAT_RESULT = 'FLAT_RESULT'
 # SCRIPT_OPTIONS = 'SCRIPT_OPTIONS'
 SO_ONLY_SEARCH_KEYS = "ONLY_SEARCH_KEYS"
 not_annotated_test_start = "public void test"
 # Used in merge_tables to populate missing fields in the the target release sheets.
 current_cdd_11_header: [] = (
-    [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, 'Annotation?', 'New Req for R?', 'New CTS for R?',
+    [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, ANNOTATION_, 'New Req for R?', 'New CTS for R?',
      CLASS_DEF, METHOD, MODULE])
-ccd_12_full_header_for_ref = ["Section","section_id","req_id","Test Availability","Annotation? ","New Req for S?","New CTS for S?","class_def","method","module","Comment(internal) e.g. why a test is not possible ","Comment (external) ","New vs Updated(Q)","CTS Bug Id ","CDD Bug Id","CDD CL","Area","Shortened","Test Level","","external version","","",""]
-ccd_12_subset_target_field_header = ["Annotation? ","New Req for S?","New CTS for S?","Comment(internal) e.g. why a test is not possible ","CTS Bug Id ","CDD Bug Id","Area","Shortened","Test Level"]
+ccd_12_full_header_for_ref = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, ANNOTATION_,  NEW_REQ_FOR_S_,
+                              NEW_CTS_FOR_S_, CLASS_DEF, METHOD, MODULE, COMMENT_INTERNAL, "Comment (external)", "New vs Updated(Q)",
+                              CTS_BUG_ID, CDD_BUG_ID, "CDD CL", AREA, SHORTEND, TEST_LEVEL, "", "external version", "", "", ""]
+ccd_12_subset_target_field_header = [ANNOTATION_, NEW_REQ_FOR_S_, NEW_CTS_FOR_S_, COMMENT_INTERNAL, CTS_BUG_ID, CDD_BUG_ID,
+                                     AREA, SHORTEND, TEST_LEVEL]
 
 #  Used in create_full_table_from_cdd create a full table from the CDD, containing all the information from the CDD but not doing any processing (besides to the keys)
 cdd_info_only_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
      '', ''])
 
-
 # Used in several methods that take data from a table cdd_to_cts_app_header header and copy just those columns for release.
-merge_header: [] = (
-    [TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE])
+update_release_header: [] = ([TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,COMMENT_INTERNAL,CTS_BUG_ID])
 
 # Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
 update_manual_header: [] = (
