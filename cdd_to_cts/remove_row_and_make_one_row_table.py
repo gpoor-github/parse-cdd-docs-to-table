@@ -9,7 +9,7 @@ if __name__ == '__main__':
     remove_line = False
     while keep_trying:
         result = input("Select 'y' to start new file! ")
-        if result.find("y") == -1:
+        if result.find("y") != -1:
             remove_line = True
         if remove_line:
             target_file = move_last_row_to_new_table("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w.tsv")

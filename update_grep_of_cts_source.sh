@@ -24,5 +24,5 @@ grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_data_from_c
 echo grep -r "public void test" --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_test_files.txt
 grep -r "public void test" --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_test_files.txt
 
-echo grep -r "public void" --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_files.txt
-grep -r "public void" --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_files.txt
+echo grep -r " void " --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_files.txt
+grep -r " void " --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_files.txt
