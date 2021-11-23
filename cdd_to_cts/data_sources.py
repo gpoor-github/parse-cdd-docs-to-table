@@ -60,7 +60,7 @@ class SourceCrawlerReducer(object):
         self.test_files_to_aggregated_dependency_string = dict()
 
         self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = self.get_cached_crawler_data(cts_root_directory)
-        self.key_to_full_requirement_text, self.key_to_java_objects, self.key_to_urls, self.cdd_string, self.section_to_data = parse_cdd_md(md_file_root)
+        self.key_to_full_requirement_text, self.section_to_data = parse_cdd_md(md_file_root)
         create_full_table_from_cdd(self.key_to_full_requirement_text, self.key_to_full_requirement_text, self.section_to_data, global_table_input_file_built_from_requirment_md_files)
 
         self.global_input_table, self.global_input_table_keys_to_index, self.global_input_header, self.global_duplicate_rows = read_table_sect_and_req_key(

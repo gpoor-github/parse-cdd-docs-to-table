@@ -10,7 +10,7 @@ from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_ob
 from stackdump import stackdump
 
 
-def get_list_void_public_test_files(results_grep_public_test: str = "input_data_from_cts/public_void_test_files.txt") -> set:
+def get_list_void_public_test_files(results_grep_public_test: str = "input_data_from_cts/public_void_files.txt") -> set:
     results_grep_public_test = find_valid_path(results_grep_public_test)
     test_file_set = set()
 

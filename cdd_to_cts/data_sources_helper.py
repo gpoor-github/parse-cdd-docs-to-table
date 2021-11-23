@@ -255,6 +255,51 @@ def make_bags_of_word(root_cts_source_directory):
     return files_to_words_local, method_to_words_local, files_to_method_calls_local
 
 
+def make_bags_of_words_all(root_cts_source_directory):
+    # traverse root directory, and list directories as dirs and cts_files as cts_files
+
+    method_call_re = re.compile(r'\w{3,40}(?=\(\w*\))(?!\s*?{)')
+    files_to_words_local = dict()
+    method_to_words_local: dict = dict()
+    files_to_method_calls_local = dict()
+    for root, dirs, files in os.walk(root_cts_source_directory):
+        for file in files:
+            if file.endswith('.java'):
+                fullpath = '{}/{}'.format(root, file)
+                with open(fullpath, "r") as text_file:
+                    file_string = text_file.read()
+                    text_file.close()
+
+                    bag = bag_from_text(file_string)
+                    files_to_words_local[fullpath] = remove_non_determinative_words(bag)
+                    # print(f'file {file} bag {bag}')
+
+                    # get the names we want to search for to see if they are declared in other cts_files
+                    files_to_method_calls_local[fullpath] = set(re.findall(method_call_re, file_string))
+
+                    test_method_splits = re.split("@Test", file_string)
+                    i = 1
+                    while i < len(test_method_splits):
+
+                        test_method_split = test_method_splits[i]
+                        method_declare_body_splits = re.split(r'\s*public.+?\w+?(?=\(\w*?\))(?=.*?{)',
+                                                              test_method_split)
+                        if len(method_declare_body_splits) > 1:
+                            method_declare_body_split = method_declare_body_splits[1]
+                            method_names = re.findall(r'\w{3,40}(?=\(:?\w*\))', test_method_split)
+
+                            method_bag = \
+                                remove_non_determinative_words(set(method_declare_body_split.split(" ")))
+                            previous_value = method_to_words_local.get(fullpath)
+                            if previous_value:
+                                method_to_words_local[fullpath] = method_names[0] + ":" + " ".join(
+                                    method_bag) + ' | ' + previous_value
+                            else:
+                                method_to_words_local[fullpath] = method_names[0] + ":" + " ".join(method_bag)
+                        i += 1
+
+    return files_to_words_local, method_to_words_local, files_to_method_calls_local
+
 # if __name__ == '__main__':
 #     cdd_11_html_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_download.html"
 #     cdd_11_table_generated_from_html_all = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_11_full_table_from_html.tsv"

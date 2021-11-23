@@ -17,11 +17,8 @@ def do_map_12():
     directory = "/a1_working_12/"
 
     cdd_12_created = f"{directory}/cdd_12_table_all_md.tsv"
-    # scr = data_sources.SourceCrawlerReducer(
-    #     cdd_requirements_html_source=cdd_12_html_file,
-    #     global_table_input_file_build_from_html=cdd_12_created,
-    #     cts_root_directory=static_data.CTS_SOURCE_ROOT,
-    #     do_search=False)
+
+
     key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md(CDD_MD_ROOT)
     create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                section_to_section_data,
