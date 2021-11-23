@@ -30,3 +30,174 @@
 }"	""	""	ACCESSIBILITY_SETTINGS	""	""	""	""	""	""	""	""	""	""
 3.2.3.5  Conditional Application Intents	3.2.3.5	C-6-1	3.2.3.5/C-6-1	03020305.670601	"""C-6-1] MUST implement an activity that would respond to the intent [`ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS`](https://developer.android.com/reference/android/provider/Settings#ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS), which for implementations with UI_MODE_TYPE_NORMAL it MUST be an activity where the user can grant or deny the app access to DND policy configurations.  If device implementations allow users to use third-party input methods on the device, they:  """	Test Available, incomplete	""	DND ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS MODE_TYPE_NORMAL	""	DND MODE_TYPE_NORMAL	""	""	""	""	""	""	android.systemintents.cts.TestSystemIntents	testSystemIntents	CtsSystemIntentTestCases	[('/home/gpoor/cts-12-source/cts/tests/tests/systemintents/src/android/systemintents/cts/TestSystemIntents.java', 1)]	[('(1,ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS,/android/systemintents/cts/TestSystemIntents.java)', 1)]	[('([1:/android/systemintents/cts/TestSystemIntents.java]:[ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS]:[1]:method_text:[etInstrumentation().getContext();        mPackageManager = mContext.getPackageManager();    }   ])', 1)]	https://developer.android.com	""	[('ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS', 1)]	""	""	""	""	Though the intent is tested. The requirement says an activity should be launched so the user can grant or deny the app access to DND policy	""	""	""	""	""
 3.2.3.5  Conditional Application Intents	3.2.3.5	C-3-2	3.2.3.5/C-3-2	03020305.670302	"""C-3-2] MUST honor [android.nfc.cardemulation.action.ACTION_CHANGE_DEFAULT](https://developer.android.com/reference/android/nfc/cardemulation/CardEmulation#ACTION_CHANGE_DEFAULT) intent to show an activity which opens a dialog to ask the user to change the default card emulation service for a certain category as described in the SDK.  If device implementations report `android.hardware.nfc`, they:  """	Test Missing	""	ACTION_CHANGE_DEFAULT android.hardware.nfc android.nfc.cardemulation.action.ACTION	""	DND	""	""	[('android.content.cts.AvailableIntentsTest', 2)]	""	[('CtsContentTestCases', 2)]	""	android.content.cts.AvailableIntentsTest	""	CtsContentTestCases	[('/home/gpoor/cts-12-source/cts/tests/tests/content/src/android/content/cts/AvailableIntentsTest.java', 2)]	[('(2,ACTION_CHANGE_DEFAULT,/android/content/cts/AvailableIntentsTest.java)', 1)]	[('([1:/android/content/cts/AvailableIntentsTest.java]:[ACTION_CHANGE_DEFAULT]:[1]:method_text:[   assertCanBeHandled(new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT));        }    }   ])', 1), ('([1:/android/content/cts/AvailableIntentsTest.java]:[ACTION_CHANGE_DEFAULT]:[1]:method_text:[   assertCanBeHandled(new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER));        }    }   ])', 1)]	https://developer.android.com	""	[('ACTION_CHANGE_DEFAULT', 2)]	[('[android.content.cts.AvailableIntentsTest testChangeDefaultSmsApplication CtsContentTestCases]', 1), ('[android.content.cts.AvailableIntentsTest testChangeDefaultDialer CtsContentTestCases]', 1)]	""	""	""	Test seems to be missing, for NFC handler change, though it is there for SMS and Dialer.	TBD	""	""	""	""
+3.2.3.5  Conditional Application Intents	3.2.3.5	C-5-2	3.2.3.5/C-5-2	03020305.670502	"""C-5-2] MUST honor the [‘android.bluetooth.adapter.action.REQUEST_DISCOVERABLE’](https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#ACTION_REQUEST_DISCOVERABLE) intent and show a system activity that requests discoverable mode.  If device implementations support the DND feature, they:  """	Test Available	""	REQUEST_DISCOVERABLE ACTION_REQUEST_DISCOVERABLE android.bluetooth.adapter.action.REQUEST	""	""	""	""	""	""	""	""	com.android.cts.verifier.bluetooth.ConnectionAccessServerActivity	setPassFailButtonClickListeners	""	/home/gpoor/cts-12-source/cts/apps/CtsVerifier/src/com/android/cts/verifier/bluetooth/ConnectionAccessServerActivity.java	""	"public void test/*
+ *.
+ */
+
+package com.android.cts.verifier.bluetooth;
+
+import com.android.cts.verifier.PassFailButtons;
+import com.android.cts.verifier.R;
+
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.provider.Settings;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class ConnectionAccessServerActivity extends PassFailButtons.Activity {
+
+    private static final String ACTION_CONNECTION_ACCESS_REQUEST =
+            ""android.bluetooth.device.action.CONNECTION_ACCESS_REQUEST"";
+
+    private static final int ENABLE_BLUETOOTH_REQUEST = 1;
+
+    private BluetoothAdapter mBluetoothAdapter;
+    private ConnectionAccessRequestReceiver mConnectionAccessRequestReceiver;
+    private BluetoothChatService mChatService;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setContentView(R.layout.bt_connection_access);
+        setInfoResources(R.string.bt_connection_access_server,
+                R.string.bt_connection_access_server_info, 0);
+        setPassFailButtonClickListeners();
+        getPassButton().setEnabled(false);
+
+        View settings = findViewById(R.id.bt_settings);
+        settings.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+            }
+        });
+
+        Button makeDiscoverableButton = (Button) findViewById(R.id.bt_make_discoverable_button);
+        makeDiscoverableButton.setVisibility(View.VISIBLE);
+        makeDiscoverableButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                makeDiscoverable();
+            }
+        });
+
+        mConnectionAccessRequestReceiver = new ConnectionAccessRequestReceiver();
+        IntentFilter intentFilter = new IntentFilter(ACTION_CONNECTION_ACCESS_REQUEST);
+        registerReceiver(mConnectionAccessRequestReceiver, intentFilter);
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter.isEnabled()) {
+            startChatService();
+        } else {
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(intent, ENABLE_BLUETOOTH_REQUEST);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case ENABLE_BLUETOOTH_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    startChatService();
+                } else {
+                    setResult(RESULT_CANCELED);
+                    finish();
+                }
+                break;
+        }
+    }
+
+    private void startChatService() {
+        mChatService = new BluetoothChatService(this, new ChatHandler(),
+                BluetoothChatService.HANDSFREE_INSECURE_UUID);
+        boolean secure = false;
+        mChatService.start(secure);
+    }
+
+    private void makeDiscoverable() {
+        if (mBluetoothAdapter.getScanMode() !=
+                BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
+            startActivity(intent);
+        }
+    }
+
+    private class ChatHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case BluetoothChatService.MESSAGE_STATE_CHANGE:
+                    handleStateChange(msg);
+                    break;
+
+                case BluetoothChatService.MESSAGE_TOAST:
+                    handleToast(msg);
+                    break;
+            }
+        }
+    }
+
+    private void handleStateChange(Message msg) {
+        int state = msg.arg1;
+        switch (state) {
+            case BluetoothChatService.STATE_LISTEN:
+                setProgressBarIndeterminateVisibility(true);
+                Toast.makeText(this, R.string.bt_listening, Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private void handleToast(Message msg) {
+        String toast = msg.getData().getString(BluetoothChatService.TOAST);
+        Toast.makeText(this, toast, Toast.LENGTH_LONG).show();
+    }
+
+    class ConnectionAccessRequestReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            new AlertDialog.Builder(ConnectionAccessServerActivity.this)
+                    .setMessage(R.string.bt_ca_dialog)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            getPassButton().setEnabled(true);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel,
+                            new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            getPassButton().setEnabled(false);
+                        }
+                    })
+                    .show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mChatService != null) {
+            mChatService.stop();
+        }
+        unregisterReceiver(mConnectionAccessRequestReceiver);
+    }
+}"	""	""	REQUEST_DISCOVERABLE	""	""	""	""	Though maybe not targeted at this requirement it seems to test it fully.	""	""	""	""	""

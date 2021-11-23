@@ -4,14 +4,16 @@ import sys
 from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
 
-def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str,int], header_column_source:[str], columns_to_use: [str])\
-        -> ([[str]], dict[str,int]):
+
+def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str, int], header_column_source: [str],
+                         columns_to_use: [str]) \
+        -> ([[str]], dict[str, int]):
     """ This will take table_source and make a new table only using the columns specified.
     :return  ([[str]], dict):
     """
     column_subset_table = list()
     column_subset_key_to_index = dict()
-    test_source_index_str = " ".join(header_column_source)+' '
+    test_source_index_str = " ".join(header_column_source) + ' '
     column_subset_table_idx_count = 0
     for key in key_to_index_source:
         try:
@@ -21,13 +23,13 @@ def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str,in
                 # Section,section_id,req_id
                 column_subset_row = list()
                 for column in columns_to_use:
-                    if test_source_index_str.find(column+' ') > -1: #Add space so names have less chance of overlap
+                    if test_source_index_str.find(column + ' ') > -1:  # Add space so names have less chance of overlap
                         header_column_source_idx = header_column_source.index(column)
                         source_value_to_use = source_row[header_column_source_idx]
                         column_subset_row.append(source_value_to_use)
                 column_subset_table.append(column_subset_row)
-                column_subset_key_to_index[key]= column_subset_table_idx_count
-                column_subset_table_idx_count+=1
+                column_subset_key_to_index[key] = column_subset_table_idx_count
+                column_subset_table_idx_count += 1
 
             else:
                 helpers.raise_error(
@@ -38,6 +40,42 @@ def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str,in
                 f"Note: key {key} errors {str(err)} on removing columns... should not happen ")
 
     return column_subset_table, column_subset_key_to_index
+
+
+def merge_duplicate_row_for_column_set_for_flat(table_target: [[str]], key_to_index_target: dict, header_target: [str],
+                                       columns: [str]):
+    test_target_index_str = static_data.table_delimiter.join(header_target)
+    unique_rows: dict = dict()
+    for t_target_row in table_target:
+        try:
+            column_key = ""
+            for column in columns:
+                if test_target_index_str.find(column) > -1:
+                    column_target_idx = header_target.index(column)
+                    # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
+                    #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
+                    column_key = column_key + "_" + t_target_row[column_target_idx]
+            previous_row = unique_rows.get(column_key)
+            if previous_row:
+                t_target_row[header_target.index(
+                    static_data.MATCHED_TERMS)] = f"{previous_row[header_target.index(static_data.MATCHED_TERMS)]} {t_target_row[header_target.index(static_data.MATCHED_TERMS)]}"
+            unique_rows[column_key] = t_target_row
+
+        except Exception as err:
+            print(
+                f"Note:errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+
+    full_key_index = header_target.index(static_data.FULL_KEY)
+    count:int = 0
+    new_merged_table: [[str]] = list()
+    new_merged_key_to_index_target: dict = dict()
+    for unique_row_key in unique_rows:
+        row = unique_rows.get(unique_row_key)
+        new_merged_table.append(row)
+        new_merged_key_to_index_target[row[full_key_index]] = count
+        count=count+1
+
+    return new_merged_table, new_merged_key_to_index_target
 
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],
@@ -110,21 +148,22 @@ def remove_keys(table_target: [[str]], key_to_index_target: dict, key_indexes_to
     return new_table
 
 
-def move_last_row_to_new_table(table_to_get_row:str)-> str:
-        key_fields1_org: dict
-        table1_org, key_fields1_org, header1_org, duplicate_rows1_org = read_table_sect_and_req_key(
-            table_to_get_row)
-        fields_to_write: list = list()
-        key_to_row = ""
-        for key in key_fields1_org:
-            key_to_row = key
-        new_table_file_name: str =f"{table_to_get_row.replace('.tsv','')}_{key_to_row.replace('/','_')}.{'tsv'}"
-        fields_to_write.append(key_to_row)
-        new_table=filter_first_table_by_keys_of_second(table1_org,key_fields1_org,fields_to_write)
-        write_table(new_table_file_name, new_table,header1_org)
-        table1_org_minus_row = remove_keys(table1_org,key_fields1_org,fields_to_write)
-        write_table(table_to_get_row,table1_org_minus_row,header1_org)
-        return new_table_file_name
+def move_last_row_to_new_table(table_to_get_row: str) -> str:
+    key_fields1_org: dict
+    table1_org, key_fields1_org, header1_org, duplicate_rows1_org = read_table_sect_and_req_key(
+        table_to_get_row)
+    fields_to_write: list = list()
+    key_to_row = ""
+    for key in key_fields1_org:
+        key_to_row = key
+    new_table_file_name: str = f"{table_to_get_row.replace('.tsv', '')}_{key_to_row.replace('/', '_')}.{'tsv'}"
+    fields_to_write.append(key_to_row)
+    new_table = filter_first_table_by_keys_of_second(table1_org, key_fields1_org, fields_to_write)
+    write_table(new_table_file_name, new_table, header1_org)
+    table1_org_minus_row = remove_keys(table1_org, key_fields1_org, fields_to_write)
+    write_table(table_to_get_row, table1_org_minus_row, header1_org)
+    return new_table_file_name
+
 
 def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_target: dict,
                                          key_indexes_to_use: list) -> [[str]]:
@@ -175,15 +214,16 @@ def remove_none_requirements(table_target: [[str]], key_to_index_target: dict) -
 def merge_tables(file1, file2, output_file):
     table1, key_fields1, header1, duplicate_rows1 = read_table_sect_and_req_key(file1)
     table2, key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(file2)
-    table_target, missing_keys_target, missing_keys_source = update_table(table1, key_fields1, header1, table2, key_fields2, header2,
+    table_target, missing_keys_target, missing_keys_source = update_table(table1, key_fields1, header1, table2,
+                                                                          key_fields2, header2,
                                                                           static_data.update_release_header)
     write_table(output_file, table_target, header1)
     return table_target, header1
 
 
-def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str,int], header_target: [str],
-                       table_new_row_source: list[[str]], key_to_new_row_source: dict[str,int], header_source: [str] ) -> ([[str]], dict[str,int]):
-
+def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str, int], header_target: [str],
+                       table_new_row_source: list[[str]], key_to_new_row_source: dict[str, int],
+                       header_source: [str]) -> ([[str]], dict[str, int]):
     test_target_index_str = static_data.table_delimiter.join(header_target)
     test_source_index_str = static_data.table_delimiter.join(header_source)
     for key in key_to_new_row_source:
@@ -212,10 +252,12 @@ def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str,
 
     return table_target, key_to_table_target
 
+
 def merge_tables_rows(target_table, source_table, output_file):
     table_target, key_fields_target, header_target, duplicate_rows_target = read_table_sect_and_req_key(target_table)
     table_source, key_fields_source, header_source, duplicate_rows_source = read_table_sect_and_req_key(source_table)
-    table_target, key_to_table_target = add_table_new_rows(table_target, key_fields_target, header_target, table_source, key_fields_source, header_source)
+    table_target, key_to_table_target = add_table_new_rows(table_target, key_fields_target, header_target, table_source,
+                                                           key_fields_source, header_source)
     write_table(output_file, table_target, header_target)
     return table_target, header_target
 
@@ -254,6 +296,7 @@ def add_columns(manual_fields_header, updated_header):
             updated_header.index(column)
         except ValueError:
             updated_header.append(column)
+
 
 # Not in use, before conversion to tabs
 # def write_file_fields_to_files(source_to_use_values: str,
@@ -602,9 +645,9 @@ def make_new_table_from_keys(keys_to_use: iter, file_name_of_table_input: str, f
 def merge_table_example():
     _file_table_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
     _file_table_to_use_as_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9_3.2.3.5_C-9-1_flat.tsv"
-    _file_output= "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
-    _table_merged, header_from_table_to_update = merge_tables_rows(_file_table_to_update, _file_table_to_use_as_input,_file_output)
-
+    _file_output = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
+    _table_merged, header_from_table_to_update = merge_tables_rows(_file_table_to_update, _file_table_to_use_as_input,
+                                                                   _file_output)
 
 
 if __name__ == '__main__':

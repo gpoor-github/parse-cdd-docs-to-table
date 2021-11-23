@@ -730,9 +730,8 @@ def do_map_with_flat_file(file_to_process:str ) :
     start = time.perf_counter()
     rd = RxData()
     rd.max_matches = 1200
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-2.tsv"
-    temp_result = current_file.replace('.tsv', "_tmp.tsv")
-    final_result = current_file
+    temp_result = file_to_process.replace('.tsv', "_tmp.tsv")
+    final_result = file_to_process
 
 
     rd.result_subject.pipe(
@@ -742,22 +741,22 @@ def do_map_with_flat_file(file_to_process:str ) :
         , ops.to_list()
         ,
         ops.map(
-            lambda table: table_ops.write_table(current_file.replace('.tsv',"_flat.tsv"), table,
+            lambda table: table_ops.write_table(file_to_process.replace('.tsv',"_flat.tsv"), table,
                                                 static_data.cdd_to_cts_app_header))) \
         .subscribe(on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
                    on_completed=lambda: print("complete result_subject"),
                    on_error=lambda err: helpers.raise_error("result_subject", err))
 
-    rd.main_do_create_table(current_file, temp_result).subscribe(
-        on_next=lambda table: my_print(f"react.py main created [{temp_result}] from [{current_file}] "),
+    rd.main_do_create_table(file_to_process, temp_result).subscribe(
+        on_next=lambda table: my_print(f"react.py main created [{temp_result}] from [{file_to_process}] "),
         on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.raise_error("in main", err))
-    update_release_table_with_changes(current_file, temp_result, final_result, static_data.results_header)
+    update_release_table_with_changes(file_to_process, temp_result, final_result, static_data.results_header)
     # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
 
 if __name__ == '__main__':
-    current_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-2.tsv"
-    do_map_with_flat_file(current_file)
+    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-1.tsv"
+    do_map_with_flat_file(current_file_)
