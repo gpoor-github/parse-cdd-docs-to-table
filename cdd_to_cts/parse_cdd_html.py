@@ -26,7 +26,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
         print(f"CDD HTML to csv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()
         #  section_re_str: str = r'"(?:\d{1,3}_)+'
-        section_marker: str = "data-text=\"\s*"
+        section_marker: str = r"data-text=\"\s*"
         section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
         cdd_sections_splits = re.split('(?={})'.format(section_marker), cdd_requirements_file_as_string,
                                        flags=re.DOTALL)
@@ -41,7 +41,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
                 continue
             cdd_section_id = cdd_section_id_search_results[0]
             cdd_section_id = cdd_section_id.replace(section_marker, '').rstrip('.')
-            section_re = "\. ([\w \.]*)\s*"  # _([a-zA-Z_]+)"
+            section_re = r"\. ([\w \.]*)\s*"  # _([a-zA-Z_]+)"
             section_to_section_data[cdd_section_id] = cdd_section_id
             section_text_result = re.search(section_re, section)
             if section_text_result:
@@ -56,8 +56,8 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
                 continue
             section = helpers.process_requirement_text(section)
             key_to_full_requirement_text_local[cdd_section_id] = helpers.prepend_any_previous_value(section, key_to_full_requirement_text_local.get(cdd_section_id))
-            section_and_req_re = "(([0-9]+\.[0-9])+/(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?])"
-            section_and_req_re_2 = "[\[>][\d+\.]+\d+/(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?]"
+            section_and_req_re = r"(([0-9]+\.[0-9])+/(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?])"
+            section_and_req_re_2 = r"[\[>][\d+\.]+\d+/(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?]"
             re_comp = re.compile(section_and_req_re_2)
             req_id_findall = re.findall(section_and_req_re_2, section,flags=re.DOTALL)
             req_id_splits = re.split('(?={})'.format(section_and_req_re_2), section)
@@ -68,7 +68,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
             # Only build a key if you can't find any...
 
             if len(req_id_splits) < 2:
-                composite_key_string_re = '\s*(?:<li>)?\['
+                composite_key_string_re = r'\s*(?:<li>)?\['
 
                 req_id_splits = re.split(composite_key_string_re, str(section))
 

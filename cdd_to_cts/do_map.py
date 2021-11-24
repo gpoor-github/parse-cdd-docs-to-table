@@ -36,7 +36,7 @@ def do_map_12():
         .subscribe(
         on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),
         on_completed=lambda: do_on_complete(),
-        on_error=lambda err: helpers.raise_error("rx on_error do_map()", err))
+        on_error=lambda err: helpers.print_system_error_and_dump("rx on_error do_map()", err))
 
 
 def do_map_11():
@@ -61,7 +61,7 @@ def do_map_11():
         .subscribe(
         on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),
         on_completed=lambda: do_on_complete(),
-        on_error=lambda err: helpers.raise_error("rx on_error do_map()", err))
+        on_error=lambda err: helpers.print_system_error_and_dump("rx on_error do_map()", err))
 
 
 # noinspection DuplicatedCode

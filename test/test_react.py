@@ -24,7 +24,7 @@ class TestRxData(TestCase):
         rd.main_do_create_table(input_file_name, output_file_name).subscribe(
             on_next=lambda table: my_print("that's all folks!{} "),
             on_completed=lambda: print("completed"),
-            on_error=lambda err: helpers.raise_error("in main", err))
+            on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
         # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
         # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     #
@@ -77,7 +77,7 @@ class TestRxData(TestCase):
             on_next=lambda table: my_print(
                 f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
             on_completed=lambda: print("completed"),
-            on_error=lambda err: helpers.raise_error("in main", err))
+            on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
 
     def test_update_manual_field_new_approach(self):
 
@@ -93,7 +93,7 @@ class TestRxData(TestCase):
             on_next=lambda table: my_print(
                 f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
             on_completed=lambda: print("completed"),
-            on_error=lambda err: helpers.raise_error("in main", err))
+            on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
 
     def test_play2_re_search(self):
         logging = True

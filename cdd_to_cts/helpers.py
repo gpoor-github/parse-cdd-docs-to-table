@@ -24,7 +24,7 @@ def get_list_void_public_test_files(results_grep_public_test: str = "input_data_
                 test_file_set.add(line.split(":")[0])
         grep_of_test_files.close()
     except FileNotFoundError as e:
-        raise_error(f" Could not find {results_grep_public_test} ", e)
+        print_system_error_and_dump(f" Could not find {results_grep_public_test} ", e)
     return test_file_set
 
 
@@ -62,13 +62,20 @@ def convert_version_to_number(section_id: str, requirement_id: str):
     return f'{section_as_number}.{requirement_as_number}'
 
 
-def raise_error(message: str = "ERROR.. default cdd parser message.", a_exception: BaseException = None):
+def print_system_error_and_dump(message: str = "ERROR.. default cdd parser message.", a_exception: BaseException = None):
     print(message, file=sys.stderr)
-    if a_exception:
-        print(str(a_exception), file=sys.stderr)
     stackdump(message)
     traceback.print_exc()
+    if a_exception:
+        print(str(a_exception), file=sys.stderr)
+        raise a_exception
+    else:
+        raise BaseException(message)
 
+
+def raise_error_system_exit(message: str = "ERROR.. default cdd parser message.", a_exception: BaseException = None):
+    print_system_error_and_dump(message,a_exception)
+    raise SystemExit(message)
 
 def process_requirement_text(text_for_requirement_value: str):
     value = cleanhtml(text_for_requirement_value)
@@ -91,7 +98,7 @@ def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_value
     try:
         pre_existing_value = dictionary_with_existing_values.get(key)
     except Exception as err:
-        raise_error(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
+        print_system_error_and_dump(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
 
     if not pre_existing_value:
         dictionary_with_existing_values[key] = CountDict()
@@ -108,14 +115,14 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
     if not new_value_to_add:
         return dictionary_with_existing_values
     if not header.index(key):
-        raise_error(f"add_list_to_dict no key for [{key}] in {str(header)}")
+        print_system_error_and_dump(f"add_list_to_dict no key for [{key}] in {str(header)}")
     try:
         pre_existing_value = dictionary_with_existing_values.get(key)
         if isinstance(pre_existing_value,str) and isinstance(new_value_to_add,str):
             if pre_existing_value.index(new_value_to_add) > -1:
                 return
     except Exception as err:
-        raise_error(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
+        print_system_error_and_dump(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
 
     if pre_existing_value:
         if isinstance(pre_existing_value, str) and isinstance(new_value_to_add, str):
@@ -152,7 +159,7 @@ class CountDict:
             for value in new_value_to_add:
                 self.add_to_count_dict(value)
         else:
-            raise_error(f"Bad type add_to_count_dict {new_value_to_add}")
+            print_system_error_and_dump(f"Bad type add_to_count_dict {new_value_to_add}")
 
         return self.count_value_dict
 
@@ -288,5 +295,5 @@ def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_C
                 test_cases_to_path[path] = test_case_name
 
     except Exception as e:
-        raise_error(f"Error open file {testcases_grep_results}", e)
+        print_system_error_and_dump(f"Error open file {testcases_grep_results}", e)
     return test_cases_to_path

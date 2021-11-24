@@ -105,7 +105,7 @@ def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data.TEST_F
                     print(f'{count}) {test_annotated_file_name}:{method}')
                 grep_of_test_files.close()
     except FileNotFoundError as e:
-        helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
+        helpers.print_system_error_and_dump(f" Could not find {results_grep_at_test} ", e)
     print(f'{count}) {len(test_files_to_methods)}')
     return test_files_to_methods
 
@@ -167,7 +167,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
         print(f'Finished parsing dependencies {count} time {end - start:0.4f}sec ')
 
     except Exception as err:
-        helpers.raise_error(f" Maybe couldn't open {file_name_in}", err)
+        helpers.print_system_error_and_dump(f" Maybe couldn't open {file_name_in}", err)
     return test_classes_to_dependent_classes
 
 

@@ -32,11 +32,11 @@ def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str, i
                 column_subset_table_idx_count += 1
 
             else:
-                helpers.raise_error(
+                helpers.print_system_error_and_dump(
                     f"Error: key {key} Not found shouldn't happen in this class ")
 
         except Exception as err:
-            helpers.raise_error(
+            helpers.print_system_error_and_dump(
                 f"Note: key {key} errors {str(err)} on removing columns... should not happen ")
 
     return column_subset_table, column_subset_key_to_index
@@ -247,7 +247,7 @@ def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str,
                 table_target.append(source_row)
 
         except Exception as err:
-            helpers.raise_error(
+            helpers.print_system_error_and_dump(
                 f"Note: key {key} errors {str(err)} on removing columns... should not happen ")
 
     return table_target, key_to_table_target
@@ -341,7 +341,7 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
         elif header is not None and (len(header) > 0):
             table_writer.writerow(header)
         else:
-            helpers.raise_error(f"Filename {file_name} has no header fatal")
+            helpers.print_system_error_and_dump(f"Filename {file_name} has no header fatal")
             raise SystemExit(f"Filename {file_name} has no header fatal")
 
         # get rid of bad rows
@@ -473,9 +473,9 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
 
                     table_index += 1
                 except IndexError as e:
-                    helpers.raise_error(f"Index error {file_name} idx {table_index}  -= {type(e)} value {str(e)}...")
+                    helpers.print_system_error_and_dump(f"Index error {file_name} idx {table_index}  -= {type(e)} value {str(e)}...")
                 except Exception as e1:
-                    helpers.raise_error(
+                    helpers.print_system_error_and_dump(
                         f"General exception  {file_name} idx {table_index} -= {type(e1)} exiting..{str(e1)}")
 
                 # end for rows
@@ -488,7 +488,7 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
                 duplicate_rows = None
             csv_file.close()
     except IOError as e:
-        helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+        helpers.print_system_error_and_dump(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     return table, key_fields, header, duplicate_rows
 
 
@@ -563,7 +563,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
                     if logging: print(f'For table {table_index}')
                     table_index += 1
                 except (IndexError, ValueError) as e:
-                    helpers.raise_error(
+                    helpers.print_system_error_and_dump(
                         f"Index ValueError row[{row}] at idx={table_index}  from {file_name}  -= {type(e)} value {str(e)}...")
             csv_file.close()
             # end for rows
@@ -576,10 +576,10 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
                 duplicate_rows = None
             csv_file.close()
     except (IOError, IndexError) as e:
-        helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+        helpers.print_system_error_and_dump(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
         raise SystemExit(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     except Exception as e2:
-        helpers.raise_error(
+        helpers.print_system_error_and_dump(
             f"Unexpected fatal exception[{str(e2)}] file {file_name}  in read_table_sect_and_req_key  exiting...")
         raise SystemExit(f"Failed to open file {file_name} exception -= {str(e2)} exiting...")
 

@@ -155,7 +155,7 @@ class TestReacItems(unittest.TestCase):
     #
     #         return self.__replay_input_table, self.__replay_header
     #     except IOError as e:
-    #         helpers.raise_error(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+    #         helpers.print_system_error_and_dump(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     #
     # def get_filtered_cdd_by_table(self, input_table_file=static_data.INPUT_TABLE_FILE_NAME_RX,
     #                               cdd_requirements_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,

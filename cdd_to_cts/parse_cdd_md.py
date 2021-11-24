@@ -18,7 +18,7 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
     section_count =0
     total_requirement_count =0
     if not pathlib.Path(cdd_md_root).is_dir():
-        helpers.raise_error(f"Not directory {cdd_md_root}")
+        helpers.print_system_error_and_dump(f"Not directory {cdd_md_root}")
     for directory, subdirlist, filelist in os.walk(cdd_md_root):
         for sub_dir in subdirlist:
             section_re_str: str = '(\d{1,3}_)+'

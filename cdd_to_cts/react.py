@@ -15,7 +15,7 @@ import static_data
 import table_ops
 from cdd_to_cts.class_graph import parse_class_or_method, re_method
 from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_test_cases_module_dictionary, \
-    raise_error, \
+    print_system_error_and_dump, \
     convert_version_to_number_from_full_key, CountDict
 from cdd_to_cts.static_data import full_key_string_for_re, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
@@ -60,7 +60,7 @@ def build_row(search_info_dict: dict, header: [str] = static_data.cdd_to_cts_app
 
     except Exception as err3:
         traceback.print_exc()
-        raise_error("build_row: Exception ", err3)
+        print_system_error_and_dump("build_row: Exception ", err3)
     return None
 
 def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_log=True):
@@ -182,7 +182,7 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
 
 
     except Exception as err:
-        helpers.raise_error(
+        helpers.print_system_error_and_dump(
             f"created_and_populated_search_info_from_key_row_tuple row=[{str()}] header[{str(header)}]  err =[{str(err)}] ",
             err)
 
@@ -396,7 +396,7 @@ class RxData:
             # end for search terms
 
         except Exception as err:
-            raise_error(f"execute_search_on_file_for_terms_return_results [{str(search_info)}] ", err)
+            print_system_error_and_dump(f"execute_search_on_file_for_terms_return_results [{str(search_info)}] ", err)
 
         return search_info
 
@@ -463,7 +463,7 @@ class RxData:
                 self.publish_each_result(search_result)
 
         except Exception as e:
-            helpers.raise_error(f"find_data_for_csv_dict at {full_key}", e)
+            helpers.print_system_error_and_dump(f"find_data_for_csv_dict at {full_key}", e)
 
         return search_info
 
@@ -523,7 +523,7 @@ class RxData:
 
                     return self.__list_of_at_test_files
             except FileNotFoundError as e:
-                raise helpers.raise_error(f" Could not find {results_grep_at_test} ", e)
+                raise helpers.print_system_error_and_dump(f" Could not find {results_grep_at_test} ", e)
 
     #
     # def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
@@ -729,12 +729,12 @@ def do_map_with_flat_file(file_to_process:str ) :
                                                 static_data.cdd_to_cts_app_header))) \
         .subscribe(on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
                    on_completed=lambda: print("complete result_subject"),
-                   on_error=lambda err: helpers.raise_error("result_subject", err))
+                   on_error=lambda err: helpers.print_system_error_and_dump("result_subject", err))
 
     rd.main_do_create_table(file_to_process, temp_result).subscribe(
         on_next=lambda table: my_print(f"react.py main created [{temp_result}] from [{file_to_process}] "),
         on_completed=lambda: rd.do_on_complete(),
-        on_error=lambda err: helpers.raise_error("in main", err))
+        on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
     update_release_table_with_changes(file_to_process, temp_result, final_result, static_data.results_header)
     # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))

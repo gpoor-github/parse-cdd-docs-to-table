@@ -55,6 +55,8 @@ class SourceCrawlerReducer(object):
                  global_table_input_file_built_from_requirment_md_files=DATA_SOURCES_CSV_FROM_HTML_1st,
                  cts_root_directory: str = CTS_SOURCE_ROOT,
                  do_search=False):
+        if md_file_root.endswith(".html"):
+            helpers.raise_error_system_exit(f"We are not using html files but the CDD Root {static_data.CDD_MD_ROOT} not {md_file_root}")
 
         self.global_to_data_sources_do_search = do_search
         self.test_files_to_aggregated_dependency_string = dict()
@@ -229,7 +231,7 @@ class SourceCrawlerReducer(object):
             try:
                 row = self.global_input_table[self.global_input_table_keys_to_index.get(key)]
             except Exception as err:
-                helpers.raise_error(f"Exception [{key}] row not found in search_files_as_strings_for_word ", err)
+                helpers.print_system_error_and_dump(f"Exception [{key}] row not found in search_files_as_strings_for_word ", err)
 
             try:
                 col_idx = list(self.global_input_header).index(MANUAL_SEARCH_TERMS)
