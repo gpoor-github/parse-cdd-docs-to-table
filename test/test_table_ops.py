@@ -63,6 +63,18 @@ class TestUpdate(TestCase):
     cdd_12_table_generated_from_html_all = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_full_table_from_html.tsv"
     cdd_12_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"  # So no filter
 
+    def test_make_table_current_released_11_to_see_if_we_have_really_done_90(self, ):
+
+        table_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
+        table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(table_input)
+        table_118, keys_fields_118, header_118, duplicate_rows_118 = table_ops.read_table_sect_and_req_key(
+            "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_the_118_between_md12-11-a1_working_12/cdd_12_todo_created.tsv")
+        new_table = filter_first_table_by_keys_of_second(table, key_fields, keys_fields_118)
+        table_ops.write_table(
+            "/a1_working_12-6-differ-md-12-11-Minus-sheet-11/are_these_118_really_done.tsv",
+            new_table,
+            header)
+
     def test_make_table_keys_in_11_but_not_in_12(self, ):
         keys = ['4/C-0-1', '4/C-0-8', '9.5/C-1-1', '4/C-0-4', '9.9.3.1/C-1-9', '4/C-0-9', '3.15/C-1-4',
                 '9.9.3.1/C-1-12', '9.9.3.1/C-1-6', '3.8.14/C-2-1', '7.3.4/A-2-2', '9.9.3.1/C-1-7', '3.15/C-1-5',
@@ -145,6 +157,16 @@ class TestUpdate(TestCase):
             self.assertIsNone(key_fields_f.get(key))
         for key in keys_to_filter_by:
             self.assertIsNotNone(key_fields.get(key))
+
+    def test_filter_table_by_removing_keys2(self, ):
+        keys_to_filter_by = ['7.4.5.2/C-2-1', '3.2.3.1/Tab-0-1', '4/C-0-9', '7.4.5.2/C-0-6', '7.4.5.3/C-1-1', '7.4.3/C-3-5', '3.2.3.5/C-5-1', '7.3.10/C-4-2', '3.18/C-1-5', '7.4.5.2/C-0-4', '3.18/C-1-2', '6.1/H-0-6', '7.3.13/C-1-1', '3.2.3.5/C-5-2', '3.2.3.5/C-14-1', '7.4.8/C-1-2', '9.8.11/C-1-2', '3.2.3.5/C-7-1', '7.1.4.6/H-1-4', '7.4.5.2/C-0-5', '7.4.5.3/C-1-3', '9.8.10/C-1-2', '7.3.10/C-5-1', '7.1.4.2/C-1-9', '3.2.3.5/C-6-1', '7.4.5.2/C-4-1', '9.8.10/C-1-4', '7.4.5.3/C-1-5', '9.16/C-1-2', '7.3/C-4-1', '9.11.3/C-0-3', '9.8.11/C-1-1', '9.8.9/C-0-1', '7.1.4.2/C-1-8', '7.3/C-3-1', '9.8.10/C-1-3', '9.16/C-1-3', '9.16/C-1-4', '6.1/C-0-11', '9.1/C-2-1', '3.8.16/H-2-1', '3.18/C-1-1', '3.2.3.5/C-12-1', '9.9.4/C-0-1', '3.2.3.5/C-8-1', '7.3.10/C-4-1', '6.1/C-4-1', '3.18/C-1-3', '3.2.3.5/C-13-2', '7.4.5.3/C-1-2', '3.2.3.1/H-0-2', '3.2.3.1/T-0-1', '9.11.3/C-0-4', '7.4.5.2/C-3-1', '3.15/C-1-1', '7.3.10/C-4-3', '7.2.4/C-3-2', '9.10/C-0-3', '7.3.10/C-6-2', '3.2.3.1/A-0-1', '7.3.10/C-6-1', '4/C-0-8', '7.2.4/C-3-3', '7.3.13/C-1-2', '3.8.16/H-1-4', '7.3.10/C-5-2', '7.4.5.2/C-0-3', '7.1.1.1/H-1-1', '7.4.5.1/C-0-1', '3.8.16/H-2-2', '3.8.15/C-1-5', '3.2.3.5/C-15-1', '3.8.16/H-1-2', '7.3.13/C-1-3', '3.18/C-1-4', '7.3.10/C-3-4', '6.1/C-3-2', '7.1.4.6/H-1-2', '7.1.4.6/H-0-1', '9.10/C-0-5', '3.8.6/C-1-3', '3.8.16/H-1-1', '7.1.1.1/C-2-1', '7.1.1.1/H-2-1', '7.1.4.6/H-1-1', '7.1.4.6/H-1-3', '3.1.1/C-0-3', '7.1.4.2/C-1-10', '6.1/C-3-1', '3.2.3.5/C-9-1', '7.1.1.1/C-3-1', '3.2.3.5/C-2-6', '7.5.4/C-0-12', '9.16/C-1-5', '9.11.3/C-0-2', '3.8.4/H-1-1', '7.3/C-1-6', '3.2.3.5/C-3-2', '9.16/C-1-1', '3.1.1/C-0-2', '7.4.5.2/C-1-1', '3.8.16/H-1-3', '9.10/C-0-4', '9.9.3/C-1-13', '6.1/C-5-1', '3.2.3.5/C-13-1', '7.4.5.2/C-0-2', '9.11.3/C-0-1', '9.8.10/C-1-1', '7.3.6/C-2-1', '7.4.5.3/C-1-4', '3.2.3.1/W-0-1']
+        table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(
+            "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv")
+        new_table = table_ops.remove_keys(table, key_fields, keys_to_filter_by)
+
+        table_ops.write_table(
+            "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_filtered_by_done_already_im_11.tsv",
+            new_table, header)
 
     def test_read_table_sect_and_req_key(self):
         input_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/FILTERED_TABLE_TO_SEARCH.csv"

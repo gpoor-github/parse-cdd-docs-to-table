@@ -155,22 +155,6 @@ def observable_to_dict(obs: rx.Observable) -> dict:
     return a_dic
 
 
-def process_section_str_data(key_to_section: str):
-    try:
-        key_to_section_split = key_to_section.split(':', 1)
-        section_id = key_to_section[0]
-        section = helpers.remove_n_spaces_and_delimiter(key_to_section_split[1])
-        req_id_splits = re.split('(?={})'.format(static_data.full_key_string_for_re), section)
-        if req_id_splits and len(req_id_splits) > 1:
-            return rx.for_in(req_id_splits, find_full_key_callable)
-        else:
-            req_id_splits = re.split(static_data.composite_key_string_re, str(section))
-            if req_id_splits and len(req_id_splits) > 1:
-                return rx.from_list(list_map(section_id, req_id_splits))  # build_composite_key_callable).pipe()
-    except Exception as exception_process:
-        helpers.raise_error(f" process_section_md {exception_process}", exception_process)
-    return rx.empty()
-
 
 def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [str, [str]], header: [str],
                                                          columns_to_copy: [

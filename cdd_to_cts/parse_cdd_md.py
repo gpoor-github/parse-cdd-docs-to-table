@@ -5,7 +5,8 @@ import pathlib
 import re
 
 import helpers
-from data_sources_helper import process_section_splits_md
+import static_data
+from data_sources_helper import process_section_splits_md, create_full_table_from_cdd
 from static_data import CDD_MD_ROOT, full_key_string_for_re, req_id_re_str
 
 
@@ -81,6 +82,9 @@ def get_section_id(cdd_section_id_search_results:[]):
     return cdd_section_id
 
 if __name__ == '__main__':
-    _key_to_full_requirement_text_local, _section_to_section_data = parse_cdd_md()
-
+    root_older = "/home/gpoor/aosp_cdd"
+    _key_to_full_requirement_text_local, _section_to_section_data = parse_cdd_md(root_older)
+    create_full_table_from_cdd(_key_to_full_requirement_text_local, _key_to_full_requirement_text_local.keys(),
+                               _section_to_section_data,
+                               "./output/md_cdd_12_master.tsv", static_data.cdd_info_only_header)
     print(len(_key_to_full_requirement_text_local))

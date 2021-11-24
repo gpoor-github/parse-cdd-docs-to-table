@@ -270,7 +270,7 @@ if __name__ == '__main__':
     cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/cdd_11_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
     md_11="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_android11-release.tsv"
     md_11B="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd-11.tsv"
-    md_12="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd_12_master.tsv"
+    md_12="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_the_118_between_md12-11-a1_working_12/cdd_12_todo_created.tsv"
     md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper.tsv"
     cdd_11_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
     cdd_12_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD-12 Nov-9-downloaded.tsv"
@@ -278,5 +278,8 @@ if __name__ == '__main__':
     cdd_12_table_download_nov15="/home/gpoor/Downloads/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
     # result_dict, not_found, found = rs.does_class_ref_file_exist(mapping_cdd)
     # print('results {}\n found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_count, rs.not_found_count))
+    cdd_11_dev = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-dev.tsv"
+    cdd_11_release = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-d2-release.tsv"
+    diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_12_master.tsv", cdd_11_release)
     #diff_tables_files(cdd_12_table_download_nov15, cdd_12_downloaded_tsv)
-    diff_tables_files("/X_a1_working/cdd_12_master_diff_md_11.tsv", annotation_12)
+   # diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv")

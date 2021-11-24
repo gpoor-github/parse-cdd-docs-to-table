@@ -6,86 +6,13 @@ import re
 import static_data
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import bag_from_text, remove_non_determinative_words, convert_version_to_number, \
-    convert_version_to_number_from_full_key
+    convert_version_to_number_from_full_key, build_composite_key, find_full_key, find_valid_path, find_java_objects, \
+    find_urls
 from cdd_to_cts.static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE
 from class_graph import parse_dependency_file
 
 
 #
-# def parse_cdd_html_to_requirements(cdd_html_file=CDD_REQUIREMENTS_FROM_HTML_FILE, logging=False):
-#     key_to_full_requirement_text_local = dict()
-#     key_to_java_objects_local = dict()
-#     key_to_urls_local = dict()
-#     section_to_section_data = dict()
-#     # Should do key_to_cdd_section = dict()
-#     # keys_not_found: list = []
-#     total_requirement_count = 0
-#
-#     cdd_html_file = find_valid_path(cdd_html_file)
-#
-#     with open(cdd_html_file, "r") as text_file:
-#         print(f"CDD HTML to csv file is {cdd_html_file}")
-#         cdd_requirements_file_as_string = text_file.read()
-#         #  section_re_str: str = r'"(?:\d{1,3}_)+'
-#         section_marker: str = "data-text=\"\s*"
-#         section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
-#         cdd_sections_splits = re.split('(?={})'.format(section_marker), cdd_requirements_file_as_string,
-#                                        flags=re.DOTALL)
-#         section_count = 0
-#         char_count = 0
-#         for section in cdd_sections_splits:
-#             section_count += 1
-#             char_count += len(section)
-#             section = helpers.clean_html_anchors(section)
-#             cdd_section_id_search_results = re.search(static_data.SECTION_ID_RE_STR, section)
-#             if not cdd_section_id_search_results:
-#                 continue
-#             cdd_section_id = cdd_section_id_search_results[0]
-#             cdd_section_id = cdd_section_id.replace(section_marker, '').rstrip('.')
-#             section_re = "\. ([\w \.]*)\s*"  # _([a-zA-Z_]+)"
-#             section_to_section_data[cdd_section_id] = cdd_section_id
-#             section_text_result = re.search(section_re, section)
-#             if section_text_result:
-#                 section_text = section_text_result[0]
-#                 section_text = section_text.strip()
-#                 section_to_section_data[cdd_section_id] = f'{section_to_section_data[cdd_section_id]}  {section_text}'
-#                 # We want to we can add a row for position  {section_count}: {char_count})
-#             if '13' == cdd_section_id:
-#                 # section 13 is "Contact us" and has characters that cause issues at lest for git
-#                 print(f"Warning skipping section 13 {section}")
-#                 continue
-#             section = helpers.process_requirement_text(section)
-#             key_to_full_requirement_text_local[cdd_section_id] = helpers.prepend_any_previous_value(section, key_to_full_requirement_text_local.get(cdd_section_id))
-#
-#             req_id_splits = re.split('(?={})'.format(full_key_string_for_re), section)
-#
-#             total_requirement_count = process_section_splits_md(find_full_key, full_key_string_for_re, cdd_section_id,
-#                                                                 key_to_full_requirement_text_local, req_id_splits,
-#                                                                 section_count, total_requirement_count, logging)
-#             # Only build a key if you can't find any...
-#             if len(req_id_splits) < 2:
-#                 req_id_splits = re.split(composite_key_string_re, str(section))
-#
-#                 total_requirement_count = process_section_splits_md(build_composite_key, req_id_re_str, cdd_section_id,
-#                                                                     key_to_full_requirement_text_local, req_id_splits,
-#                                                                     section_count, total_requirement_count, logging)
-#
-#             section_count += 1
-#         for key in key_to_full_requirement_text_local:
-#             requirement_text = key_to_full_requirement_text_local.get(key)
-#             key_to_urls_local[key] = find_urls(requirement_text)
-#             key_split = key.split('/')
-#
-#             java_objects_temp = find_java_objects(requirement_text)
-#             java_objects_temp.add(key_split[0])
-#             if len(key_split) > 1:
-#                 java_objects_temp.add(key_split[1])
-#             key_to_java_objects_local[key] = java_objects_temp
-#     if len(key_to_full_requirement_text_local) < 1:
-#         raise SystemExit("Less than 1 requirements!? " + str(key_to_full_requirement_text_local))
-#     return key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data
-
-
 def create_populated_table(key_to_full_requirement_text:[str,str],keys_to_find_and_write:iter,  section_to_data:dict, header: []):
     table: [[str]] = []
     keys_to_table_index: dict[str, int] = dict()
