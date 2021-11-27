@@ -232,8 +232,8 @@ def find_search_terms(search_info) -> dict:
     search_term_set = set()
     # ToDo Restore full search?
     search_term_set.update(manual_search_terms)
-    # Section requirements search on or off
-    search_term_set.update(section_req)
+    # Search Req Section requirements search on or off
+    # search_term_set.update(section_req)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
     search_info[static_data.SEARCH_TERMS] = search_term_set
