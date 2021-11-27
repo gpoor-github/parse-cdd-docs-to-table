@@ -1,2 +1,94 @@
 Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
-3.2.3.5  . Conditional Application Intents	3.2.3.5	C-16-1	3.2.3.5/C-16-1	03020305.671601	"""C-16-1] If device implementations surface links to the activities specified by AutofillService_passwordsActivity in Settings or links to user passwords through a similar mechanism, they: MUST surface such links for all installed autofill services."""	Test Missing	""	""	AutofillService_passwordsActivity	""	""	""	[('android.cts.statsdatom.statsd.UidAtomTests', 1), ('android.media.metrics.cts.MediaMetricsAtomTests', 1), ('android.cts.statsdatom.statsd.AtomTestCase', 1)]	[('setUp', 6), ('hashCode', 1)]	[('CtsStatsdAtomHostTestCases', 2), ('CtsMediaHostTestCases', 1)]	y	""	""	""	""	""	""	""	""	""	""	""	""	""	"Believed missing because ""passwordsActivity"" not found in code search. So doesn't seem there could be a test."	""	tbd	""	""	""
+3.2.3.5  . Conditional Application Intents	3.2.3.5	C-16-1	3.2.3.5/C-16-1	03020305.671601	"""C-16-1] If device implementations surface links to the activities specified by AutofillService_passwordsActivity in Settings or links to user passwords through a similar mechanism, they: MUST surface such links for all installed autofill services."""	Test Missing	""	""	AutofillService_passwordsActivity	""	""	""	[('android.cts.statsdatom.statsd.UidAtomTests', 1), ('android.media.metrics.cts.MediaMetricsAtomTests', 1), ('android.cts.statsdatom.statsd.AtomTestCase', 1)]	[('setUp', 6), ('hashCode', 1)]	[('CtsStatsdAtomHostTestCases', 2), ('CtsMediaHostTestCases', 1)]	y	""	""	""	""	""	""	""	""	""	""	""	""	""	"Missing: ""passwordsActivity"" not found in code search. So doesn't seem there could be a test."	tbd	""	""	""	""
+3.5.1  . Application Restriction	3.5.1	C-1-9	3.5.1/C-1-9	03050100.670109	"""C-1-9] MUST report all app restriction events via UsageStats."""	Test Available, Incomplete	""	UsageStats	""	""	""	""	""	""	""	""	android.app.usage.cts.UsageStatsTest	testUserForceIntoRestricted	CtsUsageStatsTestCases	/home/gpoor/cts-12-source/cts/tests/tests/app.usage/src/android/app/usage/cts/UsageStatsTest.java	""	"public void testUserForceIntoRestricted() throws Exception {
+        setSetting(Settings.Global.ENABLE_RESTRICTED_BUCKET, ""1"");
+
+        launchSubActivity(TaskRootActivity.class);
+        assertEquals(""Activity launch didn't bring app up to ACTIVE bucket"",
+                UsageStatsManager.STANDBY_BUCKET_ACTIVE,
+                mUsageStatsManager.getAppStandbyBucket(mTargetPackage));
+
+        // User force shouldn't have to deal with the timeout.
+        setStandByBucket(mTargetPackage, ""restricted"");
+        assertEquals(""User was unable to force an ACTIVE app down into RESTRICTED bucket"",
+                UsageStatsManager.STANDBY_BUCKET_RESTRICTED,
+                mUsageStatsManager.getAppStandbyBucket(mTargetPackage));
+
+    }
+
+    // TODO(148887416): get this test to work for instant apps
+    @AppModeFull(reason = ""Test APK Activity not found when installed as an instant app"")"	""	""	UsageStats	""	""	""	""	"There is no indication of an list of ""all"" restriction being exercised and checking if they show up in A.""	""	""
+3.5.1  . Application Restriction	3.5.1	C-1-9	3.5.1/C-1-9	03050100.670109	"""C-1-9] MUST report all app restriction events via UsageStats."""	Test Available, Incomplete	""	UsageStats	""	""	""	""	""	""	""	""	android.app.usage.cts.UsageStatsTest	testUserForceIntoRestricted	CtsUsageStatsTestCases	/home/gpoor/cts-12-source/cts/tests/tests/app.usage/src/android/app/usage/cts/UsageStatsTest.java	""	"public void testUserForceIntoRestricted() throws Exception {
+        setSetting(Settings.Global.ENABLE_RESTRICTED_BUCKET, ""1"");
+
+        launchSubActivity(TaskRootActivity.class);
+        assertEquals(""Activity launch didn't bring app up to ACTIVE bucket"",
+                UsageStatsManager.STANDBY_BUCKET_ACTIVE,
+                mUsageStatsManager.getAppStandbyBucket(mTargetPackage));
+
+        // User force shouldn't have to deal with the timeout.
+        setStandByBucket(mTargetPackage, ""restricted"");
+        assertEquals(""User was unable to force an ACTIVE app down into RESTRICTED bucket"",
+                UsageStatsManager.STANDBY_BUCKET_RESTRICTED,
+                mUsageStatsManager.getAppStandbyBucket(mTargetPackage));
+
+    }
+
+    // TODO(148887416): get this test to work for instant apps
+    @AppModeFull(reason = ""Test APK Activity not found when installed as an instant app"")"	""	""	UsageStats	""	""	""	""	"There is no indication of an list of ""all"" restriction events being exercised and checking if they show up in UsageStats. If it does exists it is a good example of annotation being important."	""	""	""	""	""
+3.5.1  . Application Restriction	3.5.1	C-1-10	3.5.1/C-1-10	03050100.670110	"""C-1-10] MUST NOT allow an app to be automatically placed in the RESTRICTED bucket within 2 hours of the most recent usage by a user. If device implementations extend the app restrictions that are implemented in AOSP, they:"""	Test Available, Incomplete	""	BackgroundRestricted bucket RESTRICTED backgroundRestriction	""	""	""	""	""	""	""	""	android.app.cts.ActivityManagerProcessStateTest	testBgRestrictedForegroundService	CtsAppTestCases	/home/gpoor/cts-12-source/cts/tests/app/src/android/app/cts/ActivityManagerProcessStateTest.java	""	"// TODO (b/185181884): Remove once standby buckets can be reliably manipulated from tests.
+    @Ignore(""Cannot reliably test bucket manipulation yet"")
+    public void exactAlarmPermissionElevatesBucket() throws Exception {
+        mDeviceConfigHelper.without(""exact_alarm_deny_list"").commitAndAwaitPropagation();
+
+        setTestAppStandbyBucket(""active"");
+        assertEquals(STANDBY_BUCKET_ACTIVE, AppStandbyUtils.getAppStandbyBucket(TEST_APP_PACKAGE));
+
+        setTestAppStandbyBucket(""frequent"");
+        assertEquals(STANDBY_BUCKET_WORKING_SET,
+                AppStandbyUtils.getAppStandbyBucket(TEST_APP_PACKAGE));
+
+        setTestAppStandbyBucket(""rare"");
+        assertEquals(STANDBY_BUCKET_WORKING_SET,
+                AppStandbyUtils.getAppStandbyBucket(TEST_APP_PACKAGE));
+    }"	""	""	bucket	""	""	""	""	Once b/185181884 is fixed then a test could possible test whether the 2 hour minimum is met.	b/185181884	""	""	""	""
+3.5.1  . Application Restriction	3.5.1	C-2-1	3.5.1/C-2-1	03050100.670201	"""C-2-1]MUST follow the implementation described in this document. <h4 id=""352_application_hibernation"" """	Test Available, Incomplete	""	backgroundrestrictions	""	""	""	""	""	""	""	""	android.app.cts.backgroundrestrictions.MyReceiver	getContext	CtsBackgroundRestrictionsTestCases	/home/gpoor/cts-12-source/cts/tests/tests/background/src/android/app/cts/backgroundrestrictions/MyReceiver.java	""	"public void test/*
+ *.
+ */
+package android.app.cts.backgroundrestrictions;
+
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+
+import androidx.test.InstrumentationRegistry;
+
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+public class MyReceiver extends BroadcastReceiver {
+
+    private static final AtomicReference<Consumer<Intent>> sCallback
+            = new AtomicReference<>();
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        final Consumer<Intent>callback = sCallback.get();
+        if (callback != null) {
+            callback.accept(intent);
+        }
+    }
+
+    public static void setCallback(Consumer<Intent> callback) {
+        sCallback.set(callback);
+    }
+
+    public static void clearCallback() {
+        sCallback.set(null);
+    }
+
+    public static ComponentName getComponent() {
+        return new ComponentName(InstrumentationRegistry.getContext(), MyReceiver.class);
+    }
+}"	""	""	backgroundrestrictions	""	""	""	""	All of the features and rules of https://source.android.com/devices/tech/power/app_mgmt are not represented in these tests	tbd	""	""	""	""
