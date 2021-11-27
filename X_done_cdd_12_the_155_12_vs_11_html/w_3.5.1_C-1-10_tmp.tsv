@@ -1,0 +1,17 @@
+"Section"	"section_id"	"req_id"	"full_key"	"key_as_number"	"requirement"	"Test Availability"	"search_roots"	"search_terms"	"manual_search_terms"	"not_search_terms"	"not_files"	"max_matches"	"class_defs"	"methods"	"modules"	"protected"	"class_def"	"method"	"module"	"file_name"	"matched_files"	"methods_string"	"urls"	"method_text"	"matched_terms"	"qualified_method"	"Annotation?"	"New Req for S?"	"New CTS for S?"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"CDD Bug Id"	"Area"	"Shortened"	"Test Level"
+3.5.1  . Application Restriction	3.5.1	C-1-10	3.5.1/C-1-10	03050100.670110	"""C-1-10] MUST NOT allow an app to be automatically placed in the RESTRICTED bucket within 2 hours of the most recent usage by a user. If device implementations extend the app restrictions that are implemented in AOSP, they:"""	""	""	BackgroundRestricted bucket RESTRICTED backgroundRestriction	""	""	""	""	""	""	""	""	android.alarmmanager.cts.ExactAlarmsTest	exactAlarmPermissionElevatesBucket	CtsAlarmManagerTestCases	/home/gpoor/cts-12-source/cts/tests/AlarmManager/src/android/alarmmanager/cts/ExactAlarmsTest.java	""	"// TODO (b/185181884): Remove once standby buckets can be reliably manipulated from tests.
+    @Ignore(""Cannot reliably test bucket manipulation yet"")
+    public void exactAlarmPermissionElevatesBucket() throws Exception {
+        mDeviceConfigHelper.without(""exact_alarm_deny_list"").commitAndAwaitPropagation();
+
+        setTestAppStandbyBucket(""active"");
+        assertEquals(STANDBY_BUCKET_ACTIVE, AppStandbyUtils.getAppStandbyBucket(TEST_APP_PACKAGE));
+
+        setTestAppStandbyBucket(""frequent"");
+        assertEquals(STANDBY_BUCKET_WORKING_SET,
+                AppStandbyUtils.getAppStandbyBucket(TEST_APP_PACKAGE));
+
+        setTestAppStandbyBucket(""rare"");
+        assertEquals(STANDBY_BUCKET_WORKING_SET,
+                AppStandbyUtils.getAppStandbyBucket(TEST_APP_PACKAGE));
+    }"	""	""	bucket	""	""	""	""	""	""	""	""	""	""
