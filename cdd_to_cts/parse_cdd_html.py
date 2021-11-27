@@ -8,6 +8,7 @@ import static_data
 from cdd_to_cts import helpers
 from cdd_to_cts.helpers import build_composite_key, find_full_key, find_valid_path, find_java_objects, \
     find_urls
+from data_sources_helper import process_section_splits_md_and_html
 from react import find_full_key_callable, list_map
 
 
@@ -48,7 +49,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
                 section_text = section_text_result[0]
                 section_text = section_text.strip()
                 section_to_section_data[
-                    cdd_section_id] = f'{section_count}:{char_count}) {section_to_section_data[cdd_section_id]}  {section_text}'
+                    cdd_section_id] = f'{section_to_section_data[cdd_section_id]}  {section_text}'
 
             if '13' == cdd_section_id:
                 # section 13 is "Contact us" and has characters that cause issues at lest for git
@@ -62,9 +63,10 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
             req_id_findall = re.findall(section_and_req_re_2, section,flags=re.DOTALL)
             req_id_splits = re.split('(?={})'.format(section_and_req_re_2), section)
 
-            total_requirement_count = process_section(find_full_key, section_and_req_re_2, cdd_section_id,
-                                                      key_to_full_requirement_text_local, req_id_splits,
-                                                      section_count, total_requirement_count, logging)
+            total_requirement_count = process_section_splits_md_and_html(find_full_key, section_and_req_re_2, cdd_section_id,
+                                                                         key_to_full_requirement_text_local, req_id_splits,
+                                                                         section_count, total_requirement_count,
+                                                                         section_to_section_data, section_to_section_data[cdd_section_id], logging)
             # Only build a key if you can't find any...
 
             if len(req_id_splits) < 2:
@@ -72,9 +74,9 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
 
                 req_id_splits = re.split(composite_key_string_re, str(section))
 
-                total_requirement_count = process_section(build_composite_key, static_data.req_id_re_str, cdd_section_id,
-                                                          key_to_full_requirement_text_local, req_id_splits,
-                                                          section_count, total_requirement_count, logging)
+                total_requirement_count = process_section_splits_md_and_html(build_composite_key, static_data.req_id_re_str, cdd_section_id,
+                                                                             key_to_full_requirement_text_local, req_id_splits,
+                                                                             section_count, total_requirement_count, section_to_section_data, section_to_section_data[cdd_section_id], logging)
 
             section_count += 1
         for key in key_to_full_requirement_text_local:
@@ -93,7 +95,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count, logging=True):
+                    record_id_splits, section_id_count, total_requirement_count, section_text:str="", logging=True):
     record_id_count = 0
 
     for record_id_split in record_id_splits:

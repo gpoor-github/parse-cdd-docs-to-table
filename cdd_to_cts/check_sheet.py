@@ -281,9 +281,9 @@ if __name__ == '__main__':
     cdd_11_dev = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-dev.tsv"
     cdd_11_release = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-d2-release.tsv"
     cdd_12_downloaded_2021_11_22_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_12_downloaded_2021_11_22.tsv"
-    cdd_12_downloaded_2021_11_01_html ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_12_downloaded.tsv"
-    cdd_118_diffs="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_the_118_between_md12-11-a1_working_12/data_files/cdd_12_master_diff_md_11_output.tsv"
-    cdd_12_diff_11_nov_23 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/cdd_12_diff_11_nov_23.tsv"
-    diff_tables_files(cdd_12_diff_11_nov_23, cdd_118_diffs)
+    cdd_11_dowloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_11_downloaded.tsv"
+    cdd_155_diffs="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_master_diff_html_11_output.tsv"
+    cdd_12_diff_11_nov_23 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_html_155_todo_original.tsv"
+    diff_tables_files(cdd_155_diffs, annotation_12)
     #diff_tables_files(cdd_12_table_download_nov15, cdd_12_downloaded_tsv)
    # diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv")

@@ -1,5 +1,6 @@
 import time
 
+import parse_cdd_html
 import table_ops
 from cdd_to_cts import static_data, helpers, data_sources
 from cdd_to_cts.react import RxData, my_print
@@ -16,22 +17,22 @@ def do_on_complete():
 def do_map_12():
     directory = "/a1_working_12/"
 
-    cdd_12_created = f"{directory}/cdd_12_table_all_md.tsv"
+    cdd_12_created = f"{directory}/cdd_12_table_all_html.tsv"
 
-
-    key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md(CDD_MD_ROOT)
+    key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data= parse_cdd_html.parse_cdd_html_to_requirements("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html")
     create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                section_to_section_data,
                                cdd_12_created, static_data.cdd_to_cts_app_header)
+    cdd_12_downloaded_2021_11_22_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_12_downloaded_2021_11_22.tsv"
+    cdd_11_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_11_downloaded.tsv"
 
-    cdd_11_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd-11.tsv"
-    cdd_12_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/md_cdd_12_master.tsv"
-    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_tsv,cdd_11_tsv )
-    cdd_12_todo_output_file = f"{directory}cdd_12_master_diff_md_11_output.tsv"
+    dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(cdd_12_downloaded_2021_11_22_html,cdd_11_downloaded_html )
+    cdd_12_todo_output_file = f"{directory}cdd_12_master_diff_html_11_output.tsv"
     table_ops.make_new_table_from_keys(dif_1_2, cdd_12_created, cdd_12_todo_output_file)
     rx_output_file = f"{directory}cdd_12_todo_created.tsv"
     # noinspection DuplicatedCode
     rd = RxData()
+    rd.max_matches = 40
     rd.main_do_create_table(input_table_file=cdd_12_todo_output_file, output_file=rx_output_file) \
         .subscribe(
         on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),
@@ -42,6 +43,7 @@ def do_map_12():
 def do_map_11():
     directory = "/a1_working_11/"
     cdd_11_created = f"{directory}cdd_11_table_all.tsv"
+
     scr = data_sources.SourceCrawlerReducer(
         md_file_root=static_data.CDD_MD_ROOT,
         global_table_input_file_built_from_requirment_md_files=cdd_11_created,

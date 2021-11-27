@@ -233,7 +233,7 @@ def find_search_terms(search_info) -> dict:
     # ToDo Restore full search?
     search_term_set.update(manual_search_terms)
     # Section requirements search on or off
-    # search_term_set.update(section_req)
+    search_term_set.update(section_req)
     search_term_set.update(auto_search_terms)
     search_term_set.difference_update(static_data.spurious_terms)
     search_info[static_data.SEARCH_TERMS] = search_term_set
@@ -438,7 +438,7 @@ class RxData:
                             method_results = re_method.findall(method_text)
                             if method_results and len(method_results) > 0:
                                 for method in method_results:
-                                    if method.lower().find('is') != -1 or method.lower().find('test') != -1:
+                                    if  method.lower().find('assert') != -1 or method.lower().find('is') != -1 or method.lower().find('test') != -1:
                                         qualified_method = f"[{class_name} {method} {test_case_name}]"
                                         add_list_to_count_dict(qualified_method, search_result, QUALIFIED_METHOD)
                                         flat_result[METHOD] =  method
@@ -742,5 +742,5 @@ def do_map_with_flat_file(file_to_process:str ) :
     print(f'Took time {end - start:0.4f}sec ')
 
 if __name__ == '__main__':
-    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.1.1_C-0-3.tsv"
+    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-16-1.tsv"
     do_map_with_flat_file(current_file_)

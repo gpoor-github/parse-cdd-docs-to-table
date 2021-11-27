@@ -6,7 +6,7 @@ import re
 
 import helpers
 import static_data
-from data_sources_helper import process_section_splits_md, create_full_table_from_cdd
+from data_sources_helper import process_section_splits_md_and_html, create_full_table_from_cdd
 from static_data import CDD_MD_ROOT, full_key_string_for_re, req_id_re_str
 
 
@@ -61,16 +61,16 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
                             ccd_section_data= ccd_section_data.strip("#").strip("\n").replace("\\."," ").strip()
                             section_to_section_data[sub_cdd_section_id] = ccd_section_data
 
-                        total_requirement_count = process_section_splits_md(helpers.find_full_key, full_key_string_for_re, cdd_section_id,
-                                                                            key_to_full_requirement_text_local, req_id_splits,
-                                                                            section_count, total_requirement_count, section_to_section_data,ccd_section_data,logging)
+                        total_requirement_count = process_section_splits_md_and_html(helpers.find_full_key, full_key_string_for_re, cdd_section_id,
+                                                                                     key_to_full_requirement_text_local, req_id_splits,
+                                                                                     section_count, total_requirement_count, section_to_section_data, ccd_section_data, logging)
                         # Only build a key if you can't find any...
                         if len(req_id_splits) < 2:
                             req_id_splits = re.split("(\*\s*?\[)", str(section))
 
-                            total_requirement_count = process_section_splits_md(helpers.build_composite_key, req_id_re_str, cdd_section_id,
-                                                                                key_to_full_requirement_text_local, req_id_splits,
-                                                                                section_count, total_requirement_count,section_to_section_data,ccd_section_data, logging)
+                            total_requirement_count = process_section_splits_md_and_html(helpers.build_composite_key, req_id_re_str, cdd_section_id,
+                                                                                         key_to_full_requirement_text_local, req_id_splits,
+                                                                                         section_count, total_requirement_count, section_to_section_data, ccd_section_data, logging)
     return key_to_full_requirement_text_local, section_to_section_data
 
 
