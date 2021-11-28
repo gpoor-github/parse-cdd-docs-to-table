@@ -6,7 +6,7 @@ from table_ops import move_last_row_to_new_table
 
 if __name__ == '__main__':
     keep_trying = True
-    remove_line = False
+    remove_line = True
     init_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w.tsv"
     target_file =init_file
     while keep_trying:

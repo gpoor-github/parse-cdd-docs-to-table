@@ -272,3 +272,190 @@ class ApkNdkApiReport {
         return new ApkNdkApiReport(testModules, bits);
     }
 }"	""	""	NDK	""	""	""	""	The requirement makes statements about the owner of custom libraries, this could be verified in a process outside the CTS. We can test that it there are not additional APIs in the library as the test include shows.	""	""	""	""	""
+3.8.13  . Unicode and Font	3.8.13	C-1-3	3.8.13/C-1-3	03081300.670103	"""C-1-3] MUST NOT remove or modify NotoColorEmoji.tff in the system image. (It is acceptable to add a new emoji font to override emoji in NotoColorEmoji.tff) SHOULD support the skin tone and diverse family emojis as specified in the Unicode Technical Report #51. If device implementations include an IME, they: SHOULD provide an input method to the user for these emoji characters. Android includes support to render Myanmar fonts. Myanmar has several non-Unicode compliant fonts, commonly known as “Zawgyi,” for rendering Myanmar languages. If device implementations include support for Burmese, they: *"""	Test Available	""	NotoColorEmoji.tff NotoColorEmoji	""	""	""	""	""	""	""	""	android.graphics.fonts.SystemEmojiTest	isNotNull	CtsGraphicsTestCases	/home/gpoor/cts-12-source/cts/tests/tests/graphics/src/android/graphics/fonts/SystemEmojiTest.java	""	"public void uniquePostScript() throws IOException {
+        File emojiFont = null;
+        for (Font font : SystemFonts.getAvailableFonts()) {
+            if (font.getFile().getName().equals(""NotoColorEmoji.ttf"")) {
+                emojiFont = font.getFile();
+            }
+        }
+
+        // NotoColorEmoji.ttf should be always available as a fallback font even if another emoji
+        // font files are installed in the system.
+        assertThat(emojiFont).isNotNull();
+
+        assertThat(FontFileTestUtil.containsEmojiCompatMetadata(emojiFont)).isTrue();
+    }
+}"	""	""	NotoColorEmoji NotoColorEmoji	""	""	""	""	""	""	""	""	""	""
+3.9.1.1  . The	3.9.1.1	C-1-9	3.9.1/C-1-9	03090100.670109	"""C-1-9] MUST send the ACTION_ADMIN_POLICY_COMPLIANCE intent to the Device Owner app if a Device Owner is established during provisioning regardless of the provisioning method used. The user must not be able to proceed in the Setup Wizard until the Device Owner app finishes. When the device implementation has user data, it:"""	Test Missing	""	ACTION_ADMIN_POLICY_COMPLIANCE	ADMIN_POLICY_COMPLIANCE	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	ADMIN_POLICY_COMPLIANCE is not found in code search	tbd	""	""	""	""
+3.9.1.1	3.9.1.1	C-1-8	3.9.1/C-1-8	03090100.670108	"""C-1-8] MUST send the ACTION_GET_PROVISIONING_MODE intent after device owner provisioning is triggered so that the DPC app can choose whether to become a Device Owner or a Profile Owner unless it can be determined from context that there is only one valid option (such as for NFC based provisioning where Profile Owner provisioning is not supported). | C-1-8] MUST send ACTION_MANAGED_PROFILE_PROVISIONED broadcast to the personal profile DPC when a Profile Owner is established, regardless of the provisioning method used. <h4 id=""392_managed_profile_support"" """	Test Available	""	NFC ACTION_MANAGED_PROFILE_PROVISIONED DPC ACTION_GET_PROVISIONING_MODE	""	""	""	""	""	""	""	""	com.android.compatibility.common.util.devicepolicy.provisioning.SilentProvisioningTestManager	getReceviedProfileProvisionedIntent	""	/home/gpoor/cts-12-source/cts/common/device-side/util-axt/src/com/android/compatibility/common/util/devicepolicy/provisioning/SilentProvisioningTestManager.java	""	"public void test/*
+ *.
+ */
+package com.android.compatibility.common.util.devicepolicy.provisioning;
+
+import static android.app.admin.DevicePolicyManager.ACTION_MANAGED_PROFILE_PROVISIONED;
+import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
+import static android.content.Intent.ACTION_MANAGED_PROFILE_ADDED;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.support.test.uiautomator.UiDevice;
+import android.util.Log;
+
+import androidx.test.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.BlockingBroadcastReceiver;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+// TODO(b/183395856): Remove once the remaining silent provisioning tests are removed.
+public class SilentProvisioningTestManager {
+    private static final long TIMEOUT_SECONDS = 120L;
+    private static final String TAG = ""SilentProvisioningTest"";
+
+    private final LinkedBlockingQueue<Boolean> mProvisioningResults = new LinkedBlockingQueue(1);
+
+    private final IBooleanCallback mProvisioningResultCallback = new IBooleanCallback.Stub() {
+        @Override
+        public void onResult(boolean result) {
+            try {
+                mProvisioningResults.put(result);
+            } catch (InterruptedException e) {
+                Log.e(TAG, ""IBooleanCallback.callback"", e);
+            }
+        }
+    };
+
+    private final Context mContext;
+    private Intent mReceivedProfileProvisionedIntent;
+
+    public SilentProvisioningTestManager(Context context) {
+        mContext = context.getApplicationContext();
+    }
+
+    public Intent getReceviedProfileProvisionedIntent() {
+        return mReceivedProfileProvisionedIntent;
+    }
+
+    public boolean startProvisioningAndWait(Intent provisioningIntent) throws InterruptedException {
+        wakeUpAndDismissInsecureKeyguard();
+        mContext.startActivity(getStartIntent(provisioningIntent));
+        Log.i(TAG, ""startActivity on user "" + mContext.getUserId() + "" with "" + provisioningIntent);
+
+        if (ACTION_PROVISION_MANAGED_PROFILE.equals(provisioningIntent.getAction())) {
+            return waitManagedProfileProvisioning();
+        } else {
+            return waitDeviceOwnerProvisioning();
+        }
+    }
+
+    private boolean waitDeviceOwnerProvisioning() throws InterruptedException {
+        return pollProvisioningResult();
+    }
+
+    private boolean waitManagedProfileProvisioning() throws InterruptedException {
+        BlockingBroadcastReceiver managedProfileProvisionedReceiver =
+                new BlockingBroadcastReceiver(mContext, ACTION_MANAGED_PROFILE_PROVISIONED);
+        BlockingBroadcastReceiver managedProfileAddedReceiver =
+                new BlockingBroadcastReceiver(mContext, ACTION_MANAGED_PROFILE_ADDED);
+        try {
+            managedProfileProvisionedReceiver.register();
+            managedProfileAddedReceiver.register();
+
+            if (!pollProvisioningResult()) {
+                return false;
+            }
+
+            mReceivedProfileProvisionedIntent =
+                    managedProfileProvisionedReceiver.awaitForBroadcast(
+                            TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS));
+            if (mReceivedProfileProvisionedIntent == null) {
+                Log.i(TAG, ""managedProfileProvisionedReceiver.awaitForBroadcast(): failed"");
+                return false;
+            }
+
+            if (managedProfileAddedReceiver.awaitForBroadcast(
+                    TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS)) == null) {
+                Log.i(TAG, ""managedProfileAddedReceiver.awaitForBroadcast(): failed"");
+                return false;
+            }
+        } finally {
+            managedProfileProvisionedReceiver.unregisterQuietly();
+            managedProfileAddedReceiver.unregisterQuietly();
+        }
+        return true;
+    }
+
+    private boolean pollProvisioningResult() throws InterruptedException {
+        Boolean result = mProvisioningResults.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        if (result == null) {
+            Log.i(TAG, ""ManagedProvisioning doesn't return result within ""
+                    + TIMEOUT_SECONDS + "" seconds "");
+            return false;
+        }
+
+        if (!result) {
+            Log.i(TAG, ""Failed to provision"");
+            return false;
+        }
+        return true;
+    }
+
+    private Intent getStartIntent(Intent intent) {
+        final Bundle bundle = new Bundle();
+        bundle.putParcelable(Intent.EXTRA_INTENT, intent);
+        bundle.putBinder(StartProvisioningActivity.EXTRA_BOOLEAN_CALLBACK,
+                mProvisioningResultCallback.asBinder());
+        return new Intent(mContext, StartProvisioningActivity.class)
+                .putExtras(bundle)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    }
+
+    private static void wakeUpAndDismissInsecureKeyguard() {
+        try {
+            UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            uiDevice.wakeUp();
+            uiDevice.pressMenu();
+        } catch (RemoteException e) {
+            Log.e(TAG, ""wakeUpScreen"", e);
+        }
+    }
+
+    private static class BlockingReceiver extends BroadcastReceiver {
+
+        private final CountDownLatch mLatch = new CountDownLatch(1);
+        private final Context mContext;
+        private final String mAction;
+        private Intent mReceivedIntent;
+
+        private BlockingReceiver(Context context, String action) {
+            mContext = context;
+            mAction = action;
+            mReceivedIntent = null;
+        }
+
+        public void register() {
+            mContext.registerReceiver(this, new IntentFilter(mAction));
+        }
+
+        public boolean await() throws InterruptedException {
+            return mLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        }
+
+        public Intent getReceivedIntent() {
+            return mReceivedIntent;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mReceivedIntent = intent;
+            mLatch.countDown();
+        }
+    }
+}"	""	""	ACTION_MANAGED_PROFILE_PROVISIONED	""	""	""	""	""	""	""	""	""	""
