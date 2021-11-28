@@ -112,3 +112,163 @@ public class MyReceiver extends BroadcastReceiver {
         AtomsProto.AppStartOccurred atom = data.get(0).getAtom().getAppStartOccurred();
         assertThat(atom.getIsHibernating()).isTrue();
     }"	""	""	hibernation	""	""	""	""	"The tests seem to be missing a code search shows no CTS files with ""hibernation AND restrict"""	tbd	""	""	""	""
+3.6  . API Namespaces	3.6	C-1-1	3.6/C-1-1	03060000.670101	"""C-1-1] MUST NOT be in a NDK library or a library owned by another organization as described here. If a device implementer proposes to improve one of the package namespaces above (such as by adding useful new functionality to an existing API, or adding a new API), the implementer SHOULD visit source.android.com and begin the process for contributing changes and code, according to the information on that site. Note that the restrictions above correspond to standard conventions for naming APIs in the Java programming language; this section simply aims to reinforce those conventions and make them binding through inclusion in this Compatibility Definition. <h3 id=""37_runtime_compatibility"" """	Not Testable, related test included	""	NDK	""	""	""	""	""	""	""	""	com.android.cts.apicoverage.ApkNdkApiReport	getTestModules	""	/home/gpoor/cts-12-source/cts/tools/cts-api-coverage/src/com/android/cts/apicoverage/ApkNdkApiReport.java	""	"public void test/*
+ *.
+ */
+
+package com.android.cts.apicoverage;
+
+
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+/**
+ * Class that outputs an XML report of the {@link ApiCoverage} collected. It can be viewed in a
+ * browser when used with the api-coverage.css and api-coverage.xsl files.
+ */
+class ApkNdkApiReport {
+    public static final String FILE_FILTER_EXT = "".apk"";
+    public static final String DEFAULT_OUTPUT_FILE_NAME = ""./apk-ndk-coverage.txt"";
+
+    private static final FilenameFilter SUPPORTED_FILE_NAME_FILTER =
+            new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    String fileName = name.toLowerCase();
+                    return fileName.endsWith(FILE_FILTER_EXT);
+                }
+            };
+
+    private static void printUsage() {
+        System.out.println(""Usage: ApkNdkApiReport [OPTION]... [APK]..."");
+        System.out.println();
+        System.out.println(""Generates a report about what Android NDK methods."");
+        System.out.println();
+        System.out.println(""Options:"");
+        System.out.println(""  -o FILE                output file or standard out if not given"");
+        System.out.println(""  -t PATH                path to the CTS testcases Folder"");
+        System.out.println(""  -b BITS                64 or 32"");
+        System.out.println();
+        System.exit(1);
+    }
+
+    /** Get the argument or print out the usage and exit. */
+    private static String getExpectedArg(String[] args, int index) {
+        if (index < args.length) {
+            return args[index];
+        } else {
+            printUsage();
+            return null; // Never will happen because printUsage will call exit(1)
+        }
+    }
+
+    public static void main(String[] args) throws IOException, SAXException {
+        ApkNdkApiReport apiReport;
+        String testCasePath = """";
+        String bits = ""64"";
+        String outputFileName = DEFAULT_OUTPUT_FILE_NAME;
+        int numTestModule = 0;
+
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith(""-"")) {
+                if (""-o"".equals(args[i])) {
+                    outputFileName = getExpectedArg(args, ++i);
+                } else if (""-t"".equals(args[i])) {
+                    testCasePath = getExpectedArg(args, ++i);
+                } else if (""-b"".equals(args[i])) {
+                    bits = getExpectedArg(args, ++i);
+                } else {
+                    printUsage();
+                }
+            } else {
+                printUsage();
+            }
+        }
+
+        apiReport = parseTestcasesFolder(testCasePath, bits);
+        if (apiReport != null) {
+            for (TestModule tm : apiReport.mTestModules) {
+                tm.getDynSymArr();
+            }
+        } else {
+            printUsage();
+        }
+    }
+
+    private List<TestModule> mTestModules;
+    private String mBits;
+
+    ApkNdkApiReport(List<TestModule> testModules, String bits) {
+        mTestModules = testModules;
+        mBits = bits;
+    }
+
+    public List<TestModule> getTestModules() {
+        return mTestModules;
+    }
+
+    public String getBits() {
+        return mBits;
+    }
+
+    public static ApkNdkApiReport parseTestcasesFolder(String testCasePath, String bits)
+            throws IOException, SAXException {
+        File[] testConfigFiles;
+        List<TestModule> testModules = new ArrayList<TestModule>();
+
+        File file = new File(testCasePath);
+        if (file.isDirectory()) {
+            File[] targetFiles = file.listFiles(SUPPORTED_FILE_NAME_FILTER);
+
+            Map<String, String> env = new HashMap<>();
+            for (File targetFile : targetFiles) {
+                final ZipFile apkFile = new ZipFile(targetFile);
+                System.out.println(targetFile.getName());
+                try {
+                    final Enumeration<? extends ZipEntry> entries = apkFile.entries();
+                    while (entries.hasMoreElements()) {
+                        final ZipEntry entry = entries.nextElement();
+
+                        if (!entry.getName().matches(""lib(.*)"" + bits + ""(.*)so"")) {
+                            continue;
+                        }
+
+                        System.out.println(entry.getName());
+
+                        //use entry input stream:
+                        InputStream is = apkFile.getInputStream(entry);
+
+                        File tempFile = File.createTempFile(""ApkNdkApiReport"", "".so"");
+                        tempFile.deleteOnExit();
+                        FileOutputStream fos = new FileOutputStream(tempFile);
+
+                        byte[] bytes = new byte[4096];
+                        int length;
+                        while ((length = is.read(bytes)) >= 0) {
+                            fos.write(bytes, 0, length);
+                        }
+                        is.close();
+                        fos.close();
+
+                        testModules.add(new TestModule(tempFile, targetFile.getName(), ""jUnit""));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            return null;
+        }
+        return new ApkNdkApiReport(testModules, bits);
+    }
+}"	""	""	NDK	""	""	""	""	The requirement makes statements about the owner of custom libraries, this could be verified in a process outside the CTS. We can test that it there are not additional APIs in the library as the test include shows.	""	""	""	""	""

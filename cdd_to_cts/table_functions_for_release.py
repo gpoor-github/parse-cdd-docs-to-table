@@ -46,9 +46,9 @@ def update_release_table_with_changes(table_to_update_and_write_to_output_file: 
     # table_ops.compare_tables(updated_table,target_table)
     table_ops.write_table(output_file_to_write_updated_table, updated_table, target_header)
 
-    print(
-        f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
-    check_update(output_file_to_write_updated_table, table_to_update_and_write_to_output_file)
+    # print(
+    #     f'keys missing 1  {key_key1} keys missing 2 {key_key2}\nkeys1 missing  {len(key_key1)} keys2 missing {len(key_key2)} of {len(updated_table)}')
+    # check_update(output_file_to_write_updated_table, table_to_update_and_write_to_output_file)
     return updated_table, target_header
 
 

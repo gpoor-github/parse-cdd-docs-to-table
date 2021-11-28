@@ -273,7 +273,7 @@ if __name__ == '__main__':
     md_12="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_the_118_between_md12-11-a1_working_12/cdd_12_todo_created.tsv"
     md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_12_preview_mapping_gpoor_cherrypick_items_from_piper.tsv"
     cdd_11_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/CDD_11_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11_nov_2021_for_diff.tsv"
-    cdd_12_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD-12 Nov-9-downloaded.tsv"
+    cdd_12_downloaded_tsv="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_12_gen_html.tsv"
     cdd_12_working="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD_12_CTS_downloaded_full_working_updated.tsv"
     cdd_12_table_download_nov15="/home/gpoor/Downloads/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 12 .tsv"
     # result_dict, not_found, found = rs.does_class_ref_file_exist(mapping_cdd)
@@ -281,9 +281,9 @@ if __name__ == '__main__':
     cdd_11_dev = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-dev.tsv"
     cdd_11_release = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-d2-release.tsv"
     cdd_12_downloaded_2021_11_22_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_12_downloaded_2021_11_22.tsv"
-    cdd_11_dowloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_11_downloaded.tsv"
+    cdd_11_dowloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_11_gen_html.tsv"
     cdd_155_diffs="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_master_diff_html_11_output.tsv"
     cdd_12_diff_11_nov_23 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_html_155_todo_original.tsv"
-    diff_tables_files(cdd_155_diffs, annotation_12)
-    #diff_tables_files(cdd_12_table_download_nov15, cdd_12_downloaded_tsv)
+    #diff_tables_files(cdd_155_diffs, annotation_12)
+    diff_tables_files(cdd_11_dowloaded_html, cdd_12_downloaded_tsv)
    # diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv")

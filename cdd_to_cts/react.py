@@ -20,7 +20,8 @@ from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_
 from cdd_to_cts.static_data import full_key_string_for_re, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
-from table_functions_for_release import update_release_table_with_changes
+from table_functions_for_release import update_release_table_with_changes, \
+    merge_duplicate_row_for_column_set_for_flat_file
 
 
 def build_dict(key_req: str):
@@ -716,7 +717,7 @@ def do_map_with_flat_file(file_to_process:str ) :
     rd.max_matches = 1200
     temp_result = file_to_process.replace('.tsv', "_tmp.tsv")
     final_result = file_to_process
-
+    flat_file = file_to_process.replace('.tsv', "_flat.tsv")
 
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))
@@ -725,7 +726,7 @@ def do_map_with_flat_file(file_to_process:str ) :
         , ops.to_list()
         ,
         ops.map(
-            lambda table: table_ops.write_table(file_to_process.replace('.tsv',"_flat.tsv"), table,
+            lambda table: table_ops.write_table(flat_file, table,
                                                 static_data.cdd_to_cts_app_header))) \
         .subscribe(on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
                    on_completed=lambda: print("complete result_subject"),
@@ -735,6 +736,11 @@ def do_map_with_flat_file(file_to_process:str ) :
         on_next=lambda table: my_print(f"react.py main created [{temp_result}] from [{file_to_process}] "),
         on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
+    merge_duplicate_row_for_column_set_for_flat_file(
+        flat_file,
+        [static_data.CLASS_DEF, static_data.METHOD],
+        flat_file)
+
     update_release_table_with_changes(file_to_process, temp_result, final_result, static_data.results_header)
     # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
@@ -742,5 +748,5 @@ def do_map_with_flat_file(file_to_process:str ) :
     print(f'Took time {end - start:0.4f}sec ')
 
 if __name__ == '__main__':
-    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-16-1.tsv"
+    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.6_C-1-1.tsv"
     do_map_with_flat_file(current_file_)
