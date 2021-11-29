@@ -18,7 +18,8 @@ cdd_11_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/da
 cdd_12_downloaded_tsv = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD-12 Nov-9-downloaded.tsv"
 cdd_12_working = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/CDD_12_CTS_downloaded_full_working_updated.tsv"
 cdd_12_master_diff_md_11 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/cdd_12_master_diff_md_11.tsv"
-
+cdd_12_html="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_12_gen_html.tsv"
+cdd_11_html="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_11_gen_html.tsv"
 
 class TestCheckSheets(TestCase):
     def test_does_class_ref_file_exist(self):
@@ -26,6 +27,11 @@ class TestCheckSheets(TestCase):
 
         rs = ReadSpreadSheet()
         result_dict, not_found, found = rs.does_class_ref_file_exist(annotation_12)
+
+    def test_check_create_table_from_difference_and_source_html(self):
+
+        table_functions_for_release.create_table_from_differences_and_source(cdd_11_html, cdd_12_html, cdd_12_html,
+                                                                             "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/12_vs_11.tsv")
 
     def test_check_create_table_from_difference_and_source(self):
 
