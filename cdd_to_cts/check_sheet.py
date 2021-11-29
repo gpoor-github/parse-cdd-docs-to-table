@@ -263,7 +263,7 @@ if __name__ == '__main__':
     rs = ReadSpreadSheet()
     cdd_12_with_sections ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/DATA_SOURCES_cdd-12_CSV_FROM_HTML_1st.tsv"
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/cdd_12_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
-    annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/mapping_output_for_import.tsv"
+    annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/annotations_mappings.tsv"
     cdd_12_to_do ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/cdd_12_todo_created.tsv"
     cdd_11_before_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/Working copy of CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - Before gpoor (2).csv"
     cdd_11_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
@@ -285,5 +285,5 @@ if __name__ == '__main__':
     cdd_155_diffs="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_master_diff_html_11_output.tsv"
     cdd_12_diff_11_nov_23 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_html_155_todo_original.tsv"
     #diff_tables_files(cdd_155_diffs, annotation_12)
-    diff_tables_files(cdd_11_dowloaded_html, cdd_12_downloaded_tsv)
+    diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", annotation_12)
    # diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv")

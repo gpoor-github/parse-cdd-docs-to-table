@@ -156,7 +156,12 @@ def move_last_row_to_new_table(table_to_get_row: str) -> str:
     key_to_row = ""
     for key in key_fields1_org:
         key_to_row = key
-    new_table_file_name: str = f"{table_to_get_row.replace('.tsv', '')}_{key_to_row.replace('/', '_')}.{'tsv'}"
+    new_table_file_name: str = f"{table_to_get_row.replace('.tsv', '')}_{key_to_row.replace('/', '_')}.tsv"
+    result_file_name: str = f"{table_to_get_row.replace('.tsv', '')}_{key_to_row.replace('/', '_')}_manual_result.tsv"
+
+    with open(result_file_name, 'w', newline=static_data.table_newline) as result_file:
+        result_file.close()
+
     fields_to_write.append(key_to_row)
     new_table = filter_first_table_by_keys_of_second(table1_org, key_fields1_org, fields_to_write)
     write_table(new_table_file_name, new_table, header1_org)

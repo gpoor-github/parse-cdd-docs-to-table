@@ -111,12 +111,14 @@ def make_new_table_with_row_keys_from_table_example():
                                             new_table_to_made)
 
 def update_release_table_with_changes_example():
-    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_table_all_md_updates.tsv"
-    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/a_selected_method.tsv"
-    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_table_all_md_updates.tsv"
+    annotations ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/annotations_mappings.tsv"
+    annotation_header = ([static_data.TEST_AVAILABILITY, static_data.CLASS_DEF, static_data.METHOD,  static_data.MODULE, static_data.FILE_NAME, static_data.TEST_LEVEL, static_data.ANNOTATION_])
+    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_remaining_manual.tsv"
+    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/xCD12_3_9.9.3_in_progress/9.9.3.tsv"
+    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/test.tsv"
 
-    update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
-                                      static_data.update_release_header)
+    update_release_table_with_changes(target_to_update, source_for_data, target_to_update,
+                                      annotation_header)
 
 def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2, table_for_source, output_file_for_results):
     from check_sheet import diff_tables_files
@@ -124,7 +126,7 @@ def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2,
     table_ops.make_new_table_from_keys(dif_2_1, table_for_source, output_file_for_results)
 
 if __name__ == '__main__':
-    merge_duplicate_row_for_column_set_for_flat_file("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-1_flat.tsv",
-                                                     [static_data.CLASS_DEF,static_data.METHOD],
-                                                     "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-1_flat_bla.tsv")
-   # update_release_table_with_changes_example()
+    # merge_duplicate_row_for_column_set_for_flat_file("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-1_flat.tsv",
+    #                                                  [static_data.CLASS_DEF,static_data.METHOD],
+    #                                                  "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-1_flat_bla.tsv")
+    update_release_table_with_changes_example()
