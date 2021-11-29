@@ -2,14 +2,11 @@
 #  Block to comment
 import re
 
-import rx
-
 import static_data
 from cdd_to_cts import helpers
 from cdd_to_cts.helpers import build_composite_key, find_full_key, find_valid_path, find_java_objects, \
     find_urls
 from data_sources_helper import process_section_splits_md_and_html
-from react import find_full_key_callable, list_map
 
 
 def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
@@ -28,7 +25,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
         cdd_requirements_file_as_string = text_file.read()
         #  section_re_str: str = r'"(?:\d{1,3}_)+'
         section_marker: str = r"data-text=\"\s*"
-        section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
+        #section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
         cdd_sections_splits = re.split('(?={})'.format(section_marker), cdd_requirements_file_as_string,
                                        flags=re.DOTALL)
         section_count = 0
@@ -37,7 +34,10 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
             section_count += 1
             char_count += len(section)
             section = helpers.clean_html_anchors(section)
-            cdd_section_id_search_results = re.search(static_data.SECTION_ID_RE_STR, section)
+
+            SECTION_ID_RE_STR = "(?:(\d{1,3}\.)+\d)"
+
+            cdd_section_id_search_results = re.search("(?:(\d{1,3}\.)+\d)", section)
             if not cdd_section_id_search_results:
                 continue
             cdd_section_id = cdd_section_id_search_results[0]

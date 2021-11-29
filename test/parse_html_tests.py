@@ -146,6 +146,18 @@ class ParseHTMLTests(unittest.TestCase):
         self.assertTrue(key_to_full_requirement_text_local.get("3.2.2/C-0-1").find("C-0-1] To provide consistent, meaningful values across device") > -1)
         self.assertEqual(1593, len(key_to_full_requirement_text_local))
 
+    def test_parse_cdd_section_issue(self):
+        full_cdd_html = helpers.find_valid_path("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/section_issue.html")
+        from parse_cdd_html import parse_cdd_html_to_requirements
+        key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, \
+        cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
+        create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
+                                   section_to_section_data,
+                                   "./output/section_issue.tsv", static_data.cdd_info_only_header)
+
+
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("7.1.4.1/C-0-1"))
+
     def test_parse_cdd_html_to_short_file_only_7_md(self, ):
 
         key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md("/home/gpoor/aosp_cdd/cdd")

@@ -45,8 +45,6 @@ INPUT_TABLE_FILE_NAME_RX = "output/table_file_for_react_filtered.tsv"
 TEST_FILES_TXT = "input_data_from_cts/test-files.txt"
 TEST_CASE_MODULES = "input_data_from_cts/testcases-modules.txt"
 INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_data_from_cts/cts-deps-from-static_code_analysis.txt'
-
-SECTION_ID_RE_STR ="(?:\d{1,3}\.)+"
 req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
 section_id_re_str = "[\[>][\d+\.]+\d+"
 full_key_string_for_re = section_id_re_str+'/' + req_id_re_str

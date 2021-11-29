@@ -30,3 +30,10 @@ class TestCheckSheets(TestCase):
     def test_check_create_table_from_difference_and_source(self):
 
         table_functions_for_release.create_table_from_differences_and_source(md_11B, md_12, md_12, cdd_12_master_diff_md_11)
+
+    def test_create_a_working_table_from_difference_and_source(self):
+        created ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv"
+        done="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_of_155_manual.tsv"
+        out="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/new_to_do_manual.tsv"
+        table_functions_for_release.create_table_from_differences_and_source(done, created, created,
+                                                                             out)
