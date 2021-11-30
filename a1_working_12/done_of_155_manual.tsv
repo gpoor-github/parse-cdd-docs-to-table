@@ -2111,3 +2111,655 @@ public class FeatureSummaryActivity extends PassFailButtons.ListActivity {
         if (!mHasHifiSensors || !mHasProximitySensor) return;
         checkMinFifoLength(Sensor.TYPE_PROXIMITY, PROXIMITY_SENSOR_MIN_FIFO_LENGTH);
     }"	""	""	sensor proximity	""	""	""	""	No test for the proximity sensors range and resolution found.	tbd	""	""	""	""
+7.4.1  . Telephony	7.4.1	C-5-2	7.4.1/C-5-2	07040100.670502	"""C-5-2] MUST declare the android.hardware.telephony.ims.singlereg feature flag and provide a complete implementation of the SipTransport API, the GbaService API, dedicated bearer indications using the IRadio 1.6 HAL, and provisioning via Auto Configuration Server (ACS) or other proprietary provisioning mechanism using the IMS Configuration API. <h5 id=""7411_number_blocking_compatibility"" """	Test Available	""	singlereg android.hardware.telephony.ims.singlereg	""	""	""	""	""	""	""	""	android.telephony.ims.cts.SipDelegateManagerTest	connectTestImsServiceWithSipTransportAndConfig	CtsTelephonyTestCases	/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/ims/cts/SipDelegateManagerTest.java	""	"/*
+ *.
+ */
+
+package android.telephony.ims.cts;
+
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.InetAddresses;
+import android.net.Uri;
+import android.os.Parcel;
+import android.os.PersistableBundle;
+import android.telephony.CarrierConfigManager;
+import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
+import android.telephony.ims.DelegateRegistrationState;
+import android.telephony.ims.DelegateRequest;
+import android.telephony.ims.FeatureTagState;
+import android.telephony.ims.ImsException;
+import android.telephony.ims.ImsManager;
+import android.telephony.ims.ImsService;
+import android.telephony.ims.ImsStateCallback;
+import android.telephony.ims.SipDelegateConfiguration;
+import android.telephony.ims.SipDelegateManager;
+import android.telephony.ims.SipMessage;
+import android.telephony.ims.feature.ImsFeature;
+import android.telephony.ims.stub.ImsFeatureConfiguration;
+import android.util.ArraySet;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.ShellIdentityUtils;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+/**
+ * CTS tests for {@link SipDelegateManager} API.
+ */
+@RunWith(AndroidJUnit4.class)
+public class SipDelegateManagerTest {
+    private static final String MMTEL_TAG =
+            ""+g.3gpp.iari-ref=\""urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\"""";
+    private static final String ONE_TO_ONE_CHAT_TAG =
+            ""+g.3gpp.icsi-ref=\""urn%3Aurn-7%3A3gppservice.ims.icsi.oma.cpm.msg\"""";
+    private static final String GROUP_CHAT_TAG =
+            ""+g.3gpp.icsi-ref=\""urn%3Aurn-7%3A3gppservice.ims.icsi.oma.cpm.session\"""";
+    private static final String FILE_TRANSFER_HTTP_TAG =
+            ""+g.3gpp.iari-ref=\""urn%3Aurn-7%3A3gppapplication.ims.iari.rcs.fthttp\"""";
+
+    private static final String[] DEFAULT_FEATURE_TAGS = {
+            ONE_TO_ONE_CHAT_TAG, GROUP_CHAT_TAG, FILE_TRANSFER_HTTP_TAG};
+
+    private static class CarrierConfigReceiver extends BroadcastReceiver {
+        private CountDownLatch mLatch = new CountDownLatch(1);
+        private final int mSubId;
+
+        CarrierConfigReceiver(int subId) {
+            mSubId = subId;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED.equals(intent.getAction())) {
+                int subId = intent.getIntExtra(CarrierConfigManager.EXTRA_SUBSCRIPTION_INDEX, -1);
+                if (mSubId == subId) {
+                    mLatch.countDown();
+                }
+            }
+        }
+
+        void clearQueue() {
+            mLatch = new CountDownLatch(1);
+        }
+
+        void waitForCarrierConfigChanged() throws Exception {
+            mLatch.await(5000, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    /**
+     * Encapsulates the interfaces created during SipDelegateManager testing.
+     */
+    public class TransportInterfaces {
+        public final DelegateRequest request;
+        public final Set<FeatureTagState> deniedTags;
+        public final SipDelegateManager manager;
+        public TestSipTransport transport;
+        public TestImsRegistration reg;
+        public TestSipDelegate delegate;
+        public TestSipDelegateConnection delegateConn;
+        private final int mDelegateIndex;
+
+        public TransportInterfaces(DelegateRequest request, Set<FeatureTagState>  deniedTags,
+                int delegateIndex) {
+            this.request = request;
+            this.deniedTags = deniedTags;
+            manager = getSipDelegateManager();
+            mDelegateIndex = delegateIndex;
+        }
+
+        public void connect() throws Exception {
+            assertTrue(sServiceConnector.setDefaultSmsApp());
+            connectTestImsServiceWithSipTransportAndConfig();
+
+            transport = sServiceConnector.getCarrierService().getSipTransport();
+            reg = sServiceConnector.getCarrierService().getImsRegistration();
+            delegateConn = new TestSipDelegateConnection(request);
+
+            delegate = createSipDelegateConnectionAndVerify(manager, delegateConn,
+                    transport, deniedTags, mDelegateIndex);
+            assertNotNull(delegate);
+            // ensure we got a callback for initial reg state.
+            verifyUpdateRegistrationCalled(reg);
+
+            InetSocketAddress localAddr = new InetSocketAddress(
+                    InetAddresses.parseNumericAddress(""1.1.1.1""), 80);
+            InetSocketAddress serverAddr = new InetSocketAddress(
+                    InetAddresses.parseNumericAddress(""2.2.2.2""), 81);
+            SipDelegateConfiguration c = new SipDelegateConfiguration.Builder(1,
+                    SipDelegateConfiguration.SIP_TRANSPORT_TCP, localAddr, serverAddr).build();
+            // send first SIP config and verify
+            verifyRegisteredAndSendSipConfig(delegateConn, delegate, request.getFeatureTags(),
+                    deniedTags, c);
+        }
+
+        /**
+         * Create a connection between fake app interface and fake ImsService impl and set up the
+         * framework to accept incoming/outgoing messages. Once done, verify the transport is open.
+         */
+        public void connectAndVerify() throws Exception {
+            connect();
+
+            // Verify message transport is open.
+            verifyOutgoingTransport(delegateConn, delegate);
+            verifyIncomingTransport(delegateConn, delegate);
+        }
+    }
+
+    private static int sTestSlot = 0;
+    private static int sTestSub = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    private static ImsServiceConnector sServiceConnector;
+    private static CarrierConfigReceiver sReceiver;
+
+    @BeforeClass
+    public static void beforeAllTests() throws Exception {
+        // First, only populate test slot/sub
+        if (!ImsUtils.shouldTestTelephony()) {
+            return;
+        }
+
+        TelephonyManager tm = (TelephonyManager) getContext()
+                .getSystemService(Context.TELEPHONY_SERVICE);
+        sTestSub = ImsUtils.getPreferredActiveSubId();
+        sTestSlot = SubscriptionManager.getSlotIndex(sTestSub);
+        if (tm.getSimState(sTestSlot) != TelephonyManager.SIM_STATE_READY) {
+            return;
+        }
+        // Next, only start tests that require ImsResolver to bind to test ImsService if
+        // feature FEATURE_TELEPHONY_IMS is supported on this device.
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        sServiceConnector = new ImsServiceConnector(InstrumentationRegistry.getInstrumentation());
+        // Remove all live ImsServices until after these tests are done
+        sServiceConnector.clearAllActiveImsServices(sTestSlot);
+
+        sReceiver = new CarrierConfigReceiver(sTestSub);
+        IntentFilter filter = new IntentFilter(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED);
+        // ACTION_CARRIER_CONFIG_CHANGED is sticky, so we will get a callback right away.
+        InstrumentationRegistry.getInstrumentation().getContext()
+                .registerReceiver(sReceiver, filter);
+
+        if (!ImsUtils.shouldTestImsSingleRegistration()) {
+            // override FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION setting for this test to enable
+            // APIs.
+            sServiceConnector.setDeviceSingleRegistrationEnabled(true);
+        }
+
+        setFeatureTagsCarrierAllowed(DEFAULT_FEATURE_TAGS);
+    }
+
+    @AfterClass
+    public static void afterAllTests() throws Exception {
+        // Only clean up ImsResolver overrides if feature FEATURE_TELEPHONY_IMS is supported.
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+
+        // Restore all ImsService configurations that existed before the test.
+        if (sServiceConnector != null) {
+            sServiceConnector.disconnectServices();
+        }
+        sServiceConnector = null;
+
+        // Ensure there are no CarrierConfig overrides as well as reset the ImsResolver in case the
+        // ImsService override changed in CarrierConfig while we were overriding it.
+        overrideCarrierConfig(null);
+
+        if (sReceiver != null) {
+            InstrumentationRegistry.getInstrumentation().getContext().unregisterReceiver(sReceiver);
+            sReceiver = null;
+        }
+    }
+
+    @Before
+    public void beforeTest() {
+        if (!ImsUtils.shouldTestTelephony()) {
+            return;
+        }
+        TelephonyManager tm = (TelephonyManager) InstrumentationRegistry.getInstrumentation()
+                .getContext().getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm.getSimState(sTestSlot) != TelephonyManager.SIM_STATE_READY) {
+            fail(""This test requires that there is a SIM in the device!"");
+        }
+        // Correctness check: ensure that the subscription hasn't changed between tests.
+        int[] subs = SubscriptionManager.getSubId(sTestSlot);
+
+        if (subs == null) {
+            fail(""This test requires there is an active subscription in slot "" + sTestSlot);
+        }
+        boolean isFound = false;
+        for (int sub : subs) {
+            isFound |= (sTestSub == sub);
+        }
+        if (!isFound) {
+            fail(""Invalid state found: the test subscription in slot "" + sTestSlot + "" changed ""
+                    + ""during this test."");
+        }
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        // Unbind the ImsService after the test completes only if feature FEATURE_TELEPHONY_IMS
+        // is enabled.
+        if (sServiceConnector != null) {
+            sServiceConnector.disconnectCarrierImsService();
+            sServiceConnector.restoreDefaultSmsApp();
+        }
+    }"	""	""	singlereg	""	""	""	""	""	""	""	""	""	""
+7.4.1  . Telephony	7.4.1	C-5-1	7.4.1/C-5-1	07040100.670501	"""C-5-1] MUST declare the android.hardware.telephony.ims feature flag and provide a complete implementation of the ImsService API for both MMTEL and RCS User Capability Exchange API."""	Test Available	""	RCS MMTEL android.hardware.telephony.ims	""	""	""	""	""	""	""	""	android.telephony.ims.cts.ImsServiceTest	testCarrierImsServiceBindRcsChangeToMmtel	CtsTelephonyTestCases	/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/ims/cts/ImsServiceTest.java	""	"public void testCarrierImsServiceBindRcsChangeToMmtel() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        // Connect to the ImsService with the RCS feature.
+        assertTrue(sServiceConnector.connectCarrierImsService(new ImsFeatureConfiguration.Builder()
+                .addFeature(sTestSlot, ImsFeature.FEATURE_RCS)
+                .build()));
+        // The RcsFeature is created when the ImsService is bound. If it wasn't created, then the
+        // Framework did not call it.
+        assertTrue(sServiceConnector.getCarrierService().waitForLatchCountdown(
+                TestImsService.LATCH_CREATE_RCS));
+
+        // Change the supported feature to MMTEl
+        sServiceConnector.getCarrierService().getImsService().onUpdateSupportedImsFeatures(
+                new ImsFeatureConfiguration.Builder()
+                .addFeature(sTestSlot, ImsFeature.FEATURE_MMTEL).build());
+
+        // createMmTelFeature should be called.
+        assertTrue(sServiceConnector.getCarrierService().waitForLatchCountdown(
+                TestImsService.LATCH_CREATE_MMTEL));
+
+        // Wait for the framework to set the capabilities on the ImsService
+        sServiceConnector.getCarrierService().waitForLatchCountdown(
+                TestImsService.LATCH_MMTEL_CAP_SET);
+    }"	""	""	RCS MMTEL	""	""	""	""	""	""	""	""	""	""
+7.4.2  . IEEE 802.11	7.4.2	C-1-10	7.4.2/C-1-10	07040200.670110	"""C-1-10] MUST randomize Probe request sequence number between the last probe request of a scan and the first probe request of the next scan."""	Test Available	""	scan probe	""	""	""	""	""	""	""	""	android.net.wifi.cts.ConnectedNetworkScorerTest	isNotNull	CtsWifiTestCases	/home/gpoor/cts-12-source/cts/tests/tests/wifi/src/android/net/wifi/cts/ConnectedNetworkScorerTest.java	""	"/*
+ *.
+ */
+
+package android.net.wifi.cts;
+
+import static android.Manifest.permission.CONNECTIVITY_INTERNAL;
+import static android.Manifest.permission.NETWORK_SETTINGS;
+import static android.Manifest.permission.READ_WIFI_CREDENTIAL;
+import static android.Manifest.permission.WIFI_UPDATE_USABILITY_STATS_SCORE;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_OEM_PAID;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_OEM_PRIVATE;
+import static android.net.wifi.WifiUsabilityStatsEntry.ContentionTimeStats;
+import static android.net.wifi.WifiUsabilityStatsEntry.RadioStats;
+import static android.net.wifi.WifiUsabilityStatsEntry.RateStats;
+import static android.net.wifi.WifiUsabilityStatsEntry.PROBE_STATUS_FAILURE;
+import static android.net.wifi.WifiUsabilityStatsEntry.PROBE_STATUS_NO_PROBE;
+import static android.net.wifi.WifiUsabilityStatsEntry.PROBE_STATUS_SUCCESS;
+import static android.net.wifi.WifiUsabilityStatsEntry.PROBE_STATUS_UNKNOWN;
+import static android.net.wifi.WifiUsabilityStatsEntry.WME_ACCESS_CATEGORY_BE;
+import static android.net.wifi.WifiUsabilityStatsEntry.WME_ACCESS_CATEGORY_BK;
+import static android.net.wifi.WifiUsabilityStatsEntry.WME_ACCESS_CATEGORY_VI;
+import static android.net.wifi.WifiUsabilityStatsEntry.WME_ACCESS_CATEGORY_VO;
+import static android.os.Process.myUid;
+
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import android.annotation.NonNull;
+import android.app.UiAutomation;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSpecifier;
+import android.net.wifi.WifiNetworkSuggestion;
+import android.net.wifi.WifiUsabilityStatsEntry;
+import android.net.wifi.WifiConnectedSessionInfo;
+import android.os.Build;
+import android.platform.test.annotations.AppModeFull;
+import android.support.test.uiautomator.UiDevice;
+import android.telephony.TelephonyManager;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.SdkSuppress;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.ApiLevelUtil;
+import com.android.compatibility.common.util.PollingCheck;
+import com.android.compatibility.common.util.PropertyUtil;
+import com.android.compatibility.common.util.ShellIdentityUtils;
+
+import com.google.common.collect.Range;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Tests for wifi connected network scorer interface and usability stats.
+ */
+@AppModeFull(reason = ""Cannot get WifiManager in instant app mode"")
+@LargeTest
+@RunWith(AndroidJUnit4.class)
+public class ConnectedNetworkScorerTest extends WifiJUnit4TestBase {
+    private Context mContext;
+    private WifiManager mWifiManager;
+    private ConnectivityManager mConnectivityManager;
+    private UiDevice mUiDevice;
+    private TestHelper mTestHelper;
+    private TelephonyManager mTelephonyManager;
+
+    private boolean mWasVerboseLoggingEnabled;
+
+    private static final int WIFI_CONNECT_TIMEOUT_MILLIS = 30_000;
+    private static final int TIMEOUT = 12_000;
+    private static final int WAIT_DURATION = 5_000;
+
+    @Before
+    public void setUp() throws Exception {
+        mContext = InstrumentationRegistry.getInstrumentation().getContext();
+
+        // skip the test if WiFi is not supported
+        assumeTrue(WifiFeature.isWifiSupported(mContext));
+
+        mWifiManager = mContext.getSystemService(WifiManager.class);
+        assertThat(mWifiManager).isNotNull();
+
+        mConnectivityManager = mContext.getSystemService(ConnectivityManager.class);
+
+        // turn on verbose logging for tests
+        mWasVerboseLoggingEnabled = ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.isVerboseLoggingEnabled());
+        ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.setVerboseLoggingEnabled(true));
+
+        // enable Wifi
+        if (!mWifiManager.isWifiEnabled()) {
+            ShellIdentityUtils.invokeWithShellPermissions(() -> mWifiManager.setWifiEnabled(true));
+        }
+        PollingCheck.check(""Wifi not enabled"", TIMEOUT, () -> mWifiManager.isWifiEnabled());
+
+        // turn screen on
+        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        mTestHelper = new TestHelper(mContext, mUiDevice);
+        mTestHelper.turnScreenOn();
+
+        // Clear any existing app state before each test.
+        if (WifiBuildCompat.isPlatformOrWifiModuleAtLeastS(mContext)) {
+            ShellIdentityUtils.invokeWithShellPermissions(
+                    () -> mWifiManager.removeAppState(myUid(), mContext.getPackageName()));
+        }
+
+        // check we have >= 1 saved network
+        List<WifiConfiguration> savedNetworks = ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.getConfiguredNetworks());
+        assertWithMessage(""Need at least one saved network"").that(savedNetworks).isNotEmpty();
+
+        // ensure Wifi is connected
+        ShellIdentityUtils.invokeWithShellPermissions(() -> mWifiManager.reconnect());
+        PollingCheck.check(
+                ""Wifi not connected"",
+                WIFI_CONNECT_TIMEOUT_MILLIS,
+                () -> mWifiManager.getConnectionInfo().getNetworkId() != -1);
+        mTelephonyManager = mContext.getSystemService(TelephonyManager.class);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (!WifiFeature.isWifiSupported(mContext)) return;
+        if (!mWifiManager.isWifiEnabled()) {
+            ShellIdentityUtils.invokeWithShellPermissions(() -> mWifiManager.setWifiEnabled(true));
+        }
+        mTestHelper.turnScreenOff();
+        ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.setVerboseLoggingEnabled(mWasVerboseLoggingEnabled));
+    }
+
+    private static class TestUsabilityStatsListener implements
+            WifiManager.OnWifiUsabilityStatsListener {
+        private final CountDownLatch mCountDownLatch;
+        public int seqNum;
+        public boolean isSameBssidAndFre;
+        public WifiUsabilityStatsEntry statsEntry;
+
+        TestUsabilityStatsListener(CountDownLatch countDownLatch) {
+            mCountDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void onWifiUsabilityStats(int seqNum, boolean isSameBssidAndFreq,
+                WifiUsabilityStatsEntry statsEntry) {
+            this.seqNum = seqNum;
+            this.isSameBssidAndFre = isSameBssidAndFreq;
+            this.statsEntry = statsEntry;
+            mCountDownLatch.countDown();
+        }
+    }
+
+    /**
+     * Tests the {@link android.net.wifi.WifiUsabilityStatsEntry} retrieved from
+     * {@link WifiManager.OnWifiUsabilityStatsListener}.
+     */"	""	""	probe	""	""	""	""	""	""	""	""	""	""
+7.4.2  . IEEE 802.11	7.4.2	C-1-9	7.4.2/C-1-9	07040200.670109	"""C-1-9] MUST iterate probe request sequence number as normal (sequentially) between the probe requests in a scan."""	Test Available	""	probe scan	""	""	""	""	""	""	""	""	android.net.wifi.cts.ConnectedNetworkScorerTest	testWifiUsabilityStatsEntry	CtsWifiTestCases	/home/gpoor/cts-12-source/cts/tests/tests/wifi/src/android/net/wifi/cts/ConnectedNetworkScorerTest.java	""	"public void testWifiUsabilityStatsEntry() throws Exception {
+        // Usability stats collection only supported by vendor version Q and above.
+        if (!PropertyUtil.isVendorApiLevelAtLeast(Build.VERSION_CODES.Q)) {
+            return;
+        }
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        TestUsabilityStatsListener usabilityStatsListener =
+                new TestUsabilityStatsListener(countDownLatch);
+        try {
+            uiAutomation.adoptShellPermissionIdentity();
+            mWifiManager.addOnWifiUsabilityStatsListener(
+                    Executors.newSingleThreadExecutor(), usabilityStatsListener);
+            // Wait for new usability stats (while connected & screen on this is triggered
+            // by platform periodically).
+            assertThat(countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS)).isTrue();
+
+            assertThat(usabilityStatsListener.statsEntry).isNotNull();
+            WifiUsabilityStatsEntry statsEntry = usabilityStatsListener.statsEntry;
+
+            assertThat(statsEntry.getTimeStampMillis()).isGreaterThan(0L);
+            assertThat(statsEntry.getRssi()).isLessThan(0);
+            assertThat(statsEntry.getLinkSpeedMbps()).isAtLeast(0);
+            assertThat(statsEntry.getTotalTxSuccess()).isAtLeast(0L);
+            assertThat(statsEntry.getTotalTxRetries()).isAtLeast(0L);
+            assertThat(statsEntry.getTotalTxBad()).isAtLeast(0L);
+            assertThat(statsEntry.getTotalRxSuccess()).isAtLeast(0L);
+            if (mWifiManager.isEnhancedPowerReportingSupported()) {
+                assertThat(statsEntry.getTotalRadioOnTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalRadioTxTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalRadioRxTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalScanTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalNanScanTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalBackgroundScanTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalRoamScanTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalPnoScanTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalHotspot2ScanTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalCcaBusyFreqTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalRadioOnTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalRadioOnFreqTimeMillis()).isAtLeast(0L);
+                assertThat(statsEntry.getTotalBeaconRx()).isAtLeast(0L);
+                assertThat(statsEntry.getProbeStatusSinceLastUpdate())
+                        .isAnyOf(PROBE_STATUS_SUCCESS,
+                                PROBE_STATUS_FAILURE,
+                                PROBE_STATUS_NO_PROBE,
+                                PROBE_STATUS_UNKNOWN);
+                // -1 is default value for some of these fields if they're not available.
+                assertThat(statsEntry.getProbeElapsedTimeSinceLastUpdateMillis()).isAtLeast(-1);
+                assertThat(statsEntry.getProbeMcsRateSinceLastUpdate()).isAtLeast(-1);
+                assertThat(statsEntry.getRxLinkSpeedMbps()).isAtLeast(-1);
+                if (ApiLevelUtil.isAtLeast(Build.VERSION_CODES.S)) {
+                    try {
+                        assertThat(statsEntry.getTimeSliceDutyCycleInPercent())
+                                .isIn(Range.closed(0, 100));
+                    } catch (NoSuchElementException e) {
+                        // pass - Device does not support the field.
+                    }
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BE).getContentionTimeMinMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BE).getContentionTimeMaxMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BE).getContentionTimeAvgMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BE).getContentionNumSamples()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BK).getContentionTimeMinMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BK).getContentionTimeMaxMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BK).getContentionTimeAvgMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_BK).getContentionNumSamples()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VI).getContentionTimeMinMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VI).getContentionTimeMaxMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VI).getContentionTimeAvgMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VI).getContentionNumSamples()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VO).getContentionTimeMinMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VO).getContentionTimeMaxMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VO).getContentionTimeAvgMicros()).isAtLeast(0);
+                    assertThat(statsEntry.getContentionTimeStats(
+                            WME_ACCESS_CATEGORY_VO).getContentionNumSamples()).isAtLeast(0);
+                    // This is to add CTS test for the constructor function.
+                    ContentionTimeStats contentionStats = new ContentionTimeStats(2, 1, 4, 10);
+                    assertEquals(2, contentionStats.getContentionTimeMinMicros());
+                    assertEquals(1, contentionStats.getContentionTimeMaxMicros());
+                    assertEquals(4, contentionStats.getContentionTimeAvgMicros());
+                    assertEquals(10, contentionStats.getContentionNumSamples());
+                    assertThat(statsEntry.getChannelUtilizationRatio()).isIn(Range.closed(0, 255));
+                    if (mTelephonyManager != null) {
+                        boolean isCellularDataAvailable =
+                                mTelephonyManager.getDataState() == TelephonyManager.DATA_CONNECTED;
+                        assertEquals(isCellularDataAvailable, statsEntry.isCellularDataAvailable());
+                    } else {
+                        assertFalse(statsEntry.isCellularDataAvailable());
+                    }
+                    statsEntry.isWifiScoringEnabled();
+                    statsEntry.isThroughputSufficient();
+                    RateStats rateStats = new RateStats(WifiUsabilityStatsEntry.WIFI_PREAMBLE_VHT,
+                            WifiUsabilityStatsEntry.WIFI_SPATIAL_STREAMS_TWO,
+                            WifiUsabilityStatsEntry.WIFI_BANDWIDTH_40_MHZ,
+                            2, 20, 100, 200, 5, 10);
+                    assertThat(statsEntry.getRateStats()).isNotNull();
+                    if(statsEntry.getRateStats().size() > 0) {
+                        assertThat(statsEntry.getRateStats().get(0).getPreamble()).isAtLeast(0);
+                        assertThat(statsEntry.getRateStats().get(0).getNumberOfSpatialStreams())
+                                .isAtLeast(1);
+                        assertThat(statsEntry.getRateStats().get(0).getBandwidthInMhz())
+                                .isAtLeast(0);
+                        assertThat(statsEntry.getRateStats().get(0).getRateMcsIdx()).isAtLeast(0);
+                        assertThat(statsEntry.getRateStats().get(0).getBitRateInKbps())
+                                .isAtLeast(0);
+                        assertThat(statsEntry.getRateStats().get(0).getTxMpdu()).isAtLeast(0);
+                        assertThat(statsEntry.getRateStats().get(0).getRxMpdu()).isAtLeast(0);
+                        assertThat(statsEntry.getRateStats().get(0).getMpduLost()).isAtLeast(0);
+                        assertThat(statsEntry.getRateStats().get(0).getRetries()).isAtLeast(0);
+                    }
+                    RadioStats radioStat = new RadioStats(0, 10, 11, 12, 13, 14, 15, 16, 17, 18);
+                    assertThat(statsEntry.getWifiLinkLayerRadioStats()).isNotNull();
+                    int numRadios = statsEntry.getWifiLinkLayerRadioStats().size();
+                    for (int i = 0; i < numRadios; i++) {
+                        RadioStats radioStats = statsEntry.getWifiLinkLayerRadioStats().get(i);
+                        assertThat(radioStats.getRadioId()).isAtLeast(0);
+                        assertThat(radioStats.getTotalRadioOnTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalRadioTxTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalRadioRxTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalScanTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalNanScanTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalBackgroundScanTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalRoamScanTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalPnoScanTimeMillis()).isAtLeast(0);
+                        assertThat(radioStats.getTotalHotspot2ScanTimeMillis()).isAtLeast(0);
+                    }
+                }
+                // no longer populated, return default value.
+                assertThat(statsEntry.getCellularDataNetworkType())
+                        .isAnyOf(TelephonyManager.NETWORK_TYPE_UNKNOWN,
+                                TelephonyManager.NETWORK_TYPE_GPRS,
+                                TelephonyManager.NETWORK_TYPE_EDGE,
+                                TelephonyManager.NETWORK_TYPE_UMTS,
+                                TelephonyManager.NETWORK_TYPE_CDMA,
+                                TelephonyManager.NETWORK_TYPE_EVDO_0,
+                                TelephonyManager.NETWORK_TYPE_EVDO_A,
+                                TelephonyManager.NETWORK_TYPE_1xRTT,
+                                TelephonyManager.NETWORK_TYPE_HSDPA,
+                                TelephonyManager.NETWORK_TYPE_HSUPA,
+                                TelephonyManager.NETWORK_TYPE_HSPA,
+                                TelephonyManager.NETWORK_TYPE_IDEN,
+                                TelephonyManager.NETWORK_TYPE_EVDO_B,
+                                TelephonyManager.NETWORK_TYPE_LTE,
+                                TelephonyManager.NETWORK_TYPE_EHRPD,
+                                TelephonyManager.NETWORK_TYPE_HSPAP,
+                                TelephonyManager.NETWORK_TYPE_GSM,
+                                TelephonyManager.NETWORK_TYPE_TD_SCDMA,
+                                TelephonyManager.NETWORK_TYPE_IWLAN,
+                                TelephonyManager.NETWORK_TYPE_NR);
+                assertThat(statsEntry.getCellularSignalStrengthDbm()).isAtMost(0);
+                assertThat(statsEntry.getCellularSignalStrengthDb()).isAtMost(0);
+                assertThat(statsEntry.isSameRegisteredCell()).isFalse();
+            }
+        } finally {
+            mWifiManager.removeOnWifiUsabilityStatsListener(usabilityStatsListener);
+            uiAutomation.dropShellPermissionIdentity();
+        }
+    }
+
+    /**
+     * Tests the {@link android.net.wifi.WifiManager#updateWifiUsabilityScore(int, int, int)}
+     */"	""	""	probe scan	""	""	""	""	""	""	""	""	""	""
