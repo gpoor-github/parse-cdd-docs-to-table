@@ -15,6 +15,7 @@ fi
 # This script should be run in CTS source directory.
 echo this is what was entered $ctsdir
 #/home/gpoor/cts-source/cts
+#/home/gpoor/cts-12-source
 echo grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_data_from_cts/test-files.txt
 grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_data_from_cts/test-files.txt
 
