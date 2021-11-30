@@ -35,9 +35,9 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
             char_count += len(section)
             section = helpers.clean_html_anchors(section)
 
-            SECTION_ID_RE_STR = "(?:(\d{1,3}\.)+\d)"
+           # SECTION_ID_RE_STR = "(?:(\d{1,3}\.)+\d)"
 
-            cdd_section_id_search_results = re.search("(?:(\d{1,3}\.)+\d)", section)
+            cdd_section_id_search_results = re.search("(?:(\d{1,2}\.)+\d)", section)
             if not cdd_section_id_search_results:
                 continue
             cdd_section_id = cdd_section_id_search_results[0]
