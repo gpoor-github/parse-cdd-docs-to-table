@@ -748,5 +748,5 @@ def do_map_with_flat_file(file_to_process:str ) :
     print(f'Took time {end - start:0.4f}sec ')
 
 if __name__ == '__main__':
-    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_5.6_H-1-1.tsv"
+    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_7.4.2.4_C-1-5.tsv"
     do_map_with_flat_file(current_file_)
