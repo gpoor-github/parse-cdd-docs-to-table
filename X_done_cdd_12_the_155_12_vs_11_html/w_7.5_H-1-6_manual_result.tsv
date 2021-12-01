@@ -1,0 +1,155 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.7.2  . Camera	7.5	H-1-6	7.5/H-1-6	07050000.720106	"""[7.5/H-1-6] MUST have camera2 startup latency (open camera to first preview frame) &lt; 600ms as measured by the CTS camera PerformanceTest under ITS lighting conditions (3000K) for both primary cameras. If Handheld device implementations return android.os.Build.VERSION_CODES.S for android.os.Build.VERSION_CODES.MEDIA_PERFORMANCE_CLASS, then they:  | [7.5/H-1-6] MUST have camera2 startup latency (open camera to first preview frame) &lt; 500 ms as measured by the CTS camera PerformanceTest under ITS lighting conditions (3000K) for both primary cameras. """	""	""	ITS startup android.os.Build.VERSION_CODES.S latency CTS android.os.Build.VERSION_CODES.MEDIA MEDIA_PERFORMANCE_CLASS 3000 600	""	""	""	""	""	""	""	""	android.hardware.camera2.cts.PerformanceTest	testCameraLaunch	CtsCameraTestCases	/home/gpoor/cts-12-source/cts/tests/camera/src/android/hardware/camera2/cts/PerformanceTest.java	""	"public void testCameraLaunch() throws Exception {
+        double[] avgCameraLaunchTimes = new double[mTestRule.getCameraIdsUnderTest().length];
+
+        int counter = 0;
+        for (String id : mTestRule.getCameraIdsUnderTest()) {
+            // Do NOT move these variables to outer scope
+            // They will be passed to DeviceReportLog and their references will be stored
+            String streamName = ""test_camera_launch"";
+            mReportLog = new DeviceReportLog(REPORT_LOG_NAME, streamName);
+            mReportLog.addValue(""camera_id"", id, ResultType.NEUTRAL, ResultUnit.NONE);
+            double[] cameraOpenTimes = new double[NUM_TEST_LOOPS];
+            double[] configureStreamTimes = new double[NUM_TEST_LOOPS];
+            double[] startPreviewTimes = new double[NUM_TEST_LOOPS];
+            double[] stopPreviewTimes = new double[NUM_TEST_LOOPS];
+            double[] cameraCloseTimes = new double[NUM_TEST_LOOPS];
+            double[] cameraLaunchTimes = new double[NUM_TEST_LOOPS];
+            try {
+                CameraCharacteristics ch =
+                        mTestRule.getCameraManager().getCameraCharacteristics(id);
+                mTestRule.setStaticInfo(new StaticMetadata(ch));
+                boolean isColorOutputSupported = mTestRule.getStaticInfo().isColorOutputSupported();
+                if (isColorOutputSupported) {
+                    initializeImageReader(id, ImageFormat.YUV_420_888);
+                } else {
+                    assertTrue(""Depth output must be supported if regular output isn't!"",
+                            mTestRule.getStaticInfo().isDepthOutputSupported());
+                    initializeImageReader(id, ImageFormat.DEPTH16);
+                }
+
+                SimpleImageListener imageListener = null;
+                long startTimeMs, openTimeMs, configureTimeMs, previewStartedTimeMs;
+                for (int i = 0; i < NUM_TEST_LOOPS; i++) {
+                    try {
+                        // Need create a new listener every iteration to be able to wait
+                        // for the first image comes out.
+                        imageListener = new SimpleImageListener();
+                        mTestRule.getReader().setOnImageAvailableListener(
+                                imageListener, mTestRule.getHandler());
+                        startTimeMs = SystemClock.elapsedRealtime();
+
+                        // Blocking open camera
+                        simpleOpenCamera(id);
+                        openTimeMs = SystemClock.elapsedRealtime();
+                        cameraOpenTimes[i] = openTimeMs - startTimeMs;
+
+                        // Blocking configure outputs.
+                        CaptureRequest previewRequest =
+                                configureReaderAndPreviewOutputs(id, isColorOutputSupported);
+                        configureTimeMs = SystemClock.elapsedRealtime();
+                        configureStreamTimes[i] = configureTimeMs - openTimeMs;
+
+                        // Blocking start preview (start preview to first image arrives)
+                        SimpleCaptureCallback resultListener =
+                                new SimpleCaptureCallback();
+                        blockingStartPreview(id, resultListener, previewRequest, imageListener);
+                        previewStartedTimeMs = SystemClock.elapsedRealtime();
+                        startPreviewTimes[i] = previewStartedTimeMs - configureTimeMs;
+                        cameraLaunchTimes[i] = previewStartedTimeMs - startTimeMs;
+
+                        // Let preview on for a couple of frames
+                        CameraTestUtils.waitForNumResults(resultListener, NUM_RESULTS_WAIT,
+                                WAIT_FOR_RESULT_TIMEOUT_MS);
+
+                        // Blocking stop preview
+                        startTimeMs = SystemClock.elapsedRealtime();
+                        blockingStopRepeating();
+                        stopPreviewTimes[i] = SystemClock.elapsedRealtime() - startTimeMs;
+                    }
+                    finally {
+                        // Blocking camera close
+                        startTimeMs = SystemClock.elapsedRealtime();
+                        mTestRule.closeDevice(id);
+                        cameraCloseTimes[i] = SystemClock.elapsedRealtime() - startTimeMs;
+                    }
+                }
+
+                avgCameraLaunchTimes[counter] = Stat.getAverage(cameraLaunchTimes);
+                // Finish the data collection, report the KPIs.
+                // ReportLog keys have to be lowercase underscored format.
+                mReportLog.addValues(""camera_open_time"", cameraOpenTimes, ResultType.LOWER_BETTER,
+                        ResultUnit.MS);
+                mReportLog.addValues(""camera_configure_stream_time"", configureStreamTimes,
+                        ResultType.LOWER_BETTER, ResultUnit.MS);
+                mReportLog.addValues(""camera_start_preview_time"", startPreviewTimes,
+                        ResultType.LOWER_BETTER, ResultUnit.MS);
+                mReportLog.addValues(""camera_camera_stop_preview"", stopPreviewTimes,
+                        ResultType.LOWER_BETTER, ResultUnit.MS);
+                mReportLog.addValues(""camera_camera_close_time"", cameraCloseTimes,
+                        ResultType.LOWER_BETTER, ResultUnit.MS);
+                mReportLog.addValues(""camera_launch_time"", cameraLaunchTimes,
+                        ResultType.LOWER_BETTER, ResultUnit.MS);
+            }
+            finally {
+                mTestRule.closeDefaultImageReader();
+                closePreviewSurface();
+            }
+            counter++;
+            mReportLog.submit(mInstrumentation);
+
+            if (VERBOSE) {
+                Log.v(TAG, ""Camera "" + id + "" device open times(ms): ""
+                        + Arrays.toString(cameraOpenTimes)
+                        + "". Average(ms): "" + Stat.getAverage(cameraOpenTimes)
+                        + "". Min(ms): "" + Stat.getMin(cameraOpenTimes)
+                        + "". Max(ms): "" + Stat.getMax(cameraOpenTimes));
+                Log.v(TAG, ""Camera "" + id + "" configure stream times(ms): ""
+                        + Arrays.toString(configureStreamTimes)
+                        + "". Average(ms): "" + Stat.getAverage(configureStreamTimes)
+                        + "". Min(ms): "" + Stat.getMin(configureStreamTimes)
+                        + "". Max(ms): "" + Stat.getMax(configureStreamTimes));
+                Log.v(TAG, ""Camera "" + id + "" start preview times(ms): ""
+                        + Arrays.toString(startPreviewTimes)
+                        + "". Average(ms): "" + Stat.getAverage(startPreviewTimes)
+                        + "". Min(ms): "" + Stat.getMin(startPreviewTimes)
+                        + "". Max(ms): "" + Stat.getMax(startPreviewTimes));
+                Log.v(TAG, ""Camera "" + id + "" stop preview times(ms): ""
+                        + Arrays.toString(stopPreviewTimes)
+                        + "". Average(ms): "" + Stat.getAverage(stopPreviewTimes)
+                        + "". nMin(ms): "" + Stat.getMin(stopPreviewTimes)
+                        + "". nMax(ms): "" + Stat.getMax(stopPreviewTimes));
+                Log.v(TAG, ""Camera "" + id + "" device close times(ms): ""
+                        + Arrays.toString(cameraCloseTimes)
+                        + "". Average(ms): "" + Stat.getAverage(cameraCloseTimes)
+                        + "". Min(ms): "" + Stat.getMin(cameraCloseTimes)
+                        + "". Max(ms): "" + Stat.getMax(cameraCloseTimes));
+                Log.v(TAG, ""Camera "" + id + "" camera launch times(ms): ""
+                        + Arrays.toString(cameraLaunchTimes)
+                        + "". Average(ms): "" + Stat.getAverage(cameraLaunchTimes)
+                        + "". Min(ms): "" + Stat.getMin(cameraLaunchTimes)
+                        + "". Max(ms): "" + Stat.getMax(cameraLaunchTimes));
+            }
+        }
+        if (mTestRule.getCameraIdsUnderTest().length != 0) {
+            String streamName = ""test_camera_launch_average"";
+            mReportLog = new DeviceReportLog(REPORT_LOG_NAME, streamName);
+            mReportLog.setSummary(""camera_launch_average_time_for_all_cameras"",
+                    Stat.getAverage(avgCameraLaunchTimes), ResultType.LOWER_BETTER, ResultUnit.MS);
+            mReportLog.submit(mInstrumentation);
+        }
+    }
+
+    /**
+     * Test camera capture KPI for YUV_420_888, PRIVATE, JPEG, RAW and RAW+JPEG
+     * formats: the time duration between sending out a single image capture request
+     * and receiving image data and capture result.
+     * <p>
+     * It enumerates the following metrics: capture latency, computed by
+     * measuring the time between sending out the capture request and getting
+     * the image data; partial result latency, computed by measuring the time
+     * between sending out the capture request and getting the partial result;
+     * capture result latency, computed by measuring the time between sending
+     * out the capture request and getting the full capture result.
+     * </p>
+     */"	""	""	latency	""	""	""	""	""	""	""	""	""	""

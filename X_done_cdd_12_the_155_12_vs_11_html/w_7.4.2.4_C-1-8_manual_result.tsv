@@ -1,0 +1,31 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+7.4.2.4  . Wi	7.4.2.4	C-1-8	7.4.2.4/C-1-8	07040204.670108	"""C-1-8] MUST support user control of provisioning through the Wi-Fi picker."""	Test Available	""	view picker passpoint wifi button	""	""	""	""	""	""	""	""	android.net.wifi.cts.WifiManagerTest	testAddOrUpdatePasspointConfiguration	CtsWifiTestCases	/home/gpoor/cts-12-source/cts/tests/tests/wifi/src/android/net/wifi/cts/WifiManagerTest.java	""	"public void testAddOrUpdatePasspointConfiguration() throws Exception {
+        if (!WifiFeature.isWifiSupported(getContext())) {
+            // skip the test if WiFi is not supported
+            return;
+        }
+
+        // Create and install a Passpoint configuration
+        PasspointConfiguration passpointConfiguration = createPasspointConfiguration();
+        UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        try {
+            uiAutomation.adoptShellPermissionIdentity();
+            mWifiManager.addOrUpdatePasspointConfiguration(passpointConfiguration);
+
+            // Compare configurations
+            List<PasspointConfiguration> configurations = mWifiManager.getPasspointConfigurations();
+            assertNotNull(""The installed passpoint profile is missing"", configurations);
+            assertEquals(passpointConfiguration, getTargetPasspointConfiguration(configurations,
+                    passpointConfiguration.getUniqueId()));
+        } finally {
+            // Clean up
+            mWifiManager.removePasspointConfiguration(passpointConfiguration.getHomeSp().getFqdn());
+            uiAutomation.dropShellPermissionIdentity();
+        }
+    }
+
+    /**
+     * Tests {@link WifiManager#setPasspointMeteredOverride(String, int)}
+     * adds a Passpoint configuration correctly, check the default metered setting. Use API change
+     * metered override, verify Passpoint configuration changes with it.
+     */"	""	""	passpoint wifi	""	""	""	""	""	""	""	""	""	""

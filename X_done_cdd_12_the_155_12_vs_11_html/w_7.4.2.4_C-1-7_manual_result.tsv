@@ -1,0 +1,475 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+7.4.2.4  . Wi	7.4.2.4	C-1-7	7.4.2.4/C-1-7	07040204.670107	"""C-1-7] MUST process the AAA server certificate as described in Hotspot 2.0 R3 specification."""	Test Available	""	AAA hotspot passpoint cert	""	""	""	""	""	""	""	""	android.net.wifi.cts.WifiManagerTest	ProvisioningCallback	CtsWifiTestCases	/home/gpoor/cts-12-source/cts/tests/tests/wifi/src/android/net/wifi/cts/WifiManagerTest.java	""	"public void test/*
+ *.
+ */
+
+package android.net.wifi.cts;
+
+import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED;
+import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
+import static android.net.wifi.WifiAvailableChannel.OP_MODE_SAP;
+import static android.net.wifi.WifiAvailableChannel.OP_MODE_STA;
+import static android.net.wifi.WifiConfiguration.INVALID_NETWORK_ID;
+import static android.net.wifi.WifiManager.COEX_RESTRICTION_SOFTAP;
+import static android.net.wifi.WifiManager.COEX_RESTRICTION_WIFI_AWARE;
+import static android.net.wifi.WifiManager.COEX_RESTRICTION_WIFI_DIRECT;
+import static android.net.wifi.WifiScanner.WIFI_BAND_24_GHZ;
+
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
+import static org.junit.Assert.assertNotEquals;
+
+import android.annotation.NonNull;
+import android.app.UiAutomation;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.ConnectivityManager;
+import android.net.MacAddress;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
+import android.net.TetheringManager;
+import android.net.Uri;
+import android.net.wifi.CoexUnsafeChannel;
+import android.net.wifi.ScanResult;
+import android.net.wifi.SoftApCapability;
+import android.net.wifi.SoftApConfiguration;
+import android.net.wifi.SoftApInfo;
+import android.net.wifi.WifiAvailableChannel;
+import android.net.wifi.WifiClient;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiEnterpriseConfig;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.SubsystemRestartTrackingCallback;
+import android.net.wifi.WifiManager.WifiLock;
+import android.net.wifi.WifiNetworkConnectionStatistics;
+import android.net.wifi.WifiNetworkSuggestion;
+import android.net.wifi.hotspot2.ConfigParser;
+import android.net.wifi.hotspot2.OsuProvider;
+import android.net.wifi.hotspot2.PasspointConfiguration;
+import android.net.wifi.hotspot2.ProvisioningCallback;
+import android.net.wifi.hotspot2.pps.Credential;
+import android.net.wifi.hotspot2.pps.HomeSp;
+import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerExecutor;
+import android.os.HandlerThread;
+import android.os.Process;
+import android.os.SystemClock;
+import android.os.UserHandle;
+import android.platform.test.annotations.AppModeFull;
+import android.platform.test.annotations.AsbSecurityTest;
+import android.provider.Settings;
+import android.support.test.uiautomator.UiDevice;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.util.ArraySet;
+import android.util.Log;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
+
+import androidx.test.filters.SdkSuppress;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.ApiLevelUtil;
+import com.android.compatibility.common.util.FeatureUtil;
+import com.android.compatibility.common.util.PollingCheck;
+import com.android.compatibility.common.util.PropertyUtil;
+import com.android.compatibility.common.util.ShellIdentityUtils;
+import com.android.compatibility.common.util.SystemUtil;
+import com.android.compatibility.common.util.ThrowingRunnable;
+import com.android.modules.utils.build.SdkLevel;
+import com.android.net.module.util.MacAddressUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+@AppModeFull(reason = ""Cannot get WifiManager in instant app mode"")
+public class WifiManagerTest extends WifiJUnit3TestBase {
+    private static class MySync {
+        int expectedState = STATE_NULL;
+    }
+
+    private WifiManager mWifiManager;
+    private ConnectivityManager mConnectivityManager;
+    private TetheringManager mTetheringManager;
+    private WifiLock mWifiLock;
+    private static MySync mMySync;
+    private List<ScanResult> mScanResults = null;
+    private NetworkInfo mNetworkInfo =
+            new NetworkInfo(ConnectivityManager.TYPE_WIFI, TelephonyManager.NETWORK_TYPE_UNKNOWN,
+                    ""wifi"", ""unknown"");
+    private final Object mLock = new Object();
+    private UiDevice mUiDevice;
+    private boolean mWasVerboseLoggingEnabled;
+    private boolean mWasScanThrottleEnabled;
+    private SoftApConfiguration mOriginalSoftApConfig = null;
+
+    // Please refer to WifiManager
+    private static final int MIN_RSSI = -100;
+    private static final int MAX_RSSI = -55;
+
+    private static final int STATE_NULL = 0;
+    private static final int STATE_WIFI_CHANGING = 1;
+    private static final int STATE_WIFI_ENABLED = 2;
+    private static final int STATE_WIFI_DISABLED = 3;
+    private static final int STATE_SCANNING = 4;
+    private static final int STATE_SCAN_DONE = 5;
+
+    private static final String TAG = ""WifiManagerTest"";
+    private static final String SSID1 = ""\""WifiManagerTest\"""";
+    // A full single scan duration is about 6-7 seconds if country code is set
+    // to US. If country code is set to world mode (00), we would expect a scan
+    // duration of roughly 8 seconds. So we set scan timeout as 9 seconds here.
+    private static final int SCAN_TEST_WAIT_DURATION_MS = 9000;
+    private static final int TEST_WAIT_DURATION_MS = 10_000;
+    private static final int WIFI_CONNECT_TIMEOUT_MILLIS = 30_000;
+    private static final int WAIT_MSEC = 60;
+    private static final int DURATION_SCREEN_TOGGLE = 2000;
+    private static final int DURATION_SETTINGS_TOGGLE = 1_000;
+    private static final int WIFI_SCAN_TEST_CACHE_DELAY_MILLIS = 3 * 60 * 1000;
+
+    private static final int ENFORCED_NUM_NETWORK_SUGGESTIONS_PER_APP = 50;
+
+    private static final String TEST_PAC_URL = ""http://www.example.com/proxy.pac"";
+    private static final String MANAGED_PROVISIONING_PACKAGE_NAME
+            = ""com.android.managedprovisioning"";
+
+    private static final String TEST_SSID_UNQUOTED = ""testSsid1"";
+    private static final String TEST_IP_ADDRESS = ""192.168.5.5"";
+    private static final String TEST_MAC_ADDRESS = ""aa:bb:cc:dd:ee:ff"";
+    private static final MacAddress TEST_MAC = MacAddress.fromString(TEST_MAC_ADDRESS);
+    private static final String TEST_PASSPHRASE = ""passphrase"";
+    private static final String PASSPOINT_INSTALLATION_FILE_WITH_CA_CERT =
+            ""assets/ValidPasspointProfile.base64"";
+    private static final String TYPE_WIFI_CONFIG = ""application/x-wifi-config"";
+    private static final String TEST_PSK_CAP = ""[RSN-PSK-CCMP]"";
+    private static final String TEST_BSSID = ""00:01:02:03:04:05"";
+    private static final String TEST_COUNTRY_CODE = ""JP"";
+    private static final String TEST_DOM_SUBJECT_MATCH = ""domSubjectMatch"";
+    private static final int TEST_SUB_ID = 2;
+
+    private IntentFilter mIntentFilter;
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+
+                synchronized (mMySync) {
+                    if (intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)) {
+                        mScanResults = mWifiManager.getScanResults();
+                    } else {
+                        mScanResults = null;
+                    }
+                    mMySync.expectedState = STATE_SCAN_DONE;
+                    mMySync.notifyAll();
+                }
+            } else if (action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
+                int newState = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
+                        WifiManager.WIFI_STATE_UNKNOWN);
+                synchronized (mMySync) {
+                    if (newState == WifiManager.WIFI_STATE_ENABLED) {
+                        Log.d(TAG, ""*** New WiFi state is ENABLED ***"");
+                        mMySync.expectedState = STATE_WIFI_ENABLED;
+                        mMySync.notifyAll();
+                    } else if (newState == WifiManager.WIFI_STATE_DISABLED) {
+                        Log.d(TAG, ""*** New WiFi state is DISABLED ***"");
+                        mMySync.expectedState = STATE_WIFI_DISABLED;
+                        mMySync.notifyAll();
+                    }
+                }
+            } else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                synchronized (mMySync) {
+                    mNetworkInfo =
+                            (NetworkInfo) intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                    if (mNetworkInfo.getState() == NetworkInfo.State.CONNECTED)
+                        mMySync.notifyAll();
+                }
+            }
+        }
+    };
+    // Initialize with an invalid status value (0)
+    private int mProvisioningStatus = 0;
+    // Initialize with an invalid status value (0)
+    private int mProvisioningFailureStatus = 0;
+    private boolean mProvisioningComplete = false;
+    private ProvisioningCallback mProvisioningCallback = new ProvisioningCallback() {
+        @Override
+        public void onProvisioningFailure(int status) {
+            synchronized (mLock) {
+                mProvisioningFailureStatus = status;
+                mLock.notify();
+            }
+        }
+
+        @Override
+        public void onProvisioningStatus(int status) {
+            synchronized (mLock) {
+                mProvisioningStatus = status;
+                mLock.notify();
+            }
+        }
+
+        @Override
+        public void onProvisioningComplete() {
+            mProvisioningComplete = true;
+        }
+    };
+    private int mSubsystemRestartStatus = 0; // 0: nada, 1: restarting, 2: restarted
+    private SubsystemRestartTrackingCallback mSubsystemRestartTrackingCallback =
+            new SubsystemRestartTrackingCallback() {
+                @Override
+                public void onSubsystemRestarting() {
+                    synchronized (mLock) {
+                        mSubsystemRestartStatus = 1;
+                        mLock.notify();
+                    }
+                }
+
+                @Override
+                public void onSubsystemRestarted() {
+                    synchronized (mLock) {
+                        mSubsystemRestartStatus = 2;
+                        mLock.notify();
+                    }
+                }
+            };
+    private static final String TEST_SSID = ""TEST SSID"";
+    private static final String TEST_FRIENDLY_NAME = ""Friendly Name"";
+    private static final Map<String, String> TEST_FRIENDLY_NAMES =
+            new HashMap<String, String>() {
+                {
+                    put(""en"", TEST_FRIENDLY_NAME);
+                    put(""kr"", TEST_FRIENDLY_NAME + 2);
+                    put(""jp"", TEST_FRIENDLY_NAME + 3);
+                }
+            };
+    private static final String TEST_SERVICE_DESCRIPTION = ""Dummy Service"";
+    private static final Uri TEST_SERVER_URI = Uri.parse(""https://test.com"");
+    private static final String TEST_NAI = ""test.access.com"";
+    private static final List<Integer> TEST_METHOD_LIST =
+            Arrays.asList(1 /* METHOD_SOAP_XML_SPP */);
+    private final HandlerThread mHandlerThread = new HandlerThread(""WifiManagerTest"");
+    protected final Executor mExecutor;
+    {
+        mHandlerThread.start();
+        mExecutor = new HandlerExecutor(new Handler(mHandlerThread.getLooper()));
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if (!WifiFeature.isWifiSupported(getContext())) {
+            // skip the test if WiFi is not supported
+            return;
+        }
+        mMySync = new MySync();
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        mIntentFilter.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
+        mIntentFilter.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiManager.RSSI_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiManager.NETWORK_IDS_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiManager.ACTION_PICK_WIFI_NETWORK);
+
+        mContext.registerReceiver(mReceiver, mIntentFilter);
+        mWifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
+        mConnectivityManager = getContext().getSystemService(ConnectivityManager.class);
+        mTetheringManager = getContext().getSystemService(TetheringManager.class);
+        assertNotNull(mWifiManager);
+        assertNotNull(mTetheringManager);
+
+        // turn on verbose logging for tests
+        mWasVerboseLoggingEnabled = ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.isVerboseLoggingEnabled());
+        ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.setVerboseLoggingEnabled(true));
+        // Disable scan throttling for tests.
+        mWasScanThrottleEnabled = ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.isScanThrottleEnabled());
+        ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.setScanThrottleEnabled(false));
+
+        mWifiLock = mWifiManager.createWifiLock(TAG);
+        mWifiLock.acquire();
+        // enable Wifi
+        if (!mWifiManager.isWifiEnabled()) setWifiEnabled(true);
+        PollingCheck.check(""Wifi not enabled"", TEST_WAIT_DURATION_MS,
+                () -> mWifiManager.isWifiEnabled());
+
+        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        turnScreenOnNoDelay();
+
+        synchronized (mMySync) {
+            mMySync.expectedState = STATE_NULL;
+        }
+
+        List<WifiConfiguration> savedNetworks = ShellIdentityUtils.invokeWithShellPermissions(
+                mWifiManager::getConfiguredNetworks);
+        assertFalse(""Need at least one saved network"", savedNetworks.isEmpty());
+
+        // Get original config for restore
+        mOriginalSoftApConfig = ShellIdentityUtils.invokeWithShellPermissions(
+                mWifiManager::getSoftApConfiguration);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (!WifiFeature.isWifiSupported(getContext())) {
+            // skip the test if WiFi is not supported
+            super.tearDown();
+            return;
+        }
+        if (!mWifiManager.isWifiEnabled())
+            setWifiEnabled(true);
+        mWifiLock.release();
+        mContext.unregisterReceiver(mReceiver);
+        ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.setScanThrottleEnabled(mWasScanThrottleEnabled));
+        ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.setVerboseLoggingEnabled(mWasVerboseLoggingEnabled));
+        // restore original softap config
+        ShellIdentityUtils.invokeWithShellPermissions(
+                () -> mWifiManager.setSoftApConfiguration(mOriginalSoftApConfig));
+        Thread.sleep(TEST_WAIT_DURATION_MS);
+        super.tearDown();
+    }
+
+    private void setWifiEnabled(boolean enable) throws Exception {
+        synchronized (mMySync) {
+            if (mWifiManager.isWifiEnabled() != enable) {
+                // the new state is different, we expect it to change
+                mMySync.expectedState = STATE_WIFI_CHANGING;
+            } else {
+                mMySync.expectedState = (enable ? STATE_WIFI_ENABLED : STATE_WIFI_DISABLED);
+            }
+            // now trigger the change using shell commands.
+            SystemUtil.runShellCommand(""svc wifi "" + (enable ? ""enable"" : ""disable""));
+            waitForExpectedWifiState(enable);
+        }
+    }
+
+    private void waitForExpectedWifiState(boolean enabled) throws InterruptedException {
+        synchronized (mMySync) {
+            long timeout = System.currentTimeMillis() + TEST_WAIT_DURATION_MS;
+            int expected = (enabled ? STATE_WIFI_ENABLED : STATE_WIFI_DISABLED);
+            while (System.currentTimeMillis() < timeout
+                    && mMySync.expectedState != expected) {
+                mMySync.wait(WAIT_MSEC);
+            }
+        }
+    }
+
+    // Get the current scan status from sticky broadcast.
+    private boolean isScanCurrentlyAvailable() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.ACTION_WIFI_SCAN_AVAILABILITY_CHANGED);
+        Intent intent = mContext.registerReceiver(null, intentFilter);
+        assertNotNull(intent);
+        if (intent.getAction().equals(WifiManager.ACTION_WIFI_SCAN_AVAILABILITY_CHANGED)) {
+            return intent.getBooleanExtra(WifiManager.EXTRA_SCAN_AVAILABLE, false);
+        }
+        return false;
+    }
+
+    private void startScan() throws Exception {
+        synchronized (mMySync) {
+            mMySync.expectedState = STATE_SCANNING;
+            mScanResults = null;
+            assertTrue(mWifiManager.startScan());
+            long timeout = System.currentTimeMillis() + SCAN_TEST_WAIT_DURATION_MS;
+            while (System.currentTimeMillis() < timeout && mMySync.expectedState == STATE_SCANNING)
+                mMySync.wait(WAIT_MSEC);
+        }
+    }
+
+    private void waitForNetworkInfoState(NetworkInfo.State state, int timeoutMillis)
+            throws Exception {
+        synchronized (mMySync) {
+            if (mNetworkInfo.getState() == state) return;
+            long timeout = System.currentTimeMillis() + timeoutMillis;
+            while (System.currentTimeMillis() < timeout
+                    && mNetworkInfo.getState() != state)
+                mMySync.wait(WAIT_MSEC);
+            assertEquals(state, mNetworkInfo.getState());
+        }
+    }
+
+    private void waitForConnection() throws Exception {
+        waitForNetworkInfoState(NetworkInfo.State.CONNECTED, WIFI_CONNECT_TIMEOUT_MILLIS);
+    }
+
+    private void waitForDisconnection() throws Exception {
+        waitForNetworkInfoState(NetworkInfo.State.DISCONNECTED, TEST_WAIT_DURATION_MS);
+    }
+
+    private void ensureNotNetworkInfoState(NetworkInfo.State state) throws Exception {
+        synchronized (mMySync) {
+            long timeout = System.currentTimeMillis() + TEST_WAIT_DURATION_MS + WAIT_MSEC;
+            while (System.currentTimeMillis() < timeout) {
+                assertNotEquals(state, mNetworkInfo.getState());
+                mMySync.wait(WAIT_MSEC);
+            }
+        }
+    }
+
+    private void ensureNotConnected() throws Exception {
+        ensureNotNetworkInfoState(NetworkInfo.State.CONNECTED);
+    }
+
+    private void ensureNotDisconnected() throws Exception {
+        ensureNotNetworkInfoState(NetworkInfo.State.DISCONNECTED);
+    }
+
+    private boolean existSSID(String ssid) {
+        for (final WifiConfiguration w : mWifiManager.getConfiguredNetworks()) {
+            if (w.SSID.equals(ssid))
+                return true;
+        }
+        return false;
+    }
+
+    private int findConfiguredNetworks(String SSID, List<WifiConfiguration> networks) {
+        for (final WifiConfiguration w : networks) {
+            if (w.SSID.equals(SSID))
+                return networks.indexOf(w);
+        }
+        return -1;
+    }
+
+    /**
+     * Test creation of WifiManager Lock.
+     */"	""	""	hotspot passpoint cert	""	""	""	""	""	""	""	""	""	""

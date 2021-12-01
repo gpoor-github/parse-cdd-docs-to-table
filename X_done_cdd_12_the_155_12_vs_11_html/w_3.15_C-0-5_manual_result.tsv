@@ -1,0 +1,98 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+3.15  . Instant Apps	3.15	C-0-5	3.15/C-0-5	03150000.670005	"""C-0-5] MUST provide a user affordance to view and delete Instant Apps locally cached for each individual app package."""	Test Missing	""	delete ephem instantapp	""	""	""	""	""	""	""	""	android.os.cts.FileObserverTest	isInstantApp	""	/home/gpoor/cts-12-source/cts/tests/tests/os/src/android/os/cts/FileObserverTest.java	""	"public void test/*
+ *.
+ */
+
+package android.os.cts;
+
+import android.os.Environment;
+import android.os.FileObserver;
+import android.platform.test.annotations.AppModeFull;
+import android.platform.test.annotations.AppModeInstant;
+import android.test.AndroidTestCase;
+import android.util.Pair;
+
+import androidx.test.InstrumentationRegistry;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class FileObserverTest extends AndroidTestCase {
+    private static final String PATH = ""/PATH"";
+    private static final String TEST_FILE = ""file_observer_test.txt"";
+    private static final String TEST_DIR = ""fileobserver_dir"";
+    private static final File EXT_STORAGE_DIR = new File(Environment.getExternalStorageDirectory(), ""fileobserver_toplevel_dir"");
+    private static final int FILE_DATA = 0x20;
+    private static final int UNDEFINED = 0x8000;
+    private static final long DELAY_MSECOND = 2000;
+
+    private void helpSetUp(File dir) throws Exception {
+        File testFile = new File(dir, TEST_FILE);
+        testFile.createNewFile();
+        File testDir = new File(dir, TEST_DIR);
+        testDir.mkdirs();
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        File dir = getContext().getFilesDir();
+        helpSetUp(dir);
+
+        dir = getContext().getCacheDir();
+        helpSetUp(dir);
+
+        // Instant apps cannot access external storage
+        if (!InstrumentationRegistry.getTargetContext().getPackageManager().isInstantApp()) {
+            dir = getContext().getExternalFilesDir(null);
+            helpSetUp(dir);
+
+            dir = EXT_STORAGE_DIR;
+            dir.mkdirs();
+            helpSetUp(dir);
+        }
+
+        // Let the setup settles
+        Thread.sleep(DELAY_MSECOND);
+    }
+
+    private void helpTearDown(File dir) throws Exception {
+        File testFile = new File(dir, TEST_FILE);
+        File testDir = new File(dir, TEST_DIR);
+        File moveDestFile = new File(testDir, TEST_FILE);
+
+        if (testFile.exists()) {
+            testFile.delete();
+        }
+
+        if (moveDestFile.exists()) {
+            moveDestFile.delete();
+        }
+
+        if (testDir.exists()) {
+            testDir.delete();
+        }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+
+        File dir = getContext().getFilesDir();
+        helpTearDown(dir);
+
+        dir = getContext().getCacheDir();
+        helpTearDown(dir);
+
+        dir = getContext().getExternalFilesDir(null);
+        helpTearDown(dir);
+
+        dir = EXT_STORAGE_DIR;
+        helpTearDown(dir);
+        if (dir.exists()) {
+            dir.delete();
+        }
+    }"	""	""	delete instantapp	""	""	""	""	"Searches for ""delete ephem instantapp"" do not find tests for UI for user to delete apps. The test included tests file deletion."	""	""	""	""	""

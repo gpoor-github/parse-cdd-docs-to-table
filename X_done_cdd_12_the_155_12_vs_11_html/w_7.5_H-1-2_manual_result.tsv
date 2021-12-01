@@ -1,0 +1,154 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.7.2  . Camera	7.5	H-1-2	7.5/H-1-2	07050000.720102	"""[7.5/H-1-2] MUST have a primary front facing camera with a resolution of at least 4 megapixels supporting video capture at 1080p@30fps. The primary front-facing camera is the front-facing camera with the lowest camera ID.  | [7.5/H-1-2] MUST have a primary front facing camera with a resolution of at least 5 megapixels and support video capture at 1080p@30fps. The primary front-facing camera is the front-facing camera with the lowest camera ID. """	""	""	cdd MEDIA_PERFORMANCE_CLASS front 4k@30fps minimum 12 resolution	""	""	""	""	""	""	""	""	android.hardware.camera2.cts.ExtendedCameraCharacteristicsTest	getCharacteristics	CtsCameraTestCases	/home/gpoor/cts-12-source/cts/tests/camera/src/android/hardware/camera2/cts/ExtendedCameraCharacteristicsTest.java	""	"/*
+ *.
+ */
+
+package android.hardware.camera2.cts;
+
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraCharacteristics.Key;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.cts.helpers.CameraErrorCollector;
+import android.hardware.camera2.cts.helpers.StaticMetadata;
+import android.hardware.camera2.cts.testcases.Camera2AndroidTestCase;
+import android.hardware.camera2.params.BlackLevelPattern;
+import android.hardware.camera2.params.ColorSpaceTransform;
+import android.hardware.camera2.params.RecommendedStreamConfigurationMap;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.CamcorderProfile;
+import android.media.ImageReader;
+import android.os.Build;
+import android.util.ArraySet;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.Rational;
+import android.util.Range;
+import android.util.Size;
+import android.util.Pair;
+import android.util.Patterns;
+import android.view.Display;
+import android.view.Surface;
+import android.view.WindowManager;
+
+import com.android.compatibility.common.util.CddTest;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Set;
+
+import org.junit.runners.Parameterized;
+import org.junit.runner.RunWith;
+import org.junit.Test;
+
+import static android.hardware.camera2.cts.helpers.AssertHelpers.*;
+import static android.hardware.camera2.cts.CameraTestUtils.SimpleCaptureCallback;
+import static android.hardware.cts.helpers.CameraUtils.matchParametersToCharacteristics;
+
+import static junit.framework.Assert.*;
+
+import static org.mockito.Mockito.*;
+
+/**
+ * Extended tests for static camera characteristics.
+ */
+@RunWith(Parameterized.class)
+public class ExtendedCameraCharacteristicsTest extends Camera2AndroidTestCase {
+    private static final String TAG = ""ExChrsTest""; // must be short so next line doesn't throw
+    private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
+
+    private static final String PREFIX_ANDROID = ""android"";
+
+    /*
+     * Constants for static RAW metadata.
+     */
+    private static final int MIN_ALLOWABLE_WHITELEVEL = 32; // must have sensor bit depth > 5
+
+    private List<CameraCharacteristics> mCharacteristics;
+
+    private static final Size FULLHD = new Size(1920, 1080);
+    private static final Size FULLHD_ALT = new Size(1920, 1088);
+    private static final Size HD = new Size(1280, 720);
+    private static final Size VGA = new Size(640, 480);
+    private static final Size QVGA = new Size(320, 240);
+    private static final Size UHD = new Size(3840, 2160);
+    private static final Size DC4K = new Size(4096, 2160);
+
+    private static final long MIN_BACK_SENSOR_RESOLUTION = 2000000;
+    private static final long MIN_FRONT_SENSOR_RESOLUTION = VGA.getHeight() * VGA.getWidth();
+    private static final long LOW_LATENCY_THRESHOLD_MS = 200;
+    private static final float LATENCY_TOLERANCE_FACTOR = 1.1f; // 10% tolerance
+    private static final int MAX_NUM_IMAGES = 5;
+    private static final long PREVIEW_RUN_MS = 500;
+    private static final long FRAME_DURATION_30FPS_NSEC = (long) 1e9 / 30;
+
+    private static final long MIN_BACK_SENSOR_PERF_CLASS_RESOLUTION = 12000000;
+    private static final long MIN_FRONT_SENSOR_S_PERF_CLASS_RESOLUTION = 5000000;
+    private static final long MIN_FRONT_SENSOR_R_PERF_CLASS_RESOLUTION = 4000000;
+
+    private static final long MIN_UHR_SENSOR_RESOLUTION = 24000000;
+    /*
+     * HW Levels short hand
+     */
+    private static final int LEGACY = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
+    private static final int LIMITED = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED;
+    private static final int FULL = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL;
+    private static final int LEVEL_3 = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3;
+    private static final int EXTERNAL = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL;
+    private static final int OPT = Integer.MAX_VALUE;  // For keys that are optional on all hardware levels.
+
+    /*
+     * Capabilities short hand
+     */
+    private static final int NONE = -1;
+    private static final int BC =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE;
+    private static final int MANUAL_SENSOR =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR;
+    private static final int MANUAL_POSTPROC =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_POST_PROCESSING;
+    private static final int RAW =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW;
+    private static final int YUV_REPROCESS =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_YUV_REPROCESSING;
+    private static final int OPAQUE_REPROCESS =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_PRIVATE_REPROCESSING;
+    private static final int CONSTRAINED_HIGH_SPEED =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_CONSTRAINED_HIGH_SPEED_VIDEO;
+    private static final int MONOCHROME =
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MONOCHROME;
+    private static final int HIGH_SPEED_FPS_LOWER_MIN = 30;
+    private static final int HIGH_SPEED_FPS_UPPER_MIN = 120;
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        mCharacteristics = new ArrayList<>();
+        for (int i = 0; i < mAllCameraIds.length; i++) {
+            mCharacteristics.add(mAllStaticInfo.get(mAllCameraIds[i]).getCharacteristics());
+        }
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        mCharacteristics = null;
+    }
+
+    /**
+     * Test that the available stream configurations contain a few required formats and sizes.
+     */
+    @CddTest(requirement=""7.5.1/C-1-2"")"	""	""	cdd front 12 resolution	""	""	""	""	""	""	""	""	""	""

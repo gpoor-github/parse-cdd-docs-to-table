@@ -1,0 +1,47 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.7.4  . Performance	8.2	H-1-3	8.2/H-1-3	08020000.720103	"""[8.2/H-1-3] MUST ensure a sequential read performance of at least 200 MB/s. """	""	""	read sequential	""	""	""	""	""	""	""	""	android.filesystem.cts.SequentialRWTest	testSingleSequentialRead	CtsFileSystemTestCases	/home/gpoor/cts-12-source/cts/tests/filesystem/src/android/filesystem/cts/SequentialRWTest.java	""	"public void testSingleSequentialRead() throws Exception {
+        final long fileSize = FileUtil.getFileSizeExceedingMemory(getContext(), BUFFER_SIZE);
+        if (fileSize == 0) { // not enough space, give up
+            return;
+        }
+        long start = System.currentTimeMillis();
+        final File file = FileUtil.createNewFilledFile(getContext(),
+                DIR_SEQ_RD, fileSize);
+        long finish = System.currentTimeMillis();
+        String streamName = ""test_single_sequential_read"";
+        DeviceReportLog report = new DeviceReportLog(REPORT_LOG_NAME, streamName);
+        report.addValue(""file_size"", fileSize, ResultType.NEUTRAL, ResultUnit.NONE);
+        report.addValue(""write_throughput"",
+                Stat.calcRatePerSec((double)fileSize / 1024 / 1024, finish - start),
+                ResultType.HIGHER_BETTER, ResultUnit.MBPS);
+
+        final int NUMBER_READ = 10;
+
+        final byte[] data = new byte[BUFFER_SIZE];
+        double[] times = MeasureTime.measure(NUMBER_READ, new MeasureRun() {
+
+            @Override
+            public void run(int i) throws IOException {
+                final FileInputStream in = new FileInputStream(file);
+                long read = 0;
+                while (read < fileSize) {
+                    in.read(data);
+                    read += BUFFER_SIZE;
+                }
+                in.close();
+            }
+        });
+        double[] mbps = Stat.calcRatePerSecArray((double)fileSize / 1024 / 1024, times);
+        report.addValues(""read_throughput"", mbps, ResultType.HIGHER_BETTER, ResultUnit.MBPS);
+        Stat.StatResult stat = Stat.getStat(mbps);
+        report.setSummary(""read_throughput_average"", stat.mAverage, ResultType.HIGHER_BETTER,
+                ResultUnit.MBPS);
+        Log.v(TAG, ""sequential read "" + stat.mAverage + "" MBPS"");
+        report.submit(getInstrumentation());
+
+        if (MediaPerformanceClassUtils.isPerfClass()) {
+            assertTrue(""measured "" + stat.mAverage + "" is less than target ("" + MIN_READ_MBPS +
+                       "" MBPS)"", stat.mAverage >= MIN_READ_MBPS);
+        }
+    }
+}"	""	""	read sequential	""	""	""	""	""	""	""	""	""	""

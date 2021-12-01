@@ -1,0 +1,1424 @@
+"Section"	"section_id"	"req_id"	"full_key"	"key_as_number"	"requirement"	"Test Availability"	"search_roots"	"search_terms"	"manual_search_terms"	"not_search_terms"	"not_files"	"max_matches"	"class_defs"	"methods"	"modules"	"protected"	"class_def"	"method"	"module"	"file_name"	"matched_files"	"methods_string"	"urls"	"method_text"	"matched_terms"	"qualified_method"	"Annotation?"	"New Req for S?"	"New CTS for S?"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"CDD Bug Id"	"Area"	"Shortened"	"Test Level"
+"7.4.1  . Telephony"	"7.4.1"	"C-5-2"	"7.4.1/C-5-2"	"07040100.670502"	"""C-5-2] MUST declare the android.hardware.telephony.ims.singlereg feature flag and provide a complete implementation of the SipTransport API, the GbaService API, dedicated bearer indications using the IRadio 1.6 HAL, and provisioning via Auto Configuration Server (ACS) or other proprietary provisioning mechanism using the IMS Configuration API. <h5 id=""7411_number_blocking_compatibility"" """	""	""	"singlereg android.hardware.telephony.ims.singlereg"	""	""	""	""	""	""	""	""	"android.telephony.ims.cts.ImsServiceConnector"	"checkConfigurationExists"	"CtsTelephonyTestCases"	"/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/ims/cts/ImsServiceConnector.java"	""	"public void test/*
+ *.
+ */
+
+package android.telephony.ims.cts;
+
+import android.app.Instrumentation;
+import android.app.role.RoleManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
+import android.telephony.cts.TelephonyUtils;
+import android.telephony.cts.externalimsservice.ITestExternalImsService;
+import android.telephony.cts.externalimsservice.TestExternalImsService;
+import android.telephony.ims.feature.ImsFeature;
+import android.telephony.ims.stub.ImsFeatureConfiguration;
+import android.text.TextUtils;
+import android.util.Log;
+import android.util.SparseArray;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.ShellIdentityUtils;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Connects The CTS test ImsService to the Telephony Framework.
+ */
+class ImsServiceConnector {
+
+    private static final String TAG = ""CtsImsServiceConnector"";
+
+    private static final String PACKAGE_NAME =
+            InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
+    private static final String EXTERNAL_PACKAGE_NAME =
+            TestExternalImsService.class.getPackage().getName();
+
+    private static final String COMMAND_BASE = ""cmd phone "";
+    private static final String COMMAND_SET_IMS_SERVICE = ""ims set-ims-service "";
+    private static final String COMMAND_GET_IMS_SERVICE = ""ims get-ims-service "";
+    private static final String COMMAND_CLEAR_SERVICE_OVERRIDE = ""ims clear-ims-service-override"";
+    private static final String COMMAND_CARRIER_SERVICE_IDENTIFIER = ""-c "";
+    private static final String COMMAND_DEVICE_SERVICE_IDENTIFIER = ""-d "";
+    private static final String COMMAND_SLOT_IDENTIFIER = ""-s "";
+    private static final String COMMAND_FEATURE_IDENTIFIER = ""-f "";
+    private static final String COMMAND_ENABLE_IMS = ""ims enable "";
+    private static final String COMMAND_DISABLE_IMS = ""ims disable "";
+    private static final String COMMAND_SET_DEVICE_SINGLE_REGISTRATION_ENABLED =
+            ""src set-device-enabled "";
+    private static final String COMMAND_GET_DEVICE_SINGLE_REGISTRATION_ENABLED =
+            ""src get-device-enabled"";
+    private static final String COMMAND_SET_CARRIER_SINGLE_REGISTRATION_ENABLED =
+            ""src set-carrier-enabled "";
+    private static final String COMMAND_GET_CARRIER_SINGLE_REGISTRATION_ENABLED =
+            ""src get-carrier-enabled"";
+    private static final String COMMAND_REMOVE_EAB_CONTACT = ""uce remove-eab-contact "";
+    private static final String COMMAND_GET_UCE_ENABLED = ""uce get-device-enabled"";
+    private static final String COMMAND_SET_UCE_ENABLED = ""uce set-device-enabled "";
+    private static final String COMMAND_REMOVE_UCE_REQUEST_DISALLOWED_STATUS =
+            ""uce remove-request-disallowed-status "";
+    private static final String COMMAND_SET_CAPABILITY_REQUEST_TIMEOUT =
+            ""uce set-capabilities-request-timeout "";
+    private static final String COMMAND_SET_TEST_MODE_ENABLED = ""src set-test-enabled "";
+    private static final String COMMAND_SET_D2D_ENABLED = ""d2d set-device-support "";
+
+    private class TestCarrierServiceConnection implements ServiceConnection {
+
+        private final CountDownLatch mLatch;
+
+        TestCarrierServiceConnection(CountDownLatch latch) {
+            mLatch = latch;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mCarrierService = ((TestImsService.LocalBinder) service).getService();
+            mLatch.countDown();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mCarrierService = null;
+        }
+    }
+
+    private class TestDeviceServiceConnection implements ServiceConnection {
+
+        private final CountDownLatch mLatch;
+
+        TestDeviceServiceConnection(CountDownLatch latch) {
+            mLatch = latch;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mExternalService = ITestExternalImsService.Stub.asInterface(service);
+            mLatch.countDown();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mCarrierService = null;
+        }
+    }
+
+    public class Connection {
+
+        private static final int CONNECTION_TYPE_IMS_SERVICE_DEVICE = 1;
+        private static final int CONNECTION_TYPE_IMS_SERVICE_CARRIER = 2;
+        private static final int CONNECTION_TYPE_DEFAULT_SMS_APP = 3;
+
+        private boolean mIsServiceOverridden = false;
+        private String mOrigMmTelServicePackage;
+        private String mOrigRcsServicePackage;
+        private String mOrigSmsPackage;
+        private int mConnectionType;
+        private int mSlotId;
+        private SparseArray<String> mFeatureTypeToPackageOverrideMap = new SparseArray<>(2);
+        Connection(int connectionType, int slotId) {
+            mConnectionType = connectionType;
+            mSlotId = slotId;
+        }
+
+        void clearPackage() throws Exception {
+            mIsServiceOverridden = true;
+            switch (mConnectionType) {
+                case CONNECTION_TYPE_IMS_SERVICE_CARRIER: {
+                    setCarrierImsService(""none"");
+                    break;
+                }
+                case CONNECTION_TYPE_IMS_SERVICE_DEVICE: {
+                    setDeviceImsService("""");
+                    break;
+                }
+                case CONNECTION_TYPE_DEFAULT_SMS_APP: {
+                    // We don't need to clear anything for default SMS app.
+                    break;
+                }
+            }
+        }
+
+        boolean overrideService(ImsFeatureConfiguration config) throws Exception {
+            mIsServiceOverridden = true;
+            switch (mConnectionType) {
+                case CONNECTION_TYPE_IMS_SERVICE_CARRIER: {
+                    return bindCarrierImsService(config, PACKAGE_NAME);
+                }
+                case CONNECTION_TYPE_IMS_SERVICE_DEVICE: {
+                    return bindDeviceImsService(config, EXTERNAL_PACKAGE_NAME);
+                }
+                case CONNECTION_TYPE_DEFAULT_SMS_APP: {
+                    return setDefaultSmsApp(PACKAGE_NAME);
+                }
+            }
+            return false;
+        }
+
+        void restoreOriginalPackage() throws Exception {
+            if (!mIsServiceOverridden) {
+                return;
+            }
+            mIsServiceOverridden = false;
+
+            if (mOrigRcsServicePackage == null) {
+                mOrigRcsServicePackage = """";
+            }
+
+            if (mOrigMmTelServicePackage == null) {
+                mOrigMmTelServicePackage = """";
+            }
+
+            switch (mConnectionType) {
+                case CONNECTION_TYPE_IMS_SERVICE_CARRIER: {
+                    clearCarrierImsServiceOverride();
+                    break;
+                }
+                case CONNECTION_TYPE_IMS_SERVICE_DEVICE: {
+                    setDeviceImsService(mOrigMmTelServicePackage, ImsFeature.FEATURE_MMTEL);
+                    setDeviceImsService(mOrigRcsServicePackage, ImsFeature.FEATURE_RCS);
+                    break;
+                }
+                case CONNECTION_TYPE_DEFAULT_SMS_APP: {
+                    setDefaultSmsApp(mOrigSmsPackage);
+                    break;
+                }
+            }
+        }
+
+        /**
+         * @return true if the configuration set here still exists in telephony or false if it was
+         * changed (due to something like a Phone process crash).
+         */
+        boolean checkConfigurationExists() throws Exception {
+            boolean result = true;
+            String mmTelPackage = mFeatureTypeToPackageOverrideMap.get(ImsFeature.FEATURE_MMTEL);
+            String rcsPackage = mFeatureTypeToPackageOverrideMap.get(ImsFeature.FEATURE_RCS);
+            switch (mConnectionType) {
+                case CONNECTION_TYPE_IMS_SERVICE_CARRIER: {
+                    result &= isPackageTheSame(mmTelPackage, getMmTelCarrierService());
+                    result &= isPackageTheSame(rcsPackage, getRcsCarrierService());
+                    break;
+                }
+                case CONNECTION_TYPE_IMS_SERVICE_DEVICE: {
+                    result &= isPackageTheSame(mmTelPackage, getMmTelDeviceService());
+                    result &= isPackageTheSame(rcsPackage, getRcsDeviceService());
+                    break;
+                }
+                case CONNECTION_TYPE_DEFAULT_SMS_APP: {
+                    break;
+                }
+            }
+            return result;
+        }
+
+        private boolean isPackageTheSame(String pkgA, String pkgB) {
+            if (TextUtils.isEmpty(pkgA) && TextUtils.isEmpty(pkgB)) {
+                return true;
+            }
+            return TextUtils.equals(pkgA, pkgB);
+        }
+
+        private void storeOriginalPackage() throws Exception {
+            switch (mConnectionType) {
+                case CONNECTION_TYPE_IMS_SERVICE_CARRIER: {
+                    mOrigMmTelServicePackage = getMmTelCarrierService();
+                    mOrigRcsServicePackage = getRcsCarrierService();
+                    break;
+                }
+                case CONNECTION_TYPE_IMS_SERVICE_DEVICE: {
+                    mOrigMmTelServicePackage = getMmTelDeviceService();
+                    mOrigRcsServicePackage = getRcsDeviceService();
+                    break;
+                }
+                case CONNECTION_TYPE_DEFAULT_SMS_APP: {
+                    mOrigSmsPackage = getDefaultSmsApp();
+                    break;
+                }
+            }
+        }
+
+        private boolean setDeviceImsService(String packageName) throws Exception {
+            mFeatureTypeToPackageOverrideMap.put(ImsFeature.FEATURE_MMTEL, packageName);
+            mFeatureTypeToPackageOverrideMap.put(ImsFeature.FEATURE_RCS, packageName);
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructSetImsServiceOverrideCommand(false, packageName, new int[] {
+                            ImsFeature.FEATURE_MMTEL, ImsFeature.FEATURE_RCS}));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""setDeviceMmTelImsService result: "" + result);
+            }
+            return ""true"".equals(result);
+        }
+
+        private boolean setCarrierImsService(String packageName) throws Exception {
+            mFeatureTypeToPackageOverrideMap.put(ImsFeature.FEATURE_MMTEL, packageName);
+            mFeatureTypeToPackageOverrideMap.put(ImsFeature.FEATURE_RCS, packageName);
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructSetImsServiceOverrideCommand(true, packageName, new int[] {
+                            ImsFeature.FEATURE_EMERGENCY_MMTEL, ImsFeature.FEATURE_MMTEL,
+                            ImsFeature.FEATURE_RCS}));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""setCarrierMmTelImsService result: "" + result);
+            }
+            return ""true"".equals(result);
+        }
+
+        private boolean setDeviceImsService(String packageName, int featureType) throws Exception {
+            mFeatureTypeToPackageOverrideMap.put(featureType, packageName);
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructSetImsServiceOverrideCommand(false, packageName,
+                            new int[]{featureType}));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""setDeviceMmTelImsService result: "" + result);
+            }
+            return ""true"".equals(result);
+        }
+
+        private boolean setCarrierImsService(String packageName, int featureType) throws Exception {
+            mFeatureTypeToPackageOverrideMap.put(featureType, packageName);
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructSetImsServiceOverrideCommand(true, packageName,
+                            new int[]{featureType}));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""setCarrierMmTelImsService result: "" + result);
+            }
+            return ""true"".equals(result);
+        }
+
+        private boolean clearCarrierImsServiceOverride() throws Exception {
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructClearCarrierImsServiceOverrideCommand());
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""clearCarrierImsServiceOverride result: "" + result);
+            }
+            return ""true"".equals(result);
+        }
+
+        private boolean setDefaultSmsApp(String packageName) throws Exception {
+            RoleManager roleManager = mInstrumentation.getContext()
+                    .getSystemService(RoleManager.class);
+            Boolean result;
+            LinkedBlockingQueue<Boolean> queue = new LinkedBlockingQueue<>(1);
+            if (TextUtils.isEmpty(packageName)) {
+                ShellIdentityUtils.invokeMethodWithShellPermissionsNoReturn(roleManager,
+                        (m) -> m.clearRoleHoldersAsUser(RoleManager.ROLE_SMS,
+                                RoleManager.MANAGE_HOLDERS_FLAG_DONT_KILL_APP,
+                                android.os.Process.myUserHandle(),
+                                // Run on calling binder thread.
+                                Runnable::run, queue::offer));
+            } else {
+                ShellIdentityUtils.invokeMethodWithShellPermissionsNoReturn(roleManager,
+                        (m) -> m.addRoleHolderAsUser(RoleManager.ROLE_SMS, packageName, 0,
+                                android.os.Process.myUserHandle(),
+                                // Run on calling binder thread.
+                                Runnable::run, queue::offer));
+            }
+            result = queue.poll(ImsUtils.TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""setDefaultSmsApp result: "" + result);
+            }
+            return result;
+        }
+
+        private String getDefaultSmsApp() throws Exception {
+            RoleManager roleManager = mInstrumentation.getContext()
+                    .getSystemService(RoleManager.class);
+            List<String> result = ShellIdentityUtils.invokeMethodWithShellPermissions(roleManager,
+                    (m) -> m.getRoleHolders(RoleManager.ROLE_SMS));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""getDefaultSmsApp result: "" + result);
+            }
+            if (result.isEmpty()) {
+                // No default SMS app.
+                return null;
+            }
+            // There should only be one default sms app
+            return result.get(0);
+        }
+
+        private boolean bindCarrierImsService(ImsFeatureConfiguration config, String packageName)
+                throws Exception {
+            getCarrierService().setFeatureConfig(config);
+            return setCarrierImsService(packageName) && getCarrierService().waitForLatchCountdown(
+                            TestImsService.LATCH_FEATURES_READY);
+        }
+
+        private boolean bindDeviceImsService(ImsFeatureConfiguration config, String packageName)
+                throws Exception {
+            getExternalService().setFeatureConfig(config);
+            return setDeviceImsService(packageName) && getExternalService().waitForLatchCountdown(
+                    TestImsService.LATCH_FEATURES_READY);
+        }
+
+        private String getMmTelCarrierService() throws Exception {
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructGetImsServiceCommand(true, ImsFeature.FEATURE_MMTEL));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""getMmTelCarrierService result: "" + result);
+            }
+            return result;
+        }
+
+        private String getRcsCarrierService() throws Exception {
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructGetImsServiceCommand(true, ImsFeature.FEATURE_RCS));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""getRcsCarrierService result: "" + result);
+            }
+            return result;
+        }
+
+        private String getMmTelDeviceService() throws Exception {
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructGetImsServiceCommand(false, ImsFeature.FEATURE_MMTEL));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""getMmTelDeviceService result: "" + result);
+            }
+            return result;
+        }
+
+        private String getRcsDeviceService() throws Exception {
+            String result = TelephonyUtils.executeShellCommand(mInstrumentation,
+                    constructGetImsServiceCommand(false, ImsFeature.FEATURE_RCS));
+            if (ImsUtils.VDBG) {
+                Log.d(TAG, ""getRcsDeviceService result: "" + result);
+            }
+            return result;
+        }
+
+        private String constructSetImsServiceOverrideCommand(boolean isCarrierService,
+                String packageName, int[] featureTypes) {
+            return COMMAND_BASE + COMMAND_SET_IMS_SERVICE + COMMAND_SLOT_IDENTIFIER + mSlotId + "" ""
+                    + (isCarrierService
+                        ? COMMAND_CARRIER_SERVICE_IDENTIFIER : COMMAND_DEVICE_SERVICE_IDENTIFIER)
+                    + COMMAND_FEATURE_IDENTIFIER + getFeatureTypesString(featureTypes) + "" ""
+                    + packageName;
+        }
+
+        private String constructGetImsServiceCommand(boolean isCarrierService, int featureType) {
+            return COMMAND_BASE + COMMAND_GET_IMS_SERVICE + COMMAND_SLOT_IDENTIFIER + mSlotId + "" ""
+                    + (isCarrierService
+                        ? COMMAND_CARRIER_SERVICE_IDENTIFIER : COMMAND_DEVICE_SERVICE_IDENTIFIER)
+                    + COMMAND_FEATURE_IDENTIFIER + featureType;
+        }
+
+        private String constructClearCarrierImsServiceOverrideCommand() {
+            return COMMAND_BASE + COMMAND_CLEAR_SERVICE_OVERRIDE + COMMAND_SLOT_IDENTIFIER
+                    + mSlotId;
+        }
+
+        private String getFeatureTypesString(int[] featureTypes) {
+            if (featureTypes.length == 0) return """";
+            StringBuilder builder = new StringBuilder();
+            builder.append(featureTypes[0]);
+            for (int i = 1; i < featureTypes.length; i++) {
+                builder.append("","");
+                builder.append(featureTypes[i]);
+            }
+            return builder.toString();
+        }
+    }
+
+    private Instrumentation mInstrumentation;
+
+    private TestImsService mCarrierService;
+    private TestCarrierServiceConnection mCarrierServiceConn;
+    private ITestExternalImsService mExternalService;
+    private TestDeviceServiceConnection mExternalServiceConn;
+
+    private Connection mDeviceServiceConnection;
+    private Connection mCarrierServiceConnection;
+    private Connection mDefaultSmsAppConnection;
+
+    ImsServiceConnector(Instrumentation instrumentation) {
+        mInstrumentation = instrumentation;
+    }
+
+    void clearAllActiveImsServices(int slotId) throws Exception {
+        mDeviceServiceConnection = new Connection(Connection.CONNECTION_TYPE_IMS_SERVICE_DEVICE,
+                slotId);
+        mDeviceServiceConnection.storeOriginalPackage();
+        mDeviceServiceConnection.clearPackage();
+
+        mCarrierServiceConnection = new Connection(Connection.CONNECTION_TYPE_IMS_SERVICE_CARRIER,
+                slotId);
+        mCarrierServiceConnection.storeOriginalPackage();
+        mCarrierServiceConnection.clearPackage();
+
+        mDefaultSmsAppConnection = new Connection(Connection.CONNECTION_TYPE_DEFAULT_SMS_APP,
+                slotId);
+        mDefaultSmsAppConnection.storeOriginalPackage();
+        // No need to clear SMS App, only replace when necessary.
+    }
+
+    /**
+     * Binds to the local implementation of ImsService but does not trigger ImsService bind from
+     * telephony to allow additional configuration steps.
+     * @return true if this request succeeded, false otherwise.
+     */
+    boolean connectCarrierImsServiceLocally() {
+        if (!setupLocalCarrierImsService()) {
+            Log.w(TAG, ""connectCarrierImsService: couldn't set up service."");
+            return false;
+        }
+        mCarrierService.resetState();
+        return true;
+    }
+
+    /**
+     * Trigger the telephony framework to bind to the local ImsService implementation.
+     * @return true if this request succeeded, false otherwise.
+     */
+    boolean triggerFrameworkConnectionToCarrierImsService(
+            ImsFeatureConfiguration config) throws Exception {
+        return mCarrierServiceConnection.overrideService(config);
+    }
+
+    boolean connectCarrierImsService(ImsFeatureConfiguration config) throws Exception {
+        if (!connectCarrierImsServiceLocally()) return false;
+        return triggerFrameworkConnectionToCarrierImsService(config);
+    }
+
+    boolean connectDeviceImsService(ImsFeatureConfiguration config) throws Exception {
+        if (!setupExternalImsService()) {
+            Log.w(TAG, ""connectDeviceImsService: couldn't set up service."");
+            return false;
+        }
+        mExternalService.resetState();
+        return mDeviceServiceConnection.overrideService(config);
+    }
+
+    boolean setDefaultSmsApp() throws Exception {
+        return mDefaultSmsAppConnection.overrideService(null);
+    }
+
+    void restoreDefaultSmsApp() throws Exception {
+        mDefaultSmsAppConnection.restoreOriginalPackage();
+    }
+
+    void disconnectCarrierImsService() throws Exception {
+        mCarrierServiceConnection.clearPackage();
+    }
+
+    void disconnectDeviceImsService() throws Exception {
+        mDeviceServiceConnection.clearPackage();
+    }
+
+    boolean isCarrierServiceStillConfigured() throws Exception {
+        return mCarrierServiceConnection.checkConfigurationExists();
+    }
+
+    private boolean setupLocalCarrierImsService() {
+        if (mCarrierService != null) {
+            return true;
+        }
+        CountDownLatch latch = new CountDownLatch(1);
+        mCarrierServiceConn = new TestCarrierServiceConnection(latch);
+        mInstrumentation.getContext().bindService(new Intent(mInstrumentation.getContext(),
+                        TestImsService.class), mCarrierServiceConn, Context.BIND_AUTO_CREATE);
+        try {
+            return latch.await(5000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            return false;
+        }
+    }
+
+    private boolean setupExternalImsService() {
+        if (mExternalService != null) {
+            return true;
+        }
+        CountDownLatch latch = new CountDownLatch(1);
+        mExternalServiceConn = new TestDeviceServiceConnection(latch);
+        Intent deviceIntent = new Intent();
+        deviceIntent.setComponent(new ComponentName(EXTERNAL_PACKAGE_NAME,
+                TestExternalImsService.class.getName()));
+        mInstrumentation.getContext().bindService(deviceIntent, mExternalServiceConn,
+                Context.BIND_AUTO_CREATE);
+        try {
+            return latch.await(5000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            return false;
+        }
+    }
+
+    // Detect and disconnect all active services.
+    void disconnectServices() throws Exception {
+        // Remove local connection
+        if (mCarrierServiceConn != null) {
+            mInstrumentation.getContext().unbindService(mCarrierServiceConn);
+            mCarrierService = null;
+        }
+        if (mExternalServiceConn != null) {
+            mInstrumentation.getContext().unbindService(mExternalServiceConn);
+            mExternalService = null;
+        }
+        mDeviceServiceConnection.restoreOriginalPackage();
+        mCarrierServiceConnection.restoreOriginalPackage();
+        mDefaultSmsAppConnection.restoreOriginalPackage();
+
+        // Remove any overrides for single registration state
+        setDeviceSingleRegistrationEnabled(null);
+    }
+
+    void enableImsService(int slot) throws Exception {
+        TelephonyUtils.executeShellCommand(mInstrumentation, COMMAND_BASE + COMMAND_ENABLE_IMS
+                + COMMAND_SLOT_IDENTIFIER + slot);
+    }
+
+    void disableImsService(int slot) throws Exception {
+        TelephonyUtils.executeShellCommand(mInstrumentation, COMMAND_BASE + COMMAND_DISABLE_IMS
+                + COMMAND_SLOT_IDENTIFIER + slot);
+    }
+
+    void setDeviceSingleRegistrationEnabled(Boolean enabled) throws Exception {
+        TelephonyUtils.executeShellCommand(mInstrumentation, COMMAND_BASE
+                + COMMAND_SET_DEVICE_SINGLE_REGISTRATION_ENABLED
+                // if ""null"" is sent, it will remove override
+                + (enabled != null ? enabled : ""null""));
+    }
+
+    boolean getDeviceSingleRegistrationEnabled() throws Exception {
+        return Boolean.parseBoolean(TelephonyUtils.executeShellCommand(mInstrumentation,
+                COMMAND_BASE + COMMAND_GET_DEVICE_SINGLE_REGISTRATION_ENABLED));
+    }
+
+    boolean getCarrierSingleRegistrationEnabled() throws Exception {
+        return Boolean.parseBoolean(TelephonyUtils.executeShellCommand(mInstrumentation,
+                COMMAND_BASE + COMMAND_GET_CARRIER_SINGLE_REGISTRATION_ENABLED));
+    }
+
+    boolean getDeviceUceEnabled() throws Exception {
+        return Boolean.parseBoolean(TelephonyUtils.executeShellCommand(mInstrumentation,
+                COMMAND_BASE + COMMAND_GET_UCE_ENABLED));
+    }
+
+    void setDeviceUceEnabled(boolean isEnabled) throws Exception {
+        TelephonyUtils.executeShellCommand(mInstrumentation,
+                COMMAND_BASE + COMMAND_SET_UCE_ENABLED + isEnabled);
+    }
+
+    void removeEabContacts(int slotId, String phoneNum) throws Exception {
+        StringBuilder cmdBuilder = new StringBuilder();
+        cmdBuilder.append(COMMAND_BASE).append(COMMAND_REMOVE_EAB_CONTACT)
+                .append(COMMAND_SLOT_IDENTIFIER).append(slotId).append("" "").append(phoneNum);
+        TelephonyUtils.executeShellCommand(mInstrumentation, cmdBuilder.toString());
+    }
+
+    TestImsService getCarrierService() {
+        return mCarrierService;
+    }
+
+    ITestExternalImsService getExternalService() {
+        return mExternalService;
+    }
+
+    void setSingleRegistrationTestModeEnabled(boolean enabled) throws Exception {
+        TelephonyUtils.executeShellCommand(mInstrumentation, COMMAND_BASE
+                + COMMAND_SET_TEST_MODE_ENABLED  + (enabled ? ""true"" : ""false""));
+    }
+
+    void removeUceRequestDisallowedStatus(int slotId) throws Exception {
+        StringBuilder cmdBuilder = new StringBuilder();
+        cmdBuilder.append(COMMAND_BASE).append(COMMAND_REMOVE_UCE_REQUEST_DISALLOWED_STATUS)
+                .append(COMMAND_SLOT_IDENTIFIER).append(slotId);
+        TelephonyUtils.executeShellCommand(mInstrumentation, cmdBuilder.toString());
+    }
+
+    void setCapabilitiesRequestTimeout(int slotId, long timeoutAfterMs) throws Exception {
+        StringBuilder cmdBuilder = new StringBuilder();
+        cmdBuilder.append(COMMAND_BASE).append(COMMAND_SET_CAPABILITY_REQUEST_TIMEOUT)
+                .append(COMMAND_SLOT_IDENTIFIER).append(slotId).append("" "").append(timeoutAfterMs);
+        TelephonyUtils.executeShellCommand(mInstrumentation, cmdBuilder.toString());
+    }
+
+    void setDeviceToDeviceCommunicationEnabled(boolean enabled) throws Exception {
+        TelephonyUtils.executeShellCommand(mInstrumentation, COMMAND_BASE
+                + COMMAND_SET_D2D_ENABLED  + (enabled ? ""true"" : ""default""));
+    }
+}"	""	""	"singlereg"	""	""	""	""	""	""	""	""	""	""
+"7.4.1  . Telephony"	"7.4.1"	"C-5-2"	"7.4.1/C-5-2"	"07040100.670502"	"""C-5-2] MUST declare the android.hardware.telephony.ims.singlereg feature flag and provide a complete implementation of the SipTransport API, the GbaService API, dedicated bearer indications using the IRadio 1.6 HAL, and provisioning via Auto Configuration Server (ACS) or other proprietary provisioning mechanism using the IMS Configuration API. <h5 id=""7411_number_blocking_compatibility"" """	Test Available	""	"singlereg android.hardware.telephony.ims.singlereg"	""	""	""	""	""	""	""	""	"android.telephony.ims.cts.SipDelegateManagerTest"	"connectTestImsServiceWithSipTransportAndConfig"	"CtsTelephonyTestCases"	"/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/ims/cts/SipDelegateManagerTest.java"	""	"/*
+ *.
+ */
+
+package android.telephony.ims.cts;
+
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.InetAddresses;
+import android.net.Uri;
+import android.os.Parcel;
+import android.os.PersistableBundle;
+import android.telephony.CarrierConfigManager;
+import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
+import android.telephony.ims.DelegateRegistrationState;
+import android.telephony.ims.DelegateRequest;
+import android.telephony.ims.FeatureTagState;
+import android.telephony.ims.ImsException;
+import android.telephony.ims.ImsManager;
+import android.telephony.ims.ImsService;
+import android.telephony.ims.ImsStateCallback;
+import android.telephony.ims.SipDelegateConfiguration;
+import android.telephony.ims.SipDelegateManager;
+import android.telephony.ims.SipMessage;
+import android.telephony.ims.feature.ImsFeature;
+import android.telephony.ims.stub.ImsFeatureConfiguration;
+import android.util.ArraySet;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.ShellIdentityUtils;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+/**
+ * CTS tests for {@link SipDelegateManager} API.
+ */
+@RunWith(AndroidJUnit4.class)
+public class SipDelegateManagerTest {
+    private static final String MMTEL_TAG =
+            ""+g.3gpp.iari-ref=\""urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\"""";
+    private static final String ONE_TO_ONE_CHAT_TAG =
+            ""+g.3gpp.icsi-ref=\""urn%3Aurn-7%3A3gppservice.ims.icsi.oma.cpm.msg\"""";
+    private static final String GROUP_CHAT_TAG =
+            ""+g.3gpp.icsi-ref=\""urn%3Aurn-7%3A3gppservice.ims.icsi.oma.cpm.session\"""";
+    private static final String FILE_TRANSFER_HTTP_TAG =
+            ""+g.3gpp.iari-ref=\""urn%3Aurn-7%3A3gppapplication.ims.iari.rcs.fthttp\"""";
+
+    private static final String[] DEFAULT_FEATURE_TAGS = {
+            ONE_TO_ONE_CHAT_TAG, GROUP_CHAT_TAG, FILE_TRANSFER_HTTP_TAG};
+
+    private static class CarrierConfigReceiver extends BroadcastReceiver {
+        private CountDownLatch mLatch = new CountDownLatch(1);
+        private final int mSubId;
+
+        CarrierConfigReceiver(int subId) {
+            mSubId = subId;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED.equals(intent.getAction())) {
+                int subId = intent.getIntExtra(CarrierConfigManager.EXTRA_SUBSCRIPTION_INDEX, -1);
+                if (mSubId == subId) {
+                    mLatch.countDown();
+                }
+            }
+        }
+
+        void clearQueue() {
+            mLatch = new CountDownLatch(1);
+        }
+
+        void waitForCarrierConfigChanged() throws Exception {
+            mLatch.await(5000, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    /**
+     * Encapsulates the interfaces created during SipDelegateManager testing.
+     */
+    public class TransportInterfaces {
+        public final DelegateRequest request;
+        public final Set<FeatureTagState> deniedTags;
+        public final SipDelegateManager manager;
+        public TestSipTransport transport;
+        public TestImsRegistration reg;
+        public TestSipDelegate delegate;
+        public TestSipDelegateConnection delegateConn;
+        private final int mDelegateIndex;
+
+        public TransportInterfaces(DelegateRequest request, Set<FeatureTagState>  deniedTags,
+                int delegateIndex) {
+            this.request = request;
+            this.deniedTags = deniedTags;
+            manager = getSipDelegateManager();
+            mDelegateIndex = delegateIndex;
+        }
+
+        public void connect() throws Exception {
+            assertTrue(sServiceConnector.setDefaultSmsApp());
+            connectTestImsServiceWithSipTransportAndConfig();
+
+            transport = sServiceConnector.getCarrierService().getSipTransport();
+            reg = sServiceConnector.getCarrierService().getImsRegistration();
+            delegateConn = new TestSipDelegateConnection(request);
+
+            delegate = createSipDelegateConnectionAndVerify(manager, delegateConn,
+                    transport, deniedTags, mDelegateIndex);
+            assertNotNull(delegate);
+            // ensure we got a callback for initial reg state.
+            verifyUpdateRegistrationCalled(reg);
+
+            InetSocketAddress localAddr = new InetSocketAddress(
+                    InetAddresses.parseNumericAddress(""1.1.1.1""), 80);
+            InetSocketAddress serverAddr = new InetSocketAddress(
+                    InetAddresses.parseNumericAddress(""2.2.2.2""), 81);
+            SipDelegateConfiguration c = new SipDelegateConfiguration.Builder(1,
+                    SipDelegateConfiguration.SIP_TRANSPORT_TCP, localAddr, serverAddr).build();
+            // send first SIP config and verify
+            verifyRegisteredAndSendSipConfig(delegateConn, delegate, request.getFeatureTags(),
+                    deniedTags, c);
+        }
+
+        /**
+         * Create a connection between fake app interface and fake ImsService impl and set up the
+         * framework to accept incoming/outgoing messages. Once done, verify the transport is open.
+         */
+        public void connectAndVerify() throws Exception {
+            connect();
+
+            // Verify message transport is open.
+            verifyOutgoingTransport(delegateConn, delegate);
+            verifyIncomingTransport(delegateConn, delegate);
+        }
+    }
+
+    private static int sTestSlot = 0;
+    private static int sTestSub = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    private static ImsServiceConnector sServiceConnector;
+    private static CarrierConfigReceiver sReceiver;
+
+    @BeforeClass
+    public static void beforeAllTests() throws Exception {
+        // First, only populate test slot/sub
+        if (!ImsUtils.shouldTestTelephony()) {
+            return;
+        }
+
+        TelephonyManager tm = (TelephonyManager) getContext()
+                .getSystemService(Context.TELEPHONY_SERVICE);
+        sTestSub = ImsUtils.getPreferredActiveSubId();
+        sTestSlot = SubscriptionManager.getSlotIndex(sTestSub);
+        if (tm.getSimState(sTestSlot) != TelephonyManager.SIM_STATE_READY) {
+            return;
+        }
+        // Next, only start tests that require ImsResolver to bind to test ImsService if
+        // feature FEATURE_TELEPHONY_IMS is supported on this device.
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        sServiceConnector = new ImsServiceConnector(InstrumentationRegistry.getInstrumentation());
+        // Remove all live ImsServices until after these tests are done
+        sServiceConnector.clearAllActiveImsServices(sTestSlot);
+
+        sReceiver = new CarrierConfigReceiver(sTestSub);
+        IntentFilter filter = new IntentFilter(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED);
+        // ACTION_CARRIER_CONFIG_CHANGED is sticky, so we will get a callback right away.
+        InstrumentationRegistry.getInstrumentation().getContext()
+                .registerReceiver(sReceiver, filter);
+
+        if (!ImsUtils.shouldTestImsSingleRegistration()) {
+            // override FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION setting for this test to enable
+            // APIs.
+            sServiceConnector.setDeviceSingleRegistrationEnabled(true);
+        }
+
+        setFeatureTagsCarrierAllowed(DEFAULT_FEATURE_TAGS);
+    }
+
+    @AfterClass
+    public static void afterAllTests() throws Exception {
+        // Only clean up ImsResolver overrides if feature FEATURE_TELEPHONY_IMS is supported.
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+
+        // Restore all ImsService configurations that existed before the test.
+        if (sServiceConnector != null) {
+            sServiceConnector.disconnectServices();
+        }
+        sServiceConnector = null;
+
+        // Ensure there are no CarrierConfig overrides as well as reset the ImsResolver in case the
+        // ImsService override changed in CarrierConfig while we were overriding it.
+        overrideCarrierConfig(null);
+
+        if (sReceiver != null) {
+            InstrumentationRegistry.getInstrumentation().getContext().unregisterReceiver(sReceiver);
+            sReceiver = null;
+        }
+    }
+
+    @Before
+    public void beforeTest() {
+        if (!ImsUtils.shouldTestTelephony()) {
+            return;
+        }
+        TelephonyManager tm = (TelephonyManager) InstrumentationRegistry.getInstrumentation()
+                .getContext().getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm.getSimState(sTestSlot) != TelephonyManager.SIM_STATE_READY) {
+            fail(""This test requires that there is a SIM in the device!"");
+        }
+        // Correctness check: ensure that the subscription hasn't changed between tests.
+        int[] subs = SubscriptionManager.getSubId(sTestSlot);
+
+        if (subs == null) {
+            fail(""This test requires there is an active subscription in slot "" + sTestSlot);
+        }
+        boolean isFound = false;
+        for (int sub : subs) {
+            isFound |= (sTestSub == sub);
+        }
+        if (!isFound) {
+            fail(""Invalid state found: the test subscription in slot "" + sTestSlot + "" changed ""
+                    + ""during this test."");
+        }
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        // Unbind the ImsService after the test completes only if feature FEATURE_TELEPHONY_IMS
+        // is enabled.
+        if (sServiceConnector != null) {
+            sServiceConnector.disconnectCarrierImsService();
+            sServiceConnector.restoreDefaultSmsApp();
+        }
+    }"	""	""	"singlereg"	""	""	""	""	""	""	""	""	""	""
+"7.4.1  . Telephony"	"7.4.1"	"C-5-2"	"7.4.1/C-5-2"	"07040100.670502"	"""C-5-2] MUST declare the android.hardware.telephony.ims.singlereg feature flag and provide a complete implementation of the SipTransport API, the GbaService API, dedicated bearer indications using the IRadio 1.6 HAL, and provisioning via Auto Configuration Server (ACS) or other proprietary provisioning mechanism using the IMS Configuration API. <h5 id=""7411_number_blocking_compatibility"" """	""	""	"singlereg android.hardware.telephony.ims.singlereg"	""	""	""	""	""	""	""	""	"android.telephony.ims.cts.SipDelegateManagerTest"	"testFeatureImsNotSupported"	"CtsTelephonyTestCases"	"/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/ims/cts/SipDelegateManagerTest.java"	""	"// Note this test can run on devices with only feature FEATURE_TELEPHONY, so ImsResolver may not
+    // be running.
+    public void testFeatureImsNotSupported() throws Exception {
+        if (!ImsUtils.shouldTestTelephony()) {
+            return;
+        }
+
+        if (sServiceConnector != null) {
+            // Override FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION for this test so that telephony
+            // will report not enabled.
+            sServiceConnector.setDeviceSingleRegistrationEnabled(false);
+        }
+
+        try {
+            SipDelegateManager manager = getSipDelegateManager();
+
+            try {
+                // If FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION is not supported this should
+                // return false.
+                Boolean result = ShellIdentityUtils.invokeThrowableMethodWithShellPermissions(
+                        manager, SipDelegateManager::isSupported, ImsException.class,
+                        ""android.permission.PERFORM_IMS_SINGLE_REGISTRATION"");
+                assertNotNull(result);
+                assertFalse(""isSupported should return false on devices that do not ""
+                        + ""support feature FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION"", result);
+            } catch (SecurityException e) {
+                fail(""isSupported requires PERFORM_IMS_SINGLE_REGISTRATION permission"");
+            }
+
+            try {
+                // If FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION is not supported, this should throw
+                // an ImsException
+                DelegateRequest request = new DelegateRequest(Collections.emptySet());
+                TestSipDelegateConnection delegateConn = new TestSipDelegateConnection(request);
+                ShellIdentityUtils.invokeThrowableMethodWithShellPermissionsNoReturn(
+                        manager, (m) -> m.createSipDelegate(request, Runnable::run,
+                                delegateConn, delegateConn), ImsException.class,
+                        ""android.permission.PERFORM_IMS_SINGLE_REGISTRATION"");
+                fail(""createSipDelegate should throw an ImsException with code ""
+                        + ""CODE_ERROR_UNSUPPORTED_OPERATION on devices that do not support feature ""
+                        + ""FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION"");
+            } catch (SecurityException e) {
+                fail(""isSupported requires PERFORM_IMS_SINGLE_REGISTRATION permission"");
+            } catch (ImsException e) {
+                // expecting CODE_ERROR_UNSUPPORTED_OPERATION
+                if (e.getCode() != ImsException.CODE_ERROR_UNSUPPORTED_OPERATION) {
+                    fail(""createSipDelegate should throw an ImsException with code ""
+                            + ""CODE_ERROR_UNSUPPORTED_OPERATION on devices that do not support ""
+                            + ""feature FEATURE_TELEPHONY_IMS_SINGLE_REGISTRATION"");
+                }
+            }
+        } finally {
+            if (sServiceConnector != null) {
+                // restore override for the rest of the tests.
+                sServiceConnector.setDeviceSingleRegistrationEnabled(true);
+            }
+        }
+    }"	""	""	"singlereg"	""	""	""	""	""	""	""	""	""	""
+"7.4.1  . Telephony"	"7.4.1"	"C-5-2"	"7.4.1/C-5-2"	"07040100.670502"	"""C-5-2] MUST declare the android.hardware.telephony.ims.singlereg feature flag and provide a complete implementation of the SipTransport API, the GbaService API, dedicated bearer indications using the IRadio 1.6 HAL, and provisioning via Auto Configuration Server (ACS) or other proprietary provisioning mechanism using the IMS Configuration API. <h5 id=""7411_number_blocking_compatibility"" """	""	""	"singlereg android.hardware.telephony.ims.singlereg"	""	""	""	""	""	""	""	""	"android.telephony.ims.cts.ImsServiceTest"	"beforeAllTests"	"CtsTelephonyTestCases"	"/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/ims/cts/ImsServiceTest.java"	""	"/*
+ *.
+ */
+
+package android.telephony.ims.cts;
+
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
+
+import android.app.Activity;
+import android.app.UiAutomation;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
+import android.os.PersistableBundle;
+import android.telecom.PhoneAccount;
+import android.telephony.AccessNetworkConstants;
+import android.telephony.CarrierConfigManager;
+import android.telephony.SmsManager;
+import android.telephony.SmsMessage;
+import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
+import android.telephony.cts.AsyncSmsMessageListener;
+import android.telephony.cts.SmsReceiverHelper;
+import android.telephony.ims.ImsException;
+import android.telephony.ims.ImsManager;
+import android.telephony.ims.ImsMmTelManager;
+import android.telephony.ims.ImsRcsManager;
+import android.telephony.ims.ImsReasonInfo;
+import android.telephony.ims.ImsRegistrationAttributes;
+import android.telephony.ims.ImsStateCallback;
+import android.telephony.ims.ProvisioningManager;
+import android.telephony.ims.RcsClientConfiguration;
+import android.telephony.ims.RcsContactUceCapability;
+import android.telephony.ims.RcsUceAdapter;
+import android.telephony.ims.RegistrationManager;
+import android.telephony.ims.RtpHeaderExtensionType;
+import android.telephony.ims.SipDelegateManager;
+import android.telephony.ims.feature.ImsFeature;
+import android.telephony.ims.feature.MmTelFeature;
+import android.telephony.ims.feature.RcsFeature.RcsImsCapabilities;
+import android.telephony.ims.stub.CapabilityExchangeEventListener;
+import android.telephony.ims.stub.ImsConfigImplBase;
+import android.telephony.ims.stub.ImsFeatureConfiguration;
+import android.telephony.ims.stub.ImsRegistrationImplBase;
+import android.util.ArraySet;
+import android.util.Base64;
+import android.util.Pair;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.ShellIdentityUtils;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * CTS tests for ImsService API.
+ */
+@RunWith(AndroidJUnit4.class)
+public class ImsServiceTest {
+
+    private static ImsServiceConnector sServiceConnector;
+
+    private static final int RCS_CAP_NONE = RcsImsCapabilities.CAPABILITY_TYPE_NONE;
+    private static final int RCS_CAP_OPTIONS = RcsImsCapabilities.CAPABILITY_TYPE_OPTIONS_UCE;
+    private static final int RCS_CAP_PRESENCE = RcsImsCapabilities.CAPABILITY_TYPE_PRESENCE_UCE;
+
+    private static final String MSG_CONTENTS = ""hi"";
+    private static final String EXPECTED_RECEIVED_MESSAGE = ""foo5"";
+    private static final String DEST_NUMBER = ""5555554567"";
+    private static final String SRC_NUMBER = ""5555551234"";
+    private static final byte[] EXPECTED_PDU =
+            new byte[]{1, 0, 10, -127, 85, 85, 85, 33, 67, 0, 0, 2, -24, 52};
+    private static final String RECEIVED_MESSAGE = ""B5EhYBMDIPgEC5FhBWKFkPEAAEGQQlGDUooE5ve7Bg=="";
+    private static final byte[] STATUS_REPORT_PDU =
+            hexStringToByteArray(""0006000681214365919061800000639190618000006300"");
+
+    private static int sTestSlot = 0;
+    private static int sTestSub = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    private static boolean sDeviceUceEnabled;
+
+    private static final int TEST_CONFIG_KEY = 1000;
+    private static final int TEST_CONFIG_VALUE_INT = 0xDEADBEEF;
+    private static final String TEST_CONFIG_VALUE_STRING = ""DEADBEEF"";
+
+    private static final String TEST_RCS_CONFIG_DEFAULT = ""<?xml version=\""1.0\""?>\n""
+            + ""<wap-provisioningdoc version=\""1.1\"">\n""
+            + ""\t<characteristic type=\""APPLICATION\"">\n""
+            + ""\t\t<parm name=\""AppID\"" value=\""urn:oma:mo:ext-3gpp-ims:1.0\""/>\n""
+            + ""\t\t<characteristic type=\""3GPP_IMS\"">\n""
+            + ""\t\t\t<parm name=\""AppID\"" value=\""ap2001\""/>\n""
+            + ""\t\t\t<parm name=\""Name\"" value=\""RCS IMS Settings\""/>\n""
+            + ""\t\t\t<characteristic type=\""Ext\"">\n""
+            + ""\t\t\t\t<characteristic type=\""GSMA\"">\n""
+            + ""\t\t\t\t\t<parm name=\""AppRef\"" value=\""IMS-Setting\""/>\n""
+            + ""\t\t\t\t\t<parm name=\""rcsVolteSingleRegistration\"" value=\""1\""/>\n""
+            + ""\t\t\t\t</characteristic>\n""
+            + ""\t\t\t</characteristic>\n""
+            + ""\t\t</characteristic>\n""
+            + ""\t\t<characteristic type=\""SERVICES\"">\n""
+            + ""\t\t\t<parm name=\""SupportedRCSProfileVersions\"" value=\""UP2.3\""/>\n""
+            + ""\t\t\t<parm name=\""ChatAuth\"" value=\""1\""/>\n""
+            + ""\t\t\t<parm name=\""GroupChatAuth\"" value=\""1\""/>\n""
+            + ""\t\t\t<parm name=\""ftAuth\"" value=\""1\""/>\n""
+            + ""\t\t\t<parm name=\""standaloneMsgAuth\"" value=\""1\""/>\n""
+            + ""\t\t\t<parm name=\""geolocPushAuth\"" value=\""1\""/>\n""
+            + ""\t\t\t<characteristic type=\""Ext\"">\n""
+            + ""\t\t\t\t<characteristic type=\""DataOff\"">\n""
+            + ""\t\t\t\t\t<parm name=\""rcsMessagingDataOff\"" value=\""1\""/>\n""
+            + ""\t\t\t\t\t<parm name=\""fileTransferDataOff\"" value=\""1\""/>\n""
+            + ""\t\t\t\t\t<parm name=\""mmsDataOff\"" value=\""1\""/>\n""
+            + ""\t\t\t\t\t<parm name=\""syncDataOff\"" value=\""1\""/>\n""
+            + ""\t\t\t\t\t<characteristic type=\""Ext\""/>\n""
+            + ""\t\t\t\t</characteristic>\n""
+            + ""\t\t\t</characteristic>\n""
+            + ""\t\t</characteristic>\n""
+            + ""\t</characteristic>\n""
+            + ""</wap-provisioningdoc>\n"";
+
+    private static final String TEST_RCS_CONFIG_SINGLE_REGISTRATION_DISABLED =
+            ""<?xml version=\""1.0\""?>\n""
+            + ""<wap-provisioningdoc version=\""1.1\"">\n""
+            + ""\t<characteristic type=\""APPLICATION\"">\n""
+            + ""\t\t<parm name=\""AppID\"" value=\""urn:oma:mo:ext-3gpp-ims:1.0\""/>\n""
+            + ""\t\t<characteristic type=\""3GPP_IMS\"">\n""
+            + ""\t\t\t<parm name=\""AppID\"" value=\""ap2001\""/>\n""
+            + ""\t\t\t<parm name=\""Name\"" value=\""RCS IMS Settings\""/>\n""
+            + ""\t\t\t<characteristic type=\""Ext\"">\n""
+            + ""\t\t\t\t<characteristic type=\""GSMA\"">\n""
+            + ""\t\t\t\t\t<parm name=\""AppRef\"" value=\""IMS-Setting\""/>\n""
+            + ""\t\t\t\t\t<parm name=\""rcsVolteSingleRegistration\"" value=\""0\""/>\n""
+            + ""\t\t\t\t</characteristic>\n""
+            + ""\t\t\t</characteristic>\n""
+            + ""\t\t</characteristic>\n""
+            + ""\t</characteristic>\n""
+            + ""</wap-provisioningdoc>\n"";
+    private static final String TEST_RCS_PRE_CONFIG = ""<RCSPreProvisiniongConfig>\n""
+            + ""\t<VERS>\n""
+            + ""\t\t<version>1</version>\n""
+            + ""\t\t<validity>1728000</validity>\n""
+            + ""\t</VERS>\n""
+            + ""\t<TOKEN>\n""
+            + ""\t\t<token>X</token>\n""
+            + ""\t</TOKEN>\n""
+            + ""\t<EXT>\n""
+            + ""\t\t<url>https://rcs.mnc123.mcc456.pub.3gppnetwork.org</url>\n""
+            + ""\t</EXT>\n""
+            + ""</RCSPreProvisiniongConfig>"";
+    private static final int RCS_CONFIG_CB_UNKNOWN = Integer.MAX_VALUE;
+    private static final int RCS_CONFIG_CB_CHANGED = 0;
+    private static final int RCS_CONFIG_CB_ERROR   = 1;
+    private static final int RCS_CONFIG_CB_RESET   = 2;
+    private static final int RCS_CONFIG_CB_DELETE  = 3;
+    private static final int RCS_CONFIG_CB_PREPROV = 4;
+
+    private static final String CHAT_FEATURE_TAG =
+            ""+g.3gpp.icsi-ref=\""urn%3Aurn-7%3A3gpp-service.ims.icsi.oma.cpm.session\"""";
+    public static final String FILE_TRANSFER_FEATURE_TAG =
+            ""+g.3gpp.iari-ref=\""urn%3Aurn-7%3A3gpp-application.ims.iari.rcs.fthttp\"""";
+    private static final String CHAT_SERVICE_ID =
+            ""org.openmobilealliance:ChatSession"";
+    private static final String FILE_TRANSFER_SERVICE_ID =
+            ""org.openmobilealliance:File-Transfer-HTTP"";
+
+    private static final int FEATURE_STATE_READY = 0;
+
+    private static CarrierConfigReceiver sReceiver;
+    private static SingleRegistrationCapabilityReceiver sSrcReceiver;
+
+    private abstract static class BaseReceiver extends BroadcastReceiver {
+        protected CountDownLatch mLatch = new CountDownLatch(1);
+
+        void clearQueue() {
+            mLatch = new CountDownLatch(1);
+        }
+
+        void waitForChanged() throws Exception {
+            mLatch.await(5000, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private static class CarrierConfigReceiver extends BaseReceiver {
+        private final int mSubId;
+
+        CarrierConfigReceiver(int subId) {
+            mSubId = subId;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED.equals(intent.getAction())) {
+                int subId = intent.getIntExtra(CarrierConfigManager.EXTRA_SUBSCRIPTION_INDEX, -1);
+                if (mSubId == subId) {
+                    mLatch.countDown();
+                }
+            }
+        }
+    }
+
+    private static class SingleRegistrationCapabilityReceiver extends BaseReceiver {
+        private int mCapability;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ProvisioningManager.ACTION_RCS_SINGLE_REGISTRATION_CAPABILITY_UPDATE
+                    .equals(intent.getAction())) {
+                mCapability = intent.getIntExtra(ProvisioningManager.EXTRA_STATUS,
+                        ProvisioningManager.STATUS_DEVICE_NOT_CAPABLE
+                        | ProvisioningManager.STATUS_CARRIER_NOT_CAPABLE);
+                mLatch.countDown();
+            }
+        }
+
+        int getCapability() {
+            return mCapability;
+        }
+    }
+
+    private static class RcsProvisioningCallbackParams {
+        byte[] mConfig;
+        Integer mErrorCode;
+        String mErrorString;
+    }
+
+    @BeforeClass
+    public static void beforeAllTests() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+
+        TelephonyManager tm = (TelephonyManager) getContext()
+                .getSystemService(Context.TELEPHONY_SERVICE);
+        sTestSub = ImsUtils.getPreferredActiveSubId();
+        sTestSlot = SubscriptionManager.getSlotIndex(sTestSub);
+        if (tm.getSimState(sTestSlot) != TelephonyManager.SIM_STATE_READY) {
+            return;
+        }
+        sServiceConnector = new ImsServiceConnector(InstrumentationRegistry.getInstrumentation());
+        // Remove all live ImsServices until after these tests are done
+        sServiceConnector.clearAllActiveImsServices(sTestSlot);
+        // Configure SMS receiver based on the Android version.
+        sServiceConnector.setDefaultSmsApp();
+
+        // Save the original device uce enabled config and override it.
+        sDeviceUceEnabled = sServiceConnector.getDeviceUceEnabled();
+        sServiceConnector.setDeviceUceEnabled(true);
+
+        sReceiver = new CarrierConfigReceiver(sTestSub);
+        IntentFilter filter = new IntentFilter(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED);
+        // ACTION_CARRIER_CONFIG_CHANGED is sticky, so we will get a callback right away.
+        InstrumentationRegistry.getInstrumentation().getContext()
+                .registerReceiver(sReceiver, filter);
+
+        sSrcReceiver = new SingleRegistrationCapabilityReceiver();
+        InstrumentationRegistry.getInstrumentation().getContext()
+                .registerReceiver(sSrcReceiver, new IntentFilter(
+                        ProvisioningManager.ACTION_RCS_SINGLE_REGISTRATION_CAPABILITY_UPDATE));
+    }
+
+    @AfterClass
+    public static void afterAllTests() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        // Restore all ImsService configurations that existed before the test.
+        if (sServiceConnector != null) {
+            sServiceConnector.disconnectServices();
+            sServiceConnector.setDeviceUceEnabled(sDeviceUceEnabled);
+        }
+        sServiceConnector = null;
+
+        // Ensure there are no CarrierConfig overrides as well as reset the ImsResolver in case the
+        // ImsService override changed in CarrierConfig while we were overriding it.
+        overrideCarrierConfig(null);
+
+        if (sReceiver != null) {
+            InstrumentationRegistry.getInstrumentation().getContext().unregisterReceiver(sReceiver);
+            sReceiver = null;
+        }
+
+        if (sSrcReceiver != null) {
+            InstrumentationRegistry.getInstrumentation()
+                    .getContext().unregisterReceiver(sSrcReceiver);
+            sSrcReceiver = null;
+        }
+    }
+
+    @Before
+    public void beforeTest() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        TelephonyManager tm = (TelephonyManager) InstrumentationRegistry.getInstrumentation()
+                .getContext().getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm.getSimState(sTestSlot) != TelephonyManager.SIM_STATE_READY) {
+            fail(""This test requires that there is a SIM in the device!"");
+        }
+        // Correctness check: ensure that the subscription hasn't changed between tests.
+        int[] subs = SubscriptionManager.getSubId(sTestSlot);
+
+        if (subs == null) {
+            fail(""This test requires there is an active subscription in slot "" + sTestSlot);
+        }
+        boolean isFound = false;
+        for (int sub : subs) {
+            isFound |= (sTestSub == sub);
+        }
+        if (!isFound) {
+            fail(""Invalid state found: the test subscription in slot "" + sTestSlot + "" changed ""
+                    + ""during this test."");
+        }
+
+        TestAcsClient.getInstance().reset();
+        sServiceConnector.setSingleRegistrationTestModeEnabled(true);
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        // Unbind the GTS ImsService after the test completes.
+        if (sServiceConnector != null) {
+            sServiceConnector.setSingleRegistrationTestModeEnabled(false);
+            sServiceConnector.disconnectCarrierImsService();
+            sServiceConnector.disconnectDeviceImsService();
+        }
+    }"	""	""	"singlereg"	""	""	""	""	""	""	""	""	""	""
+"7.4.1  . Telephony"	"7.4.1"	"C-5-2"	"7.4.1/C-5-2"	"07040100.670502"	"""C-5-2] MUST declare the android.hardware.telephony.ims.singlereg feature flag and provide a complete implementation of the SipTransport API, the GbaService API, dedicated bearer indications using the IRadio 1.6 HAL, and provisioning via Auto Configuration Server (ACS) or other proprietary provisioning mechanism using the IMS Configuration API. <h5 id=""7411_number_blocking_compatibility"" """	""	""	"singlereg android.hardware.telephony.ims.singlereg"	""	""	""	""	""	""	""	""	"android.telephony.ims.cts.ImsServiceTest"	"testProvisioningManagerRcsVolteSingleRegistrationCapable"	"CtsTelephonyTestCases"	"/home/gpoor/cts-12-source/cts/tests/tests/telephony/current/src/android/telephony/ims/cts/ImsServiceTest.java"	""	"public void testProvisioningManagerRcsVolteSingleRegistrationCapable() throws Exception {
+        if (!ImsUtils.shouldTestImsService()) {
+            return;
+        }
+        triggerFrameworkConnectToLocalImsServiceBindRcsFeature();
+
+        final UiAutomation automan = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        boolean isSingleRegistrationEnabledOnDevice =
+                sServiceConnector.getDeviceSingleRegistrationEnabled();
+        boolean isSingleRegistrationEnabledByCarrier =
+                sServiceConnector.getCarrierSingleRegistrationEnabled();
+
+        ProvisioningManager provisioningManager =
+                ProvisioningManager.createForSubscriptionId(sTestSub);
+        PersistableBundle bundle = new PersistableBundle();
+        bundle.putBoolean(
+                CarrierConfigManager.Ims.KEY_IMS_SINGLE_REGISTRATION_REQUIRED_BOOL,
+                !isSingleRegistrationEnabledByCarrier);
+        sSrcReceiver.clearQueue();
+        overrideCarrierConfig(bundle);
+        sSrcReceiver.waitForChanged();
+        int capability = sSrcReceiver.getCapability();
+
+        assertEquals(!isSingleRegistrationEnabledByCarrier,
+                (ProvisioningManager.STATUS_CARRIER_NOT_CAPABLE & capability) == 0);
+        try {
+            automan.adoptShellPermissionIdentity();
+            assertEquals(provisioningManager.isRcsVolteSingleRegistrationCapable(),
+                    isSingleRegistrationEnabledOnDevice && !isSingleRegistrationEnabledByCarrier);
+        } finally {
+            automan.dropShellPermissionIdentity();
+        }
+
+        bundle = new PersistableBundle();
+        bundle.putBoolean(CarrierConfigManager.Ims.KEY_IMS_SINGLE_REGISTRATION_REQUIRED_BOOL,
+                isSingleRegistrationEnabledByCarrier);
+        sSrcReceiver.clearQueue();
+        overrideCarrierConfig(bundle);
+        sSrcReceiver.waitForChanged();
+        capability = sSrcReceiver.getCapability();
+
+        assertEquals(isSingleRegistrationEnabledByCarrier,
+                (ProvisioningManager.STATUS_CARRIER_NOT_CAPABLE & capability) == 0);
+        try {
+            automan.adoptShellPermissionIdentity();
+            assertEquals(provisioningManager.isRcsVolteSingleRegistrationCapable(),
+                    isSingleRegistrationEnabledOnDevice && isSingleRegistrationEnabledByCarrier);
+        } finally {
+            automan.dropShellPermissionIdentity();
+        }
+
+        sSrcReceiver.clearQueue();
+        sServiceConnector.setDeviceSingleRegistrationEnabled(!isSingleRegistrationEnabledOnDevice);
+        sSrcReceiver.waitForChanged();
+        capability = sSrcReceiver.getCapability();
+
+        assertEquals(!isSingleRegistrationEnabledOnDevice,
+                (ProvisioningManager.STATUS_DEVICE_NOT_CAPABLE & capability) == 0);
+        try {
+            automan.adoptShellPermissionIdentity();
+            assertEquals(provisioningManager.isRcsVolteSingleRegistrationCapable(),
+                    !isSingleRegistrationEnabledOnDevice && isSingleRegistrationEnabledByCarrier);
+        } finally {
+            automan.dropShellPermissionIdentity();
+        }
+
+        sSrcReceiver.clearQueue();
+        sServiceConnector.setDeviceSingleRegistrationEnabled(isSingleRegistrationEnabledOnDevice);
+        sSrcReceiver.waitForChanged();
+        capability = sSrcReceiver.getCapability();
+
+        assertEquals(isSingleRegistrationEnabledOnDevice,
+                (ProvisioningManager.STATUS_DEVICE_NOT_CAPABLE & capability) == 0);
+        try {
+            automan.adoptShellPermissionIdentity();
+            assertEquals(provisioningManager.isRcsVolteSingleRegistrationCapable(),
+                    isSingleRegistrationEnabledOnDevice && isSingleRegistrationEnabledByCarrier);
+        } finally {
+            automan.dropShellPermissionIdentity();
+        }
+
+        sServiceConnector.setDeviceSingleRegistrationEnabled(null);
+        overrideCarrierConfig(null);
+        sSrcReceiver.waitForChanged();
+        capability = sSrcReceiver.getCapability();
+
+        assertEquals(isSingleRegistrationEnabledOnDevice,
+                (ProvisioningManager.STATUS_DEVICE_NOT_CAPABLE & capability) == 0);
+        assertEquals(isSingleRegistrationEnabledByCarrier,
+                (ProvisioningManager.STATUS_CARRIER_NOT_CAPABLE & capability) == 0);
+    }
+
+    /**
+     * Verifies that the RTP header extensions are set as expected when D2D communication is
+     * available on the device and for the current carrier.
+     * @throws Exception
+     */"	""	""	"singlereg singlereg"	""	""	""	""	""	""	""	""	""	""
