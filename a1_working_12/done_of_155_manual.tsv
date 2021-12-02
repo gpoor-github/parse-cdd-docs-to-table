@@ -5204,3 +5204,200 @@ public class ExtendedCameraCharacteristicsTest extends Camera2AndroidTestCase {
 
     // It is taking too long in some device, and thus cannot run multiple times
     @CddTest(requirement=""8.2"")"	""	""	read random	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-6	9.8/H-1-6	09080000.720106	"""[9.8/H-1-6] MUST NOT allow more than 100 bytes of data to be transmitted out of the hotword detection service on each successful hotword result. """	""	""	hotword bytes transmitted 100	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectedResultTest	testHotwordDetectedResult_totalSize	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java	""	"public void testHotwordDetectedResult_totalSize() throws Exception {
+        final int bitsForConfidenceLevel = Utils.bitCount(
+                HotwordDetectedResult.CONFIDENCE_LEVEL_VERY_HIGH);
+        final int bitsForHotwordOffsetMillis = Utils.bitCount(Utils.LIMIT_HOTWORD_OFFSET_MAX_VALUE);
+        final int bitsForHotwordDurationMillis = Utils.bitCount(
+                AudioRecord.getMaxSharedAudioHistoryMillis());
+        final int bitsForAudioChannel = Utils.bitCount(Utils.LIMIT_AUDIO_CHANNEL_MAX_VALUE);
+        final int bitsForHotwordDetectionPersonalized = 1;
+        final int bitsForScore = Utils.bitCount(HotwordDetectedResult.getMaxScore());
+        final int bitsForPersonalizedScore = Utils.bitCount(HotwordDetectedResult.getMaxScore());
+        final int bitsForHotwordPhraseId = Utils.bitCount(
+                HotwordDetectedResult.getMaxHotwordPhraseId());
+
+        final int totalSize =
+                bitsForConfidenceLevel + bitsForHotwordOffsetMillis + bitsForHotwordDurationMillis
+                        + bitsForAudioChannel + bitsForHotwordDetectionPersonalized + bitsForScore
+                        + bitsForPersonalizedScore + bitsForHotwordPhraseId
+                        + HotwordDetectedResult.getMaxBundleSize() * Byte.SIZE;
+
+        assertThat(totalSize <= Utils.MAX_HOTWORD_DETECTED_RESULT_SIZE * Byte.SIZE).isTrue();
+    }"	""	""	hotword	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-5	9.8/H-1-5	09080000.720105	"""[9.8/H-1-5] MUST NOT supply buffered mic audio older than 30 seconds to the voice interaction service or similar entity. """	Test Available, can't be mapped because involves two different classes.	""	30 buffer older transmitted cdd	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.VoiceInteractionTest	testAll	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/VoiceInteractionTest.java	""	"/*
+ *.
+ */
+
+package android.voiceinteraction.cts;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.junit.Assert.fail;
+
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.platform.test.annotations.AppModeFull;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import androidx.test.rule.ActivityTestRule;
+
+// TODO: ideally we should split testAll() into multiple tests, and run at least one of them
+// on instant
+@AppModeFull(reason = ""DirectActionsTest is enough"")
+public class VoiceInteractionTest extends AbstractVoiceInteractionTestCase {
+    static final String TAG = ""VoiceInteractionTest"";
+    private static final int TIMEOUT_MS = 30 * 1000;
+
+    private TestStartActivity mTestActivity;
+    private TestResultsReceiver mReceiver;
+    private Bundle mResults;
+    private final CountDownLatch mLatch = new CountDownLatch(1);
+
+    @Rule
+    public final ActivityTestRule<TestStartActivity> mActivityTestRule =
+            new ActivityTestRule<>(TestStartActivity.class, false, false);
+
+    @Before
+    public void setUp() throws Exception {
+        mReceiver = new TestResultsReceiver();
+        mContext.registerReceiver(mReceiver, new IntentFilter(Utils.BROADCAST_INTENT));
+        startTestActivity();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (mReceiver != null) {
+            try {
+                mContext.unregisterReceiver(mReceiver);
+            } catch (IllegalArgumentException e) {
+                // This exception is thrown if mReceiver in
+                // the above call to unregisterReceiver is never registered.
+                // If so, no harm done by ignoring this exception.
+            }
+            mReceiver = null;
+        }
+    }
+
+    private void startTestActivity() throws Exception {
+        Intent intent = new Intent();
+        intent.setAction(""android.intent.action.TEST_START_ACTIVITY"");
+        intent.setComponent(new ComponentName(mContext, TestStartActivity.class));
+        Log.v(TAG, ""startTestActivity:"" + intent);
+        mTestActivity = mActivityTestRule.launchActivity(intent);
+    }"	""	""	30	""	""	""	""	The test involve multiple files so can not be represented: android.voiceinteraction.service.MainHotwordDetectionService	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-2-1	9.8/H-2-1	09080000.720201	"""[9.8/H-2-1] MUST provide explicit notice to the user for each hotword phrase supported. """	""	""	UI phrase hotword	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectedResultTest	testHotwordDetectedResultBuilder	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java	""	"public void testHotwordDetectedResultBuilder() throws Exception {
+        final HotwordDetectedResult hotwordDetectedResult =
+                buildHotwordDetectedResult(
+                        HotwordDetectedResult.CONFIDENCE_LEVEL_LOW,
+                        MediaSyncEvent.createEvent(MediaSyncEvent.SYNC_EVENT_PRESENTATION_COMPLETE),
+                        /* hotwordOffsetMillis= */ 100,
+                        /* hotwordDurationMillis= */ 1000,
+                        /* audioChannel= */ 1,
+                        /* hotwordDetectionPersonalized= */ true,
+                        /* score= */ 100,
+                        /* personalizedScore= */ 100,
+                        /* hotwordPhraseId= */ 1,
+                        new PersistableBundle());
+
+        assertHotwordDetectedResult(hotwordDetectedResult);
+    }"	""	""	UI phrase hotword	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-4	9.8/H-1-4	09080000.720104	"""[9.8/H-1-4] MUST NOT supply buffered mic audio older than 8 seconds for an individual request to the hotword detection service. """	""	""	millis hotword mic buffer	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectedResultTest	testHotwordDetectedResult_setInvalidHotwordOffsetMillis	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java	""	"public void testHotwordDetectedResult_setInvalidHotwordOffsetMillis() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordOffsetMillis(
+                        HotwordDetectedResult.HOTWORD_OFFSET_UNSET - 1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordOffsetMillis(
+                        Utils.LIMIT_HOTWORD_OFFSET_MAX_VALUE + 1).build());
+    }"	""	""	millis hotword	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-3	9.8/H-1-3	09080000.720103	"""[9.8/H-1-3] MUST NOT supply mic audio that is longer than 30 seconds for an individual hardware-triggered request to the hotword detection service. """	""	""	hardware hotword audio 3000 mic millis	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectedResultTest	testHotwordDetectedResult_setInvalidHotwordDurationMillis	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java	""	"public void testHotwordDetectedResult_setInvalidHotwordDurationMillis() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordDurationMillis(-1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordDurationMillis(
+                        (int) AudioRecord.getMaxSharedAudioHistoryMillis() + 1).build());
+    }"	""	""	hotword audio millis	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-2	9.8/H-1-2	09080000.720102	"""[9.8/H-1-2] MUST make sure the hotword detection service can only transmit mic audio data or data derived from it to the system server through HotwordDetectionService API, or to ContentCaptureService through ContentCaptureManager API. """	""	""	hotword HotwordDetectionService mic ContentCaptureManager	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectionServiceBasicTest	testHotwordDetectionService_onDetectFromDsp_success testHotwordDetectionService_onDetectFromDsp_rejection	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java	""	"@RequiresDevice
+    public void testHotwordDetectionService_onDetectFromDsp_success()
+            throws Throwable {
+        Thread.sleep(CLEAR_CHIP_MS);
+        // Create AlwaysOnHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        verifyDetectedResult(
+                performAndGetDetectionResult(Utils.HOTWORD_DETECTION_SERVICE_DSP_ONDETECT_TEST),
+                MainHotwordDetectionService.DETECTED_RESULT);
+        verifyMicrophoneChip(true);
+    }"	""	""	hotword HotwordDetectionService mic	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-1	9.8/H-1-1	09080000.720101	"""[9.8/H-1-1] MUST make sure the hotword detection service can only transmit data to the System or ContentCaptureService """	""	""	Content ContentCaptureService HotwordDetectionService hotword Service capture_ Content_Capture Capture	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest	testHotwordDetectionService_onDetect_fromExternalSource	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java	""	"public void testHotwordDetectionService_onDetect_fromExternalSource()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(
+                        mock(ParcelFileDescriptor.class),
+                        new AudioFormat.Builder().build(),
+                        /* options= */ null,
+                        /* callback= */ null));
+    }"	""	""	HotwordDetectionService hotword Service	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-14	9.8/H-1-14	09080000.720114	"""[9.8/H-1-14] MUST display the microphone indicator, as required in """	""	""	indicator mic hotword	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest	testHotwordDetectionService_onDetect_fromMic	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java	""	"public void testHotwordDetectionService_onDetect_fromMic()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(/* callback= */ null));
+    }
+}"	""	""	mic hotword	""	""	""	""	""	""	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-13	9.8/H-1-13	09080000.720113	"""[9.8/H-1-13] MUST restart the process hosting the hotword detection service at least once every hour or every 30 hardware-trigger events, whichever comes first. """	""	""	process hosting events hour restart trigger 30000 detection hardware service 60000 hotword	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectionServiceBasicTest	testHotwordDetectionService_concurrentCapture	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java	""	"@RequiresDevice
+    public void testHotwordDetectionService_concurrentCapture() throws Throwable {
+        // Create SoftwareHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            AudioRecord record =
+                    new AudioRecord.Builder()
+                            .setAudioAttributes(
+                                    new AudioAttributes.Builder()
+                                            .setInternalCapturePreset(MediaRecorder.AudioSource.MIC)
+                                            .build())
+                            .setAudioFormat(
+                                    new AudioFormat.Builder()
+                                            .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                            .build())
+                            .setBufferSizeInBytes(10240) // something large enough to not fail
+                            .build();
+            assertThat(record.getState()).isEqualTo(AudioRecord.STATE_INITIALIZED);
+
+            try {
+                record.startRecording();
+                verifyDetectedResult(
+                        performAndGetDetectionResult(
+                                Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST),
+                        MainHotwordDetectionService.DETECTED_RESULT);
+                // TODO: Test that it still works after restarting the process or killing audio
+                //  server.
+            } finally {
+                record.release();
+            }
+        });
+    }"	""	""	6: process restart trigger detection service hotword	""	""	""	""	Unsure if this covers the test case. Hard to tell because though there is the ability to test shutdown and restart is this 30 min timing being tested?	tbd	""	""	""	""
+2.2.5  . Security Model	9.8	H-1-12	9.8/H-1-12	09080000.720112	"""[9.8/H-1-12] MUST support a debug mode that logs raw contents of every transmission from the hotword detection service to allow inspectability for security researchers. """	""	""	support allow inspect mode security service transmission detection researchers contents debug raw log hotword	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.VoiceInteractionRoleTest	testAssistRole_hasRecognitionService	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/VoiceInteractionRoleTest.java	""	"public void testAssistRole_hasRecognitionService() throws Exception {
+        roleTestingForPackage(VOICE_INTERACTION_HAS_RECOGNITION_SERVICE, /* hasRecognition= */
+                true);
+    }"	""	""	1: service	""	""	""	""	Unsure if this covers the test case. Hard to tell because don't see explicit mention of the reason for various roles, there are roles that have different permissions.	""	""	""	""	""
