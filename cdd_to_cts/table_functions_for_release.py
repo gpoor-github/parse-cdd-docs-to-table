@@ -8,7 +8,7 @@ def update_table_column_subset(input_table_to_find_source_columns: str,
         input_table_to_find_source_columns)
 
     column_subset_table, column_subset_key_to_index= table_ops.remove_table_columns(source_table,
-                                                               source_table_keys_to_index,
+
                                                                source_header,
                                                                header_columns_to_copy)
 
@@ -21,11 +21,11 @@ def merge_duplicate_row_for_column_set_for_flat_file(input_table_to_find_source_
                                                      header_columns_as_key_set: [],
                                                      output_file_to_write_updated_table: str) :
     source_table, source_table_keys_to_index, source_header, duplicate_rows  = table_ops.read_table_sect_and_req_key(input_table_to_find_source_columns)
-    target_table, target_keys = table_ops.merge_duplicate_row_for_column_set_for_flat(source_table, source_table_keys_to_index, source_header,header_columns_as_key_set)
+    target_table = table_ops.merge_duplicate_row_for_column_set_for_flat(source_table, source_table_keys_to_index, source_header,header_columns_as_key_set)
+    column_subset_table, column_subset_key_to_index=table_ops.remove_table_columns( target_table, source_header, static_data.flat_file_header )
 
 
-    table_ops.write_table(output_file_to_write_updated_table,target_table, source_header)
-
+    table_ops.write_table(output_file_to_write_updated_table,column_subset_table, static_data.flat_file_header )
 
 def update_release_table_with_changes(table_to_update_and_write_to_output_file: str,
                                       values_to_use_for_update: str,
@@ -117,7 +117,7 @@ def update_release_table_with_changes_example():
     source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/xCD12_3_9.9.3_in_progress/9.9.3.tsv"
     new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/test.tsv"
 
-    update_release_table_with_changes(target_to_update, source_for_data, target_to_update,
+    update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
                                       annotation_header)
 
 def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2, table_for_source, output_file_for_results):

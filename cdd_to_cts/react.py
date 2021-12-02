@@ -706,6 +706,7 @@ def translate_flat(result: dict) -> dict:
     flat_result[FULL_KEY] = result.get(FULL_KEY)
     flat_result[SECTION_ID] = result.get(SECTION_ID)
     flat_result[REQ_ID] = result.get(REQ_ID)
+    flat_result[MANUAL_SEARCH_TERMS] = result.get(MANUAL_SEARCH_TERMS)
     flat_result[SEARCH_RESULT] = dict(result.get(SEARCH_RESULT)).get(FLAT_RESULT)
     return flat_result
 
@@ -748,5 +749,5 @@ def do_map_with_flat_file(file_to_process:str ) :
     print(f'Took time {end - start:0.4f}sec ')
 
 if __name__ == '__main__':
-    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_7.4.2.4_C-1-5.tsv"
+    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9.8_H-1-11.tsv"
     do_map_with_flat_file(current_file_)

@@ -5,7 +5,7 @@ from cdd_to_cts import static_data, helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
 
 
-def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str, int], header_column_source: [str],
+def remove_table_columns(table_source: [[str]],  header_column_source: [str],
                          columns_to_use: [str]) \
         -> ([[str]], dict[str, int]):
     """ This will take table_source and make a new table only using the columns specified.
@@ -15,11 +15,9 @@ def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str, i
     column_subset_key_to_index = dict()
     test_source_index_str = " ".join(header_column_source) + ' '
     column_subset_table_idx_count = 0
-    for key in key_to_index_source:
+    key = ""
+    for source_row in table_source:
         try:
-            table_index_source: int = key_to_index_source.get(key)
-            if table_index_source is not None:
-                source_row = table_source[table_index_source]
                 # Section,section_id,req_id
                 column_subset_row = list()
                 for column in columns_to_use:
@@ -28,12 +26,9 @@ def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str, i
                         source_value_to_use = source_row[header_column_source_idx]
                         column_subset_row.append(source_value_to_use)
                 column_subset_table.append(column_subset_row)
+                key = source_row[header_column_source.index(static_data.FULL_KEY)]
                 column_subset_key_to_index[key] = column_subset_table_idx_count
                 column_subset_table_idx_count += 1
-
-            else:
-                helpers.print_system_error_and_dump(
-                    f"Error: key {key} Not found shouldn't happen in this class ")
 
         except Exception as err:
             helpers.print_system_error_and_dump(
@@ -44,6 +39,8 @@ def remove_table_columns(table_source: [[str]], key_to_index_source: dict[str, i
 
 def merge_duplicate_row_for_column_set_for_flat(table_target: [[str]], key_to_index_target: dict, header_target: [str],
                                        columns: [str]):
+    if len(table_target) == 0:
+        return table_target, key_to_index_target
     test_target_index_str = static_data.table_delimiter.join(header_target)
     unique_rows: dict = dict()
     for t_target_row in table_target:
@@ -69,13 +66,23 @@ def merge_duplicate_row_for_column_set_for_flat(table_target: [[str]], key_to_in
     count:int = 0
     new_merged_table: [[str]] = list()
     new_merged_key_to_index_target: dict = dict()
+    search_terms:str = table_target[0][header_target.index(static_data.SEARCH_TERMS)]
+    terms_set = set(search_terms.split(" "))
     for unique_row_key in unique_rows:
         row = unique_rows.get(unique_row_key)
+        matched_terms = row[header_target.index(static_data.MATCHED_TERMS)]
+        matched_terms_set = set(matched_terms.split(" "))
+        terms_set.intersection()
+        row[header_target.index(
+            static_data.MATCHED_TERMS)] = f"{len(terms_set.intersection(matched_terms_set))}: {matched_terms}"
+
         new_merged_table.append(row)
-        new_merged_key_to_index_target[row[full_key_index]] = count
+        key =  row[header_target.index(static_data.FULL_KEY)]
+        new_merged_key_to_index_target[key] = count
         count=count+1
 
-    return new_merged_table, new_merged_key_to_index_target
+
+    return new_merged_table
 
 
 def update_table(table_target: [[str]], key_to_index_target: dict, header_target: [str], table_source: [[str]],

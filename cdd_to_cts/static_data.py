@@ -199,7 +199,6 @@ ccd_12_full_header_for_ref = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, AN
                               CTS_BUG_ID, CDD_BUG_ID, "CDD CL", AREA, SHORTEND, TEST_LEVEL, "", "external version", "", "", ""]
 ccd_12_subset_target_field_header = [ANNOTATION_, NEW_REQ_FOR_S_, NEW_CTS_FOR_S_, COMMENT_INTERNAL, CTS_BUG_ID, CDD_BUG_ID,
                                      AREA, SHORTEND, TEST_LEVEL]
-
 #  Used in create_full_table_from_cdd create a full table from the CDD, containing all the information from the CDD but not doing any processing (besides to the keys)
 cdd_info_only_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
@@ -221,6 +220,7 @@ cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBE
 
 # What data is to be copied from each row to the search_info dictionary
 fields_for_search_info_header: [] = update_manual_header+[REQUIREMENT,TEST_AVAILABILITY]
+flat_file_header:[] = [SECTION,  FULL_KEY,MANUAL_SEARCH_TERMS,  REQUIREMENT,CLASS_DEF, METHOD, MODULE, MATCHED_TERMS,METHODS_STRING,  FILE_NAME, COMMENT_INTERNAL,CTS_BUG_ID,TEST_LEVEL]
 
 table_delimiter = '\t'
 table_dialect = 'excel-tab'
