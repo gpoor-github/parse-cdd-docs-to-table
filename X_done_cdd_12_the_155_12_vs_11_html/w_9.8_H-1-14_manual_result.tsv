@@ -1,0 +1,7 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.5  . Security Model	9.8	H-1-14	9.8/H-1-14	09080000.720114	"""[9.8/H-1-14] MUST display the microphone indicator, as required in """	""	""	indicator mic hotword	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest	testHotwordDetectionService_onDetect_fromMic	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java	""	"public void testHotwordDetectionService_onDetect_fromMic()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(/* callback= */ null));
+    }
+}"	""	""	mic hotword	""	""	""	""	""	""	""	""	""	""

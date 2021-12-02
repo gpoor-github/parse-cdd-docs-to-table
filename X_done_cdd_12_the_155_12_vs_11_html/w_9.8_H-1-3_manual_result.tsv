@@ -1,0 +1,9 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.5  . Security Model	9.8	H-1-3	9.8/H-1-3	09080000.720103	"""[9.8/H-1-3] MUST NOT supply mic audio that is longer than 30 seconds for an individual hardware-triggered request to the hotword detection service. """	""	""	hardware hotword audio 3000 mic millis	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectedResultTest	testHotwordDetectedResult_setInvalidHotwordDurationMillis	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java	""	"public void testHotwordDetectedResult_setInvalidHotwordDurationMillis() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordDurationMillis(-1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordDurationMillis(
+                        (int) AudioRecord.getMaxSharedAudioHistoryMillis() + 1).build());
+    }"	""	""	hotword audio millis	""	""	""	""	""	""	""	""	""	""

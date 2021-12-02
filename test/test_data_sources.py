@@ -14,7 +14,6 @@ class TestSourceCrawlerReducer(TestCase):
         static_data.WORKING_ROOT = cwd+"/"
         scr = data_sources.SourceCrawlerReducer()
 
-        from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local = scr.key_to_full_requirement_text
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-1"))
@@ -28,8 +27,6 @@ class TestSourceCrawlerReducer(TestCase):
         static_data.WORKING_ROOT = cwd + "/"
         scr = data_sources.SourceCrawlerReducer(a_7_line_table)
 
-
-        from cdd_to_cts.data_sources_helper import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local = scr.key_to_full_requirement_text
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3/W-0-1"))

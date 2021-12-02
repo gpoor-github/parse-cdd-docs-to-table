@@ -1,0 +1,10 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.5  . Security Model	9.8	H-1-1	9.8/H-1-1	09080000.720101	"""[9.8/H-1-1] MUST make sure the hotword detection service can only transmit data to the System or ContentCaptureService """	""	""	Content ContentCaptureService HotwordDetectionService hotword Service capture_ Content_Capture Capture	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest	testHotwordDetectionService_onDetect_fromExternalSource	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java	""	"public void testHotwordDetectionService_onDetect_fromExternalSource()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(
+                        mock(ParcelFileDescriptor.class),
+                        new AudioFormat.Builder().build(),
+                        /* options= */ null,
+                        /* callback= */ null));
+    }"	""	""	HotwordDetectionService hotword Service	""	""	""	""	""	""	""	""	""	""

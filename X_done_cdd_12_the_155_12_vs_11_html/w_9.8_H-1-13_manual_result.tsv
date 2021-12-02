@@ -1,0 +1,37 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.5  . Security Model	9.8	H-1-13	9.8/H-1-13	09080000.720113	"""[9.8/H-1-13] MUST restart the process hosting the hotword detection service at least once every hour or every 30 hardware-trigger events, whichever comes first. """	""	""	process hosting events hour restart trigger 30000 detection hardware service 60000 hotword	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectionServiceBasicTest	testHotwordDetectionService_concurrentCapture	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java	""	"@RequiresDevice
+    public void testHotwordDetectionService_concurrentCapture() throws Throwable {
+        // Create SoftwareHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            AudioRecord record =
+                    new AudioRecord.Builder()
+                            .setAudioAttributes(
+                                    new AudioAttributes.Builder()
+                                            .setInternalCapturePreset(MediaRecorder.AudioSource.MIC)
+                                            .build())
+                            .setAudioFormat(
+                                    new AudioFormat.Builder()
+                                            .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                            .build())
+                            .setBufferSizeInBytes(10240) // something large enough to not fail
+                            .build();
+            assertThat(record.getState()).isEqualTo(AudioRecord.STATE_INITIALIZED);
+
+            try {
+                record.startRecording();
+                verifyDetectedResult(
+                        performAndGetDetectionResult(
+                                Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST),
+                        MainHotwordDetectionService.DETECTED_RESULT);
+                // TODO: Test that it still works after restarting the process or killing audio
+                //  server.
+            } finally {
+                record.release();
+            }
+        });
+    }"	""	""	6: process restart trigger detection service hotword	""	""	""	""	""	""	""	""	""	""

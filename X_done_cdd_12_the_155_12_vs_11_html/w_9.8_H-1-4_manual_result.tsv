@@ -1,0 +1,10 @@
+Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
+2.2.5  . Security Model	9.8	H-1-4	9.8/H-1-4	09080000.720104	"""[9.8/H-1-4] MUST NOT supply buffered mic audio older than 8 seconds for an individual request to the hotword detection service. """	""	""	millis hotword mic buffer	""	""	""	""	""	""	""	""	android.voiceinteraction.cts.HotwordDetectedResultTest	testHotwordDetectedResult_setInvalidHotwordOffsetMillis	CtsVoiceInteractionTestCases	/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java	""	"public void testHotwordDetectedResult_setInvalidHotwordOffsetMillis() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordOffsetMillis(
+                        HotwordDetectedResult.HOTWORD_OFFSET_UNSET - 1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordOffsetMillis(
+                        Utils.LIMIT_HOTWORD_OFFSET_MAX_VALUE + 1).build());
+    }"	""	""	millis hotword	""	""	""	""	""	""	""	""	""	""
