@@ -237,6 +237,12 @@ def read_file_to_string(file: str, prepend_path_if_needed: str = CTS_SOURCE_PARE
         return file_string
 
 
+def write_file_to_string(full_path: str, value:str):
+
+    with open(full_path, "w") as text_file:
+        text_file.write(value)
+        text_file.close()
+
 def build_composite_key(key_string_for_re, record_id_split, section_id):
     record_id_result = re.search(key_string_for_re, record_id_split)
     if record_id_result:

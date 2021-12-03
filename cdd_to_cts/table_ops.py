@@ -168,7 +168,7 @@ def move_last_row_to_new_table(table_to_get_row: str) -> str:
     return new_table_file_name
 
 
-def move_matching_rows_to_new_table(output_table_name: str, table_to_get_row: str, column_name: str,
+def copy_matching_rows_to_new_table(output_table_name: str, table_to_get_row: str, column_name: str,
                                     search_string: str = None) -> str:
     table_src, key_fields_src, header_src, duplicate_rows_src = read_table_sect_and_req_key(table_to_get_row)
     new_table: [[str]] = list()

@@ -717,7 +717,7 @@ def do_map_with_flat_file(file_to_process:str ) :
     start = time.perf_counter()
     rd = RxData()
     rd.max_matches = 1200
-    temp_result = file_to_process.replace('.tsv', "_tmp.tsv")
+    temp_result = file_to_process.replace('.tsv', "_back.tsv")
     flat_file = file_to_process.replace('.tsv', "_flat.tsv")
 
     rd.result_subject.pipe(
@@ -742,7 +742,7 @@ def do_map_with_flat_file(file_to_process:str ) :
         [static_data.CLASS_DEF, static_data.METHOD],
         flat_file)
 
-    update_release_table_with_changes(file_to_process, temp_result, file_to_process, static_data.results_header)
+    return update_release_table_with_changes(file_to_process, temp_result, file_to_process, static_data.results_header)
 
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()
