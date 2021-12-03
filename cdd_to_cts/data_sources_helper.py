@@ -6,8 +6,7 @@ import re
 import static_data
 from cdd_to_cts import class_graph, persist, helpers
 from cdd_to_cts.helpers import bag_from_text, remove_non_determinative_words, convert_version_to_number, \
-    convert_version_to_number_from_full_key, build_composite_key, find_full_key, find_valid_path, find_java_objects, \
-    find_urls
+    convert_version_to_number_from_full_key
 from cdd_to_cts.static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE
 from class_graph import parse_dependency_file
 

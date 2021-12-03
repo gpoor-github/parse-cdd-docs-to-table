@@ -50,6 +50,8 @@ section_id_re_str = "[\[>][\d+\.]+\d+"
 full_key_string_for_re = section_id_re_str+'/' + req_id_re_str
 # FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)' + req_id_re_str
 METHOD_RE = '(\w+?)\(\)'
+SECTION_ID_RE_STR = "(?:(\d{1,2}\.)+\d)"
+
 java_methods_re_str = '(?:[a-zA-Z]\w+\() ?\w* ?\)'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
 java_defines_str = '[A-Z][A-Z0-9]{2,20}[_A-Z0-9]{0,40}'
@@ -217,10 +219,9 @@ cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBE
                              NOT_SEARCH_TERMS, NOT_FILES,MAX_MATCHES,
                              CLASS_DEFS, METHODS, MODULES,
                              PROTECTED] + results_header + ccd_12_subset_target_field_header
-
 # What data is to be copied from each row to the search_info dictionary
 fields_for_search_info_header: [] = update_manual_header+[REQUIREMENT,TEST_AVAILABILITY]
-flat_file_header:[] = [SECTION,  FULL_KEY,MANUAL_SEARCH_TERMS,  REQUIREMENT,CLASS_DEF, METHOD, MODULE, MATCHED_TERMS,METHODS_STRING,  FILE_NAME, COMMENT_INTERNAL,CTS_BUG_ID,TEST_LEVEL]
+flat_file_header:[] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY,MANUAL_SEARCH_TERMS,  REQUIREMENT,TEST_AVAILABILITY,CLASS_DEF, METHOD, MODULE, MATCHED_TERMS,METHODS_STRING,  FILE_NAME, COMMENT_INTERNAL,CTS_BUG_ID,TEST_LEVEL]
 
 table_delimiter = '\t'
 table_dialect = 'excel-tab'

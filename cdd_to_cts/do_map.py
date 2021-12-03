@@ -6,8 +6,6 @@ from cdd_to_cts import static_data, helpers, data_sources
 from cdd_to_cts.react import RxData, my_print
 from check_sheet import diff_tables_files
 from data_sources_helper import create_full_table_from_cdd
-from parse_cdd_md import parse_cdd_md
-from static_data import CDD_MD_ROOT
 
 
 def do_on_complete():

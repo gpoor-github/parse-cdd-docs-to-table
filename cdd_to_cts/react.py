@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import traceback
+from shutil import copyfile
 from typing import Any
 
 import rx
@@ -717,7 +718,6 @@ def do_map_with_flat_file(file_to_process:str ) :
     rd = RxData()
     rd.max_matches = 1200
     temp_result = file_to_process.replace('.tsv', "_tmp.tsv")
-    final_result = file_to_process
     flat_file = file_to_process.replace('.tsv', "_flat.tsv")
 
     rd.result_subject.pipe(
@@ -742,12 +742,12 @@ def do_map_with_flat_file(file_to_process:str ) :
         [static_data.CLASS_DEF, static_data.METHOD],
         flat_file)
 
-    update_release_table_with_changes(file_to_process, temp_result, final_result, static_data.results_header)
-    # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
+    update_release_table_with_changes(file_to_process, temp_result, file_to_process, static_data.results_header)
+
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
 
 if __name__ == '__main__':
-    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9.8_H-1-11.tsv"
+    current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9.8_H-1-10.tsv"
     do_map_with_flat_file(current_file_)

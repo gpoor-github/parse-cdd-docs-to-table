@@ -150,99 +150,102 @@ class SourceCrawlerReducer(object):
 
         return self.test_files_to_aggregated_dependency_string
 
-    # This is handled on the re-act side for now .. only done if do_search is true.
-    def handle_java_files_data(self, key_str):
-        keys_to_files_dict = self.search_files_as_strings_for_words(key_str)
-        # keys_to_files_dict1 = sorted(keys_to_files_dict.items(), key=lambda x: x[1], reverse=True)
-        a_single_test_file_name: str = ""
-        test_case_name: str = ""
-        class_name: str = ""
-        matched: set = set()
-
-        if keys_to_files_dict:
-            # filenames_str = keys_to_files_dict.get(key_str)
-            # found_methods = None
-            a_method = None
-            a_found_methods_string = None
-            max_matches = -1
-            if keys_to_files_dict:
-                # TODO just handling one file for now! Needs to change.
-                for file_name in keys_to_files_dict:
-                    file_name_relative = str(file_name).replace(CTS_SOURCE_PARENT, "")
-                    a_single_test_file_name = file_name_relative
-                    found_methods_string = class_graph.get_cached_grep_of_at_test_files().get(file_name_relative)
-                    a_method_candidate = get_random_method_name(found_methods_string)
-                    if a_method_candidate:
-                        matched = keys_to_files_dict.get(file_name)
-                        current_matches = len(matched)
-                        if current_matches >= max_matches:
-                            a_single_test_file_name = file_name_relative
-                            a_method = a_method_candidate
-                            max_matches = current_matches
-
-                    class_name_split_src = a_single_test_file_name.split('/src/')
-                    # Module
-                    if len(class_name_split_src) > 0:
-                        test_case_name = class_graph.search_for_test_case_name(a_single_test_file_name,
-                                                                               self.files_to_test_cases)
-
-                    if len(class_name_split_src) > 1:
-                        class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
-
-            return a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched
-        return None, None, None, None, None, None
-
-    def search_files_for_words(self, key: str):
-        java_objects = self.key_to_java_objects.get(key)
-        count = 0
-        # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
-        matching_file_set_out = dict()
-        if not java_objects:
-            return matching_file_set_out
-        word_to_count = dict()
-        start_time_crawl = time.perf_counter()
-
-        row = self.global_input_table[self.global_input_table_keys_to_index.get(key)]
-        col_idx = list(self.global_input_header).index("manual_search_terms")
-        if col_idx >= 0:
-            if row[col_idx]:
-                manual_search_terms = set(row[col_idx].split(' '))
-                java_objects.update(manual_search_terms)
-        for item in self.__files_to_words.items():
-            words = item[1]
-            if words:
-                matching_file_set_out = diff_set_of_search_values_against_sets_of_words_from_files(count=count,
-                                                                                                   file_and_path=item[
-                                                                                                       0],
-                                                                                                   word_set=words,
-                                                                                                   found_words_to_count=word_to_count,
-                                                                                                   matching_file_set_out=matching_file_set_out,
-                                                                                                   key=key,
-                                                                                                   search_terms=java_objects,
-                                                                                                   start_time_file_crawl=start_time_crawl)
-        return matching_file_set_out
+    # # This is handled on the re-act side for now .. only done if do_search is true.
+    # def handle_java_files_data(self, key_str):
+    #     keys_to_files_dict = self.search_files_as_strings_for_words(key_str)
+    #     # keys_to_files_dict1 = sorted(keys_to_files_dict.items(), key=lambda x: x[1], reverse=True)
+    #     a_single_test_file_name: str = ""
+    #     test_case_name: str = ""
+    #     class_name: str = ""
+    #     matched: set = set()
+    #
+    #     if keys_to_files_dict:
+    #         # filenames_str = keys_to_files_dict.get(key_str)
+    #         # found_methods = None
+    #         a_method = None
+    #         a_found_methods_string = None
+    #         max_matches = -1
+    #         if keys_to_files_dict:
+    #             # TODO just handling one file for now! Needs to change.
+    #             for file_name in keys_to_files_dict:
+    #                 file_name_relative = str(file_name).replace(CTS_SOURCE_PARENT, "")
+    #                 a_single_test_file_name = file_name_relative
+    #                 found_methods_string = class_graph.get_cached_grep_of_at_test_files().get(file_name_relative)
+    #                 a_method_candidate = get_random_method_name(found_methods_string)
+    #                 if a_method_candidate:
+    #                     matched = keys_to_files_dict.get(file_name)
+    #                     current_matches = len(matched)
+    #                     if current_matches >= max_matches:
+    #                         a_single_test_file_name = file_name_relative
+    #                         a_method = a_method_candidate
+    #                         max_matches = current_matches
+    #
+    #                 class_name_split_src = a_single_test_file_name.split('/src/')
+    #                 # Module
+    #                 if len(class_name_split_src) > 0:
+    #                     test_case_name = class_graph.search_for_test_case_name(a_single_test_file_name,
+    #                                                                            self.files_to_test_cases)
+    #
+    #                 if len(class_name_split_src) > 1:
+    #                     class_name = str(class_name_split_src[1]).replace("/", ".").rstrip(".java")
+    #
+    #         return a_single_test_file_name, test_case_name, a_method, class_name, a_found_methods_string, matched
+    #     return None, None, None, None, None, None
+    #
+    # def search_files_for_words(self, key: str):
+    #     java_objects = self.key_to_java_objects.get(key)
+    #     count = 0
+    #     # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
+    #     matching_file_set_out = dict()
+    #     if not java_objects:
+    #         return matching_file_set_out
+    #     word_to_count = dict()
+    #     start_time_crawl = time.perf_counter()
+    #
+    #     row = self.global_input_table[self.global_input_table_keys_to_index.get(key)]
+    #     col_idx = list(self.global_input_header).index("manual_search_terms")
+    #     if col_idx >= 0:
+    #         if row[col_idx]:
+    #             manual_search_terms = set(row[col_idx].split(' '))
+    #             java_objects.update(manual_search_terms)
+    #     for item in self.__files_to_words.items():
+    #         words = item[1]
+    #         if words:
+    #             matching_file_set_out = diff_set_of_search_values_against_sets_of_words_from_files(count=count,
+    #                                                                                                file_and_path=item[
+    #                                                                                                    0],
+    #                                                                                                word_set=words,
+    #                                                                                                found_words_to_count=word_to_count,
+    #                                                                                                matching_file_set_out=matching_file_set_out,
+    #                                                                                                key=key,
+    #                                                                                                search_terms=java_objects,
+    #                                                                                                start_time_file_crawl=start_time_crawl)
+    #     return matching_file_set_out
 
     def search_files_as_strings_for_words(self, key: str):
-        search_terms = self.key_to_java_objects.get(key)
+        #search_terms = self.key_to_java_objects.get(key)
+        search_terms = dict()
         # count, file_and_path, file_string, found_words_to_count:dict, matching_file_set_out:dict, key:str. value_set: set, start_time_file_crawl)
         matching_file_set_out = dict()
+        row = list()
+        try:
+            row = self.global_input_table[self.global_input_table_keys_to_index.get(key)]
+        except Exception as err:
+            helpers.print_system_error_and_dump(f"Exception [{key}] row not found in search_files_as_strings_for_word ",
+                                                err)
+
+        try:
+            col_idx = list(self.global_input_header).index(MANUAL_SEARCH_TERMS)
+
+            if col_idx >= 0:
+                if row[col_idx]:
+                    manual_search_terms = set(row[col_idx].split(' '))
+                    search_terms.update(manual_search_terms)
+        except ValueError:
+            print("warning no search manual search terms")
+        pass
         if search_terms:
-            row = list()
-            try:
-                row = self.global_input_table[self.global_input_table_keys_to_index.get(key)]
-            except Exception as err:
-                helpers.print_system_error_and_dump(f"Exception [{key}] row not found in search_files_as_strings_for_word ", err)
 
-            try:
-                col_idx = list(self.global_input_header).index(MANUAL_SEARCH_TERMS)
-
-                if col_idx >= 0:
-                    if row[col_idx]:
-                        manual_search_terms = set(row[col_idx].split(' '))
-                        search_terms.update(manual_search_terms)
-            except ValueError:
-                print("warning no search manual search terms")
-            pass
             for test_file in self.__test_files_to_strings:
                 file_string = self.__test_files_to_strings.get(test_file)
                 match_count = 0

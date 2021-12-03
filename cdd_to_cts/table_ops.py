@@ -2,10 +2,10 @@ import csv
 import sys
 
 from cdd_to_cts import static_data, helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY
+from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY, FULL_KEY
 
 
-def remove_table_columns(table_source: [[str]],  header_column_source: [str],
+def remove_table_columns(table_source: [[str]], header_column_source: [str],
                          columns_to_use: [str]) \
         -> ([[str]], dict[str, int]):
     """ This will take table_source and make a new table only using the columns specified.
@@ -18,17 +18,16 @@ def remove_table_columns(table_source: [[str]],  header_column_source: [str],
     key = ""
     for source_row in table_source:
         try:
-                # Section,section_id,req_id
-                column_subset_row = list()
-                for column in columns_to_use:
-                    if test_source_index_str.find(column + ' ') > -1:  # Add space so names have less chance of overlap
-                        header_column_source_idx = header_column_source.index(column)
-                        source_value_to_use = source_row[header_column_source_idx]
-                        column_subset_row.append(source_value_to_use)
-                column_subset_table.append(column_subset_row)
-                key = source_row[header_column_source.index(static_data.FULL_KEY)]
-                column_subset_key_to_index[key] = column_subset_table_idx_count
-                column_subset_table_idx_count += 1
+            column_subset_row = list()
+            for column in columns_to_use:
+                if test_source_index_str.find(column + ' ') > -1:  # Add space so names have less chance of overlap
+                    header_column_source_idx = header_column_source.index(column)
+                    source_value_to_use = source_row[header_column_source_idx]
+                    column_subset_row.append(source_value_to_use)
+            column_subset_table.append(column_subset_row)
+            key = source_row[header_column_source.index(static_data.FULL_KEY)]
+            column_subset_key_to_index[key] = column_subset_table_idx_count
+            column_subset_table_idx_count += 1
 
         except Exception as err:
             helpers.print_system_error_and_dump(
@@ -38,10 +37,13 @@ def remove_table_columns(table_source: [[str]],  header_column_source: [str],
 
 
 def merge_duplicate_row_for_column_set_for_flat(table_target: [[str]], key_to_index_target: dict, header_target: [str],
-                                       columns: [str]):
+                                                columns: [str]):
     if len(table_target) == 0:
         return table_target, key_to_index_target
     test_target_index_str = static_data.table_delimiter.join(header_target)
+    matched_term_index = header_target.index(static_data.MATCHED_TERMS)
+    search_term_index = header_target.index(static_data.SEARCH_TERMS)
+
     unique_rows: dict = dict()
     for t_target_row in table_target:
         try:
@@ -49,8 +51,6 @@ def merge_duplicate_row_for_column_set_for_flat(table_target: [[str]], key_to_in
             for column in columns:
                 if test_target_index_str.find(column) > -1:
                     column_target_idx = header_target.index(column)
-                    # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
-                    #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
                     column_key = column_key + "_" + t_target_row[column_target_idx]
             previous_row = unique_rows.get(column_key)
             if previous_row:
@@ -62,25 +62,16 @@ def merge_duplicate_row_for_column_set_for_flat(table_target: [[str]], key_to_in
             print(
                 f"Note:errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
 
-    full_key_index = header_target.index(static_data.FULL_KEY)
-    count:int = 0
     new_merged_table: [[str]] = list()
-    new_merged_key_to_index_target: dict = dict()
-    search_terms:str = table_target[0][header_target.index(static_data.SEARCH_TERMS)]
-    terms_set = set(search_terms.split(" "))
     for unique_row_key in unique_rows:
-        row = unique_rows.get(unique_row_key)
-        matched_terms = row[header_target.index(static_data.MATCHED_TERMS)]
-        matched_terms_set = set(matched_terms.split(" "))
-        terms_set.intersection()
-        row[header_target.index(
-            static_data.MATCHED_TERMS)] = f"{len(terms_set.intersection(matched_terms_set))}: {matched_terms}"
-
-        new_merged_table.append(row)
-        key =  row[header_target.index(static_data.FULL_KEY)]
-        new_merged_key_to_index_target[key] = count
-        count=count+1
-
+        row: [str] = unique_rows.get(unique_row_key)
+        matched_terms: str = row[matched_term_index]
+        if matched_terms.find(static_data.MATCHED_TERMS) == -1:  # Not header row
+            search_terms: str = row[search_term_index]
+            terms_set = set(search_terms.split(" "))
+            matched_terms_set = set(matched_terms.split(" "))
+            row[matched_term_index] = f"{len(terms_set.intersection(matched_terms_set))}: {matched_terms}"
+            new_merged_table.append(row)
 
     return new_merged_table
 
@@ -113,7 +104,7 @@ This will take table_target and update missing values in the specified key_to_in
                 t_source_row = table_source[table_index_source]
                 # Section,section_id,req_id
                 for column in columns:
-                    if test_target_index_str.find(column) > -1 and test_source_index_str.find(column) > -1:
+                    if test_target_index_str.find(static_data.table_delimiter+column+static_data.table_delimiter) > -1 and test_source_index_str.find(static_data.table_delimiter+column+static_data.table_delimiter) > -1:
                         column_target_idx = header_target.index(column)
                         column_source_idx = header_source.index(column)
                         # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
@@ -175,6 +166,24 @@ def move_last_row_to_new_table(table_to_get_row: str) -> str:
     table1_org_minus_row = remove_keys(table1_org, key_fields1_org, fields_to_write)
     write_table(table_to_get_row, table1_org_minus_row, header1_org)
     return new_table_file_name
+
+
+def move_matching_rows_to_new_table(output_table_name: str, table_to_get_row: str, column_name: str,
+                                    search_string: str = None) -> str:
+    table_src, key_fields_src, header_src, duplicate_rows_src = read_table_sect_and_req_key(table_to_get_row)
+    new_table: [[str]] = list()
+    column_index = list(header_src).index(column_name)
+    for row in table_src:
+        value: str = row[column_index]
+        if search_string is None:
+            if value and value.find('') > -1:
+                new_table.append(row)
+        elif value.find(
+                search_string) > -1:  # for value.find(column_name) > -1: # found column name means header row...
+            new_table.append(row)
+
+    write_table(output_table_name, new_table, header_src)
+    return output_table_name
 
 
 def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_target: dict,
@@ -396,10 +405,14 @@ def find_full_key_index(table: [[str]]) -> int:
 def find_header(table: [[str]]) -> [str]:
     header = None
     try:
-        table[0].index(SECTION_ID)
-        table[0].index(REQ_ID)
-        header = table[0]
-        print(f'write_table Found header, names are {", ".join(table[0])}')
+        potential_header_str = " ".join(table[0])
+        if potential_header_str.find(SECTION_ID) > -1 and \
+                potential_header_str.find(REQ_ID) > -1 or \
+                potential_header_str.find(FULL_KEY) > -1:
+            header = table[0]
+            print(f'write_table Found header, names are {", ".join(table[0])}')
+        else:
+            raise ValueError(f"Header not found {potential_header_str}")
     except  (AttributeError, ValueError, IndexError) as ie:
         print(f'No row 0 in table just writing use the one passed im header {str(ie)} {str(header)}')
     return header
@@ -485,7 +498,8 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
 
                     table_index += 1
                 except IndexError as e:
-                    helpers.print_system_error_and_dump(f"Index error {file_name} idx {table_index}  -= {type(e)} value {str(e)}...")
+                    helpers.print_system_error_and_dump(
+                        f"Index error {file_name} idx {table_index}  -= {type(e)} value {str(e)}...")
                 except Exception as e1:
                     helpers.print_system_error_and_dump(
                         f"General exception  {file_name} idx {table_index} -= {type(e1)} exiting..{str(e1)}")
@@ -527,6 +541,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
                                              dialect=static_data.table_dialect)
             table_index = 0
             is_header_set = False
+
             if header_in is not None and len(header_in) > 0:
                 is_header_set = True
                 header = header_in
@@ -534,27 +549,27 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
             for row in csv_reader_instance:
                 try:
                     if not is_header_set:
-                        try:
-                            section_id_index = row.index(SECTION_ID)
-                            req_id_index = row.index(REQ_ID)
-                            if logging: print(f'Found header for {file_name} names are {", ".join(row)}')
-                            header = row
-                            ##table.append(row)
-                            is_header_set = True
-
-                            # Skip the rest of the loop... if there is an exception carry on and get the first row
-                            continue
-                        except ValueError:
-                            message = f' Fatal,  exit Error: First row NOT header file={csv_file}   ToDo: Consider passing in header? row={row} default to section_id = col 1 and req_id col 2. First row of file should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
-                            print(message)
-                            raise SystemExit(message)
-                            # Carry on and get the first row
+                        for column in row:
+                            try:
+                                if static_data.cdd_info_only_header.index(column) > -1:
+                                    header = row
+                                    is_header_set = True
+                                    if logging: print(f'Found header for {file_name} names are {", ".join(row)}')
+                                    break
+                                    # Skip the rest of the loop... if there is an exception carry on and get the first row
+                                continue
+                            except ValueError as ve:
+                                message = f' Fatal,  exit Error: First row NOT header file={csv_file}   ToDo: Consider passing in header? row={row} default to section_id = col 1 and req_id col 2. First row of file should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
+                                print(message)
+                                helpers.print_system_error_and_dump(message, ve)
+                                # Carry on and get the first row
                     header_len = len(header)
                     if logging: print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
                     # Section,section_id,req_id
                     for i in range(len(row), header_len):
                         row.append('*')
                     table.append(row)
+
                     table[table_index][section_id_index] = table[table_index][section_id_index].strip().rstrip('.')
                     section_id_value = table[table_index][section_id_index]
                     table[table_index][req_id_index] = table[table_index][req_id_index].strip()
