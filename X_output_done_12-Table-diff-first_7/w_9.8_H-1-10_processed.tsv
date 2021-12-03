@@ -1,0 +1,7 @@
+"Section"	"section_id"	"req_id"	"full_key"	"manual_search_terms"	"requirement"	"Test Availability"	"class_def"	"method"	"module"	"matched_terms"	"methods_string"	"file_name"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"Test Level"
+"2.2.5  . Security Model"	"9.8"	"H-1-10"	"9.8/H-1-10"	"surface in the UI quantitative data about mic usage by the hotword detection service"	"""[9.8/H-1-10] MUST NOT surface in the UI quantitative data about mic usage by the hotword detection service. """	"Test Available, Maybe Incomplete"	"android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest"	"testHotwordDetectionService_onDetect_fromMic"	"CtsVoiceInteractionTestCases"	"4: mic detection hotword service"	"public void testHotwordDetectionService_onDetect_fromMic()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(/* callback= */ null));
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java"	"Determining if the ui has qualitative mic info could does not seem like something that can be automated"	""	""

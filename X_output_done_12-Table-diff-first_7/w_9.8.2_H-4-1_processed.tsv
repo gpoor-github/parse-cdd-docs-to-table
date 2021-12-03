@@ -1,0 +1,15 @@
+"Section"	"section_id"	"req_id"	"full_key"	"manual_search_terms"	"requirement"	"Test Availability"	"class_def"	"method"	"module"	"matched_terms"	"methods_string"	"file_name"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"Test Level"
+"2.2.5  . Security Model"	"9.8.2"	"H-4-1"	"9.8.2/H-4-1"	"display  microphone indicator when  app  accessing audio data from  microphone, but not   microphone  only accessed  HotwordDetectionService, SOURCE_HOTWORD, ContentCaptureService  apps holding  role"	"""[9.8.2/H-4-1] MUST display the microphone indicator when an app is accessing audio data from the microphone, but not when the microphone is only accessed by HotwordDetectionService, SOURCE_HOTWORD, ContentCaptureService or apps holding the roles called out in section 9.1 with CDD identifier [C-4-X]. . """	"Test Available"	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_onDetectFromMic_success"	"CtsVoiceInteractionTestCases"	"2: microphone from"	"@RequiresDevice
+    public void testHotwordDetectionService_onDetectFromMic_success()
+            throws Throwable {
+        Thread.sleep(CLEAR_CHIP_MS);
+        // Create SoftwareHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        verifyDetectedResult(
+                performAndGetDetectionResult(Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST),
+                MainHotwordDetectionService.DETECTED_RESULT);
+        verifyMicrophoneChip(true);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""

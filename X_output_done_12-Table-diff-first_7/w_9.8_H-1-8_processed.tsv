@@ -1,0 +1,27 @@
+"Section"	"section_id"	"req_id"	"full_key"	"manual_search_terms"	"requirement"	"Test Availability"	"class_def"	"method"	"module"	"matched_terms"	"methods_string"	"file_name"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"Test Level"
+"2.2.5  . Security Model"	"9.8"	"H-1-8"	"9.8/H-1-8"	"allow transmission of data out of the hotword detection service on a hotword validation request from the system server"	"""[9.8/H-1-8] MUST only allow transmission of data out of the hotword detection service on a hotword validation request from the system server. """	"Test Available"	"android.voiceinteraction.cts.HotwordDetectionServiceNonExistenceTest"	"testHotwordDetectionService_noHotwordDetectionComponentName_triggerFailure"	"CtsVoiceInteractionTestCases"	"6: service on hotword detection out a a"	"public void testHotwordDetectionService_noHotwordDetectionComponentName_triggerFailure()
+            throws Throwable {
+        final BlockingBroadcastReceiver receiver = new BlockingBroadcastReceiver(mContext,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT);
+        receiver.register();
+
+        mActivityTestRule.getScenario().onActivity(activity -> {
+            activity.triggerHotwordDetectionServiceTest(
+                    Utils.HOTWORD_DETECTION_SERVICE_NONE,
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST);
+        });
+
+        final Intent intent = receiver.awaitForBroadcast(TIMEOUT_MS);
+        assertThat(intent).isNotNull();
+        assertThat(intent.getIntExtra(Utils.KEY_TEST_RESULT, -1)).isEqualTo(
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_ILLEGAL_STATE_EXCEPTION);
+
+        receiver.unregisterQuietly();
+    }
+
+    @Override
+    public String getVoiceInteractionService() {
+        return ""android.voiceinteraction.cts/""
+                + ""android.voiceinteraction.service.MainInteractionService"";
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceNonExistenceTest.java"	""	""	""

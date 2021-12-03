@@ -1,0 +1,3104 @@
+"Section"	"section_id"	"req_id"	"full_key"	"manual_search_terms"	"requirement"	"Test Availability"	"class_def"	"method"	"module"	"matched_terms"	"methods_string"	"file_name"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"Test Level"
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.VoiceInteractionTest"	"testAll"	"CtsVoiceInteractionTestCases"	"7: except except can be or or the that that to to"	"public void testAll() throws Exception {
+        VoiceInteractionTestReceiver.waitSessionStarted(5, TimeUnit.SECONDS);
+
+        if (!mLatch.await(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+            fail(""Failed to receive broadcast in "" + TIMEOUT_MS + ""msec"");
+            return;
+        }
+        if (mResults == null) {
+            fail(""no results received at all!"");
+            return;
+        }
+        int numFails = 0;
+        for (Utils.TestCaseType t : Utils.TestCaseType.values()) {
+            String singleResult = mResults.getString(t.toString());
+            if (singleResult == null) {
+                numFails++;
+                Log.i(TAG, ""No testresults received for "" + t);
+            } else {
+                verifySingleTestcaseResult(t, singleResult);
+            }
+        }
+        assertThat(numFails).isEqualTo(0);
+        mTestActivity.finish();
+    }
+
+    private void verifySingleTestcaseResult(Utils.TestCaseType testCaseType, String result) {
+        Log.i(TAG, ""Received testresult: "" + result + "" for "" + testCaseType);
+        switch (testCaseType) {
+          case ABORT_REQUEST_CANCEL_TEST:
+              assertThat(result.equals(Utils.ABORT_REQUEST_CANCEL_SUCCESS)).isTrue();
+              break;
+          case ABORT_REQUEST_TEST:
+              assertThat(result.equals(Utils.ABORT_REQUEST_SUCCESS)).isTrue();
+              break;
+          case COMMANDREQUEST_TEST:
+              assertThat(result.equals(Utils.COMMANDREQUEST_SUCCESS)).isTrue();
+              break;
+          case COMMANDREQUEST_CANCEL_TEST:
+              assertThat(result.equals(Utils.COMMANDREQUEST_CANCEL_SUCCESS)).isTrue();
+              break;
+          case COMPLETION_REQUEST_CANCEL_TEST:
+              assertThat(result.equals(Utils.COMPLETION_REQUEST_CANCEL_SUCCESS)).isTrue();
+              break;
+          case COMPLETION_REQUEST_TEST:
+              assertThat(result.equals(Utils.COMPLETION_REQUEST_SUCCESS)).isTrue();
+              break;
+          case CONFIRMATION_REQUEST_CANCEL_TEST:
+              assertThat(result.equals(Utils.CONFIRMATION_REQUEST_CANCEL_SUCCESS)).isTrue();
+              break;
+          case CONFIRMATION_REQUEST_TEST:
+              assertThat(result.equals(Utils.CONFIRMATION_REQUEST_SUCCESS)).isTrue();
+              break;
+          case PICKOPTION_REQUEST_CANCEL_TEST:
+              assertThat(result.equals(Utils.PICKOPTION_REQUEST_CANCEL_SUCCESS)).isTrue();
+              break;
+          case PICKOPTION_REQUEST_TEST:
+              assertThat(result.equals(Utils.PICKOPTION_REQUEST_SUCCESS)).isTrue();
+              break;
+          case SUPPORTS_COMMANDS_TEST:
+              assertThat(result.equals(Utils.SUPPORTS_COMMANDS_SUCCESS)).isTrue();
+              break;
+          default:
+              Log.wtf(TAG, ""not expected"");
+              break;
+        }
+        Log.i(TAG, testCaseType + "" passed"");
+    }
+
+
+    class TestResultsReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equalsIgnoreCase(Utils.BROADCAST_INTENT)) {
+                Log.i(TAG, ""received broadcast with results "");
+                VoiceInteractionTest.this.mResults = intent.getExtras();
+                mLatch.countDown();
+            }
+        }
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/VoiceInteractionTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.service.VoiceInteractionMain"	"finish"	""	"1: or"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.service;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+
+public class VoiceInteractionMain extends Activity {
+    static final String TAG = ""VoiceInteractionMain"";
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName(this, MainInteractionService.class));
+        intent.putExtra(Utils.KEY_TEST_EVENT, Utils.VIS_NORMAL_TEST);
+        final Bundle intentExtras = getIntent().getExtras();
+        if (intentExtras != null) {
+            intent.putExtras(intentExtras);
+        }
+        ComponentName serviceName = startService(intent);
+        Log.i(TAG, ""Started service: "" + serviceName);
+        finish();
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/service/src/android/voiceinteraction/service/VoiceInteractionMain.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.LocalVoiceInteractionTest"	"startTestActivity"	"CtsVoiceInteractionTestCases"	"4: except be or to"	"/*
+ *.
+ */
+
+package android.voiceinteraction.cts;
+
+import static com.google.common.truth.Truth.assertWithMessage;
+
+import static org.junit.Assert.fail;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.ActivityTestRule;
+
+@RunWith(AndroidJUnit4.class)
+public class LocalVoiceInteractionTest extends AbstractVoiceInteractionTestCase {
+
+    private static final String TAG = LocalVoiceInteractionTest.class.getSimpleName();
+    private static final int TIMEOUT_MS = 20 * 1000;
+
+
+    private TestLocalInteractionActivity mTestActivity;
+    private final CountDownLatch mLatchStart = new CountDownLatch(1);
+    private final CountDownLatch mLatchStop = new CountDownLatch(1);
+
+    @Rule
+    public final ActivityTestRule<TestLocalInteractionActivity> mActivityTestRule =
+            new ActivityTestRule<>(TestLocalInteractionActivity.class, false, false);
+
+    @Before
+    public void setUp() throws Exception {
+        startTestActivity();
+    }
+
+    private void startTestActivity() throws Exception {
+        Intent intent = new Intent()
+                .setAction(""android.intent.action.TEST_LOCAL_INTERACTION_ACTIVITY"");
+        Log.i(TAG, ""startTestActivity: "" + intent);
+        mTestActivity = mActivityTestRule.launchActivity(intent);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/LocalVoiceInteractionTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.LocalVoiceInteractionTest"	"testLifecycle"	"CtsVoiceInteractionTestCases"	"4: except or that to"	"public void testLifecycle() throws Exception {
+        assertWithMessage(""Doesn't support LocalVoiceInteraction"")
+                .that(mTestActivity.isLocalVoiceInteractionSupported()).isTrue();
+        mTestActivity.startLocalInteraction(mLatchStart);
+        if (!mLatchStart.await(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+            fail(""Failed to start voice interaction in "" + TIMEOUT_MS + ""msec"");
+            return;
+        }
+        mTestActivity.stopLocalInteraction(mLatchStop);
+        if (!mLatchStop.await(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+            fail(""Failed to stop voice interaction in "" + TIMEOUT_MS + ""msec"");
+            return;
+        }
+        mTestActivity.finish();
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/LocalVoiceInteractionTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.service.DirectActionsSession"	"finish"	""	"3: can or to"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.service;
+
+import android.app.DirectAction;
+import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.CancellationSignal;
+import android.os.RemoteCallback;
+import android.service.voice.VoiceInteractionSession;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+
+/**
+ * Sessions for testing direct action related functionality
+ */
+public class DirectActionsSession extends VoiceInteractionSession {
+    private static final String TAG = DirectActionsSession.class.getSimpleName();
+
+    private final ReentrantLock mLock = new ReentrantLock();
+    private final Condition mCondition = mLock.newCondition();
+
+    // GuardedBy(""mLock"")
+    private @Nullable
+    ActivityId mActivityId;
+
+    // GuardedBy(""mLock"")
+    private boolean mActionsInvalidated;
+
+    public DirectActionsSession(@NonNull Context context) {
+        super(context);
+    }
+
+    @Override
+    public void onShow(Bundle args, int showFlags) {
+        if (args == null) {
+            Log.e(""TODO"", ""onshow() received null args"");
+            return;
+        }
+        final RemoteCallback callback = args.getParcelable(Utils.DIRECT_ACTIONS_KEY_CALLBACK);
+
+        final RemoteCallback control = new RemoteCallback((cmdArgs) -> {
+            final String command = cmdArgs.getString(Utils.DIRECT_ACTIONS_KEY_COMMAND);
+            Log.v(TAG, ""on remote callback: command="" + command);
+            final RemoteCallback commandCallback = cmdArgs.getParcelable(
+                    Utils.DIRECT_ACTIONS_KEY_CALLBACK);
+            switch (command) {
+                case Utils.DIRECT_ACTIONS_SESSION_CMD_PERFORM_ACTION: {
+                    executeWithAssist((result) -> performDirectAction(cmdArgs, result),
+                            commandCallback);
+                } break;
+                case Utils.DIRECT_ACTIONS_SESSION_CMD_PERFORM_ACTION_CANCEL: {
+                    executeWithAssist((result) -> performDirectActionAndCancel(cmdArgs, result),
+                            commandCallback);
+                } break;
+                case Utils.DIRECT_ACTIONS_SESSION_CMD_GET_ACTIONS: {
+                    executeWithAssist(this::getDirectActions, commandCallback);
+                } break;
+                case Utils.DIRECT_ACTIONS_SESSION_CMD_FINISH: {
+                    executeWithAssist(this::performHide, commandCallback);
+                } break;
+                case Utils.DIRECT_ACTIONS_SESSION_CMD_DETECT_ACTIONS_CHANGED: {
+                    executeWithAssist(this::detectDirectActionsInvalidated, commandCallback);
+                } break;
+            }
+        });
+
+        final Bundle result = new Bundle();
+        result.putParcelable(Utils.DIRECT_ACTIONS_KEY_CONTROL, control);
+        callback.sendResult(result);
+    }
+
+    @Override
+    public void onHandleAssist(AssistState state) {
+        if (state.getIndex() == 0) {
+            mLock.lock();
+            try {
+                mActivityId = state.getActivityId();
+                mCondition.signalAll();
+            } finally {
+                mLock.unlock();
+            }
+        }
+    }
+
+    @Override
+    public void onDirectActionsInvalidated(ActivityId activityId) {
+         mLock.lock();
+         try {
+            mActionsInvalidated = true;
+            mCondition.signalAll();
+        } finally {
+             mLock.unlock();
+         }
+    }
+
+    private void executeWithAssist(@Nullable Consumer<Bundle> command,
+            @NonNull RemoteCallback callback) {
+        mLock.lock();
+        try {
+            if (mActivityId == null) {
+                Utils.await(mCondition);
+            }
+            final Bundle result = new Bundle();
+            if (mActivityId != null) {
+                command.accept(result);
+                callback.sendResult(result);
+            } else {
+                callback.sendResult(result);
+            }
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    private void getDirectActions(@NonNull Bundle outResult) {
+        final ArrayList<DirectAction> actions = new ArrayList<>();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        mLock.lock();
+        try {
+            requestDirectActions(mActivityId, null, AsyncTask.THREAD_POOL_EXECUTOR, (b) -> {
+                actions.addAll(b);
+                latch.countDown();
+            });
+        } finally {
+            mLock.unlock();
+        }
+        Utils.await(latch);
+
+        outResult.putParcelableArrayList(Utils.DIRECT_ACTIONS_KEY_RESULT, actions);
+        Log.v(TAG, ""getDirectActions(): "" + Utils.toBundleString(outResult));
+    }
+
+    private void performDirectAction(@NonNull Bundle args, @NonNull Bundle outResult) {
+        final DirectAction action = args.getParcelable(Utils.DIRECT_ACTIONS_KEY_ACTION);
+        final Bundle arguments = args.getBundle(Utils.DIRECT_ACTIONS_KEY_ARGUMENTS);
+
+        final Bundle result = new Bundle();
+        final CountDownLatch latch = new CountDownLatch(1);
+        performDirectAction(action, arguments, null, AsyncTask.THREAD_POOL_EXECUTOR, (b) -> {
+            result.putAll(b);
+            latch.countDown();
+        });
+        Utils.await(latch);
+
+        outResult.putBundle(Utils.DIRECT_ACTIONS_KEY_RESULT, result);
+        Log.v(TAG, ""performDirectAction(): "" + Utils.toBundleString(outResult));
+    }
+
+    private void performDirectActionAndCancel(@NonNull Bundle args, @NonNull Bundle outResult) {
+        final DirectAction action = args.getParcelable(Utils.DIRECT_ACTIONS_KEY_ACTION);
+        final Bundle arguments = args.getBundle(Utils.DIRECT_ACTIONS_KEY_ARGUMENTS);
+        final Bundle result = new Bundle();
+
+        final CountDownLatch cancelLatch = new CountDownLatch(1);
+        final RemoteCallback cancelCallback = new RemoteCallback((b) -> {
+            result.clear();
+            result.putAll(b);
+            cancelLatch.countDown();
+        });
+        arguments.putParcelable(Utils.DIRECT_ACTIONS_KEY_CANCEL_CALLBACK, cancelCallback);
+
+        final CancellationSignal cancellationSignal = new CancellationSignal();
+
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+
+        performDirectAction(action, arguments, cancellationSignal,
+                AsyncTask.THREAD_POOL_EXECUTOR, (b) ->
+            resultLatch.countDown()
+        );
+
+        Utils.await(resultLatch);
+
+        cancellationSignal.cancel();
+
+        Utils.await(cancelLatch);
+
+        outResult.putBundle(Utils.DIRECT_ACTIONS_KEY_RESULT, result);
+        Log.v(TAG, ""performDirectActionAndCancel(): "" + Utils.toBundleString(outResult));
+    }
+
+    private void detectDirectActionsInvalidated(@NonNull Bundle outResult) {
+        mLock.lock();
+        try {
+            if (!mActionsInvalidated) {
+                Utils.await(mCondition);
+            }
+            outResult.putBoolean(Utils.DIRECT_ACTIONS_KEY_RESULT, mActionsInvalidated);
+            Log.v(TAG, ""detectDirectActionsInvalidated(): "" + Utils.toBundleString(outResult));
+            mActionsInvalidated = false;
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    private void performHide(@NonNull Bundle outResult) {
+        finish();
+        outResult.putBoolean(Utils.DIRECT_ACTIONS_KEY_RESULT, true);
+        Log.v(TAG, ""performHide(): "" + Utils.toBundleString(outResult));
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/service/src/android/voiceinteraction/service/DirectActionsSession.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.testapp.TestApp"	"continueTests"	""	"5: can be or from to"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.testapp;
+
+import android.app.Activity;
+import android.app.VoiceInteractor;
+import android.app.VoiceInteractor.AbortVoiceRequest;
+import android.app.VoiceInteractor.CommandRequest;
+import android.app.VoiceInteractor.CompleteVoiceRequest;
+import android.app.VoiceInteractor.ConfirmationRequest;
+import android.app.VoiceInteractor.PickOptionRequest;
+import android.app.VoiceInteractor.PickOptionRequest.Option;
+import android.app.VoiceInteractor.Prompt;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import android.voiceinteraction.common.Utils;
+
+public class TestApp extends Activity {
+    static final String TAG = ""TestApp"";
+
+    VoiceInteractor mInteractor;
+    Bundle mTestinfo = new Bundle();
+    Bundle mTotalInfo = new Bundle();
+    Utils.TestCaseType mTestInProgress;
+    int mIndex = 0;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i(TAG, ""TestApp created"");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mInteractor = getVoiceInteractor();
+        continueTests();
+    }
+
+    private void continueTests() {
+        if (mIndex == Utils.TestCaseType.values().length) {
+            // all tests done
+            Log.i(TAG, ""Ready to broadcast"");
+            broadcastResults();
+            finish();
+            return;
+        }
+        mTestInProgress = (Utils.TestCaseType.values())[mIndex++];
+        testSetup();
+        switch (mTestInProgress) {
+            case ABORT_REQUEST_TEST:
+            case ABORT_REQUEST_CANCEL_TEST:
+                abortRequest();
+                break;
+
+            case COMPLETION_REQUEST_TEST:
+            case COMPLETION_REQUEST_CANCEL_TEST:
+                completionRequest();
+                break;
+
+            case CONFIRMATION_REQUEST_TEST:
+            case CONFIRMATION_REQUEST_CANCEL_TEST:
+                confirmationRequest();
+                break;
+
+            case PICKOPTION_REQUEST_TEST:
+            case PICKOPTION_REQUEST_CANCEL_TEST:
+                pickOptionRequest();
+                break;
+
+            case COMMANDREQUEST_TEST:
+            case COMMANDREQUEST_CANCEL_TEST:
+                commandRequest();
+                break;
+
+            case SUPPORTS_COMMANDS_TEST:
+                String[] commands = {Utils.TEST_COMMAND};
+                boolean[] supported = mInteractor.supportsCommands(commands);
+                Log.i(TAG, ""from supportsCommands: "" + Arrays.toString(supported));
+                if (supported.length == 1 && supported[0]) {
+                    addTestResult(Utils.SUPPORTS_COMMANDS_SUCCESS);
+                } else {
+                    addTestResult(Utils.TEST_ERROR + "" supported commands failure!"");
+                }
+                saveTestResults();
+                continueTests();
+                break;
+        }
+    }
+
+    private void testSetup() {
+        mTestinfo.putStringArrayList(Utils.TESTINFO, new ArrayList<String>());
+        mTestinfo.putString(Utils.TESTCASE_TYPE, mTestInProgress.toString());
+    }
+
+    private void saveTestResults() {
+        ArrayList<String> info = mTestinfo.getStringArrayList(Utils.TESTINFO);
+        if (info != null) {
+            StringBuilder buf = new StringBuilder();
+            int count = 0;
+            for (String s : info) {
+                buf.append(s);
+                if (count++ > 0) {
+                    buf.append("", "");
+                }
+            }
+            mTotalInfo.putString(mTestInProgress.toString(), buf.toString());
+            Log.i(TAG, ""results for "" + mTestInProgress + "" = "" +
+                    mTotalInfo.getString(mTestInProgress.toString()));
+        }
+    }
+
+    private void broadcastResults() {
+        Intent intent = new Intent(Utils.BROADCAST_INTENT)
+                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_RECEIVER_REGISTERED_ONLY)
+                .putExtras(mTotalInfo);
+        Log.i(TAG, ""broadcasting: "" + intent + "", Bundle = "" + mTotalInfo);
+        sendOrderedBroadcast(intent, null, new DoneReceiver(),
+                null, Activity.RESULT_OK, null, null);
+    }
+
+    private void confirmationRequest() {
+        Prompt prompt = new Prompt(Utils.TEST_PROMPT);
+        ConfirmationRequest req = new VoiceInteractor.ConfirmationRequest(prompt, mTestinfo) {
+            @Override
+            public void onCancel() {
+                Log.i(TAG, ""confirmation request Canceled!"");
+                addTestResult(Utils.CONFIRMATION_REQUEST_CANCEL_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+
+            @Override
+            public void onConfirmationResult(boolean confirmed, Bundle result) {
+                mTestinfo = result;
+                Log.i(TAG, ""Confirmation result: confirmed="" + confirmed +
+                        "", recvd bundle ="" + Utils.toBundleString(result));
+                addTestResult(Utils.CONFIRMATION_REQUEST_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+        };
+        mInteractor.submitRequest(req);
+    }
+
+    private void completionRequest() {
+        Prompt prompt = new Prompt(Utils.TEST_PROMPT);
+        CompleteVoiceRequest req = new VoiceInteractor.CompleteVoiceRequest(prompt, mTestinfo) {
+            @Override
+            public void onCancel() {
+                Log.i(TAG, ""completionRequest Canceled!"");
+                addTestResult(Utils.COMPLETION_REQUEST_CANCEL_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+
+            @Override
+            public void onCompleteResult(Bundle result) {
+                mTestinfo = result;
+                Log.i(TAG, ""Completion result: recvd bundle ="" +
+                        Utils.toBundleString(result));
+                addTestResult(Utils.COMPLETION_REQUEST_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+        };
+        mInteractor.submitRequest(req);
+    }
+
+    private void abortRequest() {
+        Prompt prompt = new Prompt(Utils.TEST_PROMPT);
+        AbortVoiceRequest req = new VoiceInteractor.AbortVoiceRequest(prompt, mTestinfo) {
+            @Override
+            public void onCancel() {
+                Log.i(TAG, ""abortRequest Canceled!"");
+                addTestResult(Utils.ABORT_REQUEST_CANCEL_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+
+            @Override
+            public void onAbortResult(Bundle result) {
+                mTestinfo = result;
+                Log.i(TAG, ""Abort result: recvd bundle ="" + Utils.toBundleString(result));
+                addTestResult(Utils.ABORT_REQUEST_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+        };
+        mInteractor.submitRequest(req);
+    }
+
+    private void pickOptionRequest() {
+        Prompt prompt = new Prompt(Utils.TEST_PROMPT);
+        PickOptionRequest.Option[] options = new VoiceInteractor.PickOptionRequest.Option[2];
+        options[0] = new Option(Utils.PICKOPTON_1, -1);
+        options[1] = new Option(Utils.PICKOPTON_2, -1);
+        Log.i(TAG, ""pickOptionRequest initiated with Bundle = "");
+        PickOptionRequest req = new VoiceInteractor.PickOptionRequest(prompt, options, mTestinfo) {
+            @Override
+            public void onCancel() {
+                Log.i(TAG, ""pickOptionRequest Canceled!"");
+                addTestResult(Utils.PICKOPTION_REQUEST_CANCEL_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+
+            @Override
+            public void onPickOptionResult(boolean finished, Option[] selections, Bundle result) {
+                mTestinfo = result;
+                Log.i(TAG, ""PickOption result: finished = "" + finished +
+                        "", selections = "" + Utils.toOptionsString(selections) +
+                        "", recvd bundle ="" + Utils.toBundleString(result));
+                if ((selections.length != 1) ||
+                        !selections[0].getLabel().toString().equals(Utils.PICKOPTON_3)) {
+                    Utils.addErrorResult(result,
+                            ""Pickoption Selections Not received correctly in TestApp."");
+                } else {
+                    addTestResult(Utils.PICKOPTION_REQUEST_SUCCESS);
+                }
+                saveTestResults();
+                continueTests();
+            }
+        };
+        mInteractor.submitRequest(req);
+    }
+
+    private void commandRequest() {
+        CommandRequest req = new VoiceInteractor.CommandRequest(Utils.TEST_COMMAND, mTestinfo) {
+            @Override
+            public void onCancel() {
+                Log.i(TAG, ""commandRequest Canceled!"");
+                addTestResult(Utils.COMMANDREQUEST_CANCEL_SUCCESS);
+                saveTestResults();
+                continueTests();
+            }
+
+            @Override
+            public void onCommandResult(boolean isCompleted, Bundle result) {
+                mTestinfo = result;
+                Log.i(TAG, ""CommandRequest onCommandResult result: isCompleted = "" + isCompleted +
+                        "", recvd bundle ="" + Utils.toBundleString(result));
+                String received = result.getString(Utils.TEST_ONCOMMAND_RESULT);
+                if (received != null && received.equals(Utils.TEST_ONCOMMAND_RESULT_VALUE)) {
+                    addTestResult(Utils.COMMANDREQUEST_SUCCESS);
+                } else {
+                    Utils.addErrorResult(result,
+                            ""Invalid commandrequest result received: "" + received);
+                }
+                saveTestResults();
+                continueTests();
+            }
+        };
+        mInteractor.submitRequest(req);
+    }
+
+    private void addTestResult(final String msg) {
+        mTestinfo.getStringArrayList(Utils.TESTINFO).add(msg);
+    }
+
+    class DoneReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, ""Done_broadcast "" + intent.getAction());
+        }
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/testapp/src/android/voiceinteraction/testapp/TestApp.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.service.MainHotwordDetectionService"	"PersistableBundle"	""	"13: except can data, be or from the hotword data that to audio detection"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.service;
+
+import static android.media.AudioFormat.CHANNEL_IN_FRONT;
+
+import android.media.AudioAttributes;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.ParcelFileDescriptor;
+import android.os.PersistableBundle;
+import android.os.Process;
+import android.os.SharedMemory;
+import android.service.voice.AlwaysOnHotwordDetector;
+import android.service.voice.HotwordDetectedResult;
+import android.service.voice.HotwordDetectionService;
+import android.service.voice.HotwordRejectedResult;
+import android.system.ErrnoException;
+import android.text.TextUtils;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.IntConsumer;
+
+import javax.annotation.concurrent.GuardedBy;
+
+public class MainHotwordDetectionService extends HotwordDetectionService {
+    static final String TAG = ""MainHotwordDetectionService"";
+
+    public static final HotwordDetectedResult DETECTED_RESULT =
+            new HotwordDetectedResult.Builder()
+                    .setAudioChannel(CHANNEL_IN_FRONT)
+                    .setConfidenceLevel(HotwordDetectedResult.CONFIDENCE_LEVEL_HIGH)
+                    .setHotwordDetectionPersonalized(true)
+                    .setHotwordDurationMillis(1000)
+                    .setHotwordOffsetMillis(500)
+                    .setHotwordPhraseId(5)
+                    .setPersonalizedScore(10)
+                    .setScore(15)
+                    .build();
+    public static final HotwordDetectedResult DETECTED_RESULT_AFTER_STOP_DETECTION =
+            new HotwordDetectedResult.Builder()
+                    .setScore(57)
+                    .build();
+    public static final HotwordDetectedResult DETECTED_RESULT_FOR_MIC_FAILURE =
+            new HotwordDetectedResult.Builder()
+                    .setScore(58)
+                    .build();
+    public static final HotwordRejectedResult REJECTED_RESULT =
+            new HotwordRejectedResult.Builder()
+                    .setConfidenceLevel(HotwordRejectedResult.CONFIDENCE_LEVEL_MEDIUM)
+                    .build();
+
+    private Handler mHandler;
+    @NonNull
+    private final Object mLock = new Object();
+
+    @GuardedBy(""mLock"")
+    private boolean mStopDetectionCalled;
+
+    @GuardedBy(""mLock"")
+    @Nullable
+    private Runnable mDetectionJob;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mHandler = Handler.createAsync(Looper.getMainLooper());
+    }
+
+    @Override
+    public void onDetect(@NonNull AlwaysOnHotwordDetector.EventPayload eventPayload,
+            long timeoutMillis, @NonNull Callback callback) {
+        Log.d(TAG, ""onDetect for DSP source"");
+
+        if (!canReadAudio()) {
+            callback.onDetected(DETECTED_RESULT_FOR_MIC_FAILURE);
+            return;
+        }
+
+        // TODO: Check the capture session (needs to be reflectively accessed).
+        byte[] data = eventPayload.getTriggerAudio();
+        if (data != null && data.length > 0) {
+            // Create the unaccepted HotwordDetectedResult first to test the protection in the
+            // onDetected callback function of HotwordDetectionService. When the bundle data of
+            // HotwordDetectedResult is larger than max bundle size, it will throw the
+            // IllegalArgumentException.
+            PersistableBundle persistableBundle = new PersistableBundle();
+            HotwordDetectedResult hotwordDetectedResult =
+                    new HotwordDetectedResult.Builder()
+                            .setExtras(persistableBundle)
+                            .build();
+            int key = 0;
+            do {
+                persistableBundle.putInt(Integer.toString(key), 0);
+                key++;
+            } while (Utils.getParcelableSize(persistableBundle)
+                    <= HotwordDetectedResult.getMaxBundleSize());
+
+            try {
+                callback.onDetected(hotwordDetectedResult);
+            } catch (IllegalArgumentException e) {
+                callback.onDetected(DETECTED_RESULT);
+            }
+        } else {
+            callback.onRejected(REJECTED_RESULT);
+        }
+    }
+
+    @Override
+    public void onDetect(
+            @NonNull ParcelFileDescriptor audioStream,
+            @NonNull AudioFormat audioFormat,
+            @Nullable PersistableBundle options,
+            @NonNull Callback callback) {
+        Log.d(TAG, ""onDetect for external source"");
+
+        if (callback == null) {
+            Log.w(TAG, ""callback is null"");
+            return;
+        }
+        if (audioStream == null) {
+            Log.w(TAG, ""audioStream is null"");
+            return;
+        }
+
+        long startTime = System.currentTimeMillis();
+        try (InputStream fis =
+                     new ParcelFileDescriptor.AutoCloseInputStream(audioStream)) {
+
+            // We added the fake audio data and set ""hotword!"" string at the head. Then we simulated
+            // to verify the audio data with ""hotword!"" in HotwordDetectionService. If the audio
+            // data includes ""hotword!"", it means that the hotword is valid.
+            while (fis.available() < 8) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    // Nothing
+                }
+                if (System.currentTimeMillis() - startTime > 3000) {
+                    Log.w(TAG, ""Over timeout"");
+                    return;
+                }
+            }
+            Log.d(TAG, ""fis.available() = "" + fis.available());
+            byte[] buffer = new byte[8];
+            fis.read(buffer, 0, 8);
+            if(isSame(buffer, BasicVoiceInteractionService.FAKE_HOTWORD_AUDIO_DATA,
+                    buffer.length)) {
+                Log.d(TAG, ""call callback.onDetected"");
+                callback.onDetected(DETECTED_RESULT);
+            }
+        } catch (IOException e) {
+            Log.w(TAG, ""Failed to read data : "", e);
+        }
+    }
+
+    @Override
+    public void onDetect(@NonNull Callback callback) {
+        Log.d(TAG, ""onDetect for Mic source"");
+        synchronized (mLock) {
+            if (mDetectionJob != null) {
+                throw new IllegalStateException(""onDetect called while already detecting"");
+            }
+            if (!mStopDetectionCalled) {
+                // Delaying this allows us to test other flows, such as stopping detection. It's
+                // also more realistic to schedule it onto another thread.
+                mDetectionJob = () -> {
+                    Log.d(TAG, ""Sending detected result"");
+
+                    if (canReadAudio()) {
+                        callback.onDetected(DETECTED_RESULT);
+                    } else {
+                        callback.onDetected(DETECTED_RESULT_FOR_MIC_FAILURE);
+                    }
+                };
+                mHandler.postDelayed(mDetectionJob, 1500);
+            } else {
+                Log.d(TAG, ""Sending detected result after stop detection"");
+                // We can't store and use this callback in onStopDetection (not valid anymore there), so
+                // instead we trigger detection again to report the event.
+                callback.onDetected(DETECTED_RESULT_AFTER_STOP_DETECTION);
+            }
+        }
+    }
+
+    @Override
+    public void onStopDetection() {
+        super.onStopDetection();
+        synchronized (mLock) {
+            mHandler.removeCallbacks(mDetectionJob);
+            mDetectionJob = null;
+            mStopDetectionCalled = true;
+        }
+    }
+
+    @Override
+    public void onUpdateState(
+            @Nullable PersistableBundle options,
+            @Nullable SharedMemory sharedMemory,
+            long callbackTimeoutMillis,
+            @Nullable IntConsumer statusCallback) {
+        super.onUpdateState(options, sharedMemory, callbackTimeoutMillis, statusCallback);
+        Log.d(TAG, ""onUpdateState"");
+
+        if (options != null) {
+            if (options.getInt(Utils.KEY_TEST_SCENARIO, -1)
+                    == Utils.HOTWORD_DETECTION_SERVICE_ON_UPDATE_STATE_CRASH) {
+                Log.d(TAG, ""Crash itself. Pid: "" + Process.myPid());
+                Process.killProcess(Process.myPid());
+                return;
+            }
+            String fakeData = options.getString(BasicVoiceInteractionService.KEY_FAKE_DATA);
+            if (!TextUtils.equals(fakeData, BasicVoiceInteractionService.VALUE_FAKE_DATA)) {
+                Log.d(TAG, ""options : data is not the same"");
+                return;
+            }
+        }
+
+        if (sharedMemory != null) {
+            try {
+                sharedMemory.mapReadWrite();
+                Log.d(TAG, ""sharedMemory : is not read-only"");
+                return;
+            } catch (ErrnoException e) {
+                // For read-only case
+            } finally {
+                sharedMemory.close();
+            }
+        }
+
+        // Report success
+        Log.d(TAG, ""onUpdateState success"");
+        if (statusCallback != null) {
+            statusCallback.accept(INITIALIZATION_STATUS_SUCCESS);
+        }
+    }
+
+    private boolean isSame(byte[] array1, byte[] array2, int length) {
+        if (length <= 0) {
+            return false;
+        }
+        if (array1 == null || array2 == null || array1.length < length || array2.length < length) {
+            return false;
+        }
+        for (int i = 0; i < length; i++) {
+            if (array1[i] != array2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean canReadAudio() {
+        int bytesPerSample = 2; // for ENCODING_PCM_16BIT
+        int sampleRate = 16000;
+        int bytesPerSecond = bytesPerSample * sampleRate; // for single channel
+        AudioRecord record =
+                new AudioRecord.Builder()
+                        .setAudioAttributes(
+                                new AudioAttributes.Builder()
+                                        .setInternalCapturePreset(MediaRecorder.AudioSource.HOTWORD)
+                                        .build())
+                        .setAudioFormat(
+                                new AudioFormat.Builder()
+                                        .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                        .setSampleRate(sampleRate)
+                                        .build())
+                        .setBufferSizeInBytes(bytesPerSecond)
+                        .build();
+        if (record.getState() != AudioRecord.STATE_INITIALIZED) {
+            Log.e(TAG, ""Failed to initialize AudioRecord"");
+            record.release();
+            return false;
+        }
+
+        record.startRecording();
+        try {
+            byte[] buffer = new byte[bytesPerSecond]; // read 1 second of audio
+            int numBytes = 0;
+            while (numBytes < buffer.length) {
+                int bytesRead =
+                        record.read(buffer, numBytes, Math.min(1024, buffer.length - numBytes));
+                if (bytesRead < 0) {
+                    Log.e(TAG, ""Error reading from mic: "" + bytesRead);
+                    return false;
+                }
+                numBytes += bytesRead;
+            }
+            // The audio data will be zero on virtual device, so it would be better to skip to
+            // check the audio data.
+            if (Utils.isVirtualDevice()) {
+                return true;
+            }
+            for (byte b : buffer) {
+                // TODO: Maybe check that some portion of the bytes are non-zero.
+                if (b != 0) {
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            record.release();
+        }
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/service/src/android/voiceinteraction/service/MainHotwordDetectionService.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordRejectedResultTest"	"testHotwordRejectedResultBuilder"	"CtsVoiceInteractionTestCases"	"5: except or hotword that to"	"public void testHotwordRejectedResultBuilder() throws Exception {
+        final HotwordRejectedResult hotwordRejectedResult =
+                buildHotwordRejectedResult(HotwordRejectedResult.CONFIDENCE_LEVEL_LOW);
+
+        assertThat(hotwordRejectedResult.getConfidenceLevel()).isEqualTo(
+                HotwordRejectedResult.CONFIDENCE_LEVEL_LOW);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordRejectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	Test Available	"android.voiceinteraction.cts.HotwordRejectedResultTest"	"testHotwordRejectedResultParcelizeDeparcelize"	"CtsVoiceInteractionTestCases"	"7: except or from hotword data that to"	"public void testHotwordRejectedResultParcelizeDeparcelize() throws Exception {
+        final HotwordRejectedResult hotwordRejectedResult =
+                buildHotwordRejectedResult(HotwordRejectedResult.CONFIDENCE_LEVEL_LOW);
+
+        final Parcel p = Parcel.obtain();
+        hotwordRejectedResult.writeToParcel(p, 0);
+        p.setDataPosition(0);
+
+        final HotwordRejectedResult targetHotwordRejectedResult =
+                HotwordRejectedResult.CREATOR.createFromParcel(p);
+        p.recycle();
+
+        assertThat(hotwordRejectedResult).isEqualTo(targetHotwordRejectedResult);
+    }
+
+    private HotwordRejectedResult buildHotwordRejectedResult(int confidenceLevel) {
+        return new HotwordRejectedResult.Builder()
+                .setConfidenceLevel(confidenceLevel)
+                .build();
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordRejectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.TestVoiceInteractionServiceActivity"	"finish"	"CtsVoiceInteractionTestCases"	"3: or hotword detection"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.cts;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+import android.voiceinteraction.service.BasicVoiceInteractionService;
+import android.voiceinteraction.service.MainInteractionService;
+
+public class TestVoiceInteractionServiceActivity extends Activity {
+    static final String TAG = ""TestVoiceInteractionServiceActivity"";
+
+    void triggerHotwordDetectionServiceTest(int serviceType, int testEvent) {
+        Intent serviceIntent = new Intent();
+        if (serviceType == Utils.HOTWORD_DETECTION_SERVICE_NONE) {
+            serviceIntent.setComponent(new ComponentName(this,
+                    ""android.voiceinteraction.service.MainInteractionService""));
+        } else if (serviceType == Utils.HOTWORD_DETECTION_SERVICE_BASIC) {
+            serviceIntent.setComponent(new ComponentName(this,
+                    ""android.voiceinteraction.service.BasicVoiceInteractionService""));
+        } else {
+            Log.w(TAG, ""Never here"");
+            finish();
+            return;
+        }
+        serviceIntent.putExtra(Utils.KEY_TEST_EVENT, testEvent);
+        ComponentName serviceName = startService(serviceIntent);
+        Log.i(TAG, ""triggerHotwordDetectionServiceTest Started service: "" + serviceName);
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/TestVoiceInteractionServiceActivity.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.DirectActionsTest"	"testPerformDirectAction"	"CtsVoiceInteractionTestCases"	"5: except be or the to"	"public void testPerformDirectAction() throws Exception {
+        mActivityControl.startActivity();
+        mSessionControl.startVoiceInteractionSession();
+        try {
+            // Get the actions.
+            final List<DirectAction> actions = mSessionControl.getDirectActions();
+            Log.v(TAG, ""actions: "" + actions);
+
+            // Only the expected action should be reported
+            final DirectAction action = getExpectedDirectActionAssertively(actions);
+
+            // Perform the expected action.
+            final Bundle result = mSessionControl.performDirectAction(action,
+                    createActionArguments());
+
+            // Assert the action completed successfully.
+            assertActionSucceeded(result);
+        } finally {
+            mSessionControl.stopVoiceInteractionSession();
+            mActivityControl.finishActivity();
+        }
+    }
+
+    @AppModeFull(reason = ""testPerformDirectAction() is enough"")"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/DirectActionsTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.DirectActionsTest"	"testCancelPerformedDirectAction"	"CtsVoiceInteractionTestCases"	"6: except can be or the to"	"public void testCancelPerformedDirectAction() throws Exception {
+        mActivityControl.startActivity();
+        mSessionControl.startVoiceInteractionSession();
+        try {
+            // Get the actions.
+            final List<DirectAction> actions = mSessionControl.getDirectActions();
+            Log.v(TAG, ""actions: "" + actions);
+
+            // Only the expected action should be reported
+            final DirectAction action = getExpectedDirectActionAssertively(actions);
+
+            // Perform the expected action.
+            final Bundle result = mSessionControl.performDirectActionAndCancel(action,
+                    createActionArguments());
+
+            // Assert the action was cancelled.
+            assertActionCancelled(result);
+        } finally {
+            mSessionControl.stopVoiceInteractionSession();
+            mActivityControl.finishActivity();
+        }
+    }
+
+    @AppModeFull(reason = ""testPerformDirectAction() is enough"")"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/DirectActionsTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.DirectActionsTest"	"testVoiceInteractorDestroy"	"CtsVoiceInteractionTestCases"	"5: except or the that to"	"public void testVoiceInteractorDestroy() throws Exception {
+        mActivityControl.startActivity();
+        mSessionControl.startVoiceInteractionSession();
+        try {
+            // Get the actions to set up the VoiceInteractor
+            mSessionControl.getDirectActions();
+
+            assertThat(mActivityControl
+                    .detectInteractorDestroyed(() -> mSessionControl.stopVoiceInteractionSession()))
+                            .isTrue();
+        } finally {
+            mSessionControl.stopVoiceInteractionSession();
+            mActivityControl.finishActivity();
+        }
+    }
+
+    @AppModeFull(reason = ""testPerformDirectAction() is enough"")"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/DirectActionsTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.DirectActionsTest"	"testNotifyDirectActionsChanged"	"CtsVoiceInteractionTestCases"	"8: except can or from the data that to"	"public void testNotifyDirectActionsChanged() throws Exception {
+        mActivityControl.startActivity();
+        mSessionControl.startVoiceInteractionSession();
+        try {
+            // Get the actions to set up the VoiceInteractor
+            mSessionControl.getDirectActions();
+
+            assertThat(mSessionControl.detectDirectActionsInvalidated(
+                    () -> mActivityControl.invalidateDirectActions())).isTrue();
+        } finally {
+            mSessionControl.stopVoiceInteractionSession();
+            mActivityControl.finishActivity();
+        }
+    }
+    private final class SessionControl {
+        private @Nullable RemoteCallback mControl;
+
+        private void startVoiceInteractionSession() throws Exception {
+            final CountDownLatch latch = new CountDownLatch(1);
+
+            final RemoteCallback callback = new RemoteCallback((result) -> {
+                mControl = result.getParcelable(Utils.DIRECT_ACTIONS_KEY_CONTROL);
+                latch.countDown();
+            });
+
+            final Intent intent = new Intent();
+            intent.putExtra(Utils.DIRECT_ACTIONS_KEY_CLASS,
+                    ""android.voiceinteraction.service.DirectActionsSession"");
+            intent.setClassName(""android.voiceinteraction.service"",
+                    ""android.voiceinteraction.service.VoiceInteractionMain"");
+            intent.putExtra(Utils.DIRECT_ACTIONS_KEY_CALLBACK, callback);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            Log.v(TAG, ""startVoiceInteractionSession(): "" + intent);
+            mContext.startActivity(intent);
+
+            if (!latch.await(OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                throw new TimeoutException(""actitvity not started in "" + OPERATION_TIMEOUT_MS
+                        + ""ms"");
+            }
+        }
+
+        private void stopVoiceInteractionSession() throws Exception {
+            executeCommand(Utils.DIRECT_ACTIONS_SESSION_CMD_FINISH,
+                    null /*directAction*/, null /*arguments*/, null /*postActionCommand*/);
+        }
+
+        @Nullable List<DirectAction> getDirectActions() throws Exception {
+            final ArrayList<DirectAction> actions = new ArrayList<>();
+            final Bundle result = executeCommand(Utils.DIRECT_ACTIONS_SESSION_CMD_GET_ACTIONS,
+                    null /*directAction*/, null /*arguments*/, null /*postActionCommand*/);
+            actions.addAll(result.getParcelableArrayList(Utils.DIRECT_ACTIONS_KEY_RESULT));
+            return actions;
+        }
+
+        @Nullable Bundle performDirectAction(@NonNull DirectAction directAction,
+                @NonNull Bundle arguments) throws Exception {
+            return executeCommand(Utils.DIRECT_ACTIONS_SESSION_CMD_PERFORM_ACTION,
+                    directAction, arguments, null /*postActionCommand*/);
+        }
+
+        @Nullable Bundle performDirectActionAndCancel(@NonNull DirectAction directAction,
+                @NonNull Bundle arguments) throws Exception {
+            return executeCommand(Utils.DIRECT_ACTIONS_SESSION_CMD_PERFORM_ACTION_CANCEL,
+                    directAction, arguments, null /*postActionCommand*/);
+        }
+
+        @Nullable
+        boolean detectDirectActionsInvalidated(@NonNull ThrowingRunnable postActionCommand)
+                throws Exception {
+            final Bundle result = executeCommand(
+                    Utils.DIRECT_ACTIONS_SESSION_CMD_DETECT_ACTIONS_CHANGED,
+                    null /*directAction*/, null /*arguments*/, postActionCommand);
+            return result.getBoolean(Utils.DIRECT_ACTIONS_KEY_RESULT);
+        }
+
+        @Nullable Bundle executeCommand(@NonNull String action, @Nullable DirectAction directAction,
+                @Nullable Bundle arguments, @Nullable ThrowingRunnable postActionCommand)
+                throws Exception {
+            final CountDownLatch latch = new CountDownLatch(1);
+
+            final Bundle result = new Bundle();
+
+            final RemoteCallback callback = new RemoteCallback((b) -> {
+                result.putAll(b);
+                latch.countDown();
+            });
+
+            final Bundle command = new Bundle();
+            command.putString(Utils.DIRECT_ACTIONS_KEY_COMMAND, action);
+            command.putParcelable(Utils.DIRECT_ACTIONS_KEY_ACTION, directAction);
+            command.putBundle(Utils.DIRECT_ACTIONS_KEY_ARGUMENTS, arguments);
+            command.putParcelable(Utils.DIRECT_ACTIONS_KEY_CALLBACK, callback);
+
+            Log.v(TAG, ""executeCommand(): action="" + action + "" command=""
+                    + Utils.toBundleString(command));
+            mControl.sendResult(command);
+
+            if (postActionCommand != null) {
+                Log.v(TAG, ""Executing post-action command for "" + action);
+                postActionCommand.run();
+            }
+
+            if (!latch.await(OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                throw new TimeoutException(""result not received in "" + OPERATION_TIMEOUT_MS + ""ms"");
+            }
+
+            Log.v(TAG, ""returning "" + Utils.toBundleString(result));
+
+            return result;
+        }
+    }
+
+    private final class ActivityControl {
+        private @Nullable RemoteCallback mControl;
+
+        void startActivity() throws Exception {
+            final CountDownLatch latch = new CountDownLatch(1);
+
+            final RemoteCallback callback = new RemoteCallback((result) -> {
+                Log.v(TAG, ""ActivityControl: testapp called the callback: ""
+                        + Utils.toBundleString(result));
+                mControl = result.getParcelable(Utils.DIRECT_ACTIONS_KEY_CONTROL);
+                latch.countDown();
+            });
+
+            final Intent intent = new Intent()
+                    .setAction(Intent.ACTION_VIEW)
+                    .addCategory(Intent.CATEGORY_BROWSABLE)
+                    .setData(Uri.parse(""https://android.voiceinteraction.testapp""
+                            + ""/DirectActionsActivity""))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra(Utils.DIRECT_ACTIONS_KEY_CALLBACK, callback);
+            if (mContext.getPackageManager().isInstantApp()) {
+                // Override app-links domain verification.
+                runShellCommand(
+                        String.format(
+                                ""pm set-app-links-user-selection --user cur --package %1$s true""
+                                        + "" %1$s"",
+                                TEST_APP_PACKAGE));
+            } else {
+                intent.setPackage(TEST_APP_PACKAGE);
+            }
+
+            Log.v(TAG, ""startActivity: "" + intent);
+            mContext.startActivity(intent);
+
+            if (!latch.await(OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                throw new TimeoutException(""actitvity not started in "" + OPERATION_TIMEOUT_MS
+                        + ""ms"");
+            }
+        }
+
+        private boolean detectInteractorDestroyed(ThrowingRunnable destroyTrigger)
+                throws Exception {
+            final Bundle result = executeRemoteCommand(
+                    Utils.DIRECT_ACTIONS_ACTIVITY_CMD_DESTROYED_INTERACTOR,
+                    destroyTrigger);
+            return result.getBoolean(Utils.DIRECT_ACTIONS_KEY_RESULT);
+        }
+
+        void finishActivity() throws Exception {
+            executeRemoteCommand(Utils.DIRECT_ACTIONS_ACTIVITY_CMD_FINISH);
+        }
+
+        void invalidateDirectActions() throws Exception {
+            executeRemoteCommand(Utils.DIRECT_ACTIONS_ACTIVITY_CMD_INVALIDATE_ACTIONS);
+        }
+
+        @NonNull Bundle executeRemoteCommand(@NonNull String action) throws Exception {
+            return executeRemoteCommand(action, /* postActionCommand= */ null);
+        }
+
+        @NonNull Bundle executeRemoteCommand(@NonNull String action,
+                @Nullable ThrowingRunnable postActionCommand) throws Exception {
+            final Bundle result = new Bundle();
+
+            final CountDownLatch latch = new CountDownLatch(1);
+
+            final RemoteCallback callback = new RemoteCallback((b) -> {
+                Log.v(TAG, ""executeRemoteCommand(): received result from '"" + action + ""': ""
+                        + Utils.toBundleString(b));
+                if (b != null) {
+                    result.putAll(b);
+                }
+                latch.countDown();
+            });
+
+            final Bundle command = new Bundle();
+            command.putString(Utils.DIRECT_ACTIONS_KEY_COMMAND, action);
+            command.putParcelable(Utils.DIRECT_ACTIONS_KEY_CALLBACK, callback);
+
+            Log.v(TAG, ""executeRemoteCommand(): sending command for '"" + action + ""'"");
+            mControl.sendResult(command);
+
+            if (postActionCommand != null) {
+                try {
+                    postActionCommand.run();
+                } catch (Exception e) {
+                    Log.e(TAG, ""action '"" + action + ""' failed"");
+                    throw e;
+                }
+            }
+
+            if (!latch.await(OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                throw new TimeoutException(""result not received in "" + OPERATION_TIMEOUT_MS + ""ms"");
+            }
+            return result;
+        }
+    }
+
+    private @NonNull DirectAction getExpectedDirectActionAssertively(
+            @Nullable List<DirectAction> actions) {
+        assertWithMessage(""no actions"").that(actions).isNotEmpty();
+        final DirectAction action = actions.get(0);
+        assertThat(action.getId()).isEqualTo(Utils.DIRECT_ACTIONS_ACTION_ID);
+        assertThat(action.getExtras().getString(Utils.DIRECT_ACTION_EXTRA_KEY))
+                .isEqualTo(Utils.DIRECT_ACTION_EXTRA_VALUE);
+        assertThat(action.getLocusId().getId()).isEqualTo(Utils.DIRECT_ACTIONS_LOCUS_ID.getId());
+        return action;
+    }
+
+    private @NonNull Bundle createActionArguments() {
+        final Bundle args = new Bundle();
+        args.putString(Utils.DIRECT_ACTIONS_KEY_ARGUMENTS, Utils.DIRECT_ACTIONS_KEY_ARGUMENTS);
+        Log.v(TAG, ""createActionArguments(): "" + Utils.toBundleString(args));
+        return args;
+    }
+
+    private void assertActionSucceeded(@NonNull Bundle result) {
+        final Bundle bundle = result.getBundle(Utils.DIRECT_ACTIONS_KEY_RESULT);
+        final String status = bundle.getString(Utils.DIRECT_ACTIONS_KEY_RESULT);
+        assertWithMessage(""assertActionSucceeded(%s)"", Utils.toBundleString(result))
+                .that(Utils.DIRECT_ACTIONS_RESULT_PERFORMED).isEqualTo(status);
+    }
+
+    private void assertActionCancelled(@NonNull Bundle result) {
+        final Bundle bundle = result.getBundle(Utils.DIRECT_ACTIONS_KEY_RESULT);
+        final String status = bundle.getString(Utils.DIRECT_ACTIONS_KEY_RESULT);
+        assertWithMessage(""assertActionCancelled(%s)"", Utils.toBundleString(result))
+                .that(Utils.DIRECT_ACTIONS_RESULT_CANCELLED).isEqualTo(status);
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/DirectActionsTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_getMaxBundleSize"	"CtsVoiceInteractionTestCases"	"4: except or hotword that"	"public void testHotwordDetectedResult_getMaxBundleSize() throws Exception {
+        assertThat(HotwordDetectedResult.getMaxBundleSize() >= 0).isTrue();
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_totalSize"	"CtsVoiceInteractionTestCases"	"7: except or hotword that to audio detection"	"public void testHotwordDetectedResult_totalSize() throws Exception {
+        final int bitsForConfidenceLevel = Utils.bitCount(
+                HotwordDetectedResult.CONFIDENCE_LEVEL_VERY_HIGH);
+        final int bitsForHotwordOffsetMillis = Utils.bitCount(Utils.LIMIT_HOTWORD_OFFSET_MAX_VALUE);
+        final int bitsForHotwordDurationMillis = Utils.bitCount(
+                AudioRecord.getMaxSharedAudioHistoryMillis());
+        final int bitsForAudioChannel = Utils.bitCount(Utils.LIMIT_AUDIO_CHANNEL_MAX_VALUE);
+        final int bitsForHotwordDetectionPersonalized = 1;
+        final int bitsForScore = Utils.bitCount(HotwordDetectedResult.getMaxScore());
+        final int bitsForPersonalizedScore = Utils.bitCount(HotwordDetectedResult.getMaxScore());
+        final int bitsForHotwordPhraseId = Utils.bitCount(
+                HotwordDetectedResult.getMaxHotwordPhraseId());
+
+        final int totalSize =
+                bitsForConfidenceLevel + bitsForHotwordOffsetMillis + bitsForHotwordDurationMillis
+                        + bitsForAudioChannel + bitsForHotwordDetectionPersonalized + bitsForScore
+                        + bitsForPersonalizedScore + bitsForHotwordPhraseId
+                        + HotwordDetectedResult.getMaxBundleSize() * Byte.SIZE;
+
+        assertThat(totalSize <= Utils.MAX_HOTWORD_DETECTED_RESULT_SIZE * Byte.SIZE).isTrue();
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_bundleExceedMaxBundleSize"	"CtsVoiceInteractionTestCases"	"4: except or hotword to"	"public void testHotwordDetectedResult_bundleExceedMaxBundleSize() throws Exception {
+        final PersistableBundle persistableBundle = new PersistableBundle();
+        int key = 0;
+        do {
+            persistableBundle.putInt(Integer.toString(key), 0);
+            key++;
+        } while (Utils.getParcelableSize(persistableBundle)
+                <= HotwordDetectedResult.getMaxBundleSize());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setExtras(persistableBundle).build());
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_getMaxHotwordPhraseId"	"CtsVoiceInteractionTestCases"	"4: except or hotword that"	"public void testHotwordDetectedResult_getMaxHotwordPhraseId() throws Exception {
+        assertThat(HotwordDetectedResult.getMaxHotwordPhraseId() >= 63).isTrue();
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_setInvalidHotwordPhraseId"	"CtsVoiceInteractionTestCases"	"3: except or hotword"	"public void testHotwordDetectedResult_setInvalidHotwordPhraseId() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordPhraseId(-1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordPhraseId(
+                        HotwordDetectedResult.getMaxHotwordPhraseId() + 1).build());
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_getMaxScore"	"CtsVoiceInteractionTestCases"	"4: except or hotword that"	"public void testHotwordDetectedResult_getMaxScore() throws Exception {
+        assertThat(HotwordDetectedResult.getMaxScore() >= 255).isTrue();
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_setInvalidScore"	"CtsVoiceInteractionTestCases"	"3: except or hotword"	"public void testHotwordDetectedResult_setInvalidScore() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setScore(-1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setScore(
+                        HotwordDetectedResult.getMaxScore() + 1).build());
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_setInvalidPersonalizedScore"	"CtsVoiceInteractionTestCases"	"3: except or hotword"	"public void testHotwordDetectedResult_setInvalidPersonalizedScore() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setPersonalizedScore(-1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setPersonalizedScore(
+                        HotwordDetectedResult.getMaxScore() + 1).build());
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_setInvalidHotwordDurationMillis"	"CtsVoiceInteractionTestCases"	"5: except or hotword to audio"	"public void testHotwordDetectedResult_setInvalidHotwordDurationMillis() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordDurationMillis(-1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordDurationMillis(
+                        (int) AudioRecord.getMaxSharedAudioHistoryMillis() + 1).build());
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_setInvalidHotwordOffsetMillis"	"CtsVoiceInteractionTestCases"	"3: except or hotword"	"public void testHotwordDetectedResult_setInvalidHotwordOffsetMillis() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordOffsetMillis(
+                        HotwordDetectedResult.HOTWORD_OFFSET_UNSET - 1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setHotwordOffsetMillis(
+                        Utils.LIMIT_HOTWORD_OFFSET_MAX_VALUE + 1).build());
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResult_setInvalidAudioChannel"	"CtsVoiceInteractionTestCases"	"4: except or hotword audio"	"public void testHotwordDetectedResult_setInvalidAudioChannel() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setAudioChannel(
+                        HotwordDetectedResult.AUDIO_CHANNEL_UNSET - 1).build());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new HotwordDetectedResult.Builder().setAudioChannel(
+                        Utils.LIMIT_AUDIO_CHANNEL_MAX_VALUE + 1).build());
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResultBuilder"	"CtsVoiceInteractionTestCases"	"5: except or hotword audio detection"	"public void testHotwordDetectedResultBuilder() throws Exception {
+        final HotwordDetectedResult hotwordDetectedResult =
+                buildHotwordDetectedResult(
+                        HotwordDetectedResult.CONFIDENCE_LEVEL_LOW,
+                        MediaSyncEvent.createEvent(MediaSyncEvent.SYNC_EVENT_PRESENTATION_COMPLETE),
+                        /* hotwordOffsetMillis= */ 100,
+                        /* hotwordDurationMillis= */ 1000,
+                        /* audioChannel= */ 1,
+                        /* hotwordDetectionPersonalized= */ true,
+                        /* score= */ 100,
+                        /* personalizedScore= */ 100,
+                        /* hotwordPhraseId= */ 1,
+                        new PersistableBundle());
+
+        assertHotwordDetectedResult(hotwordDetectedResult);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectedResultTest"	"testHotwordDetectedResultParcelizeDeparcelize"	"CtsVoiceInteractionTestCases"	"9: except or from hotword data that to audio detection"	"public void testHotwordDetectedResultParcelizeDeparcelize() throws Exception {
+        final HotwordDetectedResult hotwordDetectedResult =
+                buildHotwordDetectedResult(
+                        HotwordDetectedResult.CONFIDENCE_LEVEL_LOW,
+                        MediaSyncEvent.createEvent(MediaSyncEvent.SYNC_EVENT_PRESENTATION_COMPLETE),
+                        /* hotwordOffsetMillis= */ 100,
+                        /* hotwordDurationMillis= */ 1000,
+                        /* audioChannel= */ 1,
+                        /* hotwordDetectionPersonalized= */ true,
+                        /* score= */ 100,
+                        /* personalizedScore= */ 100,
+                        /* hotwordPhraseId= */ 1,
+                        new PersistableBundle());
+
+        final Parcel p = Parcel.obtain();
+        hotwordDetectedResult.writeToParcel(p, 0);
+        p.setDataPosition(0);
+
+        final HotwordDetectedResult targetHotwordDetectedResult =
+                HotwordDetectedResult.CREATOR.createFromParcel(p);
+        p.recycle();
+
+        assertHotwordDetectedResult(targetHotwordDetectedResult);
+    }
+
+    private HotwordDetectedResult buildHotwordDetectedResult(
+            int confidenceLevel,
+            MediaSyncEvent mediaSyncEvent,
+            int hotwordOffsetMillis,
+            int hotwordDurationMillis,
+            int audioChannel,
+            boolean hotwordDetectionPersonalized,
+            int score,
+            int personalizedScore,
+            int hotwordPhraseId,
+            PersistableBundle extras) {
+        return new HotwordDetectedResult.Builder()
+                .setConfidenceLevel(confidenceLevel)
+                .setMediaSyncEvent(mediaSyncEvent)
+                .setHotwordOffsetMillis(hotwordOffsetMillis)
+                .setHotwordDurationMillis(hotwordDurationMillis)
+                .setAudioChannel(audioChannel)
+                .setHotwordDetectionPersonalized(hotwordDetectionPersonalized)
+                .setScore(score)
+                .setPersonalizedScore(personalizedScore)
+                .setHotwordPhraseId(hotwordPhraseId)
+                .setExtras(extras)
+                .build();
+    }
+
+    private void assertHotwordDetectedResult(HotwordDetectedResult hotwordDetectedResult) {
+        assertThat(hotwordDetectedResult.getConfidenceLevel()).isEqualTo(
+                HotwordDetectedResult.CONFIDENCE_LEVEL_LOW);
+        assertThat(hotwordDetectedResult.getMediaSyncEvent()).isNotNull();
+        assertThat(hotwordDetectedResult.getHotwordOffsetMillis()).isEqualTo(100);
+        assertThat(hotwordDetectedResult.getHotwordDurationMillis()).isEqualTo(1000);
+        assertThat(hotwordDetectedResult.getAudioChannel()).isEqualTo(1);
+        assertThat(hotwordDetectedResult.isHotwordDetectionPersonalized()).isTrue();
+        assertThat(hotwordDetectedResult.getScore()).isEqualTo(100);
+        assertThat(hotwordDetectedResult.getPersonalizedScore()).isEqualTo(100);
+        assertThat(hotwordDetectedResult.getHotwordPhraseId()).isEqualTo(1);
+        assertThat(hotwordDetectedResult.getExtras()).isNotNull();
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectedResultTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testVoiceInteractionService_withoutManageHotwordDetectionPermission_triggerFailure"	"CtsVoiceInteractionTestCases"	"4: except or hotword detection"	"public void testVoiceInteractionService_withoutManageHotwordDetectionPermission_triggerFailure()
+            throws Throwable {
+        testHotwordDetection(Utils.VIS_WITHOUT_MANAGE_HOTWORD_DETECTION_PERMISSION_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SECURITY_EXCEPTION);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testVoiceInteractionService_holdBindHotwordDetectionPermission_triggerFailure"	"CtsVoiceInteractionTestCases"	"4: except or hotword detection"	"public void testVoiceInteractionService_holdBindHotwordDetectionPermission_triggerFailure()
+            throws Throwable {
+        testHotwordDetection(Utils.VIS_HOLD_BIND_HOTWORD_DETECTION_PERMISSION_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SECURITY_EXCEPTION);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_processDied_triggerOnError"	"CtsVoiceInteractionTestCases"	"9: except be or the hotword that to audio detection"	"public void testHotwordDetectionService_processDied_triggerOnError()
+            throws Throwable {
+        // Create AlwaysOnHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        // Use AlwaysOnHotwordDetector to test process died of HotwordDetectionService
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_PROCESS_DIED_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_GET_ERROR);
+    }
+
+    private void testHotwordDetection(int testType, String expectedIntent, int expectedResult) {
+        final BlockingBroadcastReceiver receiver = new BlockingBroadcastReceiver(mContext,
+                expectedIntent);
+        receiver.register();
+        perform(testType);
+        final Intent intent = receiver.awaitForBroadcast(TIMEOUT_MS);
+        receiver.unregisterQuietly();
+
+        assertThat(intent).isNotNull();
+        assertThat(intent.getIntExtra(Utils.KEY_TEST_RESULT, -1)).isEqualTo(expectedResult);
+    }
+
+    @NonNull
+    private Parcelable performAndGetDetectionResult(int testType) {
+        final BlockingBroadcastReceiver receiver = new BlockingBroadcastReceiver(mContext,
+                Utils.HOTWORD_DETECTION_SERVICE_ONDETECT_RESULT_INTENT);
+        receiver.register();
+        perform(testType);
+        final Intent intent = receiver.awaitForBroadcast(TIMEOUT_MS);
+        receiver.unregisterQuietly();
+
+        assertThat(intent).isNotNull();
+        final Parcelable result = intent.getParcelableExtra(Utils.KEY_TEST_RESULT);
+        assertThat(result).isNotNull();
+        return result;
+    }
+
+    private void perform(int testType) {
+        mActivityTestRule.getScenario().onActivity(
+                activity -> activity.triggerHotwordDetectionServiceTest(
+                        Utils.HOTWORD_DETECTION_SERVICE_BASIC, testType));
+    }
+
+    // TODO: Implement HotwordDetectedResult#equals to override the Bundle equality check; then
+    // simply check that the HotwordDetectedResults are equal.
+    private void verifyDetectedResult(Parcelable result, HotwordDetectedResult expected) {
+        assertThat(result).isInstanceOf(EventPayloadParcelable.class);
+        HotwordDetectedResult hotwordDetectedResult =
+                ((EventPayloadParcelable) result).mHotwordDetectedResult;
+        ParcelFileDescriptor audioStream = ((EventPayloadParcelable) result).mAudioStream;
+        assertThat(hotwordDetectedResult).isNotNull();
+        assertThat(hotwordDetectedResult.getAudioChannel()).isEqualTo(
+                expected.getAudioChannel());
+        assertThat(hotwordDetectedResult.getConfidenceLevel()).isEqualTo(
+                expected.getConfidenceLevel());
+        assertThat(hotwordDetectedResult.isHotwordDetectionPersonalized()).isEqualTo(
+                expected.isHotwordDetectionPersonalized());
+        assertThat(hotwordDetectedResult.getHotwordDurationMillis()).isEqualTo(
+                expected.getHotwordDurationMillis());
+        assertThat(hotwordDetectedResult.getHotwordOffsetMillis()).isEqualTo(
+                expected.getHotwordOffsetMillis());
+        assertThat(hotwordDetectedResult.getHotwordPhraseId()).isEqualTo(
+                expected.getHotwordPhraseId());
+        assertThat(hotwordDetectedResult.getPersonalizedScore()).isEqualTo(
+                expected.getPersonalizedScore());
+        assertThat(hotwordDetectedResult.getScore()).isEqualTo(expected.getScore());
+        assertThat(audioStream).isNull();
+    }
+
+    private void verifyMicrophoneChip(boolean shouldBePresent) throws Exception {
+        if (sPkgMgr.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+            // TODO ntmyren: test TV indicator
+        } else if (sPkgMgr.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
+            // TODO ntmyren: test Auto indicator
+        } else {
+            verifyMicrophoneChipHandheld(shouldBePresent);
+        }
+    }
+
+    private void verifyMicrophoneChipHandheld(boolean shouldBePresent) throws Exception {
+        // If the change Id is not present, then isChangeEnabled will return true. To bypass this,
+        // the change is set to ""false"" if present.
+        if (SystemUtil.callWithShellPermissionIdentity(() -> CompatChanges.isChangeEnabled(
+                PERMISSION_INDICATORS_NOT_PRESENT, Process.SYSTEM_UID))) {
+            return;
+        }
+        // Ensure the privacy chip is present (or not)
+        final boolean chipFound = sUiDevice.wait(Until.hasObject(
+                By.res(PRIVACY_CHIP_PKG, PRIVACY_CHIP_ID)), CLEAR_CHIP_MS) == true;
+        assertEquals(""chip display state"", shouldBePresent, chipFound);
+    }
+
+    @Override
+    public String getVoiceInteractionService() {
+        return ""android.voiceinteraction.cts/""
+                + ""android.voiceinteraction.service.BasicVoiceInteractionService"";
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_onStopDetection"	"CtsVoiceInteractionTestCases"	"7: can or from the hotword to detection"	"@RequiresDevice
+    public void testHotwordDetectionService_onStopDetection()
+            throws Throwable {
+        // Create SoftwareHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        // The HotwordDetectionService can't report any result after recognition is stopped. So
+        // restart it after stopping; then the service can report a special result.
+        perform(Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST);
+        perform(Utils.HOTWORD_DETECTION_SERVICE_CALL_STOP_RECOGNITION);
+        EventPayloadParcelable result =
+                (EventPayloadParcelable) performAndGetDetectionResult(
+                        Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST);
+
+        verifyDetectedResult(
+                result, MainHotwordDetectionService.DETECTED_RESULT_AFTER_STOP_DETECTION);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_getMaxCustomInitializationStatus"	"CtsVoiceInteractionTestCases"	"5: or hotword that to detection"	"public void testHotwordDetectionService_getMaxCustomInitializationStatus()
+            throws Throwable {
+        assertThat(HotwordDetectionService.getMaxCustomInitializationStatus()).isEqualTo(2);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_validHotwordDetectionComponentName_triggerSuccess"	"CtsVoiceInteractionTestCases"	"3: or hotword detection"	"public void testHotwordDetectionService_validHotwordDetectionComponentName_triggerSuccess()
+            throws Throwable {
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_onDetectFromDsp_success"	"CtsVoiceInteractionTestCases"	"6: or from the hotword to detection"	"@RequiresDevice
+    public void testHotwordDetectionService_onDetectFromDsp_success()
+            throws Throwable {
+        Thread.sleep(CLEAR_CHIP_MS);
+        // Create AlwaysOnHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        verifyDetectedResult(
+                performAndGetDetectionResult(Utils.HOTWORD_DETECTION_SERVICE_DSP_ONDETECT_TEST),
+                MainHotwordDetectionService.DETECTED_RESULT);
+        verifyMicrophoneChip(true);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_onDetectFromDsp_rejection"	"CtsVoiceInteractionTestCases"	"7: or from the hotword that to detection"	"@RequiresDevice
+    public void testHotwordDetectionService_onDetectFromDsp_rejection()
+            throws Throwable {
+        Thread.sleep(CLEAR_CHIP_MS);
+        // Create AlwaysOnHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        assertThat(performAndGetDetectionResult(Utils.HOTWORD_DETECTION_SERVICE_DSP_ONREJECT_TEST))
+                .isEqualTo(MainHotwordDetectionService.REJECTED_RESULT);
+        verifyMicrophoneChip(false);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_onDetectFromExternalSource_success"	"CtsVoiceInteractionTestCases"	"6: or from the hotword to detection"	"public void testHotwordDetectionService_onDetectFromExternalSource_success()
+            throws Throwable {
+        Thread.sleep(CLEAR_CHIP_MS);
+        // Create AlwaysOnHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        verifyDetectedResult(
+                performAndGetDetectionResult(
+                        Utils.HOTWORD_DETECTION_SERVICE_EXTERNAL_SOURCE_ONDETECT_TEST),
+                MainHotwordDetectionService.DETECTED_RESULT);
+        verifyMicrophoneChip(true);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_onDetectFromMic_success"	"CtsVoiceInteractionTestCases"	"6: or from the hotword to detection"	"@RequiresDevice
+    public void testHotwordDetectionService_onDetectFromMic_success()
+            throws Throwable {
+        Thread.sleep(CLEAR_CHIP_MS);
+        // Create SoftwareHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        verifyDetectedResult(
+                performAndGetDetectionResult(Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST),
+                MainHotwordDetectionService.DETECTED_RESULT);
+        verifyMicrophoneChip(true);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_concurrentCapture"	"CtsVoiceInteractionTestCases"	"8: or from the hotword that to audio detection"	"@RequiresDevice
+    public void testHotwordDetectionService_concurrentCapture() throws Throwable {
+        // Create SoftwareHotwordDetector and wait the HotwordDetectionService ready
+        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            AudioRecord record =
+                    new AudioRecord.Builder()
+                            .setAudioAttributes(
+                                    new AudioAttributes.Builder()
+                                            .setInternalCapturePreset(MediaRecorder.AudioSource.MIC)
+                                            .build())
+                            .setAudioFormat(
+                                    new AudioFormat.Builder()
+                                            .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                            .build())
+                            .setBufferSizeInBytes(10240) // something large enough to not fail
+                            .build();
+            assertThat(record.getState()).isEqualTo(AudioRecord.STATE_INITIALIZED);
+
+            try {
+                record.startRecording();
+                verifyDetectedResult(
+                        performAndGetDetectionResult(
+                                Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST),
+                        MainHotwordDetectionService.DETECTED_RESULT);
+                // TODO: Test that it still works after restarting the process or killing audio
+                //  server.
+            } finally {
+                record.release();
+            }
+        });
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest"	"testHotwordDetectionService_onDetect_fromDsp"	"CtsVoiceInteractionTestCases"	"6: except or from hotword to detection"	"public void testHotwordDetectionService_onDetect_fromDsp()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(
+                        mock(AlwaysOnHotwordDetector.EventPayload.class),
+                        /* timeoutMillis= */ 1000,
+                        /* callback= */ null));
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest"	"testHotwordDetectionService_onDetect_fromExternalSource"	"CtsVoiceInteractionTestCases"	"7: except or from hotword to audio detection"	"public void testHotwordDetectionService_onDetect_fromExternalSource()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(
+                        mock(ParcelFileDescriptor.class),
+                        new AudioFormat.Builder().build(),
+                        /* options= */ null,
+                        /* callback= */ null));
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceDefaultMethodTest"	"testHotwordDetectionService_onDetect_fromMic"	"CtsVoiceInteractionTestCases"	"5: except or from hotword detection"	"public void testHotwordDetectionService_onDetect_fromMic()
+            throws Throwable {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new NoOpHotwordDetectionService().onDetect(/* callback= */ null));
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceDefaultMethodTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.common.Utils"	"isVirtualDevice"	""	"11: except can be or from the hotword data to audio detection"	"public void test/*
+ *.
+ */
+package android.voiceinteraction.common;
+
+import android.app.VoiceInteractor.PickOptionRequest.Option;
+import android.content.LocusId;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Log;
+
+import com.android.compatibility.common.util.PropertyUtil;
+
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+
+public class Utils {
+    public enum TestCaseType {
+        COMPLETION_REQUEST_TEST,
+        COMPLETION_REQUEST_CANCEL_TEST,
+        CONFIRMATION_REQUEST_TEST,
+        CONFIRMATION_REQUEST_CANCEL_TEST,
+        ABORT_REQUEST_TEST,
+        ABORT_REQUEST_CANCEL_TEST,
+        PICKOPTION_REQUEST_TEST,
+        PICKOPTION_REQUEST_CANCEL_TEST,
+        COMMANDREQUEST_TEST,
+        COMMANDREQUEST_CANCEL_TEST,
+        SUPPORTS_COMMANDS_TEST
+    }
+
+    private static final String TAG = Utils.class.getSimpleName();
+
+    public static final long OPERATION_TIMEOUT_MS = 5000;
+
+    /** CDD restricts the max size of each successful hotword result is 100 bytes. */
+    public static final int MAX_HOTWORD_DETECTED_RESULT_SIZE = 100;
+
+    /**
+     * Limits the max value for the hotword offset.
+     *
+     * Note: Must match the definition in
+     * frameworks/base/core/java/android/service/voice/HotwordDetectedResult.java.
+     */
+    public static final int LIMIT_HOTWORD_OFFSET_MAX_VALUE = 60 * 60 * 1000; // 1 hour
+
+    /**
+     * Limits the max value for the triggered audio channel.
+     *
+     * Note: Must match the definition in
+     * frameworks/base/core/java/android/service/voice/HotwordDetectedResult.java.
+     */
+    public static final int LIMIT_AUDIO_CHANNEL_MAX_VALUE = 63;
+
+    /** Decide which VoiceInteractionService should be started for testing. */
+    public static final int HOTWORD_DETECTION_SERVICE_NONE = 0;
+    public static final int HOTWORD_DETECTION_SERVICE_BASIC = 1;
+    public static final int HOTWORD_DETECTION_SERVICE_INVALIDATION = 2;
+    public static final int HOTWORD_DETECTION_SERVICE_WITHOUT_ISOLATED_PROCESS = 3;
+    public static final int HOTWORD_DETECTION_SERVICE_WITHIN_ISOLATED_PROCESS = 4;
+
+    /**
+     * Indicate which test event for testing.
+     *
+     * Note: The VIS is the abbreviation of VoiceInteractionService
+     */
+    public static final int VIS_NORMAL_TEST = 0;
+    public static final int VIS_WITHOUT_MANAGE_HOTWORD_DETECTION_PERMISSION_TEST = 1;
+    public static final int VIS_HOLD_BIND_HOTWORD_DETECTION_PERMISSION_TEST = 2;
+
+    public static final int HOTWORD_DETECTION_SERVICE_TRIGGER_TEST = 100;
+    public static final int HOTWORD_DETECTION_SERVICE_DSP_ONDETECT_TEST = 101;
+    public static final int HOTWORD_DETECTION_SERVICE_EXTERNAL_SOURCE_ONDETECT_TEST = 102;
+    public static final int HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST = 103;
+    public static final int HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST = 104;
+    public static final int HOTWORD_DETECTION_SERVICE_DSP_ONREJECT_TEST = 105;
+    public static final int HOTWORD_DETECTION_SERVICE_PROCESS_DIED_TEST = 106;
+    public static final int HOTWORD_DETECTION_SERVICE_CALL_STOP_RECOGNITION = 107;
+
+    public static final int HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS = 1;
+    public static final int HOTWORD_DETECTION_SERVICE_TRIGGER_ILLEGAL_STATE_EXCEPTION = 2;
+    public static final int HOTWORD_DETECTION_SERVICE_TRIGGER_SECURITY_EXCEPTION = 3;
+    public static final int HOTWORD_DETECTION_SERVICE_TRIGGER_SHARED_MEMORY_NOT_READ_ONLY = 4;
+    public static final int HOTWORD_DETECTION_SERVICE_GET_ERROR = 5;
+
+    /** Indicate which test scenario for testing. */
+    public static final int HOTWORD_DETECTION_SERVICE_ON_UPDATE_STATE_CRASH = 1;
+
+    public static final String TESTCASE_TYPE = ""testcase_type"";
+    public static final String TESTINFO = ""testinfo"";
+    public static final String BROADCAST_INTENT = ""android.intent.action.VOICE_TESTAPP"";
+    public static final String TEST_PROMPT = ""testprompt"";
+    public static final String PICKOPTON_1 = ""one"";
+    public static final String PICKOPTON_2 = ""two"";
+    public static final String PICKOPTON_3 = ""3"";
+    public static final String TEST_COMMAND = ""test_command"";
+    public static final String TEST_ONCOMMAND_RESULT = ""test_oncommand_result"";
+    public static final String TEST_ONCOMMAND_RESULT_VALUE = ""test_oncommand_result value"";
+
+    public static final String CONFIRMATION_REQUEST_SUCCESS = ""confirmation ok"";
+    public static final String COMPLETION_REQUEST_SUCCESS = ""completion ok"";
+    public static final String ABORT_REQUEST_SUCCESS = ""abort ok"";
+    public static final String PICKOPTION_REQUEST_SUCCESS = ""pickoption ok"";
+    public static final String COMMANDREQUEST_SUCCESS = ""commandrequest ok"";
+    public static final String SUPPORTS_COMMANDS_SUCCESS = ""supportsCommands ok"";
+
+    public static final String CONFIRMATION_REQUEST_CANCEL_SUCCESS = ""confirm cancel ok"";
+    public static final String COMPLETION_REQUEST_CANCEL_SUCCESS = ""completion canel ok"";
+    public static final String ABORT_REQUEST_CANCEL_SUCCESS = ""abort cancel ok"";
+    public static final String PICKOPTION_REQUEST_CANCEL_SUCCESS = ""pickoption  cancel ok"";
+    public static final String COMMANDREQUEST_CANCEL_SUCCESS = ""commandrequest cancel ok"";
+    public static final String TEST_ERROR = ""Error In Test:"";
+
+    public static final String PRIVATE_OPTIONS_KEY = ""private_key"";
+    public static final String PRIVATE_OPTIONS_VALUE = ""private_value"";
+
+    public static final String DIRECT_ACTION_EXTRA_KEY = ""directActionExtraKey"";
+    public static final String DIRECT_ACTION_EXTRA_VALUE = ""directActionExtraValue"";
+    public static final String DIRECT_ACTION_FILE_NAME = ""directActionFileName"";
+    public static final String DIRECT_ACTION_FILE_CONTENT = ""directActionFileContent"";
+    public static final String DIRECT_ACTION_AUTHORITY =
+            ""android.voiceinteraction.testapp.fileprovider"";
+
+    public static final String DIRECT_ACTIONS_KEY_CALLBACK = ""callback"";
+    public static final String DIRECT_ACTIONS_KEY_CANCEL_CALLBACK = ""cancelCallback"";
+    public static final String DIRECT_ACTIONS_KEY_CONTROL = ""control"";
+    public static final String DIRECT_ACTIONS_KEY_COMMAND = ""command"";
+    public static final String DIRECT_ACTIONS_KEY_RESULT = ""result"";
+    public static final String DIRECT_ACTIONS_KEY_ACTION = ""action"";
+    public static final String DIRECT_ACTIONS_KEY_ARGUMENTS = ""arguments"";
+    public static final String DIRECT_ACTIONS_KEY_CLASS = ""class"";
+
+    public static final String DIRECT_ACTIONS_SESSION_CMD_PERFORM_ACTION = ""performAction"";
+    public static final String DIRECT_ACTIONS_SESSION_CMD_PERFORM_ACTION_CANCEL =
+            ""performActionCancel"";
+    public static final String DIRECT_ACTIONS_SESSION_CMD_DETECT_ACTIONS_CHANGED =
+            ""detectActionsChanged"";
+    public static final String DIRECT_ACTIONS_SESSION_CMD_GET_ACTIONS = ""getActions"";
+    public static final String DIRECT_ACTIONS_SESSION_CMD_FINISH = ""hide"";
+
+    public static final String DIRECT_ACTIONS_ACTIVITY_CMD_DESTROYED_INTERACTOR =
+            ""destroyedInteractor"";
+    public static final String DIRECT_ACTIONS_ACTIVITY_CMD_FINISH = ""finish"";
+    public static final String DIRECT_ACTIONS_ACTIVITY_CMD_INVALIDATE_ACTIONS = ""invalidateActions"";
+
+    public static final String DIRECT_ACTIONS_RESULT_PERFORMED = ""performed"";
+    public static final String DIRECT_ACTIONS_RESULT_CANCELLED = ""cancelled"";
+    public static final String DIRECT_ACTIONS_RESULT_EXECUTING = ""executing"";
+
+    public static final String DIRECT_ACTIONS_ACTION_ID = ""actionId"";
+    public static final Bundle DIRECT_ACTIONS_ACTION_EXTRAS = new Bundle();
+    static {
+        DIRECT_ACTIONS_ACTION_EXTRAS.putString(DIRECT_ACTION_EXTRA_KEY,
+                DIRECT_ACTION_EXTRA_VALUE);
+    }
+    public static final LocusId DIRECT_ACTIONS_LOCUS_ID = new LocusId(""locusId"");
+
+    public static final String SERVICE_NAME =
+            ""android.voiceinteraction.service/.MainInteractionService"";
+
+    public static final String HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT =
+            ""android.intent.action.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT"";
+    public static final String HOTWORD_DETECTION_SERVICE_ONDETECT_RESULT_INTENT =
+            ""android.intent.action.HOTWORD_DETECTION_SERVICE_ONDETECT_RESULT"";
+    public static final String KEY_SERVICE_TYPE = ""serviceType"";
+    public static final String KEY_TEST_EVENT = ""testEvent"";
+    public static final String KEY_TEST_RESULT = ""testResult"";
+    public static final String KEY_TEST_SCENARIO = ""testScenario"";
+
+    public static final String toBundleString(Bundle bundle) {
+        if (bundle == null) {
+            return ""null_bundle"";
+        }
+        StringBuffer buf = new StringBuffer(""Bundle[ "");
+        String testType = bundle.getString(TESTCASE_TYPE);
+        boolean empty = true;
+        if (testType != null) {
+            empty = false;
+            buf.append(""testcase type = "" + testType);
+        }
+        ArrayList<String> info = bundle.getStringArrayList(TESTINFO);
+        if (info != null) {
+            for (String s : info) {
+                empty = false;
+                buf.append(s + ""\n\t\t"");
+            }
+        } else {
+            for (String key : bundle.keySet()) {
+                empty = false;
+                Object value = bundle.get(key);
+                if (value instanceof Bundle) {
+                    value = toBundleString((Bundle) value);
+                }
+                buf.append(key).append('=').append(value).append(' ');
+            }
+        }
+        return empty ? ""empty_bundle"" : buf.append(']').toString();
+    }
+
+    public static final String toOptionsString(Option[] options) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(""{"");
+        for (int i = 0; i < options.length; i++) {
+            if (i >= 1) {
+                sb.append("", "");
+            }
+            sb.append(options[i].getLabel());
+        }
+        sb.append(""}"");
+        return sb.toString();
+    }
+
+    public static final void addErrorResult(final Bundle testinfo, final String msg) {
+        testinfo.getStringArrayList(testinfo.getString(Utils.TESTCASE_TYPE))
+            .add(TEST_ERROR + "" "" + msg);
+    }
+
+    public static boolean await(CountDownLatch latch) {
+        try {
+            if (latch.await(OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) return true;
+            Log.e(TAG, ""latch timed out"");
+        } catch (InterruptedException e) {
+            /* ignore */
+            Log.e(TAG, ""Interrupted"", e);
+        }
+        return false;
+    }
+
+    public static boolean await(Condition condition) {
+        try {
+            if (condition.await(OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) return true;
+            Log.e(TAG, ""condition timed out"");
+        } catch (InterruptedException e) {
+            /* ignore */
+            Log.e(TAG, ""Interrupted"", e);
+        }
+        return false;
+    }
+
+    public static int getParcelableSize(Parcelable parcelable) {
+        final Parcel p = Parcel.obtain();
+        parcelable.writeToParcel(p, 0);
+        p.setDataPosition(0);
+        final int size = p.dataSize();
+        p.recycle();
+        return size;
+    }
+
+    public static int bitCount(long value) {
+        int bits = 0;
+        while (value > 0) {
+            bits++;
+            value = value >> 1;
+        }
+        return bits;
+    }
+
+    public static boolean isVirtualDevice() {
+        final String property = PropertyUtil.getProperty(""ro.hardware.virtual_device"");
+        Log.v(TAG, ""virtual device property="" + property);
+        return Objects.equals(property, ""1"");
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/common/src/android/voiceinteraction/common/Utils.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.testapp.DirectActionsActivity"	"emptyList"	""	"7: except can be or the that to"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.testapp;
+
+import android.app.Activity;
+import android.app.DirectAction;
+import android.app.VoiceInteractor;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.CancellationSignal;
+import android.os.RemoteCallback;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+
+import androidx.annotation.NonNull;
+
+import com.android.compatibility.common.util.PollingCheck;
+
+import com.google.common.truth.Truth;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+
+/**
+ * Activity to test direct action behaviors.
+ */
+public final class DirectActionsActivity extends Activity {
+
+    private static final String TAG = DirectActionsActivity.class.getSimpleName();
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final Intent intent = getIntent();
+        Log.v(TAG, ""onResume: "" + intent);
+        final Bundle args = intent.getExtras();
+        final RemoteCallback callBack = args.getParcelable(Utils.DIRECT_ACTIONS_KEY_CALLBACK);
+
+        final RemoteCallback control = new RemoteCallback((cmdArgs) -> {
+            final String command = cmdArgs.getString(Utils.DIRECT_ACTIONS_KEY_COMMAND);
+            Log.v(TAG, ""on remote callback: command="" + command);
+            switch (command) {
+                case Utils.DIRECT_ACTIONS_ACTIVITY_CMD_DESTROYED_INTERACTOR: {
+                    final RemoteCallback commandCallback = cmdArgs.getParcelable(
+                            Utils.DIRECT_ACTIONS_KEY_CALLBACK);
+                    detectDestroyedInteractor(commandCallback);
+                } break;
+                case Utils.DIRECT_ACTIONS_ACTIVITY_CMD_FINISH: {
+                    final RemoteCallback commandCallback = cmdArgs.getParcelable(
+                            Utils.DIRECT_ACTIONS_KEY_CALLBACK);
+                    doFinish(commandCallback);
+                } break;
+                case Utils.DIRECT_ACTIONS_ACTIVITY_CMD_INVALIDATE_ACTIONS: {
+                    final RemoteCallback commandCallback = cmdArgs.getParcelable(
+                            Utils.DIRECT_ACTIONS_KEY_CALLBACK);
+                    invalidateDirectActions(commandCallback);
+                } break;
+            }
+        });
+
+        final Bundle result = new Bundle();
+        result.putParcelable(Utils.DIRECT_ACTIONS_KEY_CONTROL, control);
+        Log.v(TAG, ""onResume(): result="" + Utils.toBundleString(result));
+        callBack.sendResult(result);
+    }
+
+    @Override
+    public void onGetDirectActions(@NonNull CancellationSignal cancellationSignal,
+            @NonNull Consumer<List<DirectAction>> callback) {
+        if (getVoiceInteractor() == null) {
+            Log.e(TAG, ""onGetDirectActions(): no voice interactor"");
+            callback.accept(Collections.emptyList());
+            return;
+        }
+        Log.v(TAG, ""onGetDirectActions()"");
+        final DirectAction action = new DirectAction.Builder(Utils.DIRECT_ACTIONS_ACTION_ID)
+                .setExtras(Utils.DIRECT_ACTIONS_ACTION_EXTRAS)
+                .setLocusId(Utils.DIRECT_ACTIONS_LOCUS_ID)
+                .build();
+
+        final ArrayList<DirectAction> actions = new ArrayList<>();
+        actions.add(action);
+        callback.accept(actions);
+    }
+
+    @Override
+    public void onPerformDirectAction(String actionId, Bundle arguments,
+            CancellationSignal cancellationSignal, Consumer<Bundle> callback) {
+        Log.v(TAG, ""onPerformDirectAction(): "" + Utils.toBundleString(arguments));
+        if (arguments == null || !arguments.getString(Utils.DIRECT_ACTIONS_KEY_ARGUMENTS)
+                .equals(Utils.DIRECT_ACTIONS_KEY_ARGUMENTS)) {
+            reportActionFailed(callback);
+            return;
+        }
+        final RemoteCallback cancelCallback = arguments.getParcelable(
+                Utils.DIRECT_ACTIONS_KEY_CANCEL_CALLBACK);
+        if (cancelCallback != null) {
+            cancellationSignal.setOnCancelListener(() -> reportActionCancelled(
+                    cancelCallback::sendResult));
+            reportActionExecuting(callback);
+        } else {
+            reportActionPerformed(callback);
+        }
+    }
+
+    private void detectDestroyedInteractor(@NonNull RemoteCallback callback) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final VoiceInteractor interactor = getVoiceInteractor();
+        interactor.registerOnDestroyedCallback(AsyncTask.THREAD_POOL_EXECUTOR, latch::countDown);
+        Utils.await(latch);
+
+        try {
+            // Check that the interactor is properly marked destroyed. Polls the values since
+            // there's no synchronization between destroy() and these methods.
+            long pollingTimeoutMs = 3000;
+            PollingCheck.check(
+                    ""onDestroyedCallback called but interactor isn't destroyed"",
+                    pollingTimeoutMs,
+                    interactor::isDestroyed);
+            PollingCheck.check(
+                    ""onDestroyedCallback called but activity still has an interactor"",
+                    pollingTimeoutMs,
+                    () -> getVoiceInteractor() == null);
+        } catch (Exception e) {
+            Truth.assertWithMessage(""Unexpected exception: "" + e).fail();
+        }
+
+        final Bundle result = new Bundle();
+        result.putBoolean(Utils.DIRECT_ACTIONS_KEY_RESULT, true);
+        Log.v(TAG, ""detectDestroyedInteractor(): "" + Utils.toBundleString(result));
+        callback.sendResult(result);
+    }
+
+    private void invalidateDirectActions(@NonNull RemoteCallback callback) {
+        getVoiceInteractor().notifyDirectActionsChanged();
+        final Bundle result = new Bundle();
+        result.putBoolean(Utils.DIRECT_ACTIONS_KEY_RESULT, true);
+        Log.v(TAG, ""invalidateDirectActions(): "" + Utils.toBundleString(result));
+        callback.sendResult(result);
+    }
+
+    private void doFinish(@NonNull RemoteCallback callback) {
+        finish();
+        final Bundle result = new Bundle();
+        result.putBoolean(Utils.DIRECT_ACTIONS_KEY_RESULT, true);
+        Log.v(TAG, ""doFinish(): "" + Utils.toBundleString(result));
+        callback.sendResult(result);
+    }
+
+    private static void reportActionPerformed(Consumer<Bundle> callback) {
+        final Bundle result = new Bundle();
+        result.putString(Utils.DIRECT_ACTIONS_KEY_RESULT,
+                Utils.DIRECT_ACTIONS_RESULT_PERFORMED);
+        Log.v(TAG, ""reportActionPerformed(): "" + Utils.toBundleString(result));
+        callback.accept(result);
+    }
+
+    private static void reportActionCancelled(Consumer<Bundle> callback) {
+        final Bundle result = new Bundle();
+        result.putString(Utils.DIRECT_ACTIONS_KEY_RESULT,
+                Utils.DIRECT_ACTIONS_RESULT_CANCELLED);
+        Log.v(TAG, ""reportActionCancelled(): "" + Utils.toBundleString(result));
+        callback.accept(result);
+    }
+
+    private static void reportActionExecuting(Consumer<Bundle> callback) {
+        final Bundle result = new Bundle();
+        result.putString(Utils.DIRECT_ACTIONS_KEY_RESULT,
+                Utils.DIRECT_ACTIONS_RESULT_EXECUTING);
+        Log.v(TAG, ""reportActionExecuting(): "" + Utils.toBundleString(result));
+        callback.accept(result);
+    }
+
+    private static void reportActionFailed(Consumer<Bundle> callback) {
+        Log.v(TAG, ""reportActionFailed()"");
+        callback.accept( new Bundle());
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/testapp/src/android/voiceinteraction/testapp/DirectActionsActivity.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.service.MainInteractionSession"	"hasShortcutHostPermission"	""	"10: except can be or from the transmit used that to"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.service;
+
+import android.app.VoiceInteractor;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.LauncherApps;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.service.voice.VoiceInteractionSession;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainInteractionSession extends VoiceInteractionSession {
+    static final String TAG = ""MainInteractionSession"";
+
+    Intent mStartIntent;
+    List<MyTask> mUsedTasks = new ArrayList<MyTask>();
+
+    MainInteractionSession(Context context) {
+        super(context);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Intent sessionStarted = new Intent();
+        sessionStarted.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        if (!getContext().getSystemService(LauncherApps.class).hasShortcutHostPermission()) {
+            sessionStarted.putExtra(""error"", ""Does not have shortcut permission"");
+        }
+        sessionStarted.setClassName(""android.voiceinteraction.cts"",
+                ""android.voiceinteraction.cts.VoiceInteractionTestReceiver"");
+        Log.i(TAG, ""onCreate(): broadcast intent="" + sessionStarted);
+        getContext().sendBroadcast(sessionStarted);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, ""Canceling the Asynctask in onDestroy()"");
+        for (MyTask t : mUsedTasks) {
+            t.cancel(true);
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onShow(Bundle args, int showFlags) {
+        if (args == null) {
+            Log.e(TAG, ""onshow() received null args"");
+            return;
+        }
+        mStartIntent = args.getParcelable(""intent"");
+        if (mStartIntent != null) {
+            startVoiceActivity(mStartIntent);
+        } else if ((showFlags & SHOW_SOURCE_ACTIVITY) == SHOW_SOURCE_ACTIVITY) {
+            // Verify args
+            if (args == null
+                    || !Utils.PRIVATE_OPTIONS_VALUE.equals(
+                            args.getString(Utils.PRIVATE_OPTIONS_KEY))) {
+                throw new IllegalArgumentException(""Incorrect arguments for SHOW_SOURCE_ACTIVITY"");
+            }
+        }
+    }
+
+    void assertPromptFromTestApp(CharSequence prompt, Bundle extras) {
+        String str = prompt.toString();
+        if (str.equals(Utils.TEST_PROMPT)) {
+            Log.i(TAG, ""prompt received ok from TestApp in Session"");
+        } else {
+            Utils.addErrorResult(extras, ""Invalid prompt received: "" + str);
+        }
+    }
+
+    synchronized MyTask newTask() {
+        MyTask t = new MyTask();
+        mUsedTasks.add(t);
+        return t;
+    }
+
+    @Override
+    public boolean[] onGetSupportedCommands(String[] commands) {
+        boolean[] results = new boolean[commands.length];
+        Log.i(TAG, ""in onGetSupportedCommands"");
+        for (int idx = 0; idx < commands.length; idx++) {
+            results[idx] = Utils.TEST_COMMAND.equals(commands[idx]);
+            Log.i(TAG, ""command "" + commands[idx] + "", support = "" + results[idx]);
+        }
+        return results;
+    }
+
+    @Override
+    public void onRequestConfirmation(ConfirmationRequest request) {
+        Bundle extras = request.getExtras();
+        CharSequence prompt = request.getVoicePrompt().getVoicePromptAt(0);
+        Log.i(TAG, ""in Session onRequestConfirmation recvd. prompt="" + prompt +
+                "", extras="" + Utils.toBundleString(extras));
+        assertPromptFromTestApp(prompt, extras);
+        AsyncTaskArg asyncTaskArg = new AsyncTaskArg().setRequest(request).setExtras(extras);
+        if (isTestTypeCancel(extras)) {
+            Log.i(TAG, ""Sending Cancel."");
+            newTask().execute(
+                    asyncTaskArg.setTestType(Utils.TestCaseType.CONFIRMATION_REQUEST_CANCEL_TEST));
+        } else {
+            Log.i(TAG, ""in Session sending sendConfirmationResult. "" +
+                    Utils.toBundleString(extras));
+            newTask().execute(
+                    asyncTaskArg.setTestType(Utils.TestCaseType.CONFIRMATION_REQUEST_TEST));
+        }
+    }
+
+    @Override
+    public void onRequestCompleteVoice(CompleteVoiceRequest request) {
+        Bundle extras = request.getExtras();
+        CharSequence prompt = request.getVoicePrompt().getVoicePromptAt(0);
+        Log.i(TAG, ""in Session onRequestCompleteVoice recvd. message="" +
+                prompt + "", extras="" + Utils.toBundleString(extras));
+        assertPromptFromTestApp(prompt, extras);
+        AsyncTaskArg asyncTaskArg = new AsyncTaskArg().setRequest(request).setExtras(extras);
+        if (isTestTypeCancel(extras)) {
+            Log.i(TAG, ""Sending Cancel."");
+            newTask().execute(
+                    asyncTaskArg.setTestType(Utils.TestCaseType.COMPLETION_REQUEST_CANCEL_TEST));
+        } else {
+            Log.i(TAG, ""in Session sending sendConfirmationResult. "" +
+                    Utils.toBundleString(extras));
+            newTask().execute(
+                    asyncTaskArg.setTestType(Utils.TestCaseType.COMPLETION_REQUEST_TEST));
+        }
+    }
+
+    @Override
+    public void onRequestAbortVoice(AbortVoiceRequest request) {
+        Bundle extras = request.getExtras();
+        CharSequence prompt = request.getVoicePrompt().getVoicePromptAt(0);
+        Log.i(TAG, ""in Session onRequestAbortVoice recvd. message="" +
+                prompt + "", extras="" + Utils.toBundleString(extras));
+        assertPromptFromTestApp(prompt, extras);
+        AsyncTaskArg asyncTaskArg = new AsyncTaskArg().setRequest(request).setExtras(extras);
+        if (isTestTypeCancel(extras)) {
+            Log.i(TAG, ""Sending Cancel."");
+            newTask().execute(
+                    asyncTaskArg.setTestType(Utils.TestCaseType.ABORT_REQUEST_CANCEL_TEST));
+        } else {
+            Log.i(TAG, ""in Session sending sendAbortResult. "" +
+                Utils.toBundleString(extras));
+            newTask().execute(asyncTaskArg.setTestType(Utils.TestCaseType.ABORT_REQUEST_TEST));
+        }
+    }
+
+    @Override
+    public void onRequestCommand(CommandRequest request) {
+        Bundle extras = request.getExtras();
+        Log.i(TAG, ""in Session onRequestCommand recvd. Bundle = "" +
+                Utils.toBundleString(extras));
+
+        // Make sure that the input request has Utils.TEST_COMMAND sent by TestApp
+        String command = request.getCommand();
+        if (command.equals(Utils.TEST_COMMAND)) {
+            Log.i(TAG, ""command received ok from TestApp in Session"");
+        } else {
+            Utils.addErrorResult(extras, ""Invalid TEST_COMMAND received: "" + command);
+        }
+        // Add a field and value in the bundle to be sent to TestApp.
+        // TestApp will ensure that these are transmitted correctly.
+        extras.putString(Utils.TEST_ONCOMMAND_RESULT, Utils.TEST_ONCOMMAND_RESULT_VALUE);
+        AsyncTaskArg asyncTaskArg = new AsyncTaskArg().setRequest(request).setExtras(extras);
+        if (isTestTypeCancel(extras)) {
+            Log.i(TAG, ""Sending Cancel."");
+            newTask().execute(
+                    asyncTaskArg.setTestType(Utils.TestCaseType.COMMANDREQUEST_CANCEL_TEST));
+        } else {
+            Log.i(TAG, ""in Session sending sendResult. "" +
+                    Utils.toBundleString(extras) + "", string_in_bundle: "" +
+                    Utils.TEST_ONCOMMAND_RESULT + "" = "" + Utils.TEST_ONCOMMAND_RESULT_VALUE);
+            newTask().execute(asyncTaskArg.setTestType(Utils.TestCaseType.COMMANDREQUEST_TEST));
+        }
+    }
+
+    void assertPickOptionsFromTestApp(VoiceInteractor.PickOptionRequest.Option[] options,
+            Bundle extras) {
+        if ((options.length != 2) ||
+            !options[0].getLabel().toString().equals(Utils.PICKOPTON_1) ||
+            !options[1].getLabel().toString().equals(Utils.PICKOPTON_2)) {
+            Utils.addErrorResult(extras, ""Pickoptions Not received correctly in Session."");
+        } else {
+            Log.i(TAG, ""Pickoptions received ok from TestApp in Session"");
+        }
+    }
+
+    @Override
+    public void onRequestPickOption(PickOptionRequest request) {
+        Bundle extras = request.getExtras();
+        CharSequence prompt = request.getVoicePrompt().getVoicePromptAt(0);
+        Log.i(TAG, ""in Session onRequestPickOption recvd. message="" +
+                prompt + "", options = "" + Utils.toOptionsString(request.getOptions()) +
+                "", extras="" + Utils.toBundleString(extras));
+        VoiceInteractor.PickOptionRequest.Option[] picked
+            = new VoiceInteractor.PickOptionRequest.Option[1];
+        assertPromptFromTestApp(prompt, extras);
+        assertPickOptionsFromTestApp(request.getOptions(), extras);
+        picked[0] = new VoiceInteractor.PickOptionRequest.Option(Utils.PICKOPTON_3, 0);
+        AsyncTaskArg asyncTaskArg = new AsyncTaskArg().setRequest(request)
+                .setExtras(extras)
+                .setPickedOptions(picked);
+        if (isTestTypeCancel(extras)) {
+            Log.i(TAG, ""in MainInteractionSession, Sending Cancel."");
+            newTask().execute(
+                    asyncTaskArg.setTestType(Utils.TestCaseType.PICKOPTION_REQUEST_CANCEL_TEST));
+        } else {
+            Log.i(TAG, ""in MainInteractionSession sending sendPickOptionResult. "" +
+                    Utils.toBundleString(extras));
+            newTask().execute(asyncTaskArg.setTestType(Utils.TestCaseType.PICKOPTION_REQUEST_TEST));
+        }
+    }
+
+    public static final boolean isTestTypeCancel(Bundle extras) {
+        Utils.TestCaseType testCaseType;
+        try {
+            testCaseType = Utils.TestCaseType.valueOf(extras.getString(Utils.TESTCASE_TYPE));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            Log.wtf(TAG, ""unexpected testCaseType value in Bundle received"", e);
+            return true;
+        }
+        return testCaseType == Utils.TestCaseType.COMPLETION_REQUEST_CANCEL_TEST ||
+                testCaseType == Utils.TestCaseType.COMMANDREQUEST_CANCEL_TEST ||
+                testCaseType == Utils.TestCaseType.CONFIRMATION_REQUEST_CANCEL_TEST ||
+                testCaseType == Utils.TestCaseType.PICKOPTION_REQUEST_CANCEL_TEST ||
+                testCaseType == Utils.TestCaseType.ABORT_REQUEST_CANCEL_TEST;
+    }
+
+    private class AsyncTaskArg {
+        ConfirmationRequest confReq;
+        CommandRequest commandReq;
+        CompleteVoiceRequest compReq;
+        AbortVoiceRequest abortReq;
+        PickOptionRequest pickReq;
+        Bundle extras;
+        VoiceInteractor.PickOptionRequest.Option[] picked;
+        Utils.TestCaseType testType;
+
+        AsyncTaskArg setTestType(Utils.TestCaseType t) {testType = t; return this;}
+        AsyncTaskArg setRequest(CommandRequest r) {commandReq = r; return this;}
+        AsyncTaskArg setRequest(ConfirmationRequest r) {confReq = r; return this;}
+        AsyncTaskArg setRequest(CompleteVoiceRequest r) {compReq = r; return this;}
+        AsyncTaskArg setRequest(AbortVoiceRequest r) {abortReq = r; return this;}
+        AsyncTaskArg setRequest(PickOptionRequest r) {pickReq = r; return this;}
+        AsyncTaskArg setExtras(Bundle e) {extras = e;  return this;}
+        AsyncTaskArg setPickedOptions(VoiceInteractor.PickOptionRequest.Option[] p) {
+            picked = p;
+            return this;
+        }
+    }
+
+    private class MyTask extends AsyncTask<AsyncTaskArg, Void, Void> {
+        @Override
+        protected Void doInBackground(AsyncTaskArg... params) {
+            AsyncTaskArg arg = params[0];
+            Log.i(TAG, ""in MyTask - doInBackground: requestType = "" +
+                    arg.testType.toString());
+            switch (arg.testType) {
+                case ABORT_REQUEST_CANCEL_TEST:
+                    arg.abortReq.cancel();
+                    break;
+                case ABORT_REQUEST_TEST:
+                    arg.abortReq.sendAbortResult(arg.extras);
+                    break;
+                case COMMANDREQUEST_CANCEL_TEST:
+                    arg.commandReq.cancel();
+                    break;
+                case COMMANDREQUEST_TEST:
+                    Log.i(TAG, ""in MyTask sendResult. "" +
+                            Utils.toBundleString(arg.extras) + "", string_in_bundle: "" +
+                            Utils.TEST_ONCOMMAND_RESULT + "" = "" +
+                            Utils.TEST_ONCOMMAND_RESULT_VALUE);
+                    arg.commandReq.sendResult(arg.extras);
+                    break;
+                case COMPLETION_REQUEST_CANCEL_TEST:
+                    arg.compReq.cancel();
+                    break;
+                case COMPLETION_REQUEST_TEST:
+                    arg.compReq.sendCompleteResult(arg.extras);
+                    break;
+                case CONFIRMATION_REQUEST_CANCEL_TEST:
+                     arg.confReq.cancel();
+                     break;
+                case CONFIRMATION_REQUEST_TEST:
+                     arg.confReq.sendConfirmationResult(true, arg.extras);
+                     break;
+                case PICKOPTION_REQUEST_CANCEL_TEST:
+                     arg.pickReq.cancel();
+                     break;
+                case PICKOPTION_REQUEST_TEST:
+                     StringBuilder buf = new StringBuilder();
+                     for (VoiceInteractor.PickOptionRequest.Option s : arg.picked) {
+                         buf.append(""option: "" + s.toString() + "", "");
+                     }
+                     Log.i(TAG, ""******** Sending PickoptionResult: "" +
+                             ""picked: size = "" + arg.picked.length +
+                             "", Options = "" + buf.toString() +
+                             "", Bundle: "" + Utils.toBundleString(arg.extras));
+                     arg.pickReq.sendPickOptionResult(arg.picked, arg.extras);
+                     break;
+               default:
+                   Log.i(TAG, ""Doing nothing for the testcase type: "" + arg.testType);
+                   break;
+            }
+            return null;
+        }
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/service/src/android/voiceinteraction/service/MainInteractionSession.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.service.BasicVoiceInteractionService"	"dropShellPermissionIdentity"	""	"14: except can data, be or from the audio, used hotword data to audio detection"	"public void test/*
+ *.
+ */
+
+package android.voiceinteraction.service;
+
+import static android.Manifest.permission.CAPTURE_AUDIO_HOTWORD;
+import static android.Manifest.permission.RECORD_AUDIO;
+
+import static com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity;
+
+import android.Manifest;
+import android.app.UiAutomation;
+import android.content.Intent;
+import android.media.AudioFormat;
+import android.os.ParcelFileDescriptor;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
+import android.os.SharedMemory;
+import android.service.voice.AlwaysOnHotwordDetector;
+import android.service.voice.HotwordDetectionService;
+import android.service.voice.HotwordDetector;
+import android.service.voice.HotwordRejectedResult;
+import android.service.voice.VoiceInteractionService;
+import android.system.ErrnoException;
+import android.util.Log;
+import android.voiceinteraction.common.Utils;
+
+import androidx.annotation.NonNull;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.Locale;
+
+/**
+ * This service included a basic HotwordDetectionService for testing.
+ */
+public class BasicVoiceInteractionService extends VoiceInteractionService {
+    // TODO: (b/182236586) Refactor the voice interaction service logic
+    static final String TAG = ""BasicVoiceInteractionService"";
+
+    public static String KEY_FAKE_DATA = ""fakeData"";
+    public static String VALUE_FAKE_DATA = ""fakeData"";
+    public static byte[] FAKE_BYTE_ARRAY_DATA = new byte[] {1, 2, 3};
+    public static byte[] FAKE_HOTWORD_AUDIO_DATA =
+            new byte[] {'h', 'o', 't', 'w', 'o', 'r', 'd', '!'};
+
+    private boolean mReady = false;
+    private AlwaysOnHotwordDetector mAlwaysOnHotwordDetector = null;
+    private HotwordDetector mSoftwareHotwordDetector = null;
+    private ParcelFileDescriptor[] mTempParcelFileDescriptor = null;
+
+    @Override
+    public void onReady() {
+        super.onReady();
+        mReady = true;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, ""onStartCommand received"");
+
+        if (intent == null || !mReady) {
+            Log.wtf(TAG, ""Can't start because either intent is null or onReady() ""
+                    + ""is not called yet. intent = "" + intent + "", mReady = "" + mReady);
+            return START_NOT_STICKY;
+        }
+
+        UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        // Drop any identity adopted earlier.
+        uiAutomation.dropShellPermissionIdentity();
+
+        final int testEvent = intent.getIntExtra(Utils.KEY_TEST_EVENT, -1);
+        Log.i(TAG, ""testEvent = "" + testEvent);
+        if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST) {
+            runWithShellPermissionIdentity(() -> {
+                mAlwaysOnHotwordDetector = callCreateAlwaysOnHotwordDetector();
+            }, Manifest.permission.MANAGE_HOTWORD_DETECTION);
+        } else if (testEvent == Utils.VIS_WITHOUT_MANAGE_HOTWORD_DETECTION_PERMISSION_TEST) {
+            runWithShellPermissionIdentity(() -> callCreateAlwaysOnHotwordDetector(),
+                    Manifest.permission.BIND_HOTWORD_DETECTION_SERVICE);
+        } else if (testEvent == Utils.VIS_HOLD_BIND_HOTWORD_DETECTION_PERMISSION_TEST) {
+            runWithShellPermissionIdentity(() -> callCreateAlwaysOnHotwordDetector());
+        } else if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_DSP_ONDETECT_TEST) {
+            // need to retain the identity until the callback is triggered
+            uiAutomation.adoptShellPermissionIdentity(RECORD_AUDIO, CAPTURE_AUDIO_HOTWORD);
+            if (mAlwaysOnHotwordDetector != null) {
+                mAlwaysOnHotwordDetector.triggerHardwareRecognitionEventForTest(/* status */ 0,
+                        /* soundModelHandle */ 100, /* captureAvailable */ true,
+                        /* captureSession */ 101, /* captureDelayMs */ 1000,
+                        /* capturePreambleMs */ 1001, /* triggerInData */ true,
+                        createFakeAudioFormat(), new byte[1024]);
+            }
+        } else if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_DSP_ONREJECT_TEST) {
+            runWithShellPermissionIdentity(() -> {
+                if (mAlwaysOnHotwordDetector != null) {
+                    mAlwaysOnHotwordDetector.triggerHardwareRecognitionEventForTest(/* status */ 0,
+                            /* soundModelHandle */ 100, /* captureAvailable */ true,
+                            /* captureSession */ 101, /* captureDelayMs */ 1000,
+                            /* capturePreambleMs */ 1001, /* triggerInData */ true,
+                            createFakeAudioFormat(), null);
+                }
+            });
+        } else if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_EXTERNAL_SOURCE_ONDETECT_TEST) {
+            uiAutomation.adoptShellPermissionIdentity(RECORD_AUDIO, CAPTURE_AUDIO_HOTWORD);
+            if (mAlwaysOnHotwordDetector != null) {
+                ParcelFileDescriptor audioStream = createFakeAudioStream();
+                if (audioStream != null) {
+                    mAlwaysOnHotwordDetector.startRecognition(
+                            audioStream,
+                            createFakeAudioFormat(),
+                            createFakePersistableBundleData());
+                }
+            }
+        } else if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_FROM_SOFTWARE_TRIGGER_TEST) {
+            runWithShellPermissionIdentity(() -> {
+                mSoftwareHotwordDetector = callCreateSoftwareHotwordDetector();
+            }, Manifest.permission.MANAGE_HOTWORD_DETECTION);
+        } else if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_MIC_ONDETECT_TEST) {
+            uiAutomation.adoptShellPermissionIdentity(RECORD_AUDIO, CAPTURE_AUDIO_HOTWORD);
+            if (mSoftwareHotwordDetector != null) {
+                mSoftwareHotwordDetector.startRecognition();
+            }
+        } else if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_CALL_STOP_RECOGNITION) {
+            if (mSoftwareHotwordDetector != null) {
+                mSoftwareHotwordDetector.stopRecognition();
+            }
+        } else if (testEvent == Utils.HOTWORD_DETECTION_SERVICE_PROCESS_DIED_TEST) {
+            runWithShellPermissionIdentity(() -> {
+                if (mAlwaysOnHotwordDetector != null) {
+                    PersistableBundle persistableBundle = new PersistableBundle();
+                    persistableBundle.putInt(Utils.KEY_TEST_SCENARIO,
+                            Utils.HOTWORD_DETECTION_SERVICE_ON_UPDATE_STATE_CRASH);
+                    mAlwaysOnHotwordDetector.updateState(
+                            persistableBundle,
+                            createFakeSharedMemoryData());
+                }
+            }, Manifest.permission.MANAGE_HOTWORD_DETECTION);
+        }
+
+        return START_NOT_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        closeFakeAudioStream();
+        InstrumentationRegistry.getInstrumentation().getUiAutomation()
+                .dropShellPermissionIdentity();
+    }
+
+    private AlwaysOnHotwordDetector callCreateAlwaysOnHotwordDetector() {
+        Log.i(TAG, ""callCreateAlwaysOnHotwordDetector()"");
+        try {
+            return createAlwaysOnHotwordDetector(/* keyphrase */ ""Hello Android"",
+                    Locale.forLanguageTag(""en-US""),
+                    createFakePersistableBundleData(),
+                    createFakeSharedMemoryData(),
+                    new AlwaysOnHotwordDetector.Callback() {
+                        @Override
+                        public void onAvailabilityChanged(int status) {
+                            Log.i(TAG, ""onAvailabilityChanged("" + status + "")"");
+                        }
+
+                        @Override
+                        public void onDetected(AlwaysOnHotwordDetector.EventPayload eventPayload) {
+                            Log.i(TAG, ""onDetected"");
+                            broadcastIntentWithResult(
+                                    Utils.HOTWORD_DETECTION_SERVICE_ONDETECT_RESULT_INTENT,
+                                    new EventPayloadParcelable(eventPayload));
+                        }
+
+                        @Override
+                        public void onRejected(@NonNull HotwordRejectedResult result) {
+                            super.onRejected(result);
+                            Log.i(TAG, ""onRejected"");
+                            broadcastIntentWithResult(
+                                    Utils.HOTWORD_DETECTION_SERVICE_ONDETECT_RESULT_INTENT,
+                                    result);
+                        }
+
+                        @Override
+                        public void onError() {
+                            Log.i(TAG, ""onError"");
+                            broadcastIntentWithResult(
+                                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                                    Utils.HOTWORD_DETECTION_SERVICE_GET_ERROR);
+                        }
+
+                        @Override
+                        public void onRecognitionPaused() {
+                            Log.i(TAG, ""onRecognitionPaused"");
+                        }
+
+                        @Override
+                        public void onRecognitionResumed() {
+                            Log.i(TAG, ""onRecognitionResumed"");
+                        }
+
+                        @Override
+                        public void onHotwordDetectionServiceInitialized(int status) {
+                            super.onHotwordDetectionServiceInitialized(status);
+                            Log.i(TAG, ""onHotwordDetectionServiceInitialized"");
+                            verifyHotwordDetectionServiceInitializedStatus(status);
+                        }
+
+                        @Override
+                        public void onHotwordDetectionServiceRestarted() {
+                            super.onHotwordDetectionServiceRestarted();
+                            Log.i(TAG, ""onHotwordDetectionServiceRestarted"");
+                        }
+                    });
+        } catch (IllegalStateException e) {
+            Log.w(TAG, ""callCreateAlwaysOnHotwordDetector() exception: "" + e);
+            broadcastIntentWithResult(
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_ILLEGAL_STATE_EXCEPTION);
+        } catch (SecurityException e) {
+            Log.w(TAG, ""callCreateAlwaysOnHotwordDetector() exception: "" + e);
+            broadcastIntentWithResult(
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SECURITY_EXCEPTION);
+        }
+        return null;
+    }
+
+    private HotwordDetector callCreateSoftwareHotwordDetector() {
+        Log.i(TAG, ""callCreateSoftwareHotwordDetector()"");
+        try {
+            return createHotwordDetector(
+                    createFakePersistableBundleData(),
+                    createFakeSharedMemoryData(),
+                    new HotwordDetector.Callback() {
+                        @Override
+                        public void onDetected(AlwaysOnHotwordDetector.EventPayload eventPayload) {
+                            Log.i(TAG, ""onDetected"");
+                            broadcastIntentWithResult(
+                                    Utils.HOTWORD_DETECTION_SERVICE_ONDETECT_RESULT_INTENT,
+                                    new EventPayloadParcelable(eventPayload));
+                        }
+
+                        @Override
+                        public void onError() {
+                            Log.i(TAG, ""onError"");
+                            broadcastIntentWithResult(
+                                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                                    Utils.HOTWORD_DETECTION_SERVICE_GET_ERROR);
+                        }
+
+                        @Override
+                        public void onRecognitionPaused() {
+                            Log.i(TAG, ""onRecognitionPaused"");
+                        }
+
+                        @Override
+                        public void onRecognitionResumed() {
+                            Log.i(TAG, ""onRecognitionResumed"");
+                        }
+
+                        @Override
+                        public void onRejected(HotwordRejectedResult result) {
+                            Log.i(TAG, ""onRejected"");
+                        }
+
+                        @Override
+                        public void onHotwordDetectionServiceInitialized(int status) {
+                            verifyHotwordDetectionServiceInitializedStatus(status);
+                        }
+
+                        @Override
+                        public void onHotwordDetectionServiceRestarted() {
+                            Log.i(TAG, ""onHotwordDetectionServiceRestarted"");
+                        }
+                    });
+        } catch (Exception e) {
+            Log.w(TAG, ""callCreateSoftwareHotwordDetector() exception: "" + e);
+        }
+        return null;
+    }
+
+    private void broadcastIntentWithResult(String intentName, int result) {
+        Intent intent = new Intent(intentName)
+                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_RECEIVER_REGISTERED_ONLY)
+                .putExtra(Utils.KEY_TEST_RESULT, result);
+        Log.d(TAG, ""broadcast intent = "" + intent + "", result = "" + result);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastIntentWithResult(String intentName, Parcelable result) {
+        Intent intent = new Intent(intentName)
+                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_RECEIVER_REGISTERED_ONLY)
+                .putExtra(Utils.KEY_TEST_RESULT, result);
+        Log.d(TAG, ""broadcast intent = "" + intent + "", result = "" + result);
+        sendBroadcast(intent);
+    }
+
+    private SharedMemory createFakeSharedMemoryData() {
+        try {
+            SharedMemory sharedMemory = SharedMemory.create(""SharedMemory"", 3);
+            ByteBuffer byteBuffer = sharedMemory.mapReadWrite();
+            byteBuffer.put(FAKE_BYTE_ARRAY_DATA);
+            return sharedMemory;
+        } catch (ErrnoException e) {
+            Log.w(TAG, ""createFakeSharedMemoryData ErrnoException : "" + e);
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    private PersistableBundle createFakePersistableBundleData() {
+        // TODO : Add more data for testing
+        PersistableBundle persistableBundle = new PersistableBundle();
+        persistableBundle.putString(KEY_FAKE_DATA, VALUE_FAKE_DATA);
+        return persistableBundle;
+    }
+
+    private AudioFormat createFakeAudioFormat() {
+        return new AudioFormat.Builder()
+                .setSampleRate(32000)
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setChannelMask(AudioFormat.CHANNEL_IN_MONO).build();
+    }
+
+    private ParcelFileDescriptor createFakeAudioStream() {
+        try {
+            mTempParcelFileDescriptor = ParcelFileDescriptor.createPipe();
+            try (OutputStream fos =
+                         new ParcelFileDescriptor.AutoCloseOutputStream(
+                                 mTempParcelFileDescriptor[1])) {
+                fos.write(FAKE_HOTWORD_AUDIO_DATA, 0, 8);
+            } catch (IOException e) {
+                Log.w(TAG, ""Failed to pipe audio data : "", e);
+                return null;
+            }
+            return mTempParcelFileDescriptor[0];
+        } catch (IOException e) {
+            Log.w(TAG, ""Failed to create a pipe : "" + e);
+        }
+        return null;
+    }
+
+    private void closeFakeAudioStream() {
+        if (mTempParcelFileDescriptor != null) {
+            try {
+                mTempParcelFileDescriptor[0].close();
+                mTempParcelFileDescriptor[1].close();
+            } catch (IOException e) {
+                Log.w(TAG, ""Failed closing : "" + e);
+            }
+            mTempParcelFileDescriptor = null;
+        }
+    }
+
+    private void verifyHotwordDetectionServiceInitializedStatus(int status) {
+        if (status == HotwordDetectionService.INITIALIZATION_STATUS_SUCCESS) {
+            broadcastIntentWithResult(
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
+        }
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/service/src/android/voiceinteraction/service/BasicVoiceInteractionService.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.VoiceInteractionRoleTest"	"testAssistRole_hasRecognitionService"	"CtsVoiceInteractionTestCases"	"3: service, except or"	"public void testAssistRole_hasRecognitionService() throws Exception {
+        roleTestingForPackage(VOICE_INTERACTION_HAS_RECOGNITION_SERVICE, /* hasRecognition= */
+                true);
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/VoiceInteractionRoleTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.VoiceInteractionRoleTest"	"testAssistRole_noRecognitionService"	"CtsVoiceInteractionTestCases"	"8: service, except be or from the that to"	"public void testAssistRole_noRecognitionService() throws Exception {
+        roleTestingForPackage(VOICE_INTERACTION_NO_RECOGNITION_SERVICE, /* hasRecognition= */
+                false);
+    }
+
+    // TODO: Use helpers and move the assertion in Test instead of move together
+    private void roleTestingForPackage(String packageName, boolean hasRecognition)
+            throws Exception {
+        assertThat(getAssistRoleHolders()).doesNotContain(packageName);
+
+        addAssistRoleHolder(packageName);
+        if (mOriginalRoleHolders != null && mOriginalRoleHolders.size() > 0) {
+            String originalHolder = mOriginalRoleHolders.get(0);
+            removeAssistRoleHolder(originalHolder);
+            assertThat(getAssistRoleHolders()).doesNotContain(originalHolder);
+        }
+        assertThat(getAssistRoleHolders()).containsExactly(packageName);
+
+        Callable<Boolean> condition = hasRecognition
+                ? () -> !TextUtils.isEmpty(Settings.Secure.getString(sContext.getContentResolver(),
+                Settings.Secure.VOICE_INTERACTION_SERVICE))
+                : () -> """".equals(Settings.Secure.getString(sContext.getContentResolver(),
+                        Settings.Secure.VOICE_INTERACTION_SERVICE));
+        PollingCheck.check(""Make sure that Settings VOICE_INTERACTION_SERVICE ""
+                + ""becomes available."", 500, condition);
+        final String curVoiceInteractionComponentName = Settings.Secure.getString(
+                sContext.getContentResolver(),
+                Settings.Secure.VOICE_INTERACTION_SERVICE);
+        String curVoiceInteractionPackageName = """";
+        if (!TextUtils.isEmpty(curVoiceInteractionComponentName)) {
+            curVoiceInteractionPackageName =
+                    ComponentName.unflattenFromString(
+                            curVoiceInteractionComponentName).getPackageName();
+        }
+        assertThat(curVoiceInteractionPackageName).isEqualTo(hasRecognition ? packageName : """");
+
+        removeAssistRoleHolder(packageName);
+        assertThat(getAssistRoleHolders()).doesNotContain(packageName);
+    }
+
+    private List<String> getAssistRoleHolders() throws Exception {
+        return callWithShellPermissionIdentity(
+                () -> sRoleManager.getRoleHolders(RoleManager.ROLE_ASSISTANT));
+    }
+
+    private void addAssistRoleHolder(String packageName)
+            throws Exception {
+        Log.i(TAG, ""addAssistRoleHolder for "" + packageName);
+        final CallbackFuture future = new CallbackFuture(""addAssistRoleHolder"");
+        runWithShellPermissionIdentity(() -> {
+            sRoleManager.addRoleHolderAsUser(RoleManager.ROLE_ASSISTANT, packageName,
+                    RoleManager.MANAGE_HOLDERS_FLAG_DONT_KILL_APP, Process.myUserHandle(),
+                    sContext.getMainExecutor(), future);
+        });
+        assertThat(future.get(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)).isTrue();
+    }
+
+    private void removeAssistRoleHolder(String packageName)
+            throws Exception {
+        Log.i(TAG, ""removeAssistRoleHolder for "" + packageName);
+        final CallbackFuture future = new CallbackFuture(""removeAssistRoleHolder"");
+        runWithShellPermissionIdentity(
+                () -> sRoleManager.removeRoleHolderAsUser(RoleManager.ROLE_ASSISTANT, packageName,
+                        0, Process.myUserHandle(), sContext.getMainExecutor(), future));
+        assertThat(future.get(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)).isTrue();
+    }
+
+    private static class CallbackFuture extends CompletableFuture<Boolean>
+            implements Consumer<Boolean> {
+        String mMethodName;
+
+        CallbackFuture(String methodName) {
+            mMethodName = methodName;
+        }
+
+        @Override
+        public void accept(Boolean successful) {
+            Log.i(TAG, mMethodName + "" result "" + successful);
+            complete(successful);
+        }
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/VoiceInteractionRoleTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.VoiceInteractionRoleTest"	"getAssistRoleHolders"	"CtsVoiceInteractionTestCases"	"6: except be or the that to"	"/*
+ *.
+ */
+
+package android.voiceinteraction.cts;
+
+import static com.android.compatibility.common.util.SystemUtil.callWithShellPermissionIdentity;
+import static com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import android.app.role.RoleManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.os.Process;
+import android.platform.test.annotations.AppModeFull;
+import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Log;
+
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.android.compatibility.common.util.PollingCheck;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+/**
+ * Tests for successfully changing ROLE_ASSISTANT. The test focuses on changing ROLE_ASSISTANT role,
+ * the target voice interaction services do nothing during the test.
+ */
+@AppModeFull(reason = ""No need for testing role for instant app"")
+@RunWith(AndroidJUnit4.class)
+public class VoiceInteractionRoleTest {
+
+    private static final String TAG = ""VoiceInteractionRoleTest"";
+
+    private static final long TIMEOUT_MILLIS = 15 * 1000;
+    private static final String VOICE_INTERACTION_HAS_RECOGNITION_SERVICE =
+            ""android.voiceinteraction.service"";
+    private static final String VOICE_INTERACTION_NO_RECOGNITION_SERVICE =
+            ""android.voiceinteraction.norecognition"";
+
+    private static Context sContext;
+    private static RoleManager sRoleManager;
+
+    List<String> mOriginalRoleHolders;
+
+    @BeforeClass
+    public static void oneTimeSetup() {
+        sContext = ApplicationProvider.getApplicationContext();
+        sRoleManager = sContext.getSystemService(RoleManager.class);
+    }
+
+    @Before
+    public void setup() throws Exception {
+        mOriginalRoleHolders = getAssistRoleHolders();
+    }
+
+    @After
+    public void cleanup() throws Exception {
+        if (mOriginalRoleHolders != null && mOriginalRoleHolders.size() > 0) {
+            // Restore to original, assistant is singleton role
+            addAssistRoleHolder(mOriginalRoleHolders.get(0));
+        }
+    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/VoiceInteractionRoleTest.java"	""	""	""
+"2.2.5  . Security Model"	"9.8"	"H-2-3"	"9.8/H-2-3"	"transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureServic"	"""[9.8/H-2-3] MUST NOT transmit from the hotword detection service, audio data, data that can be used to reconstruct (wholly or partially) the audio, or audio contents unrelated to the hotword itself, except to the ContentCaptureService. If Handheld device implementations declare android.hardware.microphone, they: """	""	"android.voiceinteraction.cts.HotwordDetectionServiceNonExistenceTest"	"testHotwordDetectionService_noHotwordDetectionComponentName_triggerFailure"	"CtsVoiceInteractionTestCases"	"6: except or hotword that to detection detection"	"public void testHotwordDetectionService_noHotwordDetectionComponentName_triggerFailure()
+            throws Throwable {
+        final BlockingBroadcastReceiver receiver = new BlockingBroadcastReceiver(mContext,
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT);
+        receiver.register();
+
+        mActivityTestRule.getScenario().onActivity(activity -> {
+            activity.triggerHotwordDetectionServiceTest(
+                    Utils.HOTWORD_DETECTION_SERVICE_NONE,
+                    Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST);
+        });
+
+        final Intent intent = receiver.awaitForBroadcast(TIMEOUT_MS);
+        assertThat(intent).isNotNull();
+        assertThat(intent.getIntExtra(Utils.KEY_TEST_RESULT, -1)).isEqualTo(
+                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_ILLEGAL_STATE_EXCEPTION);
+
+        receiver.unregisterQuietly();
+    }
+
+    @Override
+    public String getVoiceInteractionService() {
+        return ""android.voiceinteraction.cts/""
+                + ""android.voiceinteraction.service.MainInteractionService"";
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceNonExistenceTest.java"	""	""	""
