@@ -1,5 +1,4 @@
 import csv
-import json
 import re
 import sys
 import time
@@ -330,8 +329,9 @@ class RxData:
         search_info: dict = search_info_and_file_tuple[0]
         try:
             # Get rid of tuple, change to a dict
-            file_name_param = search_info_and_file_tuple[1]
-
+            file_name_param : str = search_info_and_file_tuple[1]
+            if  file_name_param.endswith(".cpp"):
+                print("is cpp "+file_name_param)
             search_terms = search_info.get(SEARCH_TERMS)
 
             full_text_of_file_str = helpers.read_file_to_string(file_name_param).replace('\t', ' ')
@@ -340,17 +340,25 @@ class RxData:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
             for matched_term in search_terms:
                 matched_term: str = matched_term.strip(' ')
-
+                if file_name_param.endswith(".cpp"):
+                    print("not java " + file_name_param)
                 if not matched_term:
                     continue
                 # File search
                 search_string = conditional_re_escape(matched_term)
-                search_string = search_string.replace("&", ".*")
+                # What? comment next time search_string = search_string.replace("&", ".*")
 
                 re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
                                                          flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)  # full_text_of_file_str.count(matched_terms)
                 match_count_of_term_in_file = len(re_matches_from_file_search)
                 is_found = match_count_of_term_in_file > 0
+                if not is_found: #try again unescaped
+                    search_string = matched_term
+                    re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
+                                                             flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)  # full_text_of_file_str.count(matched_terms)
+                    match_count_of_term_in_file = len(re_matches_from_file_search)
+                    is_found = match_count_of_term_in_file > 0
+
                 if is_found:
                     if matched_term == search_info.get(FULL_KEY):
                         self.is_exact_match = True
@@ -396,8 +404,12 @@ class RxData:
                                                    static_data.METHODS_STRING)  # ," || ")
                             flat_result[static_data.METHODS_STRING] = method_text
                             search_result[
-                                PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_csv_dict
-                            self.find_data_for_csv_dict(search_info)
+                                PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_result_dict_java
+                            if file_name_param.endswith(".java") or file_name_param.endswith(".kt"):
+                                self.find_data_for_result_dict_java(search_info)
+                            elif file_name_param.endswith(".py") or file_name_param.endswith(".cpp"):
+                                self.find_data_for_result_dict_general(search_info, full_text_of_file_str)
+
                             if logging:
                                 print(f"Found match {str(search_result)}")
                             # result = f'["{a_list_item}",["{mi}":"{method_text}"]]'
@@ -411,7 +423,7 @@ class RxData:
 
         return search_info
 
-    def find_data_for_csv_dict(self, search_info: dict, logging: bool = False) -> dict:
+    def find_data_for_result_dict_java(self, search_info: dict, logging: bool = False) -> dict:
 
         full_key = "0/0"
         method_text = ''
@@ -469,12 +481,55 @@ class RxData:
                                 # ToDo figure out adding to the dictionary
 
                         except Exception as err:
-                            print("Not fatal but should improve exception find_data_for_csv_dict " + str(err))
+                            print("Not fatal but should improve exception find_data_for_result_dict_java " + str(err))
                             if logging: print(f'Could not find {static_data.METHOD_RE} in text [{method_text}]')
                 self.publish_each_result(search_result)
 
         except Exception as e:
-            helpers.print_system_error_and_dump(f"find_data_for_csv_dict at {full_key}", e)
+            helpers.print_system_error_and_dump(f"find_data_for_result_dict_java at {full_key}", e)
+
+        return search_info
+
+    def find_data_for_result_dict_general(self, search_info: dict, full_text_of_file_str:str, logging: bool = False) -> dict:
+        full_key = "0/0"
+        method_text = ''
+        try:
+            search_terms = search_info.get('search_terms')
+            full_key = search_info.get(FULL_KEY)
+            search_result = search_info.get(SEARCH_RESULT)
+            if search_result:
+                flat_result = search_result.get(FLAT_RESULT)
+                file_name = search_result.get(static_data.PIPELINE_FILE_NAME)
+                class_name_re = re.findall("class (\w+)",full_text_of_file_str,re.IGNORECASE)
+                if len(class_name_re) > 0:
+                    class_name = class_name_re[0]
+                    search_result[static_data.CLASS_DEF]=class_name
+                    flat_result[static_data.CLASS_DEF]=class_name
+                method_text = search_result.get(PIPELINE_METHOD_TEXT)
+                method_results = re_method.findall(method_text)
+                if method_results and len(method_results) > 0:
+                    for method in method_results:
+                        if  method.lower().find('assert') != -1 or method.lower().find('is') != -1 or method.lower().find('test') != -1:
+                            flat_result[METHOD] =  method
+                            self.result_subject.on_next(search_info)
+                            self.match_count += 1
+                            break
+                        else:
+                            flat_result[METHOD] = method
+                            # result = re.search(r'\s*public.+?\w+?(?=\(\w*?\))(?=.*?{)', method_text)
+                            # ToDo search dependencies
+                            if logging: print(f"result No method with test in the name {method}.")
+
+                        add_list_to_count_dict(method, search_result, static_data.METHODS)
+                        search_result[METHOD] = method  # This will just get the last method, overwriting
+                else:
+                    method = ""
+                    # ToDo figure out adding to the dictionary
+
+            self.publish_each_result(search_result)
+
+        except Exception as e:
+            helpers.print_system_error_and_dump(f"find_data_for_result_dict_java at {full_key}", e)
 
         return search_info
     #
@@ -617,6 +672,8 @@ class RxData:
         search_dependency_set = set()
         not_found_set = set()
         for file_to_search in list_of_test_files:
+            if not str(file_to_search).endswith("java"):
+                print (file_to_search)
             # if there is not filter data OR the filter is match search
             if ((search_root is None) or (len(search_root) == 0)) or (file_to_search.find(search_root) != -1):
                 if self.match_count < self.max_matches:
@@ -634,7 +691,7 @@ class RxData:
                 dependency_set: set = self.__dependency_dictionary.get(not_found_in)
                 if dependency_set:
                     search_dependency_set.update(dependency_set)
-            print(f" Search {len(search_dependency_set)} files")
+            print(f"Search {len(search_dependency_set)} files")
             for dependency_file in search_dependency_set:
                 dependency_file = str(dependency_file)
                 if ((not search_root) or (len(search_root) == 0)) or (dependency_file.find(search_root) != -1):

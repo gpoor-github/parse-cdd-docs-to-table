@@ -58,7 +58,7 @@ class MyTestCase(unittest.TestCase):
         if len(updated_table) > 0:
             if not key_file_exists:
                 write_file_to_string(self.key_to_process,req)
-        print(req)
+        print("end")
 
 
 

@@ -249,7 +249,7 @@ class TestReacItems(unittest.TestCase):
             ops.map(lambda search_info: created_and_populated_search_info_from_key_row_tuple(search_info,
                                                                                    "test/input/test_manual_search.csv")),
             ops.map(lambda req: my_print(req, "test_handle_search_results_to_csv[{}]")),
-            ops.map(lambda results_local: rd.find_data_for_csv_dict(dict())),
+            ops.map(lambda results_local: rd.find_data_for_result_dict_java(dict())),
             ops.map(
                 lambda search_info: build_row(search_info, header=static_data.cdd_to_cts_app_header, do_log=True)),
             ops.to_list()) \

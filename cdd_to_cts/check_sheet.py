@@ -43,10 +43,10 @@ class ReadSpreadSheet:
 
     found_count = 0
 
-    def crawl(self):
+    def crawl(self, logging=False):
         # /Volumes/graham-ext/AndroidStudioProjects/cts
         for directory, subdirlist, filelist in os.walk(CTS_SOURCE_ROOT ):
-            print(directory)
+            if logging: print(directory)
             path = directory.replace(CTS_SOURCE_ROOT, ".")
             for f in filelist:
                 if helpers.filter_files_to_search(f):
@@ -78,7 +78,7 @@ class ReadSpreadSheet:
                     header = row
                     line_count += 1
                 else:
-                    print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
+                    # print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
                     table.append(row)
                     table_index = line_count - 1
                     # Section,section_id,req_id
