@@ -1,14 +1,30 @@
+import json
 import os
 import re
 import time
+from os.path import exists
 
 from cdd_to_cts import persist, helpers
 from cdd_to_cts import static_data
-from helpers import find_valid_path
+from helpers import filter_files_to_search, bag_from_text, remove_non_determinative_words, find_valid_path
 from static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE
 
 FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
 
+
+def get_list_of_at_test_files(
+    stored_files: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:
+    if not exists(static_data.TEST_FILES_TXT):
+        files_to_words_local, test_files_list = make_bags_of_words_all()
+        stored_files = helpers.find_valid_path(stored_files)
+        test_file_string  = json.dumps(test_files_list)
+        f = open(stored_files, 'w')
+        f.write(test_file_string)
+        f.close()
+    else:
+        f = open(stored_files, 'r')
+        test_files_list = json.loads(f.read())
+    return test_files_list
 
 def get_package_name(class_path):
     class_path = class_path.replace("/", ".").rstrip(".java")
@@ -144,7 +160,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
         for a_file_split in file_splits:
             target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0).strip(
                 '"')  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
-            if target_file_name.find(".java") > -1 and target_file_name.find("$PROJECT_DIR$") > -1:
+            if filter_files_to_search(target_file_name) and target_file_name.find("$PROJECT_DIR$") > -1:
                 target_file_name = target_file_name.replace("$PROJECT_DIR$", static_data.CTS_SOURCE_ROOT)
                 # print(target_file_name)
                 dependencies_split = a_file_split.split('<dependency path=')
@@ -155,8 +171,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
                     #     end = time.perf_counter()
                     #     # print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
                     dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
-                    if dependencies_file_name is not None and dependencies_file_name.find(
-                            ".java") > -1 and dependencies_file_name.find(
+                    if dependencies_file_name is not None and helpers.find_valid_path(dependencies_file_name) and dependencies_file_name.find(
                             "$PROJECT_DIR$") > -1:  # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
                         dependencies_file_name = dependencies_file_name.replace("$PROJECT_DIR$",
                                                                                 static_data.CTS_SOURCE_ROOT)
@@ -170,6 +185,27 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
         helpers.print_system_error_and_dump(f" Maybe couldn't open {file_name_in}", err)
     return test_classes_to_dependent_classes
 
+def make_bags_of_words_all(root_cts_source_directory=static_data.CTS_SOURCE_ROOT)-> (dict[str:str], [str] ):
+    # traverse root directory, and list directories as dirs and cts_files as cts_files
+    re_method = re.compile('(?= test\w+ ?\()')
+    files_to_words_local = dict()
+    test_files_list: [str] = list()
+    for root, dirs, files in os.walk(root_cts_source_directory):
+        for file in files:
+            if filter_files_to_search(file):
+                fullpath = '{}/{}'.format(root, file)
+                with open(fullpath, "r") as text_file:
+                    file_string = text_file.read()
+
+                    test_split = re_method.split(file_string)
+                    if len(test_split) > 1:
+                        bag = bag_from_text(file_string)
+                        files_to_words_local[fullpath] = remove_non_determinative_words(bag)
+                        words_string = " ".join(files_to_words_local[fullpath])
+                        test_files_list.append(fullpath)
+                        text_file.close()
+
+    return files_to_words_local, test_files_list
 
 if __name__ == '__main__':
     start1 = time.perf_counter()

@@ -1,5 +1,4 @@
 #  Block to comment
-import sys
 
 import react
 from table_ops import move_last_row_to_new_table

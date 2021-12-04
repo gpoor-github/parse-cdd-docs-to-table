@@ -57,11 +57,11 @@ def test_get_replay_of_at_test_files():
 
 class TestReacItems(unittest.TestCase):
 
-    def test_rx_at_test_methods_to_words(self, ):
-        RxData().get_at_test_method_words(static_data.TEST_FILES_TXT). \
-            pipe(ops.count()). \
-            subscribe(lambda count: self.assertEqual(count, 1270))
-
+    # def test_rx_at_test_methods_to_words(self, ):
+    #     RxData().get_at_test_method_words(static_data.TEST_FILES_TXT). \
+    #         pipe(ops.count()). \
+    #         subscribe(lambda count: self.assertEqual(count, 1270))
+    #
 
     # Callable[[TState, T1], TState]
     @staticmethod

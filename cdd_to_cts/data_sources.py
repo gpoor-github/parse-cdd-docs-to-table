@@ -4,12 +4,16 @@ import time
 
 from cdd_to_cts import class_graph, persist, static_data
 from cdd_to_cts import helpers
-from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, make_bags_of_word, create_full_table_from_cdd
-from cdd_to_cts.helpers import make_files_to_string, build_test_cases_module_dictionary
+from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, create_full_table_from_cdd
+from cdd_to_cts.helpers import make_files_to_string, build_test_cases_module_dictionary, filter_files_to_search, \
+    bag_from_text, remove_non_determinative_words
 from cdd_to_cts.static_data import CTS_SOURCE_PARENT, MANUAL_SEARCH_TERMS
 from cdd_to_cts.static_data import CTS_SOURCE_ROOT, DATA_SOURCES_CSV_FROM_HTML_1st
 from cdd_to_cts.table_ops import read_table_sect_and_req_key
 from parse_cdd_md import parse_cdd_md
+
+
+
 
 
 def diff_set_of_search_values_against_sets_of_words_from_files(count: int, file_and_path: str, word_set: set,
@@ -133,7 +137,7 @@ class SourceCrawlerReducer(object):
             found_cnt = 0
             for test_file in class_graph.get_cached_grep_of_at_test_files():
                 test_file = str(test_file)
-                if test_file.endswith(".java"):
+                if filter_files_to_search(test_file):
                     file_list.clear()
                     dependencies: [str] = self.get_testfile_dependency_word().get(convert_relative_filekey(test_file))
                     file_list.append(test_file)
@@ -278,6 +282,7 @@ class SourceCrawlerReducer(object):
         except IOError:
             pass
 
+
     def get_cached_crawler_data(self, cts_root_directory=CTS_SOURCE_ROOT):
         try:
             self.__files_to_words = persist.readp(self.files_to_words_storage)
@@ -289,8 +294,7 @@ class SourceCrawlerReducer(object):
         except IOError:
             print(
                 f" Crawling {cts_root_directory}: Could not open files_to_words, method_to_words, files_to_method_calls, aggregate_bag , recreating ")
-            self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = make_bags_of_word(
-                cts_root_directory)
+            self.__files_to_words, self.__method_to_words, self.__files_to_method_calls = class_graph.make_bags_of_words_all(cts_root_directory)
             persist.writep(self.__files_to_words, self.files_to_words_storage)
             persist.writep(self.__method_to_words, self.method_to_words_storage)
             persist.writep(self.__files_to_method_calls, self.files_to_method_calls_storage)

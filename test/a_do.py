@@ -8,7 +8,7 @@ import static_data
 import table_ops
 from helpers import read_file_to_string, write_file_to_string
 from table_functions_for_release import update_release_table_with_changes
-from table_ops import move_last_row_to_new_table, copy_matching_rows_to_new_table
+from table_ops import copy_matching_rows_to_new_table
 
 
 class MyTestCase(unittest.TestCase):
@@ -31,10 +31,10 @@ class MyTestCase(unittest.TestCase):
     #     self.assertEqual(True, True)  # add assertion here
     #     print(req)
 
-    def test_requirement_prompt(self):
-        dir = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/"
+    def test_map_a_requirement(self):
+        _dir = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/"
 
-        source_file = dir + "w.tsv"
+        source_file = _dir + "w.tsv"
         file_exists = False
         key_file_exists = exists(self.key_to_process)
         req = ""
@@ -43,12 +43,12 @@ class MyTestCase(unittest.TestCase):
         if len(req) < 3:
             req = input("Enter Full key for file to work on:\n ")
 
-        target_file = dir + "w_" + req.replace("/", "_") + ".tsv"
+        target_file = _dir + "w_" + req.replace("/", "_") + ".tsv"
 
         try:
             file_exists = exists(target_file)
         except Exception as err:
-            print("Exception " + err)
+            print("Exception " + str(err))
         if not file_exists:
             print(f"Creating new file {file_exists} pulled form {source_file}")
             target_file = copy_matching_rows_to_new_table(target_file, source_file, static_data.FULL_KEY, req)
@@ -62,23 +62,23 @@ class MyTestCase(unittest.TestCase):
 
 
 
-    def test_pull_results(self):
-        dir = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/"
+    def test_update_manual_results_file(self):
+        _dir = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/"
         key_file_exists = exists(self.key_to_process)
         req = ""
         if key_file_exists:
             req = read_file_to_string(self.key_to_process)
         if len(req) < 3:
             req = input("Enter key to pull final results from ")
-        target_file = dir + "w_" + req.replace("/", "_") + ".tsv"
-        flat_file = dir + "w_" + req.replace("/", "_") + "_flat.tsv"
+        target_file = _dir + "w_" + req.replace("/", "_") + ".tsv"
+        flat_file = _dir + "w_" + req.replace("/", "_") + "_flat.tsv"
         processed = target_file.replace('.tsv', "_processed.tsv")
         manual_result = target_file.replace('.tsv', "_manual_result.tsv")
         file_exists = False
         try :
             file_exists = exists(manual_result)
         except Exception as err:
-            print("Exception "+err)
+            print("Exception "+str(err))
         if not file_exists:
             shutil.copy(target_file,manual_result)
         processed = table_ops.copy_matching_rows_to_new_table(processed, flat_file, static_data.TEST_AVAILABILITY)

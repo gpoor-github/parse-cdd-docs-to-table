@@ -45,11 +45,11 @@ class ReadSpreadSheet:
 
     def crawl(self):
         # /Volumes/graham-ext/AndroidStudioProjects/cts
-        for directory, subdirlist, filelist in os.walk(CTS_SOURCE_ROOT + "/tests/"):
+        for directory, subdirlist, filelist in os.walk(CTS_SOURCE_ROOT ):
             print(directory)
             path = directory.replace(CTS_SOURCE_ROOT, ".")
             for f in filelist:
-                if f.endswith(".java"):
+                if helpers.filter_files_to_search(f):
                     full_path = "{}/{}".format(directory, f)
                     # with open(full_path, 'r') as file:
                     #   file_string = file.read().replace('\n', '')

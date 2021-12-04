@@ -1,20 +1,20 @@
 import csv
+import json
 import re
 import sys
 import time
 import traceback
-from shutil import copyfile
 from typing import Any
 
 import rx
 from rx import operators as ops, pipe
-from rx.subject import ReplaySubject, BehaviorSubject
+from rx.subject import BehaviorSubject
 
 import class_graph
 import helpers
 import static_data
 import table_ops
-from cdd_to_cts.class_graph import parse_class_or_method, re_method
+from cdd_to_cts.class_graph import re_method
 from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_test_cases_module_dictionary, \
     print_system_error_and_dump, \
     convert_version_to_number_from_full_key, CountDict
@@ -217,9 +217,8 @@ def find_method_text_subset(search_string: str, method_text: str) -> str:
 
 def find_search_terms(search_info) -> dict:
     full_key = search_info.get(FULL_KEY)
-    requirement = search_info.get(REQUIREMENT)
+    requirement:str = search_info.get(REQUIREMENT)
     auto_search_terms = find_java_objects(requirement)
-
     key_split = full_key.split('/')
     section_req = set()
     section_req.add(full_key)
@@ -237,7 +236,17 @@ def find_search_terms(search_info) -> dict:
     # Search Req Section requirements search on or off
     # search_term_set.update(section_req)
     search_term_set.update(auto_search_terms)
-    search_term_set.difference_update(static_data.spurious_terms)
+    requirement = requirement.replace("\"","").replace(")","").replace("(","").replace("[","").replace("]","").replace("."," ").replace(","," ")
+
+    all_requirements = set(requirement.split(" "))
+    search_term_set.update(all_requirements)
+
+    search_term_set =  search_term_set.difference(static_data.spurious_terms)
+    search_term_set =  search_term_set.difference(static_data.java_keywords)
+    search_term_set =  search_term_set.difference(static_data.common_english_words)
+    search_term_set =  search_term_set.difference(static_data.license_words)
+    search_term_set =  search_term_set.difference(static_data.cdd_common_words_to_remove)
+
     search_info[static_data.SEARCH_TERMS] = search_term_set
     return search_info
 
@@ -468,64 +477,29 @@ class RxData:
             helpers.print_system_error_and_dump(f"find_data_for_csv_dict at {full_key}", e)
 
         return search_info
+    #
+    # def get_replay_of_at_test_files_only(self,
+    #                                      results_grep_at_test: str = (
+    #                                              "%s" % static_data.TEST_FILES_TXT),
+    #                                      scheduler: rx.typing.Scheduler = None) -> rx.Observable:
+    #
+    #     return self.get_replay_of_at_test_files(results_grep_at_test, scheduler).pipe(
+    #         ops.map(lambda target: target.split(' :')[0]), ops.distinct())
 
-    def get_replay_of_at_test_files_only(self,
-                                         results_grep_at_test: str = (
-                                                 "%s" % static_data.TEST_FILES_TXT),
-                                         scheduler: rx.typing.Scheduler = None) -> rx.Observable:
+    # def get_replay_of_at_test_files(self,
+    #                                 results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT),
+    #                                 scheduler: rx.typing.Scheduler = None) -> ReplaySubject:
+    #
+    #     if self.__replay_at_test_files_to_methods:
+    #         # print( f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
+    #         return self.__replay_at_test_files_to_methods
+    #     else:
+    #         self.__replay_at_test_files_to_methods = ReplaySubject(9999, scheduler=scheduler)
+    #         self.__replay_at_test_files_to_methods.pipe(
+    #             rx.from_list(self.get_list_of_at_test_files(results_grep_at_test)))
 
-        return self.get_replay_of_at_test_files(results_grep_at_test, scheduler).pipe(
-            ops.map(lambda target: target.split(' :')[0]), ops.distinct())
 
-    def get_replay_of_at_test_files(self,
-                                    results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT),
-                                    scheduler: rx.typing.Scheduler = None) -> ReplaySubject:
 
-        if self.__replay_at_test_files_to_methods:
-            # print( f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
-            return self.__replay_at_test_files_to_methods
-        else:
-            self.__replay_at_test_files_to_methods = ReplaySubject(9999, scheduler=scheduler)
-            self.__replay_at_test_files_to_methods.pipe(
-                rx.from_list(self.get_list_of_at_test_files(results_grep_at_test)))
-
-    def get_list_of_at_test_files(self,
-                                  results_grep_at_test: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:
-
-        results_grep_at_test = helpers.find_valid_path(results_grep_at_test)
-
-        if len(self.__list_of_at_test_files) > 0:
-            # print(f"Warning get_replay_of_at_test_files() ignoring input file {results_grep_at_test} in to use cashed data")
-            return self.__list_of_at_test_files
-        else:
-            re_annotations = re.compile('@Test.*?$')
-            try:
-                with open(results_grep_at_test, "r") as grep_of_test_files:
-                    file_content = grep_of_test_files.readlines()
-                    count = 0
-                    while count < len(file_content):
-                        line = file_content[count]
-                        count += 1
-                        result = re_annotations.search(line)
-                        # Skip lines without annotations
-                        if result:
-                            test_annotated_file_name_absolute_path = line.split(":")[0]
-                            # test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
-                            # requirement = result.group(0)
-                            # noinspection DuplicatedCode
-                            line_method = file_content.pop()
-                            count += 1
-                            class_def, method = parse_class_or_method(line_method)
-                            if class_def == "" and method == "":
-                                line_method = file_content.pop()
-                                count += 1
-                                class_def, method = parse_class_or_method(line_method)
-                            if method:
-                                self.__list_of_at_test_files.add(format(test_annotated_file_name_absolute_path))
-
-                    return self.__list_of_at_test_files
-            except FileNotFoundError as e:
-                raise helpers.print_system_error_and_dump(f" Could not find {results_grep_at_test} ", e)
 
     #
     # def get_cdd_html_to_requirements(self, cdd_html_file=static_data.CDD_REQUIREMENTS_FROM_HTML_FILE,
@@ -559,13 +533,13 @@ class RxData:
     #     return self.__replay_cdd_requirements.pipe(
     #         ops.flat_map(lambda section_and_key: process_section_md(section_and_key)))
 
-    def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT,
-                                 scheduler: rx.typing.Scheduler = None):
-        return self.get_replay_of_at_test_files(test_file_grep_results, scheduler).pipe(
-            ops.map(lambda v: str(v).split(" :")[0]),
-            ops.distinct_until_changed(),
-            ops.map(lambda f:
-                    f'{f}:{helpers.read_file_to_string(f)}'))
+    # def get_at_test_method_words(self, test_file_grep_results=static_data.TEST_FILES_TXT,
+    #                              scheduler: rx.typing.Scheduler = None):
+    #     return self.get_replay_of_at_test_files(test_file_grep_results, scheduler).pipe(
+    #         ops.map(lambda v: str(v).split(" :")[0]),
+    #         ops.distinct_until_changed(),
+    #         ops.map(lambda f:
+    #                 f'{f}:{helpers.read_file_to_string(f)}'))
 
     @staticmethod
     def get_pipe_create_results_table():
@@ -605,8 +579,8 @@ class RxData:
         pass
 
     def search_on_files(self, search_info: dict, logging: bool = True) -> dict:
-        list_of_test_files = self.get_list_of_at_test_files()
-        list_of_test_files = list_of_test_files.union(helpers.get_list_void_public_test_files())
+        list_of_test_files = class_graph.get_list_of_at_test_files()
+        # list_of_test_files = list_of_test_files.union(helpers.get_list_void_public_test_files())
         self.progress_count += 1
         skip_count = 0
         search_root = ""
@@ -741,12 +715,12 @@ def do_map_with_flat_file(file_to_process:str ) :
         flat_file,
         [static_data.CLASS_DEF, static_data.METHOD],
         flat_file)
-
-    return update_release_table_with_changes(file_to_process, temp_result, file_to_process, static_data.results_header)
-
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
+    return update_release_table_with_changes(file_to_process, temp_result, file_to_process, static_data.results_header)
+
+
 
 if __name__ == '__main__':
     current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9.8_H-1-10.tsv"

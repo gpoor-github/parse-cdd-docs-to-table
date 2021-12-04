@@ -10,7 +10,7 @@ from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_ob
 from stackdump import stackdump
 
 
-def get_list_void_public_test_files(results_grep_public_test: str = "input_data_from_cts/public_void_files.txt") -> set:
+def get_list_void_public_test_files() -> set:
     results_grep_public_test = find_valid_path(results_grep_public_test)
     test_file_set = set()
 
@@ -70,7 +70,7 @@ def print_system_error_and_dump(message: str = "ERROR.. default cdd parser messa
         print(str(a_exception), file=sys.stderr)
         raise a_exception
     else:
-        raise BaseException(message)
+        raise Exception(message)
 
 
 def raise_error_system_exit(message: str = "ERROR.. default cdd parser message.", a_exception: BaseException = None):
@@ -120,7 +120,7 @@ def add_list_to_dict(new_value_to_add: Any, dictionary_with_existing_values: dic
         pre_existing_value = dictionary_with_existing_values.get(key)
         if isinstance(pre_existing_value,str) and isinstance(new_value_to_add,str):
             if pre_existing_value.index(new_value_to_add) > -1:
-                return
+                return dictionary_with_existing_values
     except Exception as err:
         print_system_error_and_dump(f"failed to get key={key} from dict={str(dictionary_with_existing_values)} {str(err)}", err)
 
@@ -303,3 +303,8 @@ def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_C
     except Exception as e:
         print_system_error_and_dump(f"Error open file {testcases_grep_results}", e)
     return test_cases_to_path
+
+
+def filter_files_to_search(f):
+    return f.endswith(".java") or f.endswith(".py") or f.endswith(".cpp") or f.endswith(".kt") or f.endswith(
+        ".c")
