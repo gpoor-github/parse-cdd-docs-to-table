@@ -1,6 +1,7 @@
 #  Block to comment
 import shutil
 import unittest
+from os import remove
 from os.path import exists
 
 import react
@@ -44,18 +45,23 @@ class MyTestCase(unittest.TestCase):
             req = input("Enter Full key for file to work on:\n ")
 
         target_file = _dir + "w_" + req.replace("/", "_") + ".tsv"
+        flat_file = target_file.replace('.tsv', "_flat.tsv")
 
         try:
             file_exists = exists(target_file)
+            backup = target_file.replace('.tsv', "_backup.tsv")
+            shutil.copy(src=target_file,dst=backup)
+            flat_file_backup = flat_file.replace('.tsv', "_backup.tsv")
+            shutil.copy(src=flat_file,dst=flat_file_backup)
+
         except Exception as err:
             print("Exception " + str(err))
         if not file_exists:
             print(f"Creating new file {file_exists} pulled form {source_file}")
             target_file = copy_matching_rows_to_new_table(target_file, source_file, static_data.FULL_KEY, req)
-
-        updated_table, target_header =react.do_map_with_flat_file(target_file)
-        self.assertGreater(len(updated_table), 0,f"Table 0 sized= {target_file}")
-        if len(updated_table) > 0:
+        flat_file, latest_result  = react.do_map_with_flat_file(target_file, flat_file, target_file)
+        self.assertTrue(exists(latest_result), f" failed to create file = {latest_result}")
+        if exists(latest_result):
             if not key_file_exists:
                 write_file_to_string(self.key_to_process,req)
         print("end")
@@ -72,7 +78,7 @@ class MyTestCase(unittest.TestCase):
             req = input("Enter key to pull final results from ")
         target_file = _dir + "w_" + req.replace("/", "_") + ".tsv"
         flat_file = _dir + "w_" + req.replace("/", "_") + "_flat.tsv"
-        processed = target_file.replace('.tsv', "_processed.tsv")
+        processed = target_file.replace('.tsv', "_processed_temp.tsv")
         manual_result = target_file.replace('.tsv', "_manual_result.tsv")
         file_exists = False
         try :
@@ -85,6 +91,15 @@ class MyTestCase(unittest.TestCase):
 
         updated_table, target_header = update_release_table_with_changes(manual_result, processed, manual_result, static_data.cdd_to_cts_app_header)
         self.assertGreater(len(updated_table), 0,f"Table 0 sized= {manual_result}")  # add assertion here
+        if len(updated_table) > 0:
+            try:
+                remove(processed)
+                backup = target_file.replace('.tsv', "_backup.tsv")
+                remove(path=backup)
+                flat_file_backup = flat_file.replace('.tsv', "_backup.tsv")
+                remove(path=flat_file_backup)
+            except Exception as err:
+                print("Exception "+str(err))
         print(req)
 
 

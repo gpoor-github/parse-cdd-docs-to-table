@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import traceback
+from shutil import copy
 from typing import Any
 
 import rx
@@ -740,12 +741,10 @@ def translate_flat(result: dict) -> dict:
     return flat_result
 
 
-def do_map_with_flat_file(file_to_process:str ) :
+def do_map_with_flat_file(file_to_process:str, flat_file:str, latest_result:str) :
     search_for_req = False
     start = time.perf_counter()
     rd = RxData()
-    temp_result = file_to_process.replace('.tsv', "_back.tsv")
-    flat_file = file_to_process.replace('.tsv', "_flat.tsv")
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))
         , ops.filter(lambda flat_result: len(flat_result) != 0)
@@ -759,8 +758,8 @@ def do_map_with_flat_file(file_to_process:str ) :
                    on_completed=lambda: print("complete result_subject"),
                    on_error=lambda err: helpers.print_system_error_and_dump("result_subject", err))
 
-    rd.main_do_create_table(file_to_process, temp_result).subscribe(
-        on_next=lambda table: my_print(f"react.py main created (truncated) [{str(temp_result)[0:50]}] from [{file_to_process}] "),
+    rd.main_do_create_table(file_to_process, latest_result).subscribe(
+        on_next=lambda table: my_print(f"react.py main created (truncated) [{str(latest_result)[0:50]}] from [{file_to_process}] "),
         on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
     merge_duplicate_row_for_column_set_for_flat_file(
@@ -768,12 +767,16 @@ def do_map_with_flat_file(file_to_process:str ) :
         [static_data.CLASS_DEF, static_data.METHOD],
         flat_file)
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
+    updated_table, target_header = update_release_table_with_changes(file_to_process, latest_result, file_to_process, static_data.results_header)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')
-    return update_release_table_with_changes(file_to_process, temp_result, file_to_process, static_data.results_header)
+    return flat_file, latest_result
 
 
 
 if __name__ == '__main__':
     current_file_ = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9.8_H-1-10.tsv"
-    do_map_with_flat_file(current_file_)
+
+    latest_result_ = current_file_.replace('.tsv', "_latest_result.tsv")
+    flat_file_ = current_file_.replace('.tsv', "_flat.tsv")
+    do_map_with_flat_file(current_file_,flat_file_,latest_result_)
