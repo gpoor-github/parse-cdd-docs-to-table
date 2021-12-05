@@ -189,7 +189,7 @@ URLS = 'urls'
 METHODS_STRING = 'methods_string'
 MATCHED_FILES = 'matched_files'
 MAX_MATCHES = 'max_matches'
-MAX_MATCHES_DEFAULT = 5
+MAX_MATCHES_DEFAULT = 50000
 # Protect a set of columns in the row or the whole row
 PROTECTED = 'protected'
 SHORTENED = "Shortened"

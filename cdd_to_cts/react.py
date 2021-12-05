@@ -267,7 +267,7 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self) -> None:
-        self.max_matches = 12000
+        self.max_matches = 92000
         self.progress_count = 0
 
         self.match_count = 0
