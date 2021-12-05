@@ -226,7 +226,7 @@ cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBE
                              PROTECTED] + results_header + ccd_12_subset_target_field_header
 # What data is to be copied from each row to the search_info dictionary
 fields_for_search_info_header: [] = update_manual_header+[REQUIREMENT,TEST_AVAILABILITY]
-flat_file_header:[] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY,MANUAL_SEARCH_TERMS,  REQUIREMENT,TEST_AVAILABILITY,CLASS_DEF, METHOD, MODULE, MATCHED_TERMS,METHODS_STRING,  FILE_NAME, COMMENT_INTERNAL,CTS_BUG_ID,TEST_LEVEL]
+flat_file_header:[] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY,MANUAL_SEARCH_TERMS,  REQUIREMENT,TEST_AVAILABILITY,CLASS_DEF, METHOD, MODULE, MATCHED_TERMS,METHODS_STRING, SEARCH_TERMS, FILE_NAME, COMMENT_INTERNAL,CTS_BUG_ID,TEST_LEVEL]
 
 table_delimiter = '\t'
 table_dialect = 'excel-tab'

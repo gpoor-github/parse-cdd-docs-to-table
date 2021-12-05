@@ -735,6 +735,7 @@ def translate_flat(result: dict) -> dict:
     flat_result[SECTION_ID] = result.get(SECTION_ID)
     flat_result[REQ_ID] = result.get(REQ_ID)
     flat_result[MANUAL_SEARCH_TERMS] = result.get(MANUAL_SEARCH_TERMS)
+    flat_result[SEARCH_TERMS] = result.get(SEARCH_TERMS)
     flat_result[SEARCH_RESULT] = dict(result.get(SEARCH_RESULT)).get(FLAT_RESULT)
     return flat_result
 
@@ -745,7 +746,6 @@ def do_map_with_flat_file(file_to_process:str ) :
     rd = RxData()
     temp_result = file_to_process.replace('.tsv', "_back.tsv")
     flat_file = file_to_process.replace('.tsv', "_flat.tsv")
-
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))
         , ops.filter(lambda flat_result: len(flat_result) != 0)
