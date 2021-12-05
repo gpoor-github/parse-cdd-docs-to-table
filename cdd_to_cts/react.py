@@ -267,9 +267,8 @@ class RxData:
     #     sorted(at_test_files_to_methods.items(), key=lambda x: x[1], reverse=True))
 
     def __init__(self) -> None:
-        self.max_matches = 1000
+        self.max_matches = 12000
         self.progress_count = 0
-        self.is_exact_match: bool = False
 
         self.match_count = 0
         self.start = time.perf_counter()
@@ -352,16 +351,16 @@ class RxData:
                                                          flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)  # full_text_of_file_str.count(matched_terms)
                 match_count_of_term_in_file = len(re_matches_from_file_search)
                 is_found = match_count_of_term_in_file > 0
-                if not is_found: #try again unescaped
-                    search_string = matched_term
-                    re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
-                                                             flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)  # full_text_of_file_str.count(matched_terms)
-                    match_count_of_term_in_file = len(re_matches_from_file_search)
-                    is_found = match_count_of_term_in_file > 0
+                # if not is_found: #try again unescaped
+                #     search_string = matched_term
+                #     re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
+                #                                              flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)  # full_text_of_file_str.count(matched_terms)
+                #     match_count_of_term_in_file = len(re_matches_from_file_search)
+                #     is_found = match_count_of_term_in_file > 0
 
                 if is_found:
                     if matched_term == search_info.get(FULL_KEY):
-                        self.is_exact_match = True
+                        print("FULL key matched!! :"+matched_term)
                     cts_file_path_name = str(file_name_param).partition('src')[2]
                     search_result = search_info.get(SEARCH_RESULT)
                     if not search_result:
@@ -414,8 +413,7 @@ class RxData:
                                 print(f"Found match {str(search_result)}")
                             # result = f'["{a_list_item}",["{mi}":"{method_text}"]]'
                             # print(f"\n matched: {result}")
-                if self.is_exact_match:
-                    break
+
             # end for search terms
 
         except Exception as err:
@@ -633,7 +631,7 @@ class RxData:
         self.result_subject.on_completed()
         pass
 
-    def search_on_files(self, search_info: dict, logging: bool = True) -> dict:
+    def search_on_files(self, search_info: dict, logging: bool = False) -> dict:
         list_of_test_files = class_graph.get_list_of_at_test_files()
         # list_of_test_files = list_of_test_files.union(helpers.get_list_void_public_test_files())
         self.progress_count += 1
@@ -668,7 +666,6 @@ class RxData:
         except:
             pass
         self.match_count = 0
-        self.is_exact_match = False
         search_dependency_set = set()
         not_found_set = set()
         for file_to_search in list_of_test_files:
@@ -683,8 +680,6 @@ class RxData:
                         not_found_set.add(file_to_search)
                 else:
                     skip_count += 1
-            if self.is_exact_match:
-                break
         search_result = search_info.get(SEARCH_RESULT)
         if search_result is None or search_result.get(METHOD) is None:
             for not_found_in in not_found_set:
@@ -726,6 +721,7 @@ class RxData:
 
 
 def my_print(v: Any, f: Any = '{}') -> Any:
+
     print(f.format(v))
     return v
 
@@ -747,7 +743,6 @@ def do_map_with_flat_file(file_to_process:str ) :
     search_for_req = False
     start = time.perf_counter()
     rd = RxData()
-    rd.max_matches = 1200
     temp_result = file_to_process.replace('.tsv', "_back.tsv")
     flat_file = file_to_process.replace('.tsv', "_flat.tsv")
 
@@ -760,12 +755,12 @@ def do_map_with_flat_file(file_to_process:str ) :
         ops.map(
             lambda table: table_ops.write_table(flat_file, table,
                                                 static_data.cdd_to_cts_app_header))) \
-        .subscribe(on_next=lambda results: my_print(f"result_subject [{str(results)}] "),
+        .subscribe(on_next=lambda results: my_print(f"result_subject truncated = [{str(results)[0:50]}] "),
                    on_completed=lambda: print("complete result_subject"),
                    on_error=lambda err: helpers.print_system_error_and_dump("result_subject", err))
 
     rd.main_do_create_table(file_to_process, temp_result).subscribe(
-        on_next=lambda table: my_print(f"react.py main created [{temp_result}] from [{file_to_process}] "),
+        on_next=lambda table: my_print(f"react.py main created (truncated) [{str(temp_result)[0:50]}] from [{file_to_process}] "),
         on_completed=lambda: rd.do_on_complete(),
         on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
     merge_duplicate_row_for_column_set_for_flat_file(

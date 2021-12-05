@@ -30,7 +30,6 @@ def do_map_12():
     rx_output_file = f"{directory}cdd_12_todo_created.tsv"
     # noinspection DuplicatedCode
     rd = RxData()
-    rd.max_matches = 40
     rd.main_do_create_table(input_table_file=cdd_12_todo_output_file, output_file=rx_output_file) \
         .subscribe(
         on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),

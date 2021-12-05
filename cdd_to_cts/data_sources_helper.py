@@ -83,7 +83,7 @@ def create_full_table_from_cdd(
     write_table(output_file, table_for_sheet, output_header)
 
 def process_section_splits_md_and_html(record_key_method:(), key_string_for_re:str, section_id:str, key_to_full_requirement_text_param:dict[str, str],
-                                       record_id_splits:[str], section_id_count:int, total_requirement_count:int, section_to_section_data:dict[str,str], section_data:str, logging=True):
+                                       record_id_splits:[str], section_id_count:int, total_requirement_count:int, section_to_section_data:dict[str,str], section_data:str, logging=False):
     record_id_count = 0
 
     for record_id_split in record_id_splits:

@@ -410,11 +410,11 @@ def find_header(table: [[str]]) -> [str]:
                 potential_header_str.find(REQ_ID) > -1 or \
                 potential_header_str.find(FULL_KEY) > -1:
             header = table[0]
-            print(f'write_table Found header, names are {", ".join(table[0])}')
+            print(f'write_table Found header, names are (truncated) {", ".join(table[0])[0:350]}')
         else:
-            raise ValueError(f"Header not found {potential_header_str}")
+            raise ValueError(f"Header not found (truncated){potential_header_str[0:250]}")
     except  (AttributeError, ValueError, IndexError) as ie:
-        print(f'No row 0 in table just writing use the one passed im header {str(ie)} {str(header)}')
+        print(f'No row 0 in table just writing use the one passed im header {str(ie)} (truncated) {str(header)[0:250]}')
     return header
 
 
@@ -459,7 +459,7 @@ def convert_to_keyed_table_dict(input_table: [[str]], input_header: [str]) -> (
     return table_dict_req_ids_to_rows, found_header
 
 
-def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = True, logging: bool = True) -> [[[str]],
+def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = True, logging: bool = False) -> [[[str]],
                                                                                                                dict[
                                                                                                                    str, int],
                                                                                                                [str],

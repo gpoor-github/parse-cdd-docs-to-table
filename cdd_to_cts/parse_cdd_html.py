@@ -94,7 +94,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count, section_text:str="", logging=True):
+                    record_id_splits, section_id_count, total_requirement_count, section_text:str="", logging=False):
     record_id_count = 0
 
     for record_id_split in record_id_splits:
