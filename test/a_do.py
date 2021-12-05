@@ -76,7 +76,7 @@ class MyTestCase(unittest.TestCase):
         manual_result = target_file.replace('.tsv', "_manual_result.tsv")
         file_exists = False
         try :
-            file_exists = exists(manual_result)
+             file_exists = exists(manual_result)
         except Exception as err:
             print("Exception "+str(err))
         if not file_exists:
