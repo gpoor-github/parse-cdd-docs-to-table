@@ -180,9 +180,11 @@ def copy_matching_rows_to_new_table(output_table_name: str, table_to_get_row: st
                 new_table.append(row)
         elif value.find( search_string) > -1:
             new_table.append(row)
-    if len(new_table) == 0: # Header and one line at least
-        helpers.raise_error_system_exit(f"copy_matching_rows_to_new_table No data found for [{search_string}] in col [{column_name}] in table [{table_to_get_row}] ")
-
+    if not len(new_table) > 0: # Header and one line at least
+        print (f"copy_matching_rows_to_new_table No data found for [{search_string}] in col [{column_name}] in table [{table_to_get_row}] ")
+        return None
+    if len(new_table) == 1 and find_header(new_table):
+        return None
     write_table(output_table_name, new_table, header_src)
     return output_table_name
 

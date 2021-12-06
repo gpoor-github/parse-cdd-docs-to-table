@@ -1,0 +1,47 @@
+"Section"	"section_id"	"req_id"	"full_key"	"manual_search_terms"	"requirement"	"Test Availability"	"class_def"	"method"	"module"	"matched_terms"	"methods_string"	"file_name"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"Test Level"
+"2.2.5  . Security Model"	"9.8.2"	"H-5-3"	"9.8.2/H-5-3"	""	"""[9.8.2/H-5-3] MUST not hide the camera indicator for system apps that have visible user interfaces or direct user interaction. <h4 id=""226_developer_tools_and_options_compatibility"" """	"Test missing possiblu"	"android.content.pm.cts.shortcut.upgrade.ShortcutManagerPreUpgradeTest"	"testPreUpgrade"	""	"1: apps"	"public void testPreUpgrade() {
+        Log.i(Consts.TAG, ""Pre: ResIDs="" + R.drawable.black_32x32 + "", "" + R.drawable.black_64x64);
+
+        // Publish shortcuts with drawable icons.
+        final Icon icon1 = Icon.createWithResource(getContext(), R.drawable.black_32x32);
+        final Icon icon2 = Icon.createWithResource(getContext(), R.drawable.black_64x64);
+
+        // Store the original resource ID in the extras.
+        final PersistableBundle b1 = new PersistableBundle();
+        b1.putInt(Consts.EXTRA_ICON_RES_ID, R.drawable.black_32x32);
+        final ShortcutInfo s1 = new ShortcutInfo.Builder(getContext(), ""s1"")
+                .setShortLabel(""shortlabel1"")
+                .setIcon(icon1)
+                .setIntents(new Intent[]{new Intent(Intent.ACTION_VIEW)})
+                .setExtras(b1)
+                .build();
+
+        final PersistableBundle b2 = new PersistableBundle();
+        b2.putInt(Consts.EXTRA_ICON_RES_ID, R.drawable.black_64x64);
+        final ShortcutInfo s2 = new ShortcutInfo.Builder(getContext(), ""s2"")
+                .setShortLabel(""shortlabel2"")
+                .setIcon(icon2)
+                .setIntents(new Intent[]{new Intent(Intent.ACTION_VIEW)})
+                .setExtras(b2)
+                .build();
+
+        assertTrue(getManager().setDynamicShortcuts(list(s1, s2)));
+
+        // Set this package as a default launcher to access LauncherApps.
+        Launcher.setAsDefaultLauncher(getInstrumentation(), getContext());
+
+        // Check the published icons as a launcher.
+        assertIconDimensions(getContext().getPackageName(), ""s1"", icon1);
+        assertIconDimensions(getContext().getPackageName(), ""s2"", icon2);
+
+        // Paranoid: this should fail.
+        boolean notThrown = false;
+        try {
+            assertIconDimensions(getContext().getPackageName(), ""s1"", icon2);
+            notThrown = true;
+        } catch (AssertionFailedError expected) {
+            // okay
+        }
+        assertFalse(notThrown);
+    }
+}"	"/home/gpoor/cts-12-source/cts/hostsidetests/shortcuts/deviceside/upgrade/src/android/content/pm/cts/shortcut/upgrade/ShortcutManagerPreUpgradeTest.java"	"Can not find ""indicator"" what do the code call this?"	"tbd not sure"	""

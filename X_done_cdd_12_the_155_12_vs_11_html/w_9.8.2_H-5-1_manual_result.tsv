@@ -1,0 +1,230 @@
+"Section"	"section_id"	"req_id"	"full_key"	"key_as_number"	"requirement"	"Test Availability"	"search_roots"	"search_terms"	"manual_search_terms"	"not_search_terms"	"not_files"	"max_matches"	"class_defs"	"methods"	"modules"	"protected"	"class_def"	"method"	"module"	"file_name"	"matched_files"	"methods_string"	"urls"	"method_text"	"matched_terms"	"qualified_method"	"Annotation?"	"New Req for S?"	"New CTS for S?"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"CDD Bug Id"	"Area"	"Shortened"	"Test Level"
+"2.2.5  . Security Model"	"9.8.2"	"H-5-1"	"9.8.2/H-5-1"	"09080200.720501"	"""[9.8.2/H-5-1] MUST display the camera indicator when an app is accessing live camera data, but not when the camera is only being accessed by app(s) holding the roles called out in section 9.1 with CDD identifier [C-4-X]. """	"Test Available"	""	"CDD app(s)"	"display UI view camera indicator app  accessing live camera data  accessed app(s) holding  role section 9.1  CDD identifier"	""	""	""	"[('android.permission.cts.NearbyDevicesPermissionTest', 11), ('android.opengl.cts.OpenGlEsVersionTest', 10), ('android.security.cts.KernelConfigTest', 7), ('android.appwidget.cts.RequestPinAppWidgetTest', 2), ('android.mediapc.cts.MultiEncoderPairPerfTest', 2), ('android.telephony.cts.TelephonyManagerTest', 2), ('android.provider.cts.contacts.ContactsProvider2_AccountRemovalTest', 2), ('android.location.cts.gnss.GnssPseudorangeVerificationTest', 2), ('android.car.cts.permissioncarpowertrain.PermissionCarPowertrainTest', 2), ('android.server.wm.CompatChangeTests', 1), ('android.SustainedPerformance.cts.SustainedPerformanceHostTest', 1), ('com.android.cts.verifier.companion.CompanionDeviceTestActivity', 1), ('com.android.cts.verifier.widget.WidgetTestActivity', 1), ('com.android.cts.verifier.audio.MidiTestActivityBase', 1), ('android.renderscript.cts.generated.TestAcosh', 1), ('com.android.cts.verifier.security.IdentityCredentialAuthentication', 1), ('android.database.cts.MergeCursorTest', 1), ('com.android.cts.apicoverage.HtmlReport', 1), ('com.android.cts.verifier.camera.its.ItsService', 1), ('com.android.cts.verifier.audio.AudioOutColdStartLatencyActivity', 1), ('com.android.cts.apicoverage.CddCoverage', 1), ('android.host.accounts.BaseMultiUserTest', 1), ('android.location.cts.common.TestMeasurementUtil', 1)]"	"[('toString', 27), ('destroy', 26), ('getContext', 15), ('setUp', 12), ('StringBuilder', 9), ('start', 8), ('size', 7), ('tearDown', 7), ('AtomicInteger', 7), ('getDevice', 6), ('getInstrumentation', 5), ('Object', 5), ('close', 5), ('ArgumentsFloatFloat', 4), ('ArgumentsHalfHalf', 4), ('run', 4), ('getLooper', 4), ('capacity', 4), ('getState', 4), ('clear', 4), ('getSimpleName', 3), ('quitSafely', 3), ('getOutputStream', 3), ('getPseudorangeRateUncertaintyMetersPerSecond', 3), ('getCn0DbHz', 3), ('getCarrierPhase', 3), ('getMultipathIndicator', 3), ('getSnrInDb', 3), ('getAutomaticGainControlLevelDb', 3), ('getConstellationType', 3), ('BlockingBroadcastReceiver', 2), ('await', 2), ('getExtras', 2), ('getPackageManager', 2), ('saveAllowedNetworkTypesForAllReasons', 2), ('recoverAllowedNetworkType', 2), ('hasCellular', 2), ('build', 2), ('closeCameraDevice', 2), ('take', 2), ('checkAndStartThread', 2), ('getRequirementId', 2), ('hashCode', 2), ('getFullBiasNanos', 2), ('getClock', 2), ('getReceivedSvTimeUncertaintyNanos', 2), ('getTimeOffsetNanos', 2), ('hasCarrierFrequencyHz', 2), ('getCarrierFrequencyHz', 2), ('getCarrierPhaseUncertainty', 2), ('getFrequencyOffsetMetersPerSecond', 2), ('getSamplingWidthMeters', 2), ('getSvid', 2), ('getReceivedSvTimeNanos', 2), ('getType', 2), ('getSubmessageId', 2), ('enableBluetooth', 1), ('supportsBluetooth', 1), ('getAdapter', 1), ('PlatformCompatChangeRule', 1), ('setUpLauncher', 1), ('getDefaultLauncher', 1), ('tearDownLauncher', 1), ('Bundle', 1), ('getFirstWidgetComponent', 1), ('getMaxSupportedInstances', 1), ('getSupportedPerformancePoints', 1), ('inputParams', 1), ('getAction', 1), ('countDown', 1), ('clearQueue', 1), ('waitForCarrierConfigChanged', 1), ('getPackageName', 1), ('getDefaultSubscriptionId', 1), ('getRadioHalVersion', 1), ('getUiAutomation', 1), ('keySet', 1), ('toByteArray', 1), ('getPhoneCount', 1), ('getBuild', 1), ('assumeSecurityModelCompat', 1), ('Exception', 1), ('deleteOnExit', 1), ('lines', 1), ('checkAcoshFloatFloat', 1), ('checkAcoshFloat2Float2', 1), ('checkAcoshFloat3Float3', 1), ('checkAcoshFloat4Float4', 1), ('checkAcoshHalfHalf', 1), ('checkAcoshHalf2Half2', 1), ('checkAcoshHalf3Half3', 1), ('checkAcoshHalf4Half4', 1), ('getTitleRes', 1), ('getDescriptionRes', 1), ('PipedOutputStream', 1), ('Runnable', 1), ('printStackTrace', 1), ('newInstance', 1), ('getContentResolver', 1), ('onCreate', 1), ('BlockingStateCallback', 1), ('SerializerRunnable', 1), ('SocketRunnable', 1), ('getId', 1), ('onDestroy', 1), ('quit', 1), ('getWidth', 1), ('getHeight', 1), ('getPhysicalCameraIds', 1), ('JSONObject', 1), ('hasArray', 1), ('array', 1), ('flush', 1), ('peek', 1), ('removeFirst', 1), ('accept', 1), ('getInputStream', 1), ('readLine', 1), ('getDefault', 1), ('stopSelf', 1), ('doGetProps', 1), ('doStartSensorEvents', 1), ('AudioTimestamp', 1), ('getCddRequirements', 1), ('values', 1), ('getMaxNumberOfUsersSupported', 1), ('getCurrentUser', 1), ('getPrimaryUserId', 1), ('builder', 1), ('getLocationManager', 1), ('hasFullBiasNanos', 1), ('hasBiasUncertaintyNanos', 1), ('getBiasUncertaintyNanos', 1), ('getTimeNanos', 1), ('entrySet', 1), ('getKey', 1), ('getValue', 1), ('hasCarrierPhase', 1), ('hasCarrierPhaseUncertainty', 1), ('hasSnrInDb', 1), ('hasAutomaticGainControlLevelDb', 1), ('hasCorrelationVectors', 1), ('hasSatellitePvt', 1), ('getCorrelationVectors', 1), ('getMagnitude', 1), ('getAccumulatedDeltaRangeState', 1), ('getAccumulatedDeltaRangeMeters', 1), ('getAccumulatedDeltaRangeUncertaintyMeters', 1), ('getCodeType', 1), ('getGnssNavMessageTypes', 1), ('getMessageId', 1), ('getData', 1), ('setup', 1), ('getActivity', 1)]"	"[('CtsPermissionTestCases', 11), ('CtsOpenGLTestCases', 10), ('CtsSecurityHostTestCases', 7), ('CtsAppWidgetTestCases', 2), ('CtsMediaPerformanceClassTestCases', 2), ('CtsTelephonyTestCases', 2), ('CtsContactsProviderTestCases', 2), ('CtsLocationGnssTestCases', 2), ('CtsWindowManagerDeviceTestCases', 1), ('CtsSustainedPerformanceHostTestCases', 1), ('CtsRenderscriptTestCases', 1), ('CtsDatabaseTestCases', 1), ('CtsAccountsHostTestCases', 1)]"	""	"com.android.cts.deviceowner.DevicePolicySafetyCheckerIntegrationTest"	"DevicePolicySafetyCheckerIntegrationTester"	""	"/home/gpoor/cts-12-source/cts/hostsidetests/devicepolicy/app/DeviceOwner/src/com/android/cts/deviceowner/DevicePolicySafetyCheckerIntegrationTest.java"	"[('(1,python,)', 5), ('(6,python,)', 2), ('(2,python,/com/android/compatibility/common/tradefed/presubmit/ValidateTestsAbi.java)', 1), ('(1,python,/com/android/cts/verifier/camera/its/ItsTestActivity.java)', 1), ('(1,python,/com/android/cts/verifier/sensors/SensorPowerTestActivity.java)', 1), ('(8,python,)', 1), ('(2,python,)', 1)]"	"public void test/*
+ *.
+ */
+package com.android.cts.deviceowner;
+
+import static android.app.admin.DevicePolicyManager.OPERATION_CREATE_AND_MANAGE_USER;
+import static android.app.admin.DevicePolicyManager.OPERATION_REBOOT;
+import static android.app.admin.DevicePolicyManager.OPERATION_REMOVE_USER;
+import static android.app.admin.DevicePolicyManager.OPERATION_REQUEST_BUGREPORT;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_APPLICATION_HIDDEN;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_APPLICATION_RESTRICTIONS;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_CAMERA_DISABLED;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_FACTORY_RESET_PROTECTION_POLICY;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_GLOBAL_PRIVATE_DNS;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_KEEP_UNINSTALLED_PACKAGES;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_KEYGUARD_DISABLED;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_LOCK_TASK_FEATURES;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_LOCK_TASK_PACKAGES;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_LOGOUT_ENABLED;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_OVERRIDE_APNS_ENABLED;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_PACKAGES_SUSPENDED;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_STATUS_BAR_DISABLED;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_SYSTEM_SETTING;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_SYSTEM_UPDATE_POLICY;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_TRUST_AGENT_CONFIGURATION;
+import static android.app.admin.DevicePolicyManager.OPERATION_SET_USER_CONTROL_DISABLED_PACKAGES;
+import static android.app.admin.DevicePolicyManager.OPERATION_START_USER_IN_BACKGROUND;
+import static android.app.admin.DevicePolicyManager.OPERATION_STOP_USER;
+import static android.app.admin.DevicePolicyManager.OPERATION_SWITCH_USER;
+import static android.app.admin.DevicePolicyManager.OPERATION_UNINSTALL_CA_CERT;
+import static android.app.admin.DevicePolicyManager.OPERATION_WIPE_DATA;
+
+import android.app.admin.DevicePolicyManager;
+import android.app.admin.FactoryResetProtectionPolicy;
+import android.content.ComponentName;
+import android.os.Bundle;
+import android.os.UserHandle;
+
+import com.android.cts.devicepolicy.DevicePolicySafetyCheckerIntegrationTester;
+import com.android.internal.util.ArrayUtils;
+
+import java.util.Arrays;
+import java.util.List;
+
+// TODO(b/174859111): move to automotive-only section
+/**
+ * Tests that DPM calls fail when determined by the
+ * {@link android.app.admin.DevicePolicySafetyChecker}.
+ */
+public final class DevicePolicySafetyCheckerIntegrationTest extends BaseDeviceOwnerTest {
+    private static final int NO_FLAGS = 0;
+    private static final UserHandle USER_HANDLE = UserHandle.of(42);
+    public static final String TEST_PACKAGE = BasicAdminReceiver.class.getPackage().getName();
+    public static final ComponentName TEST_COMPONENT = new ComponentName(
+            TEST_PACKAGE, BasicAdminReceiver.class.getName());
+    public static final List<String> TEST_ACCOUNTS = Arrays.asList(""Account 1"");
+    public static final List<String> TEST_PACKAGES = Arrays.asList(TEST_PACKAGE);
+    private static final String TEST_CA =
+            ""-----BEGIN CERTIFICATE-----\n""
+            + ""MIICVzCCAgGgAwIBAgIJAMvnLHnnfO/IMA0GCSqGSIb3DQEBBQUAMIGGMQswCQYD\n""
+            + ""VQQGEwJJTjELMAkGA1UECAwCQVAxDDAKBgNVBAcMA0hZRDEVMBMGA1UECgwMSU1G\n""
+            + ""TCBQVlQgTFREMRAwDgYDVQQLDAdJTUZMIE9VMRIwEAYDVQQDDAlJTUZMLklORk8x\n""
+            + ""HzAdBgkqhkiG9w0BCQEWEHJhbWVzaEBpbWZsLmluZm8wHhcNMTMwODI4MDk0NDA5\n""
+            + ""WhcNMjMwODI2MDk0NDA5WjCBhjELMAkGA1UEBhMCSU4xCzAJBgNVBAgMAkFQMQww\n""
+            + ""CgYDVQQHDANIWUQxFTATBgNVBAoMDElNRkwgUFZUIExURDEQMA4GA1UECwwHSU1G\n""
+            + ""TCBPVTESMBAGA1UEAwwJSU1GTC5JTkZPMR8wHQYJKoZIhvcNAQkBFhByYW1lc2hA\n""
+            + ""aW1mbC5pbmZvMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ738cbTQlNIO7O6nV/f\n""
+            + ""DJTMvWbPkyHYX8CQ7yXiAzEiZ5bzKJjDJmpRAkUrVinljKns2l6C4++l/5A7pFOO\n""
+            + ""33kCAwEAAaNQME4wHQYDVR0OBBYEFOdbZP7LaMbgeZYPuds2CeSonmYxMB8GA1Ud\n""
+            + ""IwQYMBaAFOdbZP7LaMbgeZYPuds2CeSonmYxMAwGA1UdEwQFMAMBAf8wDQYJKoZI\n""
+            + ""hvcNAQEFBQADQQBdrk6J9koyylMtl/zRfiMAc2zgeC825fgP6421NTxs1rjLs1HG\n""
+            + ""VcUyQ1/e7WQgOaBHi9TefUJi+4PSVSluOXon\n""
+            + ""-----END CERTIFICATE-----"";
+    private final DevicePolicySafetyCheckerIntegrationTester mTester =
+            new DevicePolicySafetyCheckerIntegrationTester() {
+
+        @Override
+        protected int[] getSafetyAwareOperations() {
+            int[] operations = new int [] {
+                    OPERATION_CREATE_AND_MANAGE_USER,
+                    // TODO(b/175245108) Add test for this operation; testing
+                    // dpm.installSystemUpdate will require upload a test system update file.
+                    // OPERATION_INSTALL_SYSTEM_UPDATE,
+                    OPERATION_REBOOT,
+                    OPERATION_REMOVE_USER,
+                    OPERATION_REQUEST_BUGREPORT,
+                    OPERATION_SET_APPLICATION_HIDDEN,
+                    OPERATION_SET_APPLICATION_RESTRICTIONS,
+                    OPERATION_SET_CAMERA_DISABLED,
+                    OPERATION_SET_FACTORY_RESET_PROTECTION_POLICY,
+                    OPERATION_SET_GLOBAL_PRIVATE_DNS,
+                    OPERATION_SET_KEEP_UNINSTALLED_PACKAGES,
+                    OPERATION_SET_KEYGUARD_DISABLED,
+                    OPERATION_SET_LOCK_TASK_FEATURES,
+                    OPERATION_SET_LOCK_TASK_PACKAGES,
+                    OPERATION_SET_LOGOUT_ENABLED,
+                    OPERATION_SET_PACKAGES_SUSPENDED,
+                    OPERATION_SET_STATUS_BAR_DISABLED,
+                    OPERATION_SET_SYSTEM_SETTING,
+                    OPERATION_SET_SYSTEM_UPDATE_POLICY,
+                    OPERATION_SET_USER_CONTROL_DISABLED_PACKAGES,
+                    OPERATION_START_USER_IN_BACKGROUND,
+                    OPERATION_STOP_USER,
+                    OPERATION_SWITCH_USER,
+                    OPERATION_UNINSTALL_CA_CERT,
+                    OPERATION_WIPE_DATA
+            };
+
+            if (mHasTelephonyFeature) {
+                operations = ArrayUtils.appendInt(operations, OPERATION_SET_OVERRIDE_APNS_ENABLED);
+            }
+            if (mHasSecureLockScreen) {
+                operations = ArrayUtils.appendInt(operations,
+                        OPERATION_SET_TRUST_AGENT_CONFIGURATION);
+            }
+
+            return operations;
+        }
+
+        @Override
+        protected int[] getOverloadedSafetyAwareOperations() {
+            return new int [] {
+                OPERATION_WIPE_DATA
+            };
+        }
+
+        @Override
+        protected void runOperation(DevicePolicyManager dpm, ComponentName admin, int operation,
+                boolean overloaded) {
+            switch (operation) {
+                case OPERATION_CREATE_AND_MANAGE_USER:
+                    dpm.createAndManageUser(admin, /* name= */ null, admin, /* adminExtras= */ null,
+                            NO_FLAGS);
+                    break;
+                case OPERATION_REBOOT:
+                    dpm.reboot(admin);
+                    break;
+                case OPERATION_REMOVE_USER:
+                    dpm.removeUser(admin, USER_HANDLE);
+                    break;
+                case OPERATION_REQUEST_BUGREPORT:
+                    dpm.requestBugreport(admin);
+                    break;
+                case OPERATION_SET_APPLICATION_HIDDEN:
+                    dpm.setApplicationHidden(admin, TEST_PACKAGE, /* hidden= */true);
+                    break;
+                case OPERATION_SET_APPLICATION_RESTRICTIONS:
+                    dpm.setApplicationRestrictions(admin, TEST_PACKAGE, new Bundle());
+                    break;
+                case OPERATION_SET_CAMERA_DISABLED:
+                    dpm.setCameraDisabled(admin, /* disabled= */ true);
+                    break;
+                case OPERATION_SET_FACTORY_RESET_PROTECTION_POLICY:
+                    dpm.setFactoryResetProtectionPolicy(admin,
+                            new FactoryResetProtectionPolicy.Builder()
+                                    .setFactoryResetProtectionAccounts(TEST_ACCOUNTS)
+                                    .setFactoryResetProtectionEnabled(false)
+                                    .build());
+                    break;
+                case OPERATION_SET_GLOBAL_PRIVATE_DNS:
+                    dpm.setGlobalPrivateDnsModeOpportunistic(admin);
+                    break;
+                case OPERATION_SET_KEEP_UNINSTALLED_PACKAGES:
+                    dpm.setKeepUninstalledPackages(admin, TEST_PACKAGES);
+                    break;
+                case OPERATION_SET_KEYGUARD_DISABLED:
+                    dpm.setKeyguardDisabled(admin, true);
+                    break;
+                case OPERATION_SET_LOCK_TASK_FEATURES:
+                    dpm.setLockTaskFeatures(admin, NO_FLAGS);
+                    break;
+                case OPERATION_SET_LOCK_TASK_PACKAGES:
+                    dpm.setLockTaskPackages(admin, new String[] { TEST_PACKAGE });
+                    break;
+                case OPERATION_SET_LOGOUT_ENABLED:
+                    dpm.setLogoutEnabled(admin, /* enabled */ true);
+                    break;
+                case OPERATION_SET_OVERRIDE_APNS_ENABLED:
+                    dpm.setOverrideApnsEnabled(admin, /* enabled */ true);
+                    break;
+                case OPERATION_SET_PACKAGES_SUSPENDED:
+                    dpm.setPackagesSuspended(admin,  new String[] { TEST_PACKAGE },
+                            /* suspend= */ true);
+                    break;
+                case OPERATION_SET_STATUS_BAR_DISABLED:
+                    dpm.setStatusBarDisabled(admin, true);
+                    break;
+                case OPERATION_SET_SYSTEM_SETTING:
+                    dpm.setSystemSetting(admin, ""TestSetting"", ""0"");
+                    break;
+                case OPERATION_SET_SYSTEM_UPDATE_POLICY:
+                    dpm.setSystemUpdatePolicy(admin, null);
+                    break;
+                case OPERATION_SET_TRUST_AGENT_CONFIGURATION:
+                    dpm.setTrustAgentConfiguration(admin, TEST_COMPONENT,
+                            /* configuration= */ null);
+                    break;
+                case OPERATION_SET_USER_CONTROL_DISABLED_PACKAGES:
+                    dpm.setUserControlDisabledPackages(admin, TEST_PACKAGES);
+                    break;
+                case OPERATION_START_USER_IN_BACKGROUND:
+                    dpm.startUserInBackground(admin, USER_HANDLE);
+                    break;
+                case OPERATION_STOP_USER:
+                    dpm.stopUser(admin, USER_HANDLE);
+                    break;
+                case OPERATION_SWITCH_USER:
+                    dpm.switchUser(admin, USER_HANDLE);
+                    break;
+                case OPERATION_UNINSTALL_CA_CERT:
+                    dpm.uninstallCaCert(admin, TEST_CA.getBytes());
+                    break;
+                case OPERATION_WIPE_DATA:
+                    if (overloaded) {
+                        dpm.wipeData(NO_FLAGS,
+                                /* reason= */ ""DevicePolicySafetyCheckerIntegrationTest"");
+                    } else {
+                        dpm.wipeData(NO_FLAGS);
+                    }
+                    break;
+                default:
+                    throwUnsupportedOperationException(operation, overloaded);
+            }
+        }
+    };
+
+    /**
+     * Tests that all safety-aware operations are properly implemented.
+     */"	""	""	"7: data 9.1 camera UI only section app"	"[('[com.android.compatibility.common.tradefed.presubmit.ValidateTestsAbi testBinariesAbis None]', 1), ('[com.android.cts.verifier.camera.its.ItsTestActivity ItsTestActivity None]', 1), ('[com.android.cts.verifier.sensors.SensorPowerTestActivity SensorPowerTestActivity None]', 1)]"	""	""	""	""	""	""	""	""	""

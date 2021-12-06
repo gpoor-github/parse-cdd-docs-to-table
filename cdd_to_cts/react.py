@@ -3,7 +3,6 @@ import re
 import sys
 import time
 import traceback
-from shutil import copy
 from typing import Any
 
 import rx
@@ -322,16 +321,15 @@ class RxData:
             self.init_input_table_keyed(static_data.INPUT_TABLE_FILE_NAME_RX)
         return self.__input_table_keyed, self.__input_header_keyed
 
+
     def execute_search_on_file_for_terms_return_results(self, search_info_and_file_tuple: tuple,
-                                                        logging: bool = False) -> dict:
+                                                        logging: bool = True) -> dict:
         # print("predicate " + str(target))
         # rx give us a tuple from combine latest, we want to bind them in one object that will get info in the stream and provide our result
         search_info: dict = search_info_and_file_tuple[0]
         try:
             # Get rid of tuple, change to a dict
             file_name_param : str = search_info_and_file_tuple[1]
-            if  file_name_param.endswith(".cpp"):
-                print("is cpp "+file_name_param)
             search_terms = search_info.get(SEARCH_TERMS)
 
             full_text_of_file_str = helpers.read_file_to_string(file_name_param).replace('\t', ' ')
@@ -340,16 +338,17 @@ class RxData:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
             for matched_term in search_terms:
                 matched_term: str = matched_term.strip(' ')
-                if file_name_param.endswith(".cpp"):
-                    print("not java " + file_name_param)
                 if not matched_term:
                     continue
                 # File search
-                search_string = conditional_re_escape(matched_term)
+                search_string:str = conditional_re_escape(matched_term)
                 # What? comment next time search_string = search_string.replace("&", ".*")
+                if helpers.is_has_upper(matched_term):
+                    re_matches_from_file_search = re.findall(search_string, full_text_of_file_str, re.MULTILINE)
+                else:
+                    re_matches_from_file_search = re.findall(search_string, full_text_of_file_str, re.IGNORECASE | re.M)
 
-                re_matches_from_file_search = re.findall(search_string, full_text_of_file_str,
-                                                         flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)  # full_text_of_file_str.count(matched_terms)
+                # full_text_of_file_str.count(matched_terms)
                 match_count_of_term_in_file = len(re_matches_from_file_search)
                 is_found = match_count_of_term_in_file > 0
                 # if not is_found: #try again unescaped
@@ -402,7 +401,7 @@ class RxData:
                             method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_term}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
                             add_list_to_count_dict(method_text_str, search_result,
                                                    static_data.METHODS_STRING)  # ," || ")
-                            flat_result[static_data.METHODS_STRING] = method_text
+                            flat_result[static_data.METHODS_STRING] =method_text_str
                             search_result[
                                 PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_result_dict_java
                             if file_name_param.endswith(".java") or file_name_param.endswith(".kt"):
@@ -411,7 +410,7 @@ class RxData:
                                 self.find_data_for_result_dict_general(search_info, full_text_of_file_str)
 
                             if logging:
-                                print(f"Found match {str(search_result)}")
+                                print(f"Found match of [{str(matched_term)}] \nsubset_text:\n [{str(subset_text)}]")
                             # result = f'["{a_list_item}",["{mi}":"{method_text}"]]'
                             # print(f"\n matched: {result}")
 
@@ -454,10 +453,9 @@ class RxData:
                         search_result[CLASS_DEF] = class_name  # This will just get the last class_def, overwriting
 
                         flat_result[CLASS_DEF] = class_name
-
                         try:
                             method_text = search_result.get(PIPELINE_METHOD_TEXT)
-                            method_results = re_method.findall(method_text)
+                            method_results = re_method.findall(method_text,re.I)
                             if method_results and len(method_results) > 0:
                                 for method in method_results:
                                     if  method.lower().find('assert') != -1 or method.lower().find('is') != -1 or method.lower().find('test') != -1:
@@ -748,12 +746,12 @@ def do_map_with_flat_file(file_to_process:str, flat_file:str, latest_result:str)
     rd.result_subject.pipe(
         ops.map(lambda result: translate_flat(result))
         , ops.filter(lambda flat_result: len(flat_result) != 0)
-        , ops.map(lambda flat_result: build_row(flat_result, header=static_data.cdd_to_cts_app_header, do_log=True))
+        , ops.map(lambda flat_result: build_row(flat_result, header=static_data.flat_file_header, do_log=True))
         , ops.to_list()
         ,
         ops.map(
             lambda table: table_ops.write_table(flat_file, table,
-                                                static_data.cdd_to_cts_app_header))) \
+                                                static_data.flat_file_header))) \
         .subscribe(on_next=lambda results: my_print(f"result_subject truncated = [{str(results)[0:50]}] "),
                    on_completed=lambda: print("complete result_subject"),
                    on_error=lambda err: helpers.print_system_error_and_dump("result_subject", err))

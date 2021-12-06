@@ -10,23 +10,8 @@ from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_ob
 from stackdump import stackdump
 
 
-def get_list_void_public_test_files() -> set:
-    results_grep_public_test = find_valid_path(results_grep_public_test)
-    test_file_set = set()
-
-    try:
-        with open(results_grep_public_test, "r") as grep_of_test_files:
-            file_content = grep_of_test_files.readlines()
-            count = 0
-            while count < len(file_content):
-                line = file_content[count]
-                count += 1
-                test_file_set.add(line.split(":")[0])
-        grep_of_test_files.close()
-    except FileNotFoundError as e:
-        print_system_error_and_dump(f" Could not find {results_grep_public_test} ", e)
-    return test_file_set
-
+def is_has_upper(target_string : str)-> bool:
+    return any(ele.isupper() for ele in target_string)
 
 def convert_version_to_number_from_full_key(full_key: str):
     key_split = full_key.split('/')
@@ -227,7 +212,7 @@ def read_file_to_string(file: str, prepend_path_if_needed: str = CTS_SOURCE_PARE
     full_path = file
     if not file.startswith('/') and file.find(prepend_path_if_needed) == -1:
         if not  prepend_path_if_needed.endswith("/"):
-            prepend_path_if_needed+"/"
+            prepend_path_if_needed = prepend_path_if_needed+"/"
         full_path = prepend_path_if_needed + file
 
     with open(full_path, "r") as text_file:
