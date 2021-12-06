@@ -201,9 +201,14 @@ not_annotated_test_start = "public void test"
 current_cdd_11_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, ANNOTATION_, 'New Req for R?', 'New CTS for R?',
      CLASS_DEF, METHOD, MODULE])
-ccd_12_full_header_for_ref = [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, ANNOTATION_,  NEW_REQ_FOR_S_,
+cdd_12_full_header_for_ref_part_1 = [SECTION, SECTION_ID, REQ_ID]
+cdd_12_full_header_for_ref_part_2 = [TEST_AVAILABILITY, ANNOTATION_,  NEW_REQ_FOR_S_,
                               NEW_CTS_FOR_S_, CLASS_DEF, METHOD, MODULE, COMMENT_INTERNAL, "Comment (external)", "New vs Updated(Q)",
                               CTS_BUG_ID, CDD_BUG_ID, "CDD CL", AREA, SHORTEND, TEST_LEVEL, "", "external version", "", "", ""]
+cdd_12_full_header_for_ref_part = cdd_12_full_header_for_ref_part_1 + cdd_12_full_header_for_ref_part_2
+
+cdd_12_manual_merge_helper = cdd_12_full_header_for_ref_part_1 +[FULL_KEY, KEY_AS_NUMBER]+cdd_12_full_header_for_ref_part_2
+
 ccd_12_subset_target_field_header = [ANNOTATION_, NEW_REQ_FOR_S_, NEW_CTS_FOR_S_, COMMENT_INTERNAL, CTS_BUG_ID, CDD_BUG_ID,
                                      AREA, SHORTEND, TEST_LEVEL]
 #  Used in create_full_table_from_cdd create a full table from the CDD, containing all the information from the CDD but not doing any processing (besides to the keys)

@@ -104,7 +104,9 @@ This will take table_target and update missing values in the specified key_to_in
                 t_source_row = table_source[table_index_source]
                 # Section,section_id,req_id
                 for column in columns:
-                    if test_target_index_str.find(static_data.table_delimiter+column+static_data.table_delimiter) > -1 and test_source_index_str.find(static_data.table_delimiter+column+static_data.table_delimiter) > -1:
+                    if test_target_index_str.find(
+                            static_data.table_delimiter + column + static_data.table_delimiter) > -1 and test_source_index_str.find(
+                            static_data.table_delimiter + column + static_data.table_delimiter) > -1:
                         column_target_idx = header_target.index(column)
                         column_source_idx = header_source.index(column)
                         # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
@@ -178,10 +180,11 @@ def copy_matching_rows_to_new_table(output_table_name: str, table_to_get_row: st
         if search_string is None:
             if value and value.find('') > -1:
                 new_table.append(row)
-        elif value.find( search_string) > -1:
+        elif value.find(search_string) > -1:
             new_table.append(row)
-    if not len(new_table) > 0: # Header and one line at least
-        print (f"copy_matching_rows_to_new_table No data found for [{search_string}] in col [{column_name}] in table [{table_to_get_row}] ")
+    if not len(new_table) > 0:  # Header and one line at least
+        print(
+            f"copy_matching_rows_to_new_table No data found for [{search_string}] in col [{column_name}] in table [{table_to_get_row}] ")
         return None
     if len(new_table) == 1 and find_header(new_table):
         return None
@@ -206,6 +209,80 @@ def filter_first_table_by_keys_of_second(table_target: [[str]], key_to_index_tar
                 f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
 
     return new_table
+
+
+def create_full_key_key_as_number2(key_indexes_to_use, table_for_source, header_src: [str], header_dst: [str],
+                                   output_file_for_results):
+    new_table: [[str]] = list()
+    for key in key_indexes_to_use:
+        try:
+            table_index_target = int(key_indexes_to_use.get(key))
+            source_row = table_for_source[table_index_target]
+            full_key = f"{1}/{2}"
+            target_row = []
+
+        except Exception as err:
+            print(
+                f"Error: key {key} errors {str(err)} or index in update table, think it's okay, the tables for update should not match ")
+
+    return new_table
+
+
+def create_full_key_and_key_as_number(table_source: [[str]],
+                                      key_to_index_source: dict[str,int],
+                                      header_source: [str],
+                                      header_target_column: [str])->([[str]],dict[str,int]):
+    table_target: [[str]] = list()
+    key_to_index_target: dict[str,int] =dict()
+    section_index_src = static_data.DEFAULT_SECTION_ID_INDEX
+    req_index_src = static_data.DEFAULT_REQ_ID_INDEX
+    try:
+        if not (header_source.index(SECTION_ID) > -1 or  header_source.index(REQ_ID) > -1):
+            helpers.raise_error_system_exit()
+            return table_target, key_to_index_target
+        else:
+            section_index_src =header_source.index(SECTION_ID)
+            req_index_src =header_source.index(REQ_ID)
+
+        # potential_header_str.find(FULL_KEY) > -1:
+        test_target_index_str = static_data.table_delimiter.join(header_target_column)
+        test_source_index_str = static_data.table_delimiter.join(header_source)
+        for key in key_to_index_source:
+                table_index_source: int = key_to_index_source.get(key)
+                if find_header(table_source) and table_index_source == 0:
+                    continue
+                source_row = table_source[table_index_source]
+                table_index_target: int = 0
+                new_target_row: [str] = [""] * len(header_target_column)
+                # Section,section_id,req_id
+                for column in header_target_column:
+
+                    column :str = str(column)
+                    if test_target_index_str.find(
+                            static_data.table_delimiter + column + static_data.table_delimiter) > -1 and test_source_index_str.find(
+                            static_data.table_delimiter + column + static_data.table_delimiter) > -1:
+                        column_target_idx = header_target_column.index(column)
+                        column_source_idx = header_source.index(column)
+                        # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
+                        #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
+                        new_target_row[column_target_idx] = source_row[column_source_idx]
+                    else:
+                        src_section_id = source_row[section_index_src]
+                        src_req_id = source_row[req_index_src]
+                        src_full_key =  f"{src_section_id}/{src_req_id}"
+                        if column == static_data.FULL_KEY:
+                            new_target_row[header_target_column.index(static_data.FULL_KEY)] =src_full_key
+                        if column == static_data.KEY_AS_NUMBER:
+                            new_target_row[header_target_column.index(static_data.KEY_AS_NUMBER)] = helpers.convert_version_to_number_from_full_key(src_full_key)
+                full_key_target = new_target_row[header_target_column.index(static_data.FULL_KEY)]
+                key_to_index_target[full_key_target]= table_index_target
+                table_target.append(new_target_row)
+                table_index_target+=1
+
+    except Exception as err:
+       helpers.raise_error_system_exit(f"Error in create_full_key_and_key_as_number {str(err)}",err)
+
+    return table_target, key_to_index_target
 
 
 def remove_none_requirements(table_target: [[str]], key_to_index_target: dict) -> [[str]]:
@@ -463,11 +540,11 @@ def convert_to_keyed_table_dict(input_table: [[str]], input_header: [str]) -> (
 
 
 def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = True, logging: bool = False) -> [[[str]],
-                                                                                                               dict[
-                                                                                                                   str, int],
-                                                                                                               [str],
-                                                                                                               dict[
-                                                                                                                   str, str]]:
+                                                                                                                dict[
+                                                                                                                    str, int],
+                                                                                                                [str],
+                                                                                                                dict[
+                                                                                                                    str, str]]:
     file_name = helpers.find_valid_path(file_name)
     table = []
     header = []

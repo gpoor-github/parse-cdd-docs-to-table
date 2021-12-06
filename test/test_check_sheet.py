@@ -43,3 +43,9 @@ class TestCheckSheets(TestCase):
         out="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/new_to_do_manual.tsv"
         table_functions_for_release.create_table_from_differences_and_source(done, created, created,
                                                                              out)
+
+
+    def test_create_keyed_table_from_download(self):
+        out="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/test_out.tsv"
+        source_downloaded = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_downloaded-2021-12-6.tsv"
+        table_functions_for_release.create_table_from_downloaded_sheet(source_downloaded,out)
