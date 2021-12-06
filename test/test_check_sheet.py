@@ -7,6 +7,7 @@ from unittest import TestCase
 
 import table_functions_for_release
 from check_sheet import ReadSpreadSheet
+from table_ops import add_table_new_rows, merge_tables_rows
 
 cdd_11_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv"
 cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/cdd_11_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
@@ -46,6 +47,9 @@ class TestCheckSheets(TestCase):
 
 
     def test_create_keyed_table_from_download(self):
-        out="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/test_out.tsv"
+        out="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_downloaded_keys.tsv"
+        merge1="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_merge1.tsv"
+
         source_downloaded = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_downloaded-2021-12-6.tsv"
         table_functions_for_release.create_table_from_downloaded_sheet(source_downloaded,out)
+        merge_tables_rows(source_downloaded,"/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_of_155_manual_c.tsv",merge1)

@@ -275,9 +275,8 @@ def create_full_key_and_key_as_number(table_source: [[str]],
                         if column == static_data.KEY_AS_NUMBER:
                             new_target_row[header_target_column.index(static_data.KEY_AS_NUMBER)] = helpers.convert_version_to_number_from_full_key(src_full_key)
                 full_key_target = new_target_row[header_target_column.index(static_data.FULL_KEY)]
-                key_to_index_target[full_key_target]= table_index_target
+                key_to_index_target[full_key_target]= len(table_target)
                 table_target.append(new_target_row)
-                table_index_target+=1
 
     except Exception as err:
        helpers.raise_error_system_exit(f"Error in create_full_key_and_key_as_number {str(err)}",err)
@@ -337,24 +336,27 @@ def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str,
                 for column_target in header_target:
                     new_target_row.append("")
                 for column in header_target:
-                    if test_target_index_str.find(column) > -1 and test_source_index_str.find(column) > -1:
+                    column:str = str(column)
+                    if not column or column == '':
+                        continue
+                    if test_target_index_str.find(column+static_data.table_delimiter) > -1 and test_source_index_str.find(column+static_data.table_delimiter) > -1:
                         column_target_idx = header_target.index(column)
                         column_source_idx = header_source.index(column)
                         # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
                         #   if t_source_row[column_source_idx] and (len(t_target_row[column_target_idx]) <= 0):
                         new_target_row[column_target_idx] = source_row[column_source_idx]
-
+                    # end for
                 key_to_table_target[key] = len(table_target)
                 table_target.append(source_row)
 
         except Exception as err:
             helpers.print_system_error_and_dump(
-                f"Note: key {key} errors {str(err)} on removing columns... should not happen ")
+                f"Note: key {key} errors {str(err)} on add_table_new_rows().. should not happen ")
 
     return table_target, key_to_table_target
 
 
-def merge_tables_rows(target_table, source_table, output_file):
+def merge_tables_rows(target_table:str, source_table:str, output_file:str):
     table_target, key_fields_target, header_target, duplicate_rows_target = read_table_sect_and_req_key(target_table)
     table_source, key_fields_source, header_source, duplicate_rows_source = read_table_sect_and_req_key(source_table)
     table_target, key_to_table_target = add_table_new_rows(table_target, key_fields_target, header_target, table_source,
