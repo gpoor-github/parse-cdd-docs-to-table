@@ -233,10 +233,12 @@ def find_search_terms(search_info) -> dict:
     # ToDo Restore full search?
     search_term_set.update(manual_search_terms)
     # Search Req Section requirements search on or off
-    # search_term_set.update(section_req)
+    search_term_set.update(section_req)
     search_term_set.update(auto_search_terms)
-    requirement = requirement.replace("\"","").replace(")","").replace("(","").replace("[","").replace("]","").replace("."," ").replace(","," ")
-
+    requirement = requirement.replace("\"","").replace(")","").replace("(","").replace("[","").replace("]","")\
+        .replace(","," ").replace("-"," ") #.replace("."," ").replace("/"," ")
+    requirement = re.sub("(?<= ).(?= )", " ", requirement)
+    requirement = re.sub("^.(?= )"," ", requirement)
     all_requirements = set(requirement.split(" "))
     search_term_set.update(all_requirements)
 
@@ -323,7 +325,7 @@ class RxData:
 
 
     def execute_search_on_file_for_terms_return_results(self, search_info_and_file_tuple: tuple,
-                                                        logging: bool = True) -> dict:
+                                                        logging: bool = False) -> dict:
         # print("predicate " + str(target))
         # rx give us a tuple from combine latest, we want to bind them in one object that will get info in the stream and provide our result
         search_info: dict = search_info_and_file_tuple[0]

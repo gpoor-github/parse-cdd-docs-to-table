@@ -16,14 +16,7 @@ fi
 echo this is what was entered $ctsdir
 #/home/gpoor/cts-source/cts
 #/home/gpoor/cts-12-source
-echo grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_data_from_cts/test-files.txt
-grep -inr -A 2 "@Test" --include \*.java "$ctsdir"/* > input_data_from_cts/test-files.txt
 
 echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_data_from_cts/testcases-modules.txt
 grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_data_from_cts/testcases-modules.txt
 
-echo grep -r "public void test" --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_test_files.txt
-grep -r "public void test" --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_test_files.txt
-
-echo grep -r " void " --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_files.txt
-grep -r " void " --include \*.java "$ctsdir"/* > input_data_from_cts/public_void_files.txt
