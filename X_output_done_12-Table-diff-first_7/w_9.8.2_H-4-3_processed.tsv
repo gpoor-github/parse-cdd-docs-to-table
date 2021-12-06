@@ -1,0 +1,45 @@
+"Section"	"section_id"	"req_id"	"full_key"	"manual_search_terms"	"requirement"	"Test Availability"	"class_def"	"method"	"module"	"matched_terms"	"methods_string"	"file_name"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"Test Level"
+"2.2.5  . Security Model"	"9.8.2"	"H-4-3"	"9.8.2/H-4-3"	"hide mic ui microphone indicator  system apps  interfaces  direct user interaction"	"""[9.8.2/H-4-3] MUST not hide the microphone indicator for system apps that have visible user interfaces or direct user interaction. """	"Test Available"	"android.systemui.cts.audiorecorder.mediarecorder.AudioRecorderService"	"isRecording"	""	"3: mic ui system"	"public void test/*
+ *
+ */
+
+package android.systemui.cts.audiorecorder.mediarecorder;
+
+import android.media.MediaRecorder;
+import android.media.MediaRecorder.AudioSource;
+import android.systemui.cts.audiorecorder.base.BaseAudioRecorderService;
+
+import java.io.File;
+import java.io.IOException;
+
+public class AudioRecorderService extends BaseAudioRecorderService {
+    private MediaRecorder mMediaRecorder = null;
+
+    protected void startRecording() {
+        mMediaRecorder = new MediaRecorder();
+        mMediaRecorder.setAudioSource(AudioSource.MIC);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mMediaRecorder.setOutputFile(new File(getExternalCacheDir(), ""record.3gp""));
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            mMediaRecorder.prepare();
+        } catch (IOException e) {
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+            return;
+        }
+
+        mMediaRecorder.start();
+    }
+
+    protected void stopRecording() {
+        mMediaRecorder.stop();
+        mMediaRecorder.release();
+        mMediaRecorder = null;
+    }
+
+    protected boolean isRecording() {
+        return mMediaRecorder != null;
+    }
+}"	"/home/gpoor/cts-12-source/cts/tests/tests/systemui/AudioRecorderTestApp_MediaRecorder/src/android/systemui/cts/audiorecorder/mediarecorder/AudioRecorderService.java"	""	""	""

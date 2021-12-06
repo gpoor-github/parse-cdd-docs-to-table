@@ -512,7 +512,7 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
             if logging: print("End with file")
             if len(duplicate_rows) > 0:
                 print(
-                    f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
+                    f"Note, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
             else:
                 duplicate_rows = None
             csv_file.close()
@@ -601,7 +601,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
             if logging: print("End with file")
             if len(duplicate_rows) > 0:
                 print(
-                    f"ERROR, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
+                    f"note, reading tables with duplicate 1 {file_name} has={len(duplicate_rows)} duplicates {duplicate_rows} ")
             else:
                 duplicate_rows = None
             csv_file.close()

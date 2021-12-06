@@ -158,7 +158,7 @@ DEFAULT_REQ_ID_INDEX = 2
 
 FULL_KEY = 'full_key'
 DEFAULT_FULL_KEY_INDEX = 3
-
+RESULT_COUNT = 'RESULT_COUNT'
 REQUIREMENT = 'requirement'
 KEY_AS_NUMBER = 'key_as_number'
 TEST_AVAILABILITY = 'Test Availability'

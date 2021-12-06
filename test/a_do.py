@@ -37,7 +37,7 @@ class MyTestCase(unittest.TestCase):
 
         file_exists = False
         if exists(flat_file):
-            processed = table_ops.copy_matching_rows_to_new_table("temp", flat_file, static_data.TEST_AVAILABILITY, None)
+            processed = table_ops.copy_matching_rows_to_new_table("test_processed_delete.tsv", flat_file, static_data.TEST_AVAILABILITY, None)
             if processed:
                 table = table_ops.read_table_sect_and_req_key(processed)
                 print(f"Done! {req} result is {table[1]}")

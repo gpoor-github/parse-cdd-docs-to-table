@@ -271,7 +271,7 @@ class RxData:
     def __init__(self) -> None:
         self.max_matches = 92000
         self.progress_count = 0
-
+        self.result_count = 0
         self.match_count = 0
         self.start = time.perf_counter()
         self.end = time.perf_counter()
@@ -370,6 +370,7 @@ class RxData:
                     search_info[SEARCH_RESULT] = search_result
                     flat_result = dict()
                     search_result[FLAT_RESULT] =flat_result
+                    flat_result[static_data.RESULT_COUNT]  = self.result_count
                     flat_result[REQUIREMENT] = search_info[REQUIREMENT]
                     flat_result[SEARCH_TERMS] = search_info[SEARCH_TERMS]
 
@@ -403,7 +404,7 @@ class RxData:
                             method_text_str = f"([{len(re_matches_from_method_search)}:{cts_file_path_name}]:[{matched_term}]:[{len(re_matches_from_method_search)}]:method_text:[{subset_text}])"
                             add_list_to_count_dict(method_text_str, search_result,
                                                    static_data.METHODS_STRING)  # ," || ")
-                            flat_result[static_data.METHODS_STRING] =method_text_str
+                            flat_result[static_data.METHODS_STRING] =f"{method_text_str} :|: {method_text[0:2000]}"
                             search_result[
                                 PIPELINE_METHOD_TEXT] = method_text  # Because this is used in find find_data_for_result_dict_java
                             if file_name_param.endswith(".java") or file_name_param.endswith(".kt"):
@@ -436,6 +437,8 @@ class RxData:
             full_key = search_info.get(FULL_KEY)
             search_result = search_info.get(SEARCH_RESULT)
             if search_result:
+                self.match_count += 1
+
                 flat_result = search_result.get(FLAT_RESULT)
                 file_name = search_result.get(static_data.PIPELINE_FILE_NAME)
                 class_name_split_src = file_name.split('/src/')
@@ -465,7 +468,6 @@ class RxData:
                                         add_list_to_count_dict(qualified_method, search_result, QUALIFIED_METHOD)
                                         flat_result[METHOD] =  method
                                         self.result_subject.on_next(search_info)
-                                        self.match_count += 1
                                         break
                                     else:
                                         flat_result[METHOD] = method
@@ -717,6 +719,7 @@ class RxData:
 
     def publish_each_result(self, search_info:dict)->dict:
         if search_info.get(SEARCH_RESULT):
+            self.result_count += 1
             self.result_subject.on_next(search_info)
         return search_info
 
@@ -731,6 +734,7 @@ def translate_flat(result: dict) -> dict:
     flat_result = dict()
     if not result:
         return flat_result
+
     flat_result[ROW] = result.get(ROW)
     flat_result[FULL_KEY] = result.get(FULL_KEY)
     flat_result[SECTION_ID] = result.get(SECTION_ID)
@@ -738,6 +742,12 @@ def translate_flat(result: dict) -> dict:
     flat_result[MANUAL_SEARCH_TERMS] = result.get(MANUAL_SEARCH_TERMS)
     flat_result[SEARCH_TERMS] = result.get(SEARCH_TERMS)
     flat_result[SEARCH_RESULT] = dict(result.get(SEARCH_RESULT)).get(FLAT_RESULT)
+    r_count_str: str = str(static_data.RESULT_COUNT)
+    b: str = str()
+    for i in range(0, 5 - len(r_count_str)):
+        b = b + '0'
+    r_count_str = b + r_count_str
+    flat_result[REQ_ID] = f"{flat_result[REQ_ID]}_{r_count_str}"
     return flat_result
 
 
