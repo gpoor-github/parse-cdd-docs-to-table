@@ -65,7 +65,23 @@ class ParseHTMLTests(unittest.TestCase):
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.1.1.1/W-0-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.2.3/W-0-1"))
-        self.assertEqual(1696, len(key_to_full_requirement_text_local))
+        self.assertEqual(1729, len(key_to_full_requirement_text_local))
+
+    def test_parse_cdd_12_html_missed_7_11(self, ):
+        full_cdd_html = helpers.find_valid_path(
+            "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/html_parsing_7-11_issue.html")
+        from parse_cdd_html import parse_cdd_html_to_requirements
+        key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, \
+        cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
+        create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
+                                   section_to_section_data,
+                                   "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/html_parsing_7-11_issue.tsv", static_data.cdd_info_only_header)
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("7.11/C-1-1"))
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("7.11/C-1-1"))
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("8"))
+        self.assertIsNotNone(key_to_full_requirement_text_local.get("8.1"))
+
+        self.assertEqual(8, len(key_to_full_requirement_text_local))
 
     def test_parse_cdd_11_html_full(self, ):
         full_cdd_html = helpers.find_valid_path(

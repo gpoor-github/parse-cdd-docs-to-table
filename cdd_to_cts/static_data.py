@@ -50,7 +50,7 @@ section_id_re_str = "[\[>][\d+\.]+\d+"
 full_key_string_for_re = section_id_re_str+'/' + req_id_re_str
 # FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)' + req_id_re_str
 METHOD_RE = '(\w+?)\(\)'
-SECTION_ID_RE_STR = "(?:(\d{1,2}\.)+\d)"
+SECTION_ID_RE_STR = "(?:(\d{1,2}\.)+(\d{1,2})?)"
 
 java_methods_re_str = '(?:[a-zA-Z]\w+\() ?\w* ?\)'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
@@ -205,7 +205,7 @@ cdd_12_full_header_for_ref_part_1 = [SECTION, SECTION_ID, REQ_ID]
 cdd_12_full_header_for_ref_part_2 = [TEST_AVAILABILITY, ANNOTATION_,  NEW_REQ_FOR_S_,
                               NEW_CTS_FOR_S_, CLASS_DEF, METHOD, MODULE, COMMENT_INTERNAL, "Comment (external)", "New vs Updated(Q)",
                               CTS_BUG_ID, CDD_BUG_ID, "CDD CL", AREA, SHORTEND, TEST_LEVEL, "", "external version", "", "", ""]
-cdd_12_full_header_for_ref_part = cdd_12_full_header_for_ref_part_1 + cdd_12_full_header_for_ref_part_2
+cdd_12_full_header_for_ref = cdd_12_full_header_for_ref_part_1 + cdd_12_full_header_for_ref_part_2
 
 cdd_12_manual_merge_helper = cdd_12_full_header_for_ref_part_1 +[FULL_KEY, KEY_AS_NUMBER]+cdd_12_full_header_for_ref_part_2
 

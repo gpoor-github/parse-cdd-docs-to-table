@@ -4,7 +4,7 @@
 
 from unittest import TestCase
 
-
+import check_sheet
 import table_functions_for_release
 from check_sheet import ReadSpreadSheet
 from table_ops import add_table_new_rows, merge_tables_rows
@@ -47,9 +47,19 @@ class TestCheckSheets(TestCase):
 
 
     def test_create_keyed_table_from_download(self):
-        out="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_downloaded_keys.tsv"
+        keys_downloaded="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_downloaded_keys.tsv"
         merge1="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_merge1.tsv"
-
+        done_work = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_of_155_manual_c.tsv"
         source_downloaded = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_downloaded-2021-12-6.tsv"
-        table_functions_for_release.create_table_from_downloaded_sheet(source_downloaded,out)
-        merge_tables_rows(source_downloaded,"/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_of_155_manual_c.tsv",merge1)
+
+        table_functions_for_release.create_table_from_downloaded_sheet_add_full_keys(source_downloaded, keys_downloaded)
+        merge_tables_rows(keys_downloaded,done_work,merge1)
+        check_sheet.diff_tables_files(merge1,done_work)
+
+    def test_merge_tables(self):
+        done_work1 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_of_155_manual.tsv"
+        done_work2 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_of_155_manual_c.tsv"
+        done_work_merge = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_merge_of_manual.tsv"
+        merge_tables_rows(done_work1,done_work2,done_work_merge)
+
+

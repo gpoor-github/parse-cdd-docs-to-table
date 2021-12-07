@@ -125,7 +125,7 @@ def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2,
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(table_for_diff_1,table_for_diff_2 )
     table_ops.make_new_table_from_keys(dif_2_1, table_for_source, output_file_for_results)
 
-def create_table_from_downloaded_sheet(table_file_for_source, output_file_for_results):
+def create_table_from_downloaded_sheet_add_full_keys(table_file_for_source, output_file_for_results):
     table_for_source, source_keys, header_scr, duplicate_rows1 = table_ops.read_table_sect_and_req_key(table_file_for_source)
     table_target, key_to_index_target = table_ops.create_full_key_and_key_as_number( table_for_source,source_keys,header_scr, static_data.cdd_12_manual_merge_helper)
     table_ops.write_table(output_file_for_results, table_target, static_data.cdd_12_manual_merge_helper)

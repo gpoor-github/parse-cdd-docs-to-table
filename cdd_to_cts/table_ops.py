@@ -13,14 +13,16 @@ def remove_table_columns(table_source: [[str]], header_column_source: [str],
     """
     column_subset_table = list()
     column_subset_key_to_index = dict()
-    test_source_index_str = " ".join(header_column_source) + ' '
+    test_source_index_str = static_data.table_delimiter.join(header_column_source) + ' '
     column_subset_table_idx_count = 0
     key = ""
     for source_row in table_source:
         try:
             column_subset_row = list()
             for column in columns_to_use:
-                if test_source_index_str.find(column + ' ') > -1:  # Add space so names have less chance of overlap
+                if not column or column=='':
+                    continue
+                if test_source_index_str.find(column + static_data.table_delimiter) > -1:  # Add space so names have less chance of overlap
                     header_column_source_idx = header_column_source.index(column)
                     source_value_to_use = source_row[header_column_source_idx]
                     column_subset_row.append(source_value_to_use)

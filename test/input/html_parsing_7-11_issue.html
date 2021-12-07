@@ -1,0 +1,62 @@
+
+<!--
+  ~ Block to comment
+  -->
+
+<h3 id="710_haptics" data-text="7.10. Haptics">7.10. Haptics</h3>
+
+<p>See Section <a href="#2_2_1_hardware">2.2.1</a> for device-specific requirements.</p>
+
+<h3 id="711_media_performance_class" data-text="7.11. Media Performance Class">7.11. Media Performance Class</h3>
+
+<p>The media performance class of the device implementation can be obtained from
+the <code translate="no" dir="ltr">android.os.Build.VERSION_CODES.MEDIA_PERFORMANCE_CLASS</code>. Requirements for
+media performance class are defined for each Android version starting with
+R (version 30). The special value of 0 designates that the device is not of a
+media performance class.</p>
+
+<p>If device implementations return non-zero value for
+<code translate="no" dir="ltr">android.os.Build.VERSION_CODES.MEDIA_PERFORMANCE_CLASS</code>, they:</p>
+
+<ul>
+<li><p>[C-1-1] MUST return at least a value of <code translate="no" dir="ltr">android.os.Build.VERSION_CODES.R</code>.</p></li>
+<li><p>[C-1-2] MUST be a handheld device implementation.</p></li>
+</ul>
+
+<p>See Section 2.2.7 for device-specific requirements.</p>
+
+<h2 id="8_performance_and_power" data-text="8. Performance and Power">8. Performance and Power</h2>
+
+<p>Some minimum performance and power criteria are critical to the user experience
+and impact the baseline assumptions developers would have when developing an
+app.</p>
+
+<h3 id="81_user_experience_consistency" data-text="8.1. User Experience Consistency">8.1. User Experience Consistency</h3>
+
+<p>A smooth user interface can be provided to the end user if there are certain
+minimum requirements to ensure a consistent frame rate and response times for
+applications and games. Device implementations, depending on the device type,
+MAY have measurable requirements for the user interface latency and task
+switching as described in <a href="#2_device-types">section 2</a>.</p>
+
+<h3 id="82_file_io_access_performance" data-text="8.2. File I/O Access Performance">8.2. File I/O Access Performance</h3>
+
+<p>Providing a common baseline for a consistent file access performance on the
+application private data storage (<code translate="no" dir="ltr">/data</code> partition) allows app developers
+to set a proper expectation that would help their software design. Device
+implementations, depending on the device type, MAY have certain requirements
+described in <a href="#2_device-type">section 2</a> for the following read
+and write operations:</p>
+
+<ul>
+<li><strong>Sequential write performance</strong>. Measured by writing a 256MB file using
+10MB write buffer.</li>
+<li><strong>Random write performance</strong>. Measured by writing a 256MB file using 4KB
+write buffer.</li>
+<li><strong>Sequential read performance</strong>. Measured by reading a 256MB file using
+10MB write buffer.</li>
+<li><strong>Random read performance</strong>. Measured by reading a 256MB file using 4KB
+write buffer.</li>
+</ul>
+
+<h3 id="83_power-saving_modes" data-text="8.3. Power-Saving Modes">8.3. Power-Saving Modes</h3>

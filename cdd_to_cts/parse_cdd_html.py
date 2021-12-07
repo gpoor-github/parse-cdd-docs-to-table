@@ -25,6 +25,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
         cdd_requirements_file_as_string = text_file.read()
         #  section_re_str: str = r'"(?:\d{1,3}_)+'
         section_marker: str = r"data-text=\"\s*"
+        #data-text=
         #section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
         cdd_sections_splits = re.split('(?={})'.format(section_marker), cdd_requirements_file_as_string,
                                        flags=re.DOTALL)
@@ -34,8 +35,6 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
             section_count += 1
             char_count += len(section)
             section = helpers.clean_html_anchors(section)
-
-
             cdd_section_id_search_results = re.search(static_data.SECTION_ID_RE_STR, section)
             if not cdd_section_id_search_results:
                 continue
