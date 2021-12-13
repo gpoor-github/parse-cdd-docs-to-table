@@ -1,103 +1,14 @@
 #  Block to comment
 
-import os
-import re
-
-import static_data
-from cdd_to_cts import class_graph, persist, helpers
-from cdd_to_cts.helpers import bag_from_text, remove_non_determinative_words, convert_version_to_number, \
-    convert_version_to_number_from_full_key, filter_files_to_search
+from cdd_to_cts import class_graph, persist
 from cdd_to_cts.static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE
 from class_graph import parse_dependency_file
 
 
 #
-def create_populated_table(key_to_full_requirement_text:[str,str],keys_to_find_and_write:iter,  section_to_data:dict, header: []):
-    table: [[str]] = []
-    keys_to_table_index: dict[str, int] = dict()
-    table_row_index = 0
-    for temp_key in keys_to_find_and_write:
-        key_str: str = temp_key
-        key_str = key_str.rstrip(".").strip(' ')
-        write_new_data_line_to_table(key_str, key_to_full_requirement_text, table, table_row_index, section_to_data, header)  # test_file_to_dependencies)
-        keys_to_table_index[key_str] = table_row_index
-        table_row_index += 1
-    return table, keys_to_table_index
 
 # Section,section_id,req_id,Test Availability,Annotation? ,New Req for R?,New CTS for R?,class_def,method,module,
 # ['Section', SECTION_ID, 'req_id', 'Test Availability','class_def', 'method', 'module','full_key','requirement', 'key_as_number','search_terms','urls','file_name'])
-
-def write_new_data_line_to_table( key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int,
-                                 section_to_data: dict, header: [] = static_data.cdd_to_cts_app_header, search_func:()=None, logging=False):
-
-    section_data = keys_to_sections.get(key_str)
-    row: [str] = list(header)
-    for i in range(len(row)):
-        row[i] = ''
-    if len(table) <= table_row_index:
-        table.append(row)
-
-    if logging: print(f"keys from  {table_row_index} [{key_str}]")
-    key_str = key_str.rstrip(".").strip(' ')
-    key_split = key_str.split('/')
-    table[table_row_index][header.index('Section')] = section_to_data.get(key_str)
-
-    table[table_row_index][header.index(static_data.SECTION_ID)] = key_split[0]
-
-    table[table_row_index][header.index('full_key')] = key_str
-    if section_data:
-        section_data_cleaned = '"{}"'.format(section_data.replace("\n", " "))
-        if len(section_data_cleaned) > 110000:
-            print(f"Warning line to long truncating ")
-            section_data_cleaned = section_data_cleaned[0:110000]
-        table[table_row_index][header.index(static_data.REQUIREMENT)] = section_data_cleaned
-
-    if len(key_split) > 1:
-        table[table_row_index][header.index(static_data.REQ_ID)] = key_split[1]
-        table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number(
-            key_split[0], key_split[1])
-
-        # This function takes a long time
-        # This is handled in the React Side now
-        if search_func:
-            search_func(key_str)
-    else:
-        # This function handles having just a section_id
-        table[table_row_index][header.index(static_data.KEY_AS_NUMBER)] = convert_version_to_number_from_full_key(
-            key_split[0])
-        if logging: print(f"Only a major key? {key_str}")
-
-def create_full_table_from_cdd(
-        key_to_full_requirement_text: [str, str], keys_to_find_and_write:iter,
-        section_to_data: dict,
-        output_file: str,
-        output_header: str = static_data.cdd_to_cts_app_header):
-
-    table_for_sheet, keys_to_table_indexes = create_populated_table(key_to_full_requirement_text,
-                                                                    keys_to_find_and_write,
-                                                                    section_to_data,
-                                                                    output_header)
-    print(f"CDD csv file to write to output is [{output_file}] output header is [{str(output_header)}]")
-
-    from table_ops import write_table
-    write_table(output_file, table_for_sheet, output_header)
-
-def process_section_splits_md_and_html(record_key_method:(), key_string_for_re:str, section_id:str, key_to_full_requirement_text_param:dict[str, str],
-                                       record_id_splits:[str], section_id_count:int, total_requirement_count:int, section_to_section_data:dict[str,str], section_data:str, logging=False):
-    record_id_count = 0
-
-    for record_id_split in record_id_splits:
-        key = record_key_method(key_string_for_re, record_id_split, section_id)
-        if key:
-            record_id_count += 1
-            total_requirement_count += 1
-            key_to_full_requirement_text_param[key] = helpers.prepend_any_previous_value(record_id_split,
-                                                                                         key_to_full_requirement_text_param.get(key))
-            section_to_section_data[key] = section_data
-            if logging: print(
-                f'key [{key}] {key_string_for_re} value [{key_to_full_requirement_text_param.get(key)}] section/rec_id_count {section_id_count}/{record_id_count} {total_requirement_count} ')
-
-    return total_requirement_count
 
 
 def get_file_dependencies():

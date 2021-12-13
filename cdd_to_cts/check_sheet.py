@@ -1,12 +1,14 @@
 import csv
 import os
+from os.path import exists
 
 import rx
 
-import helpers
+import general_helpers
+import parser_helpers
 import static_data
 import table_ops
-from helpers import find_valid_path
+from parser_helpers import find_valid_path
 from static_data import CTS_SOURCE_ROOT
 
 
@@ -17,17 +19,18 @@ def check_for_file_and_method(file_name_from_class: str, method_value: str, file
         try:
             with open(file_name_from_class, "r") as f:
                 file_as_string = f.read()
-                method_index = file_as_string.find(method_value.replace('()', ''))
+                method_value = method_value.replace(')', '').replace('(', '')
+                method_index = file_as_string.find(method_value)
                 if method_index >= 0:
-                    test_index = file_as_string.find('@Test', method_index - 100, method_index) >= 0
-                    if file_as_string.index('@Test') >= 0 and ((test_index - method_index) < 100):
-                        file_name_to_result[file_name_from_class] = method_value + " Found and is @Test"
+                    test_index = file_as_string.find('@', method_index - 300, method_index) >= 0
+                    if file_as_string.index('@') >= 0 and ((test_index - method_index) < 100):
+                        file_name_to_result[file_name_from_class] = method_value + ":Found and is @ supporting annotation"
                         return True
                     else:
                         file_name_to_result[
-                            file_name_from_class] = method_value + " Failed reason: @Test annotation not found"
+                            file_name_from_class] = method_value + ":Found but ,@ annotation not found"
                 else:
-                    file_name_to_result[file_name_from_class] = method_value + " Failed reason: Method not found"
+                    file_name_to_result[file_name_from_class] = method_value + ":Failed reason: Method not found"
                 f.close()
         except Exception as err:
             print(" Could not open " + file_name_from_class)
@@ -40,6 +43,7 @@ class ReadSpreadSheet:
     not_found_count = 0
     not_found_list = []
     file_name_to_result = dict()
+    found_class_count = 0
 
     found_count = 0
 
@@ -49,7 +53,7 @@ class ReadSpreadSheet:
             if logging: print(directory)
             path = directory.replace(CTS_SOURCE_ROOT, ".")
             for f in filelist:
-                if helpers.filter_files_to_search(f):
+                if general_helpers.filter_files_to_search(f):
                     full_path = "{}/{}".format(directory, f)
                     # with open(full_path, 'r') as file:
                     #   file_string = file.read().replace('\n', '')
@@ -61,7 +65,7 @@ class ReadSpreadSheet:
                     self.file_dict[class_path] = full_path
 
     def does_class_ref_file_exist(self, ccd_csv_file_name):
-
+        class_count = 0
         table = []
         header = []
         self.crawl()
@@ -73,32 +77,42 @@ class ReadSpreadSheet:
             line_count = 0
 
             for row in csv_reader:
-                if line_count == 0:
-                    print(f'Column names are {", ".join(row)}')
-                    header = row
-                    line_count += 1
-                else:
-                    # print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
-                    table.append(row)
-                    table_index = line_count - 1
-                    # Section,section_id,req_id
-                    # section_value = table[table_index][header.index("Section")]
-                    # section_id_value = table[table_index][header.index(SECTION_ID)]
-                    # req_id_value = table[table_index][header.index(REQ_ID)]
-                    class_def_value = table[table_index][header.index(static_data.CLASS_DEF)]
-                    method_value = table[table_index][header.index(static_data.METHOD)]
-                    # module_value = table[table_index][header.index("module")]
-                    if class_def_value:
-                        is_found = check_for_file_and_method(self.file_dict.get(class_def_value), method_value,
-                                                             self.file_name_to_result)
-                        if is_found:
-                            self.found_count += 1
-                        else:
-                            self.not_found_count += 1
+                try:
+                    if line_count == 0:
+                        print(f'Column names are {", ".join(row)}')
+                        header = row
+                        line_count += 1
+                    else:
+                        # print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
+                        table.append(row)
+                        table_index = line_count - 1
+                        class_def_value = table[table_index][header.index(static_data.CLASS_DEF)]
+                        method_value = table[table_index][header.index(static_data.METHOD)]
+                        # module_value = table[table_index][header.index("module")]
+                        if class_def_value:
+                            file_name =  self.file_dict.get(class_def_value)
+                            if not file_name:
+                             for  class_key  in  self.file_dict:
+                                 file_name_in_dict:str = self.file_dict.get(class_key)
+                                 if file_name_in_dict.find(class_def_value) > -1 :
+                                     file_name = file_name_in_dict
 
-                    line_count += 1
-                    print(f'Processed {line_count} lines. ')
-                print(f'For table {line_count}')
+                            if file_name and exists(file_name):
+                                self.found_class_count += 1
+                                print(f' {self.found_class_count}) class name {class_def_value} class file { file_name } ')
+                                is_found = check_for_file_and_method(file_name, method_value,
+                                                                 self.file_name_to_result)
+                            if is_found:
+                                self.found_count += 1
+                                print(f'Found class and method {line_count} lines. ')
+
+                            else:
+                                self.not_found_count += 1
+
+                        line_count += 1
+                except Exception as err:
+                    print(f" Error {err}")
+                    pass
             csv_file.close()
             print("End for loop")
             print('No files {}'.format(self.not_found_count))
@@ -116,7 +130,7 @@ def observable_rows(table_file_name) -> rx.Observable:
             return rx.from_iterable(csv_reader)
 
     except IOError as e:
-        helpers.print_system_error_and_dump(f"Failed to open file {table_file_name} exception -= {type(e)} exiting...")
+        parser_helpers.print_system_error_and_dump(f"Failed to open file {table_file_name} exception -= {type(e)} exiting...")
         return rx.just(e)
 #
 # def check_row_for_requirement_match(key:str, row:[], header:[str]):
@@ -260,7 +274,6 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
 
 
 if __name__ == '__main__':
-    rs = ReadSpreadSheet()
     cdd_12_with_sections ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/DATA_SOURCES_cdd-12_CSV_FROM_HTML_1st.tsv"
     cdd_12_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/cdd_12_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
     annotation_12 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/annotations_mappings.tsv"
@@ -281,9 +294,13 @@ if __name__ == '__main__':
     cdd_11_dev = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-dev.tsv"
     cdd_11_release = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/md_cdd_11_android11-d2-release.tsv"
     cdd_12_downloaded_2021_11_22_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/html_cdd_12_downloaded_2021_11_22.tsv"
-    cdd_11_dowloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_11_gen_html.tsv"
+    cdd_11_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_11_gen_html.tsv"
+    cdd_12_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_12_gen_html.tsv"
+
     cdd_155_diffs="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_master_diff_html_11_output.tsv"
     cdd_12_diff_11_nov_23 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_html_155_todo_original.tsv"
-    #diff_tables_files(cdd_155_diffs, annotation_12)
-    diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", annotation_12)
+    sheet_released_cdd_12_on_2021_12_07_downloaded ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/download-2021-12-7-released-gvp-cts-tracker-CDD-12.tsv"
+    #diff_tables_files(sheet_released_cdd_12_on_2021_12_07_downloaded,cdd_12_downloaded_html)
+    diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_html_vs_sheet_debt_diffs.tsv", annotation_12)
+    # diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", annotation_12)
    # diff_tables_files("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_created.tsv", "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/gpoor_final_completed_items_for_r.tsv")

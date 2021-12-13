@@ -1,7 +1,7 @@
 import csv
 import sys
 
-from cdd_to_cts import static_data, helpers
+from cdd_to_cts import static_data, parser_helpers
 from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY, FULL_KEY
 
 
@@ -32,7 +32,7 @@ def remove_table_columns(table_source: [[str]], header_column_source: [str],
             column_subset_table_idx_count += 1
 
         except Exception as err:
-            helpers.print_system_error_and_dump(
+            parser_helpers.print_system_error_and_dump(
                 f"Note: key {key} errors {str(err)} on removing columns... should not happen ")
 
     return column_subset_table, column_subset_key_to_index
@@ -240,7 +240,7 @@ def create_full_key_and_key_as_number(table_source: [[str]],
     req_index_src = static_data.DEFAULT_REQ_ID_INDEX
     try:
         if not (header_source.index(SECTION_ID) > -1 or  header_source.index(REQ_ID) > -1):
-            helpers.raise_error_system_exit()
+            parser_helpers.raise_error_system_exit()
             return table_target, key_to_index_target
         else:
             section_index_src =header_source.index(SECTION_ID)
@@ -275,13 +275,13 @@ def create_full_key_and_key_as_number(table_source: [[str]],
                         if column == static_data.FULL_KEY:
                             new_target_row[header_target_column.index(static_data.FULL_KEY)] =src_full_key
                         if column == static_data.KEY_AS_NUMBER:
-                            new_target_row[header_target_column.index(static_data.KEY_AS_NUMBER)] = helpers.convert_version_to_number_from_full_key(src_full_key)
+                            new_target_row[header_target_column.index(static_data.KEY_AS_NUMBER)] = parser_helpers.convert_version_to_number_from_full_key(src_full_key)
                 full_key_target = new_target_row[header_target_column.index(static_data.FULL_KEY)]
                 key_to_index_target[full_key_target]= len(table_target)
                 table_target.append(new_target_row)
 
     except Exception as err:
-       helpers.raise_error_system_exit(f"Error in create_full_key_and_key_as_number {str(err)}",err)
+       parser_helpers.raise_error_system_exit(f"Error in create_full_key_and_key_as_number {str(err)}", err)
 
     return table_target, key_to_index_target
 
@@ -352,7 +352,7 @@ def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str,
                 table_target.append(source_row)
 
         except Exception as err:
-            helpers.print_system_error_and_dump(
+            parser_helpers.print_system_error_and_dump(
                 f"Note: key {key} errors {str(err)} on add_table_new_rows().. should not happen ")
 
     return table_target, key_to_table_target
@@ -434,7 +434,7 @@ def add_columns(manual_fields_header, updated_header):
 
 
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
-    file_name = helpers.find_valid_path(file_name)
+    file_name = parser_helpers.find_valid_path(file_name)
 
     with open(file_name, 'w', newline=static_data.table_newline) as csv_output_file:
         table_writer = csv.writer(csv_output_file, quoting=csv.QUOTE_ALL, delimiter=static_data.table_delimiter)
@@ -446,7 +446,7 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
         elif header is not None and (len(header) > 0):
             table_writer.writerow(header)
         else:
-            helpers.print_system_error_and_dump(f"Filename {file_name} has no header fatal")
+            parser_helpers.print_system_error_and_dump(f"Filename {file_name} has no header fatal")
             raise SystemExit(f"Filename {file_name} has no header fatal")
 
         # get rid of bad rows
@@ -549,7 +549,7 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
                                                                                                                 [str],
                                                                                                                 dict[
                                                                                                                     str, str]]:
-    file_name = helpers.find_valid_path(file_name)
+    file_name = parser_helpers.find_valid_path(file_name)
     table = []
     header = []
     key_fields: dict = dict()
@@ -582,10 +582,10 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
 
                     table_index += 1
                 except IndexError as e:
-                    helpers.print_system_error_and_dump(
+                    parser_helpers.print_system_error_and_dump(
                         f"Index error {file_name} idx {table_index}  -= {type(e)} value {str(e)}...")
                 except Exception as e1:
-                    helpers.print_system_error_and_dump(
+                    parser_helpers.print_system_error_and_dump(
                         f"General exception  {file_name} idx {table_index} -= {type(e1)} exiting..{str(e1)}")
 
                 # end for rows
@@ -598,7 +598,7 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
                 duplicate_rows = None
             csv_file.close()
     except IOError as e:
-        helpers.print_system_error_and_dump(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+        parser_helpers.print_system_error_and_dump(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     return table, key_fields, header, duplicate_rows
 
 
@@ -610,7 +610,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
 
     :rtype: {[[str]],dict,[]}
     """
-    file_name = helpers.find_valid_path(file_name)
+    file_name = parser_helpers.find_valid_path(file_name)
 
     table = []
     header = []
@@ -645,7 +645,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
                             except ValueError as ve:
                                 message = f' Fatal,  exit Error: First row NOT header file={csv_file}   ToDo: Consider passing in header? row={row} default to section_id = col 1 and req_id col 2. First row of file should contain CSV with header like Section, section_id, etc looking for <Section> not found in {row}'
                                 print(message)
-                                helpers.print_system_error_and_dump(message, ve)
+                                parser_helpers.print_system_error_and_dump(message, ve)
                                 # Carry on and get the first row
                     header_len = len(header)
                     if logging: print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
@@ -674,7 +674,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
                     if logging: print(f'For table {table_index}')
                     table_index += 1
                 except (IndexError, ValueError) as e:
-                    helpers.print_system_error_and_dump(
+                    parser_helpers.print_system_error_and_dump(
                         f"Index ValueError row[{row}] at idx={table_index}  from {file_name}  -= {type(e)} value {str(e)}...")
             csv_file.close()
             # end for rows
@@ -687,10 +687,10 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
                 duplicate_rows = None
             csv_file.close()
     except (IOError, IndexError) as e:
-        helpers.print_system_error_and_dump(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
+        parser_helpers.print_system_error_and_dump(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
         raise SystemExit(f"Failed to open file {file_name} exception -= {type(e)} exiting...")
     except Exception as e2:
-        helpers.print_system_error_and_dump(
+        parser_helpers.print_system_error_and_dump(
             f"Unexpected fatal exception[{str(e2)}] file {file_name}  in read_table_sect_and_req_key  exiting...")
         raise SystemExit(f"Failed to open file {file_name} exception -= {str(e2)} exiting...")
 

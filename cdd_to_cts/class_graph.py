@@ -4,9 +4,10 @@ import re
 import time
 from os.path import exists
 
-from cdd_to_cts import persist, helpers
+from cdd_to_cts import persist, parser_helpers
 from cdd_to_cts import static_data
-from helpers import filter_files_to_search, bag_from_text, remove_non_determinative_words, find_valid_path
+from parser_helpers import find_valid_path
+from general_helpers import remove_non_determinative_words, bag_from_text, filter_files_to_search
 from static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE
 
 FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
@@ -16,7 +17,7 @@ def get_list_of_at_test_files(
     stored_files: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:
     if not exists(static_data.TEST_FILES_TXT):
         files_to_words_local, test_files_list = make_bags_of_words_all()
-        stored_files = helpers.find_valid_path(stored_files)
+        stored_files = parser_helpers.find_valid_path(stored_files)
         test_file_string  = json.dumps(test_files_list)
         f = open(stored_files, 'w')
         f.write(test_file_string)
@@ -121,7 +122,7 @@ def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data.TEST_F
                     print(f'{count}) {test_annotated_file_name}:{method}')
                 grep_of_test_files.close()
     except FileNotFoundError as e:
-        helpers.print_system_error_and_dump(f" Could not find {results_grep_at_test} ", e)
+        parser_helpers.print_system_error_and_dump(f" Could not find {results_grep_at_test} ", e)
     print(f'{count}) {len(test_files_to_methods)}')
     return test_files_to_methods
 
@@ -151,7 +152,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
     start = time.perf_counter()
     count = 0
     try:
-        file_name_in = helpers.find_valid_path(file_name_in)
+        file_name_in = parser_helpers.find_valid_path(file_name_in)
         input_file = open(file_name_in, 'r')
         test_classes_to_dependent_classes: dict = dict()
         file_as_string = input_file.read()
@@ -171,7 +172,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
                     #     end = time.perf_counter()
                     #     # print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
                     dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
-                    if dependencies_file_name is not None and helpers.find_valid_path(dependencies_file_name) and dependencies_file_name.find(
+                    if dependencies_file_name is not None and parser_helpers.find_valid_path(dependencies_file_name) and dependencies_file_name.find(
                             "$PROJECT_DIR$") > -1:  # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
                         dependencies_file_name = dependencies_file_name.replace("$PROJECT_DIR$",
                                                                                 static_data.CTS_SOURCE_ROOT)
@@ -182,7 +183,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
         print(f'Finished parsing dependencies {count} time {end - start:0.4f}sec ')
 
     except Exception as err:
-        helpers.print_system_error_and_dump(f" Maybe couldn't open {file_name_in}", err)
+        parser_helpers.print_system_error_and_dump(f" Maybe couldn't open {file_name_in}", err)
     return test_classes_to_dependent_classes
 
 def make_bags_of_words_all(root_cts_source_directory=static_data.CTS_SOURCE_ROOT)-> (dict[str:str], [str] ):

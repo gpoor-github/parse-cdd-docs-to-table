@@ -1,79 +1,16 @@
+#  Block to comment
+
 import os
 import re
-import sys
-import traceback
 from typing import Any
 
-from cdd_to_cts import static_data
-from cdd_to_cts.static_data import find_url_re_str, java_methods_re_str, java_object_re_str, java_defines_str, \
-    all_words_to_skip, CTS_SOURCE_PARENT
-from stackdump import stackdump
+import static_data
+from parser_helpers import print_system_error_and_dump, read_file_to_string, find_valid_path
+from static_data import find_url_re_str, java_methods_re_str, java_object_re_str, java_defines_str, all_words_to_skip
 
 
 def is_has_upper(target_string : str)-> bool:
     return any(ele.isupper() for ele in target_string)
-
-def convert_version_to_number_from_full_key(full_key: str):
-    key_split = full_key.split('/')
-    if len(key_split) == 1:
-        return convert_version_to_number(key_split[0], '0.0.0')
-    else:
-        return convert_version_to_number(key_split[0], key_split[1])
-
-
-def convert_version_to_number(section_id: str, requirement_id: str):
-    section_splits = section_id.split(".")
-    section_as_number = ''
-    for i in range(4):
-        if i < len(section_splits):
-            idx = 0
-            for j in range(1, -1, -1):
-                if j >= len(section_splits[i]):
-                    section_as_number += '0'
-                else:
-                    section_as_number += section_splits[i][idx]
-                    idx += 1
-        else:
-            section_as_number += "00"
-
-    requirement_splits = requirement_id.split("-")
-    requirement_as_number = f'{ord(requirement_splits[0][-1])}'
-    for k in range(1, len(requirement_splits)):
-        if len(requirement_splits[k]) > 1:
-            requirement_as_number = f'{requirement_as_number}{requirement_splits[k]}'
-        else:
-            requirement_as_number = f'{requirement_as_number}0{requirement_splits[k]}'
-
-    return f'{section_as_number}.{requirement_as_number}'
-
-
-def print_system_error_and_dump(message: str = "ERROR.. default cdd parser message.", a_exception: BaseException = None):
-    print(message, file=sys.stderr)
-    stackdump(message)
-    traceback.print_exc()
-    if a_exception:
-        print(str(a_exception), file=sys.stderr)
-        raise a_exception
-    else:
-        raise Exception(message)
-
-
-def raise_error_system_exit(message: str = "ERROR.. default cdd parser message.", a_exception: BaseException = None):
-    print_system_error_and_dump(message,a_exception)
-    raise SystemExit(message)
-
-def process_requirement_text(text_for_requirement_value: str):
-    value = cleanhtml(text_for_requirement_value)
-    value = remove_n_spaces_and_delimiter(value)
-    return value
-
-
-def prepend_any_previous_value(text_for_requirement_value: str, previous_value: str = None):
-
-    if previous_value:
-        return '{} | {}'.format(previous_value, text_for_requirement_value)
-    else:
-        return text_for_requirement_value
 
 
 def add_list_to_count_dict(new_value_to_add: Any, dictionary_with_existing_values: dict, key: str) -> dict:
@@ -164,32 +101,6 @@ def find_java_objects(text_to_scan_for_java_objects: str) -> set:
     return java_objects
 
 
-def find_section_id(section: str) -> str:
-    cdd_section_id_search_results = re.search(static_data.SECTION_ID_RE_STR, section)
-    if cdd_section_id_search_results:
-        cdd_section_id = cdd_section_id_search_results[0]
-        cdd_section_id = cdd_section_id.replace('"', '').rstrip('_')
-        cdd_section_id = cdd_section_id.replace('_', '.')
-        return cdd_section_id
-    return ""
-
-
-def remove_n_spaces_and_delimiter(value):
-    value = re.sub("\\s\\s+", " ", value)
-    value = re.sub(static_data.table_delimiter, " ", value)
-    return value
-
-
-def cleanhtml(raw_html):
-    cleanr = re.compile('<.*?>')
-    cleantext = re.sub(cleanr, '', raw_html)
-    return cleantext
-
-
-def clean_html_anchors(raw_html: str):
-    return raw_html.replace("</a>", "")
-
-
 def remove_non_determinative_words(set_to_diff: set):
     return set_to_diff.difference(all_words_to_skip)
 
@@ -206,56 +117,6 @@ def make_files_to_string(iterable_file_list: [str]) -> str:
         flist.append(f'{file} ')
         flist.append(read_file_to_string(file))
     return " ".join(flist)
-
-
-def read_file_to_string(file: str, prepend_path_if_needed: str = CTS_SOURCE_PARENT):
-    full_path = file
-    if not file.startswith('/') and file.find(prepend_path_if_needed) == -1:
-        if not  prepend_path_if_needed.endswith("/"):
-            prepend_path_if_needed = prepend_path_if_needed+"/"
-        full_path = prepend_path_if_needed + file
-
-    with open(full_path, "r") as text_file:
-        file_string_raw = text_file.read()
-        file_string = re.sub(' Copyright.+limitations under the License', "", file_string_raw, flags=re.DOTALL)
-        text_file.close()
-        return file_string
-
-
-def write_file_to_string(full_path: str, value:str):
-
-    with open(full_path, "w") as text_file:
-        text_file.write(value)
-        text_file.close()
-
-def build_composite_key(key_string_for_re, record_id_split, section_id):
-    record_id_result = re.search(key_string_for_re, record_id_split)
-    if record_id_result:
-        record_id = record_id_result[0].rstrip(']').strip(" ").strip(']').strip('>').strip('[')
-        return '{}/{}'.format(section_id, record_id)
-    else:
-        return None
-
-
-def find_full_key(key_string_for_re, record_id_split, section_id=None):
-    record_id_result = re.search(key_string_for_re, record_id_split)
-    if record_id_result:
-        record_id_string = record_id_result[0].strip(" ").strip(']').strip('>').strip('[')
-        return record_id_string
-    else:
-        return None
-
-
-def find_valid_path(file_name: str) -> str:
-    if file_name.find(static_data.WORKING_ROOT[0:10]) != -1:
-        return file_name
-
-    if file_name.find(static_data.WORKING_ROOT) == -1:
-        if not static_data.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
-            file_name = static_data.WORKING_ROOT + '/' + file_name
-        else:
-            file_name = static_data.WORKING_ROOT + file_name
-    return file_name
 
 
 def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_CASE_MODULES,

@@ -4,11 +4,10 @@ import unittest
 from os import remove
 from os.path import exists
 
-import helpers
 import react
 import static_data
 import table_ops
-from helpers import read_file_to_string, write_file_to_string
+from parser_helpers import read_file_to_string, write_file_to_string
 from table_functions_for_release import update_release_table_with_changes
 from table_ops import copy_matching_rows_to_new_table
 

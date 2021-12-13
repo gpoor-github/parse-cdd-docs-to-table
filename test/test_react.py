@@ -1,7 +1,7 @@
 import re
 from unittest import TestCase
 
-import helpers
+import parser_helpers
 import static_data
 import table_ops
 from react import RxData, my_print
@@ -15,7 +15,7 @@ class TestRxData(TestCase):
         rd = RxData()
         rd.max_matches = 200
         result_table = [[str]]
-        output_file_name = helpers.find_valid_path(output_file_name)
+        output_file_name = parser_helpers.find_valid_path(output_file_name)
 
         # if not input_file.exists():
         #     copyfile(static_data.WORKING_ROOT + original_source_csv, static_data.WORKING_ROOT + output_file_name)
@@ -24,7 +24,7 @@ class TestRxData(TestCase):
         rd.main_do_create_table(input_file_name, output_file_name).subscribe(
             on_next=lambda table: my_print("that's all folks!{} "),
             on_completed=lambda: print("completed"),
-            on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
+            on_error=lambda err: parser_helpers.print_system_error_and_dump("in main", err))
         # copyfile(static_data.WORKING_ROOT+output_file_name, static_data.WORKING_ROOT+input_file_name)
         # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     #
@@ -77,7 +77,7 @@ class TestRxData(TestCase):
             on_next=lambda table: my_print(
                 f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
             on_completed=lambda: print("completed"),
-            on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
+            on_error=lambda err: parser_helpers.print_system_error_and_dump("in main", err))
 
     def test_update_manual_field_new_approach(self):
 
@@ -93,7 +93,7 @@ class TestRxData(TestCase):
             on_next=lambda table: my_print(
                 f"react.py main created [{output_file_to_take_as_input_for_update}] from [{input_file_to_be_updated_with_manual_terms}] "),
             on_completed=lambda: print("completed"),
-            on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
+            on_error=lambda err: parser_helpers.print_system_error_and_dump("in main", err))
 
     def test_play2_re_search(self):
         logging = True
@@ -136,7 +136,7 @@ class TestRxData(TestCase):
         logging = True
         search_terms = set("\... H-1-3 5\.1 codec  'H-1-3' 5.1.?H-1-3 decoder Advertise video".split(' '))
         mediapc_test_file = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/sample_subset_java_source.java"
-        full_text_of_file_str = helpers.read_file_to_string(mediapc_test_file)
+        full_text_of_file_str = parser_helpers.read_file_to_string(mediapc_test_file)
 
         search_terms.difference_update(static_data.spurious_terms)
         if logging:
@@ -161,7 +161,7 @@ class TestRxData(TestCase):
         search_terms = set("\... H-1-3 5\.1 codec  'H-1-3' 5.1.?H-1-3 decoder Advertise video".split(' '))
 
         mediapc_test_file = "/home/gpoor/cts-12-source-12/cts/tests/tests/media/src/android/media/cts/MediaCodecCapabilitiesTest.java"
-        full_text_of_file_str = helpers.read_file_to_string(mediapc_test_file)
+        full_text_of_file_str = parser_helpers.read_file_to_string(mediapc_test_file)
 
         search_terms.difference_update(static_data.spurious_terms)
         if logging:

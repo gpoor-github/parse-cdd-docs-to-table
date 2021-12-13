@@ -6,7 +6,7 @@ import rx
 from rx import operators as ops, pipe
 from rx.testing import TestScheduler, ReactiveTest
 
-from cdd_to_cts import static_data, helpers, react, table_ops
+from cdd_to_cts import static_data, parser_helpers, react, table_ops
 from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
     created_and_populated_search_info_from_key_row_tuple, find_search_terms
 from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX, \
@@ -32,7 +32,7 @@ def predicate3(target) -> bool:
 def predicate2(target, source) -> bool:
     print("predicate 2 " + str(target))
     file_name = target.split(" :")[0]
-    thing_to_search = helpers.read_file_to_string(file_name)
+    thing_to_search = parser_helpers.read_file_to_string(file_name)
     is_match = False
     is_match = rx.Observable(source).pipe(ops.find(predicate=predicate3)).run()
 

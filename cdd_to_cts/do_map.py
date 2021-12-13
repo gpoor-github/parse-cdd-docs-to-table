@@ -2,10 +2,10 @@ import time
 
 import parse_cdd_html
 import table_ops
-from cdd_to_cts import static_data, helpers, data_sources
+from cdd_to_cts import static_data, parser_helpers, data_sources
 from cdd_to_cts.react import RxData, my_print
 from check_sheet import diff_tables_files
-from data_sources_helper import create_full_table_from_cdd
+from parser_helpers import create_full_table_from_cdd
 
 
 def do_on_complete():
@@ -17,7 +17,7 @@ def do_map_12():
 
     cdd_12_created = f"{directory}/cdd_12_table_all_html.tsv"
 
-    key_to_full_requirement_text_local, key_to_java_objects_local, key_to_urls_local, cdd_requirements_file_as_string, section_to_section_data= parse_cdd_html.parse_cdd_html_to_requirements("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html")
+    key_to_full_requirement_text_local,cdd_requirements_file_as_string, section_to_section_data= parse_cdd_html.parse_cdd_html_to_requirements("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html")
     create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                section_to_section_data,
                                cdd_12_created, static_data.cdd_to_cts_app_header)
@@ -34,7 +34,7 @@ def do_map_12():
         .subscribe(
         on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),
         on_completed=lambda: do_on_complete(),
-        on_error=lambda err: helpers.print_system_error_and_dump("rx on_error do_map()", err))
+        on_error=lambda err: parser_helpers.print_system_error_and_dump("rx on_error do_map()", err))
 
 
 def do_map_11():
@@ -60,7 +60,7 @@ def do_map_11():
         .subscribe(
         on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),
         on_completed=lambda: do_on_complete(),
-        on_error=lambda err: helpers.print_system_error_and_dump("rx on_error do_map()", err))
+        on_error=lambda err: parser_helpers.print_system_error_and_dump("rx on_error do_map()", err))
 
 
 # noinspection DuplicatedCode

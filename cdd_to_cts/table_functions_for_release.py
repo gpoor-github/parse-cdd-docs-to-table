@@ -131,7 +131,17 @@ def create_table_from_downloaded_sheet_add_full_keys(table_file_for_source, outp
     table_ops.write_table(output_file_for_results, table_target, static_data.cdd_12_manual_merge_helper)
 
 if __name__ == '__main__':
+    cdd_11_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_11_gen_html.tsv"
+    cdd_12_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_12_gen_html.tsv"
+    sheet_released_cdd_12_on_2021_12_07_downloaded = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/download-2021-12-7-released-gvp-cts-tracker-CDD-12.tsv"
+
+    cdd_12_html_vs_sheet_debt_diffs = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_html_vs_sheet_debt_diffs.tsv"
+
+    cdd_12_html_vs_sheet_diffs = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_html_vs_sheet_diffs.tsv"
+    cdd_11_vs_12_diffs = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_diff_html_11x.tsv"
+    cdd_11_vs_12_diffs_diffed_with_done = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_11_vs_12_diffs_diffed_with_done.tsv"
     # merge_duplicate_row_for_column_set_for_flat_file("/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-1_flat.tsv",
     #                                                  [static_data.CLASS_DEF,static_data.METHOD],
     #                                                  "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_3.2.3.5_C-5-1_flat_bla.tsv")
-    update_release_table_with_changes_example()
+    # update_release_table_with_changes_example()
+    create_table_from_differences_and_source(cdd_11_vs_12_diffs_diffed_with_done,cdd_12_html_vs_sheet_diffs,cdd_12_html_vs_sheet_diffs,cdd_12_html_vs_sheet_debt_diffs)

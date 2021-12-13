@@ -10,13 +10,14 @@ from rx import operators as ops, pipe
 from rx.subject import BehaviorSubject
 
 import class_graph
-import helpers
+import general_helpers
+import parser_helpers
 import static_data
 import table_ops
 from cdd_to_cts.class_graph import re_method
-from cdd_to_cts.helpers import find_java_objects, add_list_to_count_dict, build_test_cases_module_dictionary, \
-    print_system_error_and_dump, \
-    convert_version_to_number_from_full_key, CountDict
+from cdd_to_cts.parser_helpers import print_system_error_and_dump, \
+    convert_version_to_number_from_full_key
+from general_helpers import add_list_to_count_dict, CountDict, find_java_objects, build_test_cases_module_dictionary
 from cdd_to_cts.static_data import full_key_string_for_re, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
     FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
     MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
@@ -32,7 +33,7 @@ def build_dict(key_req: str):
         row_dict[REQUIREMENT] = "None found"
         print("error build_dict " + key_req)
     else:
-        row_dict[REQUIREMENT] = helpers.remove_n_spaces_and_delimiter(key_req_spits[1])
+        row_dict[REQUIREMENT] = parser_helpers.remove_n_spaces_and_delimiter(key_req_spits[1])
     return row_dict
 
 
@@ -80,8 +81,8 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
                         cell_value = " ".join(value)
                     elif type(value) is dict:
                         cell_value = sorted({x for v in value.values() for x in v})
-                    elif isinstance(value, CountDict) or isinstance(value, helpers.CountDict) or type(
-                            value) == helpers.CountDict:
+                    elif isinstance(value, CountDict) or isinstance(value, general_helpers.CountDict) or type(
+                            value) == general_helpers.CountDict:
                         a_count_dict: CountDict = value
                         container_dict = a_count_dict.count_value_dict
                         if container_dict and len(container_dict) > 0:
@@ -106,7 +107,7 @@ def dictionary_to_row(row_values: dict, header_as_keys: [str], row: [str], do_lo
 
 def write_table_from_dictionary(table_dict: dict, file_name: str, header: [str] = static_data.cdd_to_cts_app_header,
                                 logging: bool = False) -> (dict, []):
-    file_name = helpers.find_valid_path(file_name)
+    file_name = parser_helpers.find_valid_path(file_name)
 
     with open(file_name, 'w', newline=static_data.table_newline) as csv_output_file:
         table_writer = csv.writer(csv_output_file, quoting=csv.QUOTE_ALL, delimiter=static_data.table_delimiter)
@@ -134,7 +135,7 @@ def find_full_key_callable(record_id_split: [[int], str]) -> str:
 def list_map(section_id: str, record_splits: list) -> list:
     dict_list = list()
     for record_split in record_splits:
-        test_section_id = helpers.find_section_id(record_split)
+        test_section_id = parser_helpers.find_section_id(record_split)
         if test_section_id and len(test_section_id) > 0:
             section_id = test_section_id
         record_id_result = re.search(static_data.req_id_re_str, record_split)
@@ -172,7 +173,7 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
                 index = header.index(column)
                 search_info[column] = row[index]
 
-        urls = helpers.find_urls(search_info[REQUIREMENT])
+        urls = general_helpers.find_urls(search_info[REQUIREMENT])
         if len(urls) > 0:
             search_info[static_data.URLS] = urls
 
@@ -183,7 +184,7 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
 
 
     except Exception as err:
-        helpers.print_system_error_and_dump(
+        parser_helpers.print_system_error_and_dump(
             f"created_and_populated_search_info_from_key_row_tuple row=[{str()}] header[{str(header)}]  err =[{str(err)}] ",
             err)
 
@@ -334,7 +335,7 @@ class RxData:
             file_name_param : str = search_info_and_file_tuple[1]
             search_terms = search_info.get(SEARCH_TERMS)
 
-            full_text_of_file_str = helpers.read_file_to_string(file_name_param).replace('\t', ' ')
+            full_text_of_file_str = parser_helpers.read_file_to_string(file_name_param).replace('\t', ' ')
 
             if logging:
                 print(f"searching {search_info_and_file_tuple[1]} \n for {str(search_terms)}")
@@ -345,7 +346,7 @@ class RxData:
                 # File search
                 search_string:str = conditional_re_escape(matched_term)
                 # What? comment next time search_string = search_string.replace("&", ".*")
-                if helpers.is_has_upper(matched_term):
+                if general_helpers.is_has_upper(matched_term):
                     re_matches_from_file_search = re.findall(search_string, full_text_of_file_str, re.MULTILINE)
                 else:
                     re_matches_from_file_search = re.findall(search_string, full_text_of_file_str, re.IGNORECASE | re.M)
@@ -487,7 +488,7 @@ class RxData:
                 self.publish_each_result(search_result)
 
         except Exception as e:
-            helpers.print_system_error_and_dump(f"find_data_for_result_dict_java at {full_key}", e)
+            parser_helpers.print_system_error_and_dump(f"find_data_for_result_dict_java at {full_key}", e)
 
         return search_info
 
@@ -530,7 +531,7 @@ class RxData:
             self.publish_each_result(search_result)
 
         except Exception as e:
-            helpers.print_system_error_and_dump(f"find_data_for_result_dict_java at {full_key}", e)
+            parser_helpers.print_system_error_and_dump(f"find_data_for_result_dict_java at {full_key}", e)
 
         return search_info
     #
@@ -766,12 +767,12 @@ def do_map_with_flat_file(file_to_process:str, flat_file:str, latest_result:str)
                                                 static_data.flat_file_header))) \
         .subscribe(on_next=lambda results: my_print(f"result_subject truncated = [{str(results)[0:50]}] "),
                    on_completed=lambda: print("complete result_subject"),
-                   on_error=lambda err: helpers.print_system_error_and_dump("result_subject", err))
+                   on_error=lambda err: parser_helpers.print_system_error_and_dump("result_subject", err))
 
     rd.main_do_create_table(file_to_process, latest_result).subscribe(
         on_next=lambda table: my_print(f"react.py main created (truncated) [{str(latest_result)[0:50]}] from [{file_to_process}] "),
         on_completed=lambda: rd.do_on_complete(),
-        on_error=lambda err: helpers.print_system_error_and_dump("in main", err))
+        on_error=lambda err: parser_helpers.print_system_error_and_dump("in main", err))
     merge_duplicate_row_for_column_set_for_flat_file(
         flat_file,
         [static_data.CLASS_DEF, static_data.METHOD],

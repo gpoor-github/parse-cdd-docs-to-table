@@ -4,9 +4,9 @@ import os
 import pathlib
 import re
 
-import helpers
+import parser_helpers
 import static_data
-from data_sources_helper import process_section_splits_md_and_html, create_full_table_from_cdd
+from parser_helpers import process_section_splits_md_and_html, create_full_table_from_cdd
 from static_data import CDD_MD_ROOT, full_key_string_for_re, req_id_re_str
 
 
@@ -18,7 +18,7 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
     section_count =0
     total_requirement_count =0
     if not pathlib.Path(cdd_md_root).is_dir():
-        helpers.print_system_error_and_dump(f"Not directory {cdd_md_root}")
+        parser_helpers.print_system_error_and_dump(f"Not directory {cdd_md_root}")
     for directory, subdirlist, filelist in os.walk(cdd_md_root):
         for sub_dir in subdirlist:
             section_re_str: str = '(\d{1,3}_)+'
@@ -42,7 +42,7 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
                     sub_cdd_section_id = get_section_id(cdd_section_id_search_results)
                     ccd_section_data = file.strip(".md")
                     section_to_section_data[sub_cdd_section_id] = ccd_section_data
-                    md_file_contents = helpers.read_file_to_string(file,section_dir+'/')
+                    md_file_contents = parser_helpers.read_file_to_string(file, section_dir + '/')
                     key_to_full_requirement_text_local[sub_cdd_section_id] =md_file_contents
                     if logging: print(sub_cdd_section_id)
                     section_md_splits = re.split("(?=###?#?)",md_file_contents)
@@ -61,14 +61,14 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
                             ccd_section_data= ccd_section_data.strip("#").strip("\n").replace("\\."," ").strip()
                             section_to_section_data[sub_cdd_section_id] = ccd_section_data
 
-                        total_requirement_count = process_section_splits_md_and_html(helpers.find_full_key, full_key_string_for_re, cdd_section_id,
+                        total_requirement_count = process_section_splits_md_and_html(parser_helpers.find_full_key, full_key_string_for_re, cdd_section_id,
                                                                                      key_to_full_requirement_text_local, req_id_splits,
                                                                                      section_count, total_requirement_count, section_to_section_data, ccd_section_data, logging)
                         # Only build a key if you can't find any...
                         if len(req_id_splits) < 2:
                             req_id_splits = re.split("(\*\s*?\[)", str(section))
 
-                            total_requirement_count = process_section_splits_md_and_html(helpers.build_composite_key, req_id_re_str, cdd_section_id,
+                            total_requirement_count = process_section_splits_md_and_html(parser_helpers.build_composite_key, req_id_re_str, cdd_section_id,
                                                                                          key_to_full_requirement_text_local, req_id_splits,
                                                                                          section_count, total_requirement_count, section_to_section_data, ccd_section_data, logging)
     return key_to_full_requirement_text_local, section_to_section_data

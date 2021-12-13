@@ -3,9 +3,9 @@
 import time
 
 import data_sources
-import helpers
+import parser_helpers
 import static_data
-from data_sources_helper import create_full_table_from_cdd
+from parser_helpers import create_full_table_from_cdd
 from do_map import do_on_complete
 from react import RxData, my_print
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         .subscribe(
         on_next=lambda table: my_print(len(table), "do_map() wrote table of size{} "),
         on_completed=lambda: do_on_complete(),
-        on_error=lambda err: helpers.print_system_error_and_dump("rx on_error do_map()", err))
+        on_error=lambda err: parser_helpers.print_system_error_and_dump("rx on_error do_map()", err))
 
     print(" Now check final output")
     # table_ops.diff_tables_files(rx_output_file, requirements_to_search_generated_table)

@@ -3,10 +3,11 @@ import random
 import time
 
 from cdd_to_cts import class_graph, persist, static_data
-from cdd_to_cts import helpers
-from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies, create_full_table_from_cdd
-from cdd_to_cts.helpers import make_files_to_string, build_test_cases_module_dictionary, filter_files_to_search, \
-    bag_from_text, remove_non_determinative_words
+from cdd_to_cts import parser_helpers
+from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies
+from parser_helpers import create_full_table_from_cdd
+from general_helpers import remove_non_determinative_words, bag_from_text, make_files_to_string, \
+    build_test_cases_module_dictionary, filter_files_to_search
 from cdd_to_cts.static_data import CTS_SOURCE_PARENT, MANUAL_SEARCH_TERMS
 from cdd_to_cts.static_data import CTS_SOURCE_ROOT, DATA_SOURCES_CSV_FROM_HTML_1st
 from cdd_to_cts.table_ops import read_table_sect_and_req_key
@@ -60,7 +61,7 @@ class SourceCrawlerReducer(object):
                  cts_root_directory: str = CTS_SOURCE_ROOT,
                  do_search=False):
         if md_file_root.endswith(".html"):
-            helpers.raise_error_system_exit(f"We are not using html files but the CDD Root {static_data.CDD_MD_ROOT} not {md_file_root}")
+            parser_helpers.raise_error_system_exit(f"We are not using html files but the CDD Root {static_data.CDD_MD_ROOT} not {md_file_root}")
 
         self.global_to_data_sources_do_search = do_search
         self.test_files_to_aggregated_dependency_string = dict()
@@ -235,8 +236,8 @@ class SourceCrawlerReducer(object):
         try:
             row = self.global_input_table[self.global_input_table_keys_to_index.get(key)]
         except Exception as err:
-            helpers.print_system_error_and_dump(f"Exception [{key}] row not found in search_files_as_strings_for_word ",
-                                                err)
+            parser_helpers.print_system_error_and_dump(f"Exception [{key}] row not found in search_files_as_strings_for_word ",
+                                                       err)
 
         try:
             col_idx = list(self.global_input_header).index(MANUAL_SEARCH_TERMS)

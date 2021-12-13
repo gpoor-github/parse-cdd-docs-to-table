@@ -4,7 +4,7 @@
 import json
 import pickle
 
-from helpers import find_valid_path
+from parser_helpers import find_valid_path
 
 
 def write(adict: dict, file_name: str):

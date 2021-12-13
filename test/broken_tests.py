@@ -10,7 +10,7 @@ from rx import operators as ops, pipe
 from rx.testing import TestScheduler, ReactiveTest
 
 import data_sources
-from cdd_to_cts import static_data, helpers, react, table_ops
+from cdd_to_cts import static_data, parser_helpers, react, table_ops
 from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
     created_and_populated_search_info_from_key_row_tuple, my_print
 from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX
@@ -173,7 +173,7 @@ class BrokenTestsToFixSomeday(unittest.TestCase):
         search_info = react.created_and_populated_search_info_from_key_row_tuple(row, header)
 
         key_req2 = "    <li>[<a href=""https://source.android.com/compatibility/11/android-11-cdd#3_0_intro"">3</a>/W-0-1] MUST declare the"
-        key_req2 = helpers.cleanhtml(key_req2)
+        key_req2 = parser_helpers.cleanhtml(key_req2)
         rd = RxData()
         self.assertEqual(expected,
                          search_info.get( SEARCH_TERMS))
