@@ -1,34 +1,12 @@
 import os
 import time
 
-TEST_LEVEL = "Test Level"
+from parser_constants import TEST_LEVEL, CTS_BUG_ID, COMMENT_INTERNAL, ANNOTATION_, CTS_SOURCE_ROOT, SECTION, \
+    SECTION_ID, REQ_ID, FULL_KEY, REQUIREMENT, KEY_AS_NUMBER, TEST_AVAILABILITY, FILE_NAME, METHOD_TEXT, MODULES, \
+    MODULE, METHOD, CLASS_DEF, cdd_12_full_header_for_ref_part_1, cdd_12_full_header_for_ref_part_2, \
+    ccd_12_subset_target_field_header
 
-SHORTEND = "Shortened"
-
-AREA = "Area"
-
-CDD_BUG_ID = "CDD Bug Id"
-
-CTS_BUG_ID = "CTS Bug Id"
-
-COMMENT_INTERNAL = "Comment(internal) e.g. why a test is not possible"
-
-NEW_CTS_FOR_S_ = "New CTS for S?"
-
-NEW_REQ_FOR_S_ = "New Req for S?"
-
-ANNOTATION_ = "Annotation?"
-
-USER_HOME = "/home/gpoor/"
-
-CTS_SOURCE_PARENT = USER_HOME + "cts-12-source/"
-
-CTS_SOURCE_NAME = 'cts'
-CTS_SOURCE_ROOT = CTS_SOURCE_PARENT + CTS_SOURCE_NAME
-WORKING_ROOT = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source"
 # os.getcwd().replace("cdd_to_cts","")
-AOSP_ROOT  ="/home/gpoor/aosp_cdd"
-CDD_MD_ROOT= AOSP_ROOT+"/cdd"
 # Remember these 2 files must exit before the program is run
 CDD_REQUIREMENTS_FROM_HTML_FILE = 'input/cdd.html'
 FILTER_KEYS_DOWNLOADED_TABLE = 'input/FILTER_KEYS_DOWNLOADED_TABLE.tsv'
@@ -42,15 +20,8 @@ RX_WORKING_OUTPUT_TABLE_TO_EDIT = "output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.tsv"
 
 INPUT_TABLE_FILE_NAME_RX = "output/table_file_for_react_filtered.tsv"
 
-TEST_FILES_TXT = "input_data_from_cts/test-files.txt"
-TEST_CASE_MODULES = "input_data_from_cts/testcases-modules.txt"
 INPUT_DEPENDENCIES_FOR_CTS_TXT = 'input_data_from_cts/cts-deps-from-static_code_analysis.txt'
-req_id_re_str = '(?:Tab|[ACHTW])-[0-9][0-9]?-[0-9][0-9]?'
-section_id_re_str = "[\[>][\d+\.]+\d+"
-full_key_string_for_re = section_id_re_str+'/' + req_id_re_str
 # FULL_KEY_RE_WITH_ANCHOR = '>(?:[0-9]{1,3}(</a>)?.)' + req_id_re_str
-METHOD_RE = '(\w+?)\(\)'
-SECTION_ID_RE_STR = "(?:(\d{1,2}\.)+(\d{1,2})?)"
 
 java_methods_re_str = '(?:[a-zA-Z]\w+\() ?\w* ?\)'
 java_object_re_str = '(?:[a-zA-Z]\w+\.)+[a-zA-Z_][a-zA-Z]+'
@@ -143,29 +114,10 @@ all_words_to_skip: set = set().union(common_methods).union(common_english_words)
     .union(spurious_terms)
 
 TEST_FILES_TO_DEPENDENCIES_STORAGE = 'storage/test_file_to_dependencies.pickle'
-HEADER_KEY = 'header_key'
-ROW = 'row'
-SEARCH_RESULT = 'search_result'
 
-SECTION = 'Section'
-DEFAULT_SECTION_INDEX = 0
-
-SECTION_ID = 'section_id'
-DEFAULT_SECTION_ID_INDEX = 1
-
-REQ_ID = 'req_id'
-DEFAULT_REQ_ID_INDEX = 2
-
-FULL_KEY = 'full_key'
-DEFAULT_FULL_KEY_INDEX = 3
 RESULT_COUNT = 'RESULT_COUNT'
-REQUIREMENT = 'requirement'
-KEY_AS_NUMBER = 'key_as_number'
-TEST_AVAILABILITY = 'Test Availability'
-FILE_NAME = 'file_name'
 PIPELINE_FILE_NAME = 'pipeline_file_name'
 PIPELINE_METHOD_TEXT = 'pipeline_method_text'
-METHOD_TEXT = 'method_text'
 MANUAL_SEARCH_TERMS = 'manual_search_terms'
 AUTO_SEARCH_TERMS = 'auto_search_terms'
 SEARCH_TERMS = 'search_terms'
@@ -175,13 +127,8 @@ NOT_FILES = 'not_files'
 SEARCH_ROOTS = 'search_roots'
 NOT_SEARCH_ROOTS = 'not_search_roots'
 
-MODULES = 'modules'
 METHODS = 'methods'
 CLASS_DEFS = 'class_defs'
-
-MODULE = 'module'
-METHOD = 'method'
-CLASS_DEF = 'class_def'
 
 MATCHED_TERMS = 'matched_terms'
 QUALIFIED_METHOD = 'qualified_method'
@@ -201,43 +148,30 @@ not_annotated_test_start = "public void test"
 current_cdd_11_header: [] = (
     [SECTION, SECTION_ID, REQ_ID, TEST_AVAILABILITY, ANNOTATION_, 'New Req for R?', 'New CTS for R?',
      CLASS_DEF, METHOD, MODULE])
-cdd_12_full_header_for_ref_part_1 = [SECTION, SECTION_ID, REQ_ID]
-cdd_12_full_header_for_ref_part_2 = [TEST_AVAILABILITY, ANNOTATION_,  NEW_REQ_FOR_S_,
-                              NEW_CTS_FOR_S_, CLASS_DEF, METHOD, MODULE, COMMENT_INTERNAL, "Comment (external)", "New vs Updated(Q)",
-                              CTS_BUG_ID, CDD_BUG_ID, "CDD CL", AREA, SHORTEND, TEST_LEVEL, "", "external version", "", "", ""]
-cdd_12_full_header_for_ref = cdd_12_full_header_for_ref_part_1 + cdd_12_full_header_for_ref_part_2
 
-cdd_12_manual_merge_helper = cdd_12_full_header_for_ref_part_1 +[FULL_KEY, KEY_AS_NUMBER]+cdd_12_full_header_for_ref_part_2
+cdd_12_manual_merge_helper = cdd_12_full_header_for_ref_part_1 + [FULL_KEY,
+                                                                  KEY_AS_NUMBER] + cdd_12_full_header_for_ref_part_2
 
-ccd_12_subset_target_field_header = [ANNOTATION_, NEW_REQ_FOR_S_, NEW_CTS_FOR_S_, COMMENT_INTERNAL, CTS_BUG_ID, CDD_BUG_ID,
-                                     AREA, SHORTEND, TEST_LEVEL]
 #  Used in create_full_table_from_cdd create a full table from the CDD, containing all the information from the CDD but not doing any processing (besides to the keys)
-cdd_info_only_header: [] = (
-    [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
-     '', ''])
 
 # Used in several methods that take data from a table cdd_to_cts_app_header header and copy just those columns for release.
-update_release_header: [] = ([TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,COMMENT_INTERNAL,CTS_BUG_ID])
 
 # Used because it will be natural to look at final results and update manual fields we will copy back to input source, but just those fields
 update_manual_header: [] = (
     [PROTECTED, MANUAL_SEARCH_TERMS, SEARCH_ROOTS, NOT_SEARCH_TERMS, NOT_SEARCH_ROOTS, NOT_FILES, NOT_METHODS])
-results_header: [] = [CLASS_DEF, METHOD, MODULE, FILE_NAME,  MATCHED_FILES, METHODS_STRING, URLS,  METHOD_TEXT,  MATCHED_TERMS,QUALIFIED_METHOD,]
+results_header: [] = [CLASS_DEF, METHOD, MODULE, FILE_NAME, MATCHED_FILES, METHODS_STRING, URLS, METHOD_TEXT, MATCHED_TERMS, QUALIFIED_METHOD, ]
 # Contains all the fields that are used to review and iterate on mappings.
 cdd_to_cts_app_header: [] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, KEY_AS_NUMBER, REQUIREMENT, TEST_AVAILABILITY, SEARCH_ROOTS, SEARCH_TERMS,
                              MANUAL_SEARCH_TERMS,
-                             NOT_SEARCH_TERMS, NOT_FILES,MAX_MATCHES,
+                             NOT_SEARCH_TERMS, NOT_FILES, MAX_MATCHES,
                              CLASS_DEFS, METHODS, MODULES,
                              PROTECTED] + results_header + ccd_12_subset_target_field_header
 # What data is to be copied from each row to the search_info dictionary
-fields_for_search_info_header: [] = update_manual_header+[REQUIREMENT,TEST_AVAILABILITY]
-flat_file_header:[] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY,MANUAL_SEARCH_TERMS,  REQUIREMENT,TEST_AVAILABILITY,CLASS_DEF, METHOD, MODULE, MATCHED_TERMS,METHODS_STRING, SEARCH_TERMS, FILE_NAME, COMMENT_INTERNAL,CTS_BUG_ID,TEST_LEVEL]
+fields_for_search_info_header: [] = update_manual_header+[REQUIREMENT, TEST_AVAILABILITY]
+flat_file_header:[] = [SECTION, SECTION_ID, REQ_ID, FULL_KEY, MANUAL_SEARCH_TERMS, REQUIREMENT, TEST_AVAILABILITY,
+                       CLASS_DEF, METHOD, MODULE, MATCHED_TERMS, METHODS_STRING, SEARCH_TERMS, FILE_NAME,
+                       COMMENT_INTERNAL, CTS_BUG_ID, TEST_LEVEL]
 
-table_delimiter = '\t'
-table_dialect = 'excel-tab'
-table_newline = ''
-table_encoding = 'UTF-8'
-table_lineterminator = table_newline
 re_tag = "re_tag:"
 
 

@@ -1,6 +1,7 @@
 import time
 
 import parse_cdd_html
+import parser_constants
 import table_ops
 from cdd_to_cts import static_data, parser_helpers, data_sources
 from cdd_to_cts.react import RxData, my_print
@@ -42,9 +43,9 @@ def do_map_11():
     cdd_11_created = f"{directory}cdd_11_table_all.tsv"
 
     scr = data_sources.SourceCrawlerReducer(
-        md_file_root=static_data.CDD_MD_ROOT,
+        md_file_root=parser_constants.CDD_MD_ROOT,
         global_table_input_file_built_from_requirment_md_files=cdd_11_created,
-        cts_root_directory=static_data.CTS_SOURCE_ROOT,
+        cts_root_directory=parser_constants.CTS_SOURCE_ROOT,
         do_search=False)
     create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text, scr.section_to_data,
                                    cdd_11_created)

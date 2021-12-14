@@ -1,8 +1,9 @@
 import csv
 import sys
 
+import parser_constants
 from cdd_to_cts import static_data, parser_helpers
-from cdd_to_cts.static_data import SECTION_ID, REQ_ID, HEADER_KEY, FULL_KEY
+from parser_constants import HEADER_KEY, SECTION_ID, REQ_ID, FULL_KEY
 
 
 def remove_table_columns(table_source: [[str]], header_column_source: [str],
@@ -13,7 +14,7 @@ def remove_table_columns(table_source: [[str]], header_column_source: [str],
     """
     column_subset_table = list()
     column_subset_key_to_index = dict()
-    test_source_index_str = static_data.table_delimiter.join(header_column_source) + ' '
+    test_source_index_str = parser_constants.table_delimiter.join(header_column_source) + ' '
     column_subset_table_idx_count = 0
     key = ""
     for source_row in table_source:
@@ -22,12 +23,12 @@ def remove_table_columns(table_source: [[str]], header_column_source: [str],
             for column in columns_to_use:
                 if not column or column=='':
                     continue
-                if test_source_index_str.find(column + static_data.table_delimiter) > -1:  # Add space so names have less chance of overlap
+                if test_source_index_str.find(column + parser_constants.table_delimiter) > -1:  # Add space so names have less chance of overlap
                     header_column_source_idx = header_column_source.index(column)
                     source_value_to_use = source_row[header_column_source_idx]
                     column_subset_row.append(source_value_to_use)
             column_subset_table.append(column_subset_row)
-            key = source_row[header_column_source.index(static_data.FULL_KEY)]
+            key = source_row[header_column_source.index(parser_constants.FULL_KEY)]
             column_subset_key_to_index[key] = column_subset_table_idx_count
             column_subset_table_idx_count += 1
 
@@ -42,7 +43,7 @@ def merge_duplicate_row_for_column_set_for_flat(table_target: [[str]], key_to_in
                                                 columns: [str]):
     if len(table_target) == 0:
         return table_target, key_to_index_target
-    test_target_index_str = static_data.table_delimiter.join(header_target)
+    test_target_index_str = parser_constants.table_delimiter.join(header_target)
     matched_term_index = header_target.index(static_data.MATCHED_TERMS)
     search_term_index = header_target.index(static_data.SEARCH_TERMS)
 
@@ -95,8 +96,8 @@ This will take table_target and update missing values in the specified key_to_in
     """
     missingkeys_target: set = set()
     missingkeys_source: set = set()
-    test_target_index_str = static_data.table_delimiter.join(header_target)
-    test_source_index_str = static_data.table_delimiter.join(header_source)
+    test_target_index_str = parser_constants.table_delimiter.join(header_target)
+    test_source_index_str = parser_constants.table_delimiter.join(header_source)
     for key in key_to_index_target:
         try:
             table_index_source: int = key_to_index_source.get(key)
@@ -107,8 +108,8 @@ This will take table_target and update missing values in the specified key_to_in
                 # Section,section_id,req_id
                 for column in columns:
                     if test_target_index_str.find(
-                            static_data.table_delimiter + column + static_data.table_delimiter) > -1 and test_source_index_str.find(
-                            static_data.table_delimiter + column + static_data.table_delimiter) > -1:
+                            parser_constants.table_delimiter + column + parser_constants.table_delimiter) > -1 and test_source_index_str.find(
+                        parser_constants.table_delimiter + column + parser_constants.table_delimiter) > -1:
                         column_target_idx = header_target.index(column)
                         column_source_idx = header_source.index(column)
                         # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
@@ -161,7 +162,7 @@ def move_last_row_to_new_table(table_to_get_row: str) -> str:
     new_table_file_name: str = f"{table_to_get_row.replace('.tsv', '')}_{key_to_row.replace('/', '_')}.tsv"
     result_file_name: str = f"{table_to_get_row.replace('.tsv', '')}_{key_to_row.replace('/', '_')}_manual_result.tsv"
 
-    with open(result_file_name, 'w', newline=static_data.table_newline) as result_file:
+    with open(result_file_name, 'w', newline=parser_constants.table_newline) as result_file:
         result_file.close()
 
     fields_to_write.append(key_to_row)
@@ -236,8 +237,8 @@ def create_full_key_and_key_as_number(table_source: [[str]],
                                       header_target_column: [str])->([[str]],dict[str,int]):
     table_target: [[str]] = list()
     key_to_index_target: dict[str,int] =dict()
-    section_index_src = static_data.DEFAULT_SECTION_ID_INDEX
-    req_index_src = static_data.DEFAULT_REQ_ID_INDEX
+    section_index_src = parser_constants.DEFAULT_SECTION_ID_INDEX
+    req_index_src = parser_constants.DEFAULT_REQ_ID_INDEX
     try:
         if not (header_source.index(SECTION_ID) > -1 or  header_source.index(REQ_ID) > -1):
             parser_helpers.raise_error_system_exit()
@@ -247,8 +248,8 @@ def create_full_key_and_key_as_number(table_source: [[str]],
             req_index_src =header_source.index(REQ_ID)
 
         # potential_header_str.find(FULL_KEY) > -1:
-        test_target_index_str = static_data.table_delimiter.join(header_target_column)
-        test_source_index_str = static_data.table_delimiter.join(header_source)
+        test_target_index_str = parser_constants.table_delimiter.join(header_target_column)
+        test_source_index_str = parser_constants.table_delimiter.join(header_source)
         for key in key_to_index_source:
                 table_index_source: int = key_to_index_source.get(key)
                 if find_header(table_source) and table_index_source == 0:
@@ -261,8 +262,8 @@ def create_full_key_and_key_as_number(table_source: [[str]],
 
                     column :str = str(column)
                     if test_target_index_str.find(
-                            static_data.table_delimiter + column + static_data.table_delimiter) > -1 and test_source_index_str.find(
-                            static_data.table_delimiter + column + static_data.table_delimiter) > -1:
+                            parser_constants.table_delimiter + column + parser_constants.table_delimiter) > -1 and test_source_index_str.find(
+                        parser_constants.table_delimiter + column + parser_constants.table_delimiter) > -1:
                         column_target_idx = header_target_column.index(column)
                         column_source_idx = header_source.index(column)
                         # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
@@ -272,11 +273,12 @@ def create_full_key_and_key_as_number(table_source: [[str]],
                         src_section_id = source_row[section_index_src]
                         src_req_id = source_row[req_index_src]
                         src_full_key =  f"{src_section_id}/{src_req_id}"
-                        if column == static_data.FULL_KEY:
-                            new_target_row[header_target_column.index(static_data.FULL_KEY)] =src_full_key
-                        if column == static_data.KEY_AS_NUMBER:
-                            new_target_row[header_target_column.index(static_data.KEY_AS_NUMBER)] = parser_helpers.convert_version_to_number_from_full_key(src_full_key)
-                full_key_target = new_target_row[header_target_column.index(static_data.FULL_KEY)]
+                        if column == parser_constants.FULL_KEY:
+                            new_target_row[header_target_column.index(parser_constants.FULL_KEY)] =src_full_key
+                        if column == parser_constants.KEY_AS_NUMBER:
+                            new_target_row[header_target_column.index(
+                                parser_constants.KEY_AS_NUMBER)] = parser_helpers.convert_version_to_number_from_full_key(src_full_key)
+                full_key_target = new_target_row[header_target_column.index(parser_constants.FULL_KEY)]
                 key_to_index_target[full_key_target]= len(table_target)
                 table_target.append(new_target_row)
 
@@ -318,7 +320,7 @@ def merge_tables(file1, file2, output_file):
     table2, key_fields2, header2, duplicate_rows2 = read_table_sect_and_req_key(file2)
     table_target, missing_keys_target, missing_keys_source = update_table(table1, key_fields1, header1, table2,
                                                                           key_fields2, header2,
-                                                                          static_data.update_release_header)
+                                                                          parser_constants.update_release_header)
     write_table(output_file, table_target, header1)
     return table_target, header1
 
@@ -326,8 +328,8 @@ def merge_tables(file1, file2, output_file):
 def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str, int], header_target: [str],
                        table_new_row_source: list[[str]], key_to_new_row_source: dict[str, int],
                        header_source: [str]) -> ([[str]], dict[str, int]):
-    test_target_index_str = static_data.table_delimiter.join(header_target)
-    test_source_index_str = static_data.table_delimiter.join(header_source)
+    test_target_index_str = parser_constants.table_delimiter.join(header_target)
+    test_source_index_str = parser_constants.table_delimiter.join(header_source)
     for key in key_to_new_row_source:
         try:
             target_row_index = key_to_table_target.get(key)
@@ -341,7 +343,7 @@ def add_table_new_rows(table_target: list[[str]], key_to_table_target: dict[str,
                     column:str = str(column)
                     if not column or column == '':
                         continue
-                    if test_target_index_str.find(column+static_data.table_delimiter) > -1 and test_source_index_str.find(column+static_data.table_delimiter) > -1:
+                    if test_target_index_str.find(column + parser_constants.table_delimiter) > -1 and test_source_index_str.find(column + parser_constants.table_delimiter) > -1:
                         column_target_idx = header_target.index(column)
                         column_source_idx = header_source.index(column)
                         # if column_target_idx in range(0,len(t_target_row)) and column_source_idx in range(0,len(column)) :
@@ -374,7 +376,7 @@ def update_manual_fields_from_files(input_file_to_be_updated_with_manual_terms: 
         output_file = input_file_to_be_updated_with_manual_terms
     table1_org, key_fields1_org, header1_org, duplicate_rows1_org = read_table_sect_and_req_key(
         input_file_to_be_updated_with_manual_terms, static_data.update_manual_header)
-    update_header: [str] = [static_data.cdd_info_only_header]
+    update_header: [str] = [parser_constants.cdd_info_only_header]
 
     updated_table, update_header = update_manual_fields(table1_org, key_fields1_org, header1_org,
                                                         output_file_to_take_as_input_for_update, update_header)
@@ -436,8 +438,8 @@ def add_columns(manual_fields_header, updated_header):
 def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
     file_name = parser_helpers.find_valid_path(file_name)
 
-    with open(file_name, 'w', newline=static_data.table_newline) as csv_output_file:
-        table_writer = csv.writer(csv_output_file, quoting=csv.QUOTE_ALL, delimiter=static_data.table_delimiter)
+    with open(file_name, 'w', newline=parser_constants.table_newline) as csv_output_file:
+        table_writer = csv.writer(csv_output_file, quoting=csv.QUOTE_ALL, delimiter=parser_constants.table_delimiter)
         found_header = find_header(table)
         start_index = 0
         if found_header is not None and (len(found_header) > 0):
@@ -465,8 +467,8 @@ def write_table(file_name: str, table: [[str]], header: [str]) -> [[str]]:
 
 
 def find_key_indices(table: [[str]]) -> (int, int):
-    section_id_index = static_data.DEFAULT_SECTION_ID_INDEX
-    req_id_index = static_data.DEFAULT_REQ_ID_INDEX
+    section_id_index = parser_constants.DEFAULT_SECTION_ID_INDEX
+    req_id_index = parser_constants.DEFAULT_REQ_ID_INDEX
     try:
         section_id_index = table[0].index(SECTION_ID)
         req_id_index = table[0].index(REQ_ID)
@@ -477,9 +479,9 @@ def find_key_indices(table: [[str]]) -> (int, int):
 
 
 def find_full_key_index(table: [[str]]) -> int:
-    full_key_index = static_data.DEFAULT_FULL_KEY_INDEX
+    full_key_index = parser_constants.DEFAULT_FULL_KEY_INDEX
     try:
-        full_key_index = table[0].index(static_data.FULL_KEY)
+        full_key_index = table[0].index(parser_constants.FULL_KEY)
         print(f' indexes names sect {full_key_index}')
     except  (AttributeError, ValueError, IndexError) as ie:
         print(f"error {str(ie)} handling finding header for table first row nothing to write", file=sys.stderr)
@@ -556,10 +558,10 @@ def read_table_key_at_index(file_name: str, key_index: int, has_header: bool = T
     duplicate_rows: [str, str] = dict()
 
     try:
-        with open(file_name, newline=static_data.table_newline, encoding=static_data.table_encoding) as csv_file:
+        with open(file_name, newline=parser_constants.table_newline, encoding=parser_constants.table_encoding) as csv_file:
 
-            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter,
-                                             dialect=static_data.table_dialect)
+            csv_reader_instance = csv.reader(csv_file, delimiter=parser_constants.table_delimiter,
+                                             dialect=parser_constants.table_dialect)
             table_index = 0
 
             for row in csv_reader_instance:
@@ -620,9 +622,9 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
     duplicate_rows: [str, str] = dict()
 
     try:
-        with open(file_name, newline=static_data.table_newline, encoding=static_data.table_encoding) as csv_file:
-            csv_reader_instance = csv.reader(csv_file, delimiter=static_data.table_delimiter,
-                                             dialect=static_data.table_dialect)
+        with open(file_name, newline=parser_constants.table_newline, encoding=parser_constants.table_encoding) as csv_file:
+            csv_reader_instance = csv.reader(csv_file, delimiter=parser_constants.table_delimiter,
+                                             dialect=parser_constants.table_dialect)
             table_index = 0
             is_header_set = False
 
@@ -635,7 +637,7 @@ def read_table_sect_and_req_key(file_name: str, header_in: [str] = None, logging
                     if not is_header_set:
                         for column in row:
                             try:
-                                if static_data.cdd_info_only_header.index(column) > -1:
+                                if parser_constants.cdd_info_only_header.index(column) > -1:
                                     header = row
                                     is_header_set = True
                                     if logging: print(f'Found header for {file_name} names are {", ".join(row)}')

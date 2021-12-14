@@ -4,6 +4,7 @@
 
 from unittest import TestCase
 
+import parser_constants
 import static_data
 import table_functions_for_release
 
@@ -23,5 +24,5 @@ class TestUpdateRelease(TestCase):
     def test_merge_tables_remove_col_dec_8(self):
         source_table_to_copy = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_merge_of_manual_back.tsv"
         subset_table_to_create =  "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/done_merge_of_manual_col_removed_full.tsv"
-        fields_to_use =static_data.cdd_12_full_header_for_ref
+        fields_to_use = parser_constants.cdd_12_full_header_for_ref
         table_functions_for_release.update_table_column_subset(source_table_to_copy, fields_to_use, subset_table_to_create)

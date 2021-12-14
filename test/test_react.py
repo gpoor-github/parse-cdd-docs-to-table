@@ -1,6 +1,7 @@
 import re
 from unittest import TestCase
 
+import parser_constants
 import parser_helpers
 import static_data
 import table_ops
@@ -50,7 +51,7 @@ class TestRxData(TestCase):
         output_file_to_take_as_input_for_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/source_for_manual_fields_test.csv"
         table1_org, key_fields1_org, header1_org, duplicate_rows1_org = read_table_sect_and_req_key(
             input_file_to_be_updated_with_manual_terms, static_data.update_manual_header)
-        update_header: [str] = [static_data.cdd_info_only_header]
+        update_header: [str] = [parser_constants.cdd_info_only_header]
 
         updated_table, update_header = update_manual_fields(table1_org, key_fields1_org, header1_org,
                                                             output_file_to_take_as_input_for_update, update_header)

@@ -2,14 +2,16 @@ import os
 import random
 import time
 
+import parser_constants
 from cdd_to_cts import class_graph, persist, static_data
 from cdd_to_cts import parser_helpers
 from cdd_to_cts.data_sources_helper import convert_relative_filekey, get_file_dependencies
 from parser_helpers import create_full_table_from_cdd
 from general_helpers import remove_non_determinative_words, bag_from_text, make_files_to_string, \
     build_test_cases_module_dictionary, filter_files_to_search
-from cdd_to_cts.static_data import CTS_SOURCE_PARENT, MANUAL_SEARCH_TERMS
-from cdd_to_cts.static_data import CTS_SOURCE_ROOT, DATA_SOURCES_CSV_FROM_HTML_1st
+from cdd_to_cts.static_data import MANUAL_SEARCH_TERMS
+from parser_constants import CTS_SOURCE_PARENT, CTS_SOURCE_ROOT
+from cdd_to_cts.static_data import DATA_SOURCES_CSV_FROM_HTML_1st
 from cdd_to_cts.table_ops import read_table_sect_and_req_key
 from parse_cdd_md import parse_cdd_md
 
@@ -56,12 +58,12 @@ def get_random_method_name(a_found_methods_string):
 
 class SourceCrawlerReducer(object):
     def __init__(self,
-                 md_file_root: str = static_data.CDD_MD_ROOT,
+                 md_file_root: str = parser_constants.CDD_MD_ROOT,
                  global_table_input_file_built_from_requirment_md_files=DATA_SOURCES_CSV_FROM_HTML_1st,
                  cts_root_directory: str = CTS_SOURCE_ROOT,
                  do_search=False):
         if md_file_root.endswith(".html"):
-            parser_helpers.raise_error_system_exit(f"We are not using html files but the CDD Root {static_data.CDD_MD_ROOT} not {md_file_root}")
+            parser_helpers.raise_error_system_exit(f"We are not using html files but the CDD Root {parser_constants.CDD_MD_ROOT} not {md_file_root}")
 
         self.global_to_data_sources_do_search = do_search
         self.test_files_to_aggregated_dependency_string = dict()
@@ -77,7 +79,7 @@ class SourceCrawlerReducer(object):
 
         self.__test_files_to_strings = self.make_test_file_to_dependency_strings()
         #    class DataSources:
-        self.files_to_test_cases = build_test_cases_module_dictionary(static_data.TEST_CASE_MODULES)
+        self.files_to_test_cases = build_test_cases_module_dictionary(parser_constants.TEST_CASE_MODULES)
 
     files_to_words_storage = 'storage/files_to_words.pickle'
     method_to_words_storage = 'storage/method_to_words.pickle'
@@ -347,11 +349,11 @@ if __name__ == '__main__':
     cdd_12_table_created = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_table_all_1678.tsv"  # So no filter
 
     scr = SourceCrawlerReducer(
-        md_file_root=static_data.CDD_MD_ROOT,
+        md_file_root=parser_constants.CDD_MD_ROOT,
         global_table_input_file_built_from_requirment_md_files=cdd_12_table_generated_from_html_all,
-        cts_root_directory=static_data.CTS_SOURCE_ROOT,
+        cts_root_directory=parser_constants.CTS_SOURCE_ROOT,
         do_search=False)
     create_full_table_from_cdd(scr.key_to_full_requirement_text, scr.key_to_full_requirement_text,
-                                   scr.section_to_data, cdd_12_table_created,static_data.cdd_info_only_header)
+                               scr.section_to_data, cdd_12_table_created, parser_constants.cdd_info_only_header)
     end = time.perf_counter()
     print(f'Took time {end - start:0.4f}sec ')

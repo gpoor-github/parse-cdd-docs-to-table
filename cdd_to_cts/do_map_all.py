@@ -3,6 +3,7 @@
 import time
 
 import data_sources
+import parser_constants
 import parser_helpers
 import static_data
 from parser_helpers import create_full_table_from_cdd
@@ -21,9 +22,9 @@ if __name__ == '__main__':
 
 
     scr = data_sources.SourceCrawlerReducer(
-        md_file_root=static_data.CDD_MD_ROOT,
+        md_file_root=parser_constants.CDD_MD_ROOT,
         global_table_input_file_built_from_requirment_md_files=downloaded_filter_table,
-        cts_root_directory=static_data.CTS_SOURCE_ROOT,
+        cts_root_directory=parser_constants.CTS_SOURCE_ROOT,
         do_search=True)
     create_full_table_from_cdd(scr.key_to_full_requirement_text,scr.key_to_full_requirement_text,scr.section_to_data,
                                    cdd_12_created)

@@ -1,3 +1,4 @@
+import parser_constants
 import static_data
 import table_ops
 
@@ -65,7 +66,7 @@ def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, so
                                                                full_before_gvp_sheet_header, values_to_use_table,
                                                                values_to_use_table_keys_to_index,
                                                                values_to_use_full_before_gvp_sheet_header,
-                                                               static_data.update_release_header)
+                                                               parser_constants.update_release_header)
 
     table_ops.write_table(table_name_to_write, updated_table, full_before_gvp_sheet_header)
 
@@ -112,7 +113,9 @@ def make_new_table_with_row_keys_from_table_example():
 
 def update_release_table_with_changes_example():
     annotations ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/annotations_mappings.tsv"
-    annotation_header = ([static_data.TEST_AVAILABILITY, static_data.CLASS_DEF, static_data.METHOD,  static_data.MODULE, static_data.FILE_NAME, static_data.TEST_LEVEL, static_data.ANNOTATION_])
+    annotation_header = ([parser_constants.TEST_AVAILABILITY, parser_constants.CLASS_DEF, parser_constants.METHOD,
+                          parser_constants.MODULE, parser_constants.FILE_NAME, parser_constants.TEST_LEVEL,
+                          parser_constants.ANNOTATION_])
     target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_todo_remaining_manual.tsv"
     source_for_data="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/xCD12_3_9.9.3_in_progress/9.9.3.tsv"
     new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/test.tsv"

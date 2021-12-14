@@ -11,9 +11,10 @@ from rx.testing import TestScheduler, ReactiveTest
 
 import data_sources
 from cdd_to_cts import static_data, parser_helpers, react, table_ops
-from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
+from cdd_to_cts.react import RxData, build_row, build_dict, \
     created_and_populated_search_info_from_key_row_tuple, my_print
-from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX
+from cdd_to_cts.static_data import SEARCH_TERMS
+from parser_constants import HEADER_KEY, SEARCH_RESULT, SECTION_ID, DEFAULT_SECTION_ID_INDEX, FULL_KEY
 
 
 class BrokenTestsToFixSomeday(unittest.TestCase):

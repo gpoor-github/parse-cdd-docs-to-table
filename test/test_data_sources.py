@@ -2,6 +2,7 @@ import os
 from unittest import TestCase
 
 import data_sources
+import parser_constants
 import static_data
 
 
@@ -11,7 +12,7 @@ class TestSourceCrawlerReducer(TestCase):
 
         os.chdir('../')
         cwd = os.getcwd()
-        static_data.WORKING_ROOT = cwd+"/"
+        parser_constants.WORKING_ROOT = cwd + "/"
         scr = data_sources.SourceCrawlerReducer()
 
         key_to_full_requirement_text_local = scr.key_to_full_requirement_text
@@ -24,7 +25,7 @@ class TestSourceCrawlerReducer(TestCase):
 
         a_7_line_table = "test/input/just_one_section_id_digit_issue.html"
         cwd = os.getcwd()
-        static_data.WORKING_ROOT = cwd + "/"
+        parser_constants.WORKING_ROOT = cwd + "/"
         scr = data_sources.SourceCrawlerReducer(a_7_line_table)
 
         key_to_full_requirement_text_local = scr.key_to_full_requirement_text

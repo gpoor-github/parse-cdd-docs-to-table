@@ -5,11 +5,12 @@ from os.path import exists
 import rx
 
 import general_helpers
+import parser_constants
 import parser_helpers
 import static_data
 import table_ops
 from parser_helpers import find_valid_path
-from static_data import CTS_SOURCE_ROOT
+from parser_constants import CTS_SOURCE_ROOT
 
 
 def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) -> bool:
@@ -71,9 +72,9 @@ class ReadSpreadSheet:
         self.crawl()
         ccd_csv_file_name = find_valid_path(ccd_csv_file_name)
 
-        with open(ccd_csv_file_name, newline=static_data.table_newline) as csv_file:
+        with open(ccd_csv_file_name, newline=parser_constants.table_newline) as csv_file:
             print(f"Opened {ccd_csv_file_name}")
-            csv_reader = csv.reader(csv_file, delimiter=static_data.table_delimiter, dialect=static_data.table_dialect)
+            csv_reader = csv.reader(csv_file, delimiter=parser_constants.table_delimiter, dialect=parser_constants.table_dialect)
             line_count = 0
 
             for row in csv_reader:
@@ -86,8 +87,8 @@ class ReadSpreadSheet:
                         # print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
                         table.append(row)
                         table_index = line_count - 1
-                        class_def_value = table[table_index][header.index(static_data.CLASS_DEF)]
-                        method_value = table[table_index][header.index(static_data.METHOD)]
+                        class_def_value = table[table_index][header.index(parser_constants.CLASS_DEF)]
+                        method_value = table[table_index][header.index(parser_constants.METHOD)]
                         # module_value = table[table_index][header.index("module")]
                         if class_def_value:
                             file_name =  self.file_dict.get(class_def_value)
@@ -123,10 +124,10 @@ def observable_rows(table_file_name) -> rx.Observable:
     try:
         table_file_name = find_valid_path(table_file_name)
 
-        with open(table_file_name, newline=static_data.table_newline) as csv_file:
+        with open(table_file_name, newline=parser_constants.table_newline) as csv_file:
             print(f"Opened {table_file_name}")
-            csv_reader = csv.reader(csv_file, delimiter=static_data.table_delimiter,
-                                    dialect=static_data.table_dialect)
+            csv_reader = csv.reader(csv_file, delimiter=parser_constants.table_delimiter,
+                                    dialect=parser_constants.table_dialect)
             return rx.from_iterable(csv_reader)
 
     except IOError as e:

@@ -4,6 +4,7 @@ import re
 import time
 from os.path import exists
 
+import parser_constants
 from cdd_to_cts import persist, parser_helpers
 from cdd_to_cts import static_data
 from parser_helpers import find_valid_path
@@ -14,8 +15,8 @@ FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
 
 
 def get_list_of_at_test_files(
-    stored_files: str = ("%s" % static_data.TEST_FILES_TXT)) -> set:
-    if not exists(static_data.TEST_FILES_TXT):
+    stored_files: str = ("%s" % parser_constants.TEST_FILES_TXT)) -> set:
+    if not exists(parser_constants.TEST_FILES_TXT):
         files_to_words_local, test_files_list = make_bags_of_words_all()
         stored_files = parser_helpers.find_valid_path(stored_files)
         test_file_string  = json.dumps(test_files_list)
@@ -39,7 +40,7 @@ def search_for_test_case_name(full_path_to_file, testcase_dictionary: dict, logg
     module = None
     try:
         full_path = os.path.dirname(os.path.abspath(full_path_to_file))
-        relative_path = str(full_path).removeprefix(static_data.CTS_SOURCE_ROOT).replace("/",".").strip(".")
+        relative_path = str(full_path).removeprefix(parser_constants.CTS_SOURCE_ROOT).replace("/", ".").strip(".")
 
 
         src_splits = relative_path.split('src')
@@ -62,7 +63,7 @@ def search_for_test_case_name(full_path_to_file, testcase_dictionary: dict, logg
     return module
 
 
-re_method = re.compile(static_data.METHOD_RE)
+re_method = re.compile(parser_constants.METHOD_RE)
 re_class = re.compile('class (\w+)')
 
 
@@ -85,7 +86,7 @@ def clear_cached_grep_of_at_test_files():
         pass
 
 
-def __parse_grep_of_at_test_files(results_grep_at_test: str = static_data.TEST_FILES_TXT):
+def __parse_grep_of_at_test_files(results_grep_at_test: str = parser_constants.TEST_FILES_TXT):
     test_files_to_methods: {str: str} = dict()
     count = 0
     results_grep_at_test = find_valid_path(results_grep_at_test)
@@ -162,7 +163,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
             target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0).strip(
                 '"')  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
             if filter_files_to_search(target_file_name) and target_file_name.find("$PROJECT_DIR$") > -1:
-                target_file_name = target_file_name.replace("$PROJECT_DIR$", static_data.CTS_SOURCE_ROOT)
+                target_file_name = target_file_name.replace("$PROJECT_DIR$", parser_constants.CTS_SOURCE_ROOT)
                 # print(target_file_name)
                 dependencies_split = a_file_split.split('<dependency path=')
                 dependency_list: [] = list()
@@ -175,7 +176,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
                     if dependencies_file_name is not None and parser_helpers.find_valid_path(dependencies_file_name) and dependencies_file_name.find(
                             "$PROJECT_DIR$") > -1:  # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
                         dependencies_file_name = dependencies_file_name.replace("$PROJECT_DIR$",
-                                                                                static_data.CTS_SOURCE_ROOT)
+                                                                                parser_constants.CTS_SOURCE_ROOT)
                         dependency_list.append(dependencies_file_name.strip('"'))
                 test_classes_to_dependent_classes[target_file_name] = set(dependency_list)
 
@@ -186,7 +187,7 @@ def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR
         parser_helpers.print_system_error_and_dump(f" Maybe couldn't open {file_name_in}", err)
     return test_classes_to_dependent_classes
 
-def make_bags_of_words_all(root_cts_source_directory=static_data.CTS_SOURCE_ROOT)-> (dict[str:str], [str] ):
+def make_bags_of_words_all(root_cts_source_directory=parser_constants.CTS_SOURCE_ROOT)-> (dict[str:str], [str]):
     # traverse root directory, and list directories as dirs and cts_files as cts_files
     re_method = re.compile('(?= test\w+ ?\()')
     files_to_words_local = dict()

@@ -4,6 +4,7 @@ import unittest
 from os import remove
 from os.path import exists
 
+import parser_constants
 import react
 import static_data
 import table_ops
@@ -36,7 +37,8 @@ class MyTestCase(unittest.TestCase):
 
         file_exists = False
         if exists(flat_file):
-            processed = table_ops.copy_matching_rows_to_new_table("test_processed_delete.tsv", flat_file, static_data.TEST_AVAILABILITY, None)
+            processed = table_ops.copy_matching_rows_to_new_table("test_processed_delete.tsv", flat_file,
+                                                                  parser_constants.TEST_AVAILABILITY, None)
             if processed:
                 table = table_ops.read_table_sect_and_req_key(processed)
                 print(f"Done! {req} result is {table[1]}")
@@ -52,7 +54,7 @@ class MyTestCase(unittest.TestCase):
             print("Exception " + str(err))
         if not file_exists:
             print(f"Creating new file {file_exists} pulled form {source_file}")
-            target_file = copy_matching_rows_to_new_table(target_file, source_file, static_data.FULL_KEY, req)
+            target_file = copy_matching_rows_to_new_table(target_file, source_file, parser_constants.FULL_KEY, req)
 
         flat_file, latest_result  = react.do_map_with_flat_file(target_file, flat_file, target_file)
         self.assertTrue(exists(latest_result), f" failed to create file = {latest_result}")
@@ -72,7 +74,7 @@ class MyTestCase(unittest.TestCase):
 
 
 
-def update_manual_results_file(column:str=static_data.TEST_AVAILABILITY,search_str:str = None)-> bool:
+def update_manual_results_file(column:str= parser_constants.TEST_AVAILABILITY, search_str:str = None)-> bool:
     flat_file, req, target_file, source_file = build_file_names_from_key_file()
     processed = target_file.replace('.tsv', "_processed_temp.tsv")
     manual_result = target_file.replace('.tsv', "_manual_result.tsv")

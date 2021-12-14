@@ -6,11 +6,12 @@ import rx
 from rx import operators as ops, pipe
 from rx.testing import TestScheduler, ReactiveTest
 
+import parser_constants
 from cdd_to_cts import static_data, parser_helpers, react, table_ops
-from cdd_to_cts.react import RxData, build_row, SEARCH_RESULT, build_dict, \
+from cdd_to_cts.react import RxData, build_row, build_dict, \
     created_and_populated_search_info_from_key_row_tuple, find_search_terms
-from cdd_to_cts.static_data import SEARCH_TERMS, FULL_KEY, HEADER_KEY, SECTION_ID, DEFAULT_SECTION_ID_INDEX, \
-    REQUIREMENT, MANUAL_SEARCH_TERMS
+from cdd_to_cts.static_data import SEARCH_TERMS, MANUAL_SEARCH_TERMS
+from parser_constants import HEADER_KEY, SEARCH_RESULT, SECTION_ID, DEFAULT_SECTION_ID_INDEX, FULL_KEY, REQUIREMENT
 
 
 def my_print(v: Any, f: Any = '{}'):
@@ -189,16 +190,16 @@ class TestReacItems(unittest.TestCase):
         search_info = created_and_populated_search_info_from_key_row_tuple(('5.1/H-1-1',row), header)
 
 
-        self.assertEqual('5.1/H-1-1: juicyTestFunction()', search_info.get(static_data.REQUIREMENT))
+        self.assertEqual('5.1/H-1-1: juicyTestFunction()', search_info.get(parser_constants.REQUIREMENT))
         self.assertEqual('secure screen lock verification', search_info.get(static_data.MANUAL_SEARCH_TERMS))
-        self.assertEqual('5.1/H-1-1', search_info.get(static_data.FULL_KEY))
+        self.assertEqual('5.1/H-1-1', search_info.get(parser_constants.FULL_KEY))
         return search_info
 
     def test_manual_search_terms(self, ):
         search_info=  self.test_create_initial_search_info()
         find_search_info = find_search_terms(search_info)
         self.assertEqual('secure screen lock verification', search_info.get(static_data.MANUAL_SEARCH_TERMS))
-        self.assertEqual('5.1/H-1-1', search_info.get(static_data.FULL_KEY))
+        self.assertEqual('5.1/H-1-1', search_info.get(parser_constants.FULL_KEY))
         self.assertIsNot(None,find_search_info.get(static_data.SEARCH_TERMS))
         self.assertIsNot(None,search_info.get(static_data.SEARCH_TERMS))
         self.assertIsNot(None,search_info.get(static_data.AUTO_SEARCH_TERMS))
@@ -216,7 +217,7 @@ class TestReacItems(unittest.TestCase):
         search_info = created_and_populated_search_info_from_key_row_tuple(('5.1/H-1-1', row), header)
         find_search_info = find_search_terms(search_info)
         self.assertEqual('foobarone', search_info.get(static_data.MANUAL_SEARCH_TERMS))
-        self.assertEqual('5.1/H-1-1', search_info.get(static_data.FULL_KEY))
+        self.assertEqual('5.1/H-1-1', search_info.get(parser_constants.FULL_KEY))
         self.assertIsNot(None,find_search_info.get(static_data.SEARCH_TERMS))
         self.assertIsNot(None,search_info.get(static_data.SEARCH_TERMS))
         self.assertIsNot(None,search_info.get(static_data.AUTO_SEARCH_TERMS))
@@ -282,7 +283,7 @@ class TestReacItems(unittest.TestCase):
         print(table)
         self.assertEqual(6, len(table))
         self.assertEqual(1, len(duplicate_rows))
-        self.assertEqual('3', table[1][static_data.cdd_info_only_header.index(SECTION_ID)])
+        self.assertEqual('3', table[1][parser_constants.cdd_info_only_header.index(SECTION_ID)])
 
     def test_search_on_files(self, ):
         rd = RxData()

@@ -4,6 +4,7 @@ import os
 import re
 from typing import Any
 
+import parser_constants
 import static_data
 from parser_helpers import print_system_error_and_dump, read_file_to_string, find_valid_path
 from static_data import find_url_re_str, java_methods_re_str, java_object_re_str, java_defines_str, all_words_to_skip
@@ -119,7 +120,7 @@ def make_files_to_string(iterable_file_list: [str]) -> str:
     return " ".join(flist)
 
 
-def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_CASE_MODULES,
+def build_test_cases_module_dictionary(testcases_grep_results=parser_constants.TEST_CASE_MODULES,
                                        logging: bool = False) -> dict:
     test_cases_to_path: dict = dict()
     # ./tests/DropBoxManager/AndroidTest.xml:29:        <option name="test-file-name"
@@ -137,7 +138,7 @@ def build_test_cases_module_dictionary(testcases_grep_results=static_data.TEST_C
             split_line = line.split(":")
             file_and_path = split_line[0]
             path: str = os.path.dirname(file_and_path)
-            path = path.removeprefix(static_data.CTS_SOURCE_ROOT)
+            path = path.removeprefix(parser_constants.CTS_SOURCE_ROOT)
             path = path.replace("/", ".").strip('.')
 
             value = split_line[2]

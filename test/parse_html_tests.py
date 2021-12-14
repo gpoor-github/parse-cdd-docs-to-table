@@ -7,6 +7,7 @@ from rx import operators as ops
 from rx.testing import TestScheduler, ReactiveTest
 
 import data_sources
+import parser_constants
 from cdd_to_cts import static_data, parser_helpers
 from cdd_to_cts.react import RxData, my_print
 from parser_helpers import create_full_table_from_cdd
@@ -60,7 +61,7 @@ class ParseHTMLTests(unittest.TestCase):
         key_to_full_requirement_text_local,  cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "./output/cdd_12_gen_html.tsv", static_data.cdd_info_only_header)
+                                   "./output/cdd_12_gen_html.tsv", parser_constants.cdd_info_only_header)
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.1.1.1/W-0-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.2.3/W-0-1"))
@@ -74,7 +75,8 @@ class ParseHTMLTests(unittest.TestCase):
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/html_parsing_7-11_issue.tsv", static_data.cdd_info_only_header)
+                                   "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/html_parsing_7-11_issue.tsv",
+                                   parser_constants.cdd_info_only_header)
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.11/C-1-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.11/C-1-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("8"))
@@ -90,7 +92,7 @@ class ParseHTMLTests(unittest.TestCase):
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "./output/cdd_11_gen_html.tsv", static_data.cdd_info_only_header)
+                                   "./output/cdd_11_gen_html.tsv", parser_constants.cdd_info_only_header)
 
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.1.1.1/W-0-1"))
@@ -100,7 +102,7 @@ class ParseHTMLTests(unittest.TestCase):
     def test_parse_cdd_html_to_short_file_only_7(self, ):
         a_7_line_table = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/just_one_section_id_digit_issue.html"
         cwd = os.getcwd()
-        static_data.WORKING_ROOT = cwd + "/"
+        parser_constants.WORKING_ROOT = cwd + "/"
         scr = data_sources.SourceCrawlerReducer(a_7_line_table)
 
         key_to_full_requirement_text_local = scr.key_to_full_requirement_text
@@ -117,7 +119,7 @@ class ParseHTMLTests(unittest.TestCase):
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(problem_file)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "./output/html_cdd_12_master.tsv", static_data.cdd_info_only_header)
+                                   "./output/html_cdd_12_master.tsv", parser_constants.cdd_info_only_header)
 
         value = key_to_full_requirement_text_local.get("5.1/H-1-1")
 
@@ -136,7 +138,8 @@ class ParseHTMLTests(unittest.TestCase):
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "./output/html_cdd_12_downloaded_2021_11_22.tsv", static_data.cdd_info_only_header)
+                                   "./output/html_cdd_12_downloaded_2021_11_22.tsv",
+                                   parser_constants.cdd_info_only_header)
 
 
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
@@ -152,7 +155,7 @@ class ParseHTMLTests(unittest.TestCase):
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "./output/cdd_11_gen_html.tsv", static_data.cdd_info_only_header)
+                                   "./output/cdd_11_gen_html.tsv", parser_constants.cdd_info_only_header)
 
 
         self.assertIsNotNone(key_to_full_requirement_text_local.get("3.2.3.1/W-0-1"))
@@ -168,7 +171,7 @@ class ParseHTMLTests(unittest.TestCase):
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "./output/section_issue.tsv", static_data.cdd_info_only_header)
+                                   "./output/section_issue.tsv", parser_constants.cdd_info_only_header)
 
 
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.1.4.1/C-0-1"))
@@ -184,8 +187,8 @@ class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_html_to_requirements_problem_md(self):
         key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md("/home/gpoor/aosp_cdd/cdd")
-        create_full_table_from_cdd( key_to_full_requirement_text_local, key_to_full_requirement_text_local,section_to_section_data,
-                                "./output/md_cdd_12_master.tsv",static_data.cdd_info_only_header)
+        create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local, section_to_section_data,
+                                "./output/md_cdd_12_master.tsv", parser_constants.cdd_info_only_header)
         value = key_to_full_requirement_text_local.get("5.1/H-1-1")
         self.assertIsNotNone(key_to_full_requirement_text_local.get("8.4/H-0-1"))
 

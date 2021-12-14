@@ -11,6 +11,7 @@ from rx.subject import BehaviorSubject
 
 import class_graph
 import general_helpers
+import parser_constants
 import parser_helpers
 import static_data
 import table_ops
@@ -18,9 +19,10 @@ from cdd_to_cts.class_graph import re_method
 from cdd_to_cts.parser_helpers import print_system_error_and_dump, \
     convert_version_to_number_from_full_key
 from general_helpers import add_list_to_count_dict, CountDict, find_java_objects, build_test_cases_module_dictionary
-from cdd_to_cts.static_data import full_key_string_for_re, SECTION, REQ_ID, SECTION_ID, REQUIREMENT, ROW, \
-    FILE_NAME, FULL_KEY, SEARCH_TERMS, MATCHED_TERMS, CLASS_DEF, MODULE, QUALIFIED_METHOD, METHOD, HEADER_KEY, \
-    MANUAL_SEARCH_TERMS, MATCHED_FILES, SEARCH_RESULT, PIPELINE_METHOD_TEXT, FLAT_RESULT, TEST_AVAILABILITY
+from cdd_to_cts.static_data import SEARCH_TERMS, MATCHED_TERMS, QUALIFIED_METHOD, MANUAL_SEARCH_TERMS, MATCHED_FILES, \
+    PIPELINE_METHOD_TEXT, FLAT_RESULT
+from parser_constants import full_key_string_for_re, HEADER_KEY, ROW, SEARCH_RESULT, SECTION, SECTION_ID, REQ_ID, \
+    FULL_KEY, REQUIREMENT, TEST_AVAILABILITY, FILE_NAME, MODULE, METHOD, CLASS_DEF
 from table_functions_for_release import update_release_table_with_changes, \
     merge_duplicate_row_for_column_set_for_flat_file
 
@@ -109,8 +111,8 @@ def write_table_from_dictionary(table_dict: dict, file_name: str, header: [str] 
                                 logging: bool = False) -> (dict, []):
     file_name = parser_helpers.find_valid_path(file_name)
 
-    with open(file_name, 'w', newline=static_data.table_newline) as csv_output_file:
-        table_writer = csv.writer(csv_output_file, quoting=csv.QUOTE_ALL, delimiter=static_data.table_delimiter)
+    with open(file_name, 'w', newline=parser_constants.table_newline) as csv_output_file:
+        table_writer = csv.writer(csv_output_file, quoting=csv.QUOTE_ALL, delimiter=parser_constants.table_delimiter)
         # header = ','.join(table_dict.keys())
         if logging: print(f"header ={header}")
         table_writer.writerow(header)
@@ -138,7 +140,7 @@ def list_map(section_id: str, record_splits: list) -> list:
         test_section_id = parser_helpers.find_section_id(record_split)
         if test_section_id and len(test_section_id) > 0:
             section_id = test_section_id
-        record_id_result = re.search(static_data.req_id_re_str, record_split)
+        record_id_result = re.search(parser_constants.req_id_re_str, record_split)
         if record_id_result and record_id_result[0]:
             record_id = record_id_result[0].rstrip(']')
             dict_list.append('{}/{}:{}'.format(section_id, record_id, record_split))
@@ -178,8 +180,8 @@ def created_and_populated_search_info_from_key_row_tuple(tuple_of_key_and_row: [
             search_info[static_data.URLS] = urls
 
         search_info[HEADER_KEY] = header
-        search_info[static_data.FULL_KEY] = full_key
-        search_info[static_data.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
+        search_info[parser_constants.FULL_KEY] = full_key
+        search_info[parser_constants.KEY_AS_NUMBER] = convert_version_to_number_from_full_key(full_key)
         return search_info
 
 
@@ -309,7 +311,7 @@ class RxData:
     #                                       table,
     #                                       static_data.cdd_info_only_header)))
 
-    def get_test_case_dict(self, table_dict_file=static_data.TEST_CASE_MODULES):
+    def get_test_case_dict(self, table_dict_file=parser_constants.TEST_CASE_MODULES):
         if not self.__test_case_dict:
             self.__test_case_dict = build_test_cases_module_dictionary(table_dict_file)
         return self.__test_case_dict
@@ -375,7 +377,7 @@ class RxData:
                     flat_result[REQUIREMENT] = search_info[REQUIREMENT]
                     flat_result[SEARCH_TERMS] = search_info[SEARCH_TERMS]
 
-                    flat_result[static_data.KEY_AS_NUMBER] = search_info[static_data.KEY_AS_NUMBER]
+                    flat_result[parser_constants.KEY_AS_NUMBER] = search_info[parser_constants.KEY_AS_NUMBER]
 
                     search_result[static_data.PIPELINE_FILE_NAME] = file_name_param
                     add_list_to_count_dict(f"({match_count_of_term_in_file},{matched_term},{cts_file_path_name})",
@@ -449,7 +451,7 @@ class RxData:
                     import class_graph
                     test_case_name = class_graph.search_for_test_case_name(file_name,
                                                                            self.get_test_case_dict())
-                    add_list_to_count_dict(test_case_name, search_result, static_data.MODULES)
+                    add_list_to_count_dict(test_case_name, search_result, parser_constants.MODULES)
                     search_result[MODULE] = test_case_name  # This will just get the last module, overwriting
                     flat_result[MODULE] = test_case_name
 
@@ -484,7 +486,7 @@ class RxData:
 
                         except Exception as err:
                             print("Not fatal but should improve exception find_data_for_result_dict_java " + str(err))
-                            if logging: print(f'Could not find {static_data.METHOD_RE} in text [{method_text}]')
+                            if logging: print(f'Could not find {parser_constants.METHOD_RE} in text [{method_text}]')
                 self.publish_each_result(search_result)
 
         except Exception as e:
@@ -505,8 +507,8 @@ class RxData:
                 class_name_re = re.findall("class (\w+)",full_text_of_file_str,re.IGNORECASE)
                 if len(class_name_re) > 0:
                     class_name = class_name_re[0]
-                    search_result[static_data.CLASS_DEF]=class_name
-                    flat_result[static_data.CLASS_DEF]=class_name
+                    search_result[parser_constants.CLASS_DEF]=class_name
+                    flat_result[parser_constants.CLASS_DEF]=class_name
                 method_text = search_result.get(PIPELINE_METHOD_TEXT)
                 method_results = re_method.findall(method_text)
                 if method_results and len(method_results) > 0:
@@ -623,7 +625,7 @@ class RxData:
                                                                         full_key_row: created_and_populated_search_info_from_key_row_tuple(
                                                                 full_key_row, header)),
                                                             ops.filter(lambda search_info: search_info.get(
-                                                                static_data.TEST_AVAILABILITY) == ""),
+                                                                parser_constants.TEST_AVAILABILITY) == ""),
                                                             ops.map(lambda search_info: find_search_terms(search_info)),
                                                             ops.map(
                                                                 lambda search_info: self.search_on_files(search_info)),
@@ -661,7 +663,7 @@ class RxData:
                 f'search key [{str(search_info.get(FULL_KEY))}] for [{search_info.get(SEARCH_TERMS)}] against {len(list_of_test_files)} files')
         # input("Do you want to continue?")
         try:
-            test_availability = row[static_data.cdd_to_cts_app_header.index(static_data.TEST_AVAILABILITY)]
+            test_availability = row[static_data.cdd_to_cts_app_header.index(parser_constants.TEST_AVAILABILITY)]
             search_info[TEST_AVAILABILITY] = test_availability
             if test_availability and len(test_availability) > 0:
                 print(
@@ -775,7 +777,7 @@ def do_map_with_flat_file(file_to_process:str, flat_file:str, latest_result:str)
         on_error=lambda err: parser_helpers.print_system_error_and_dump("in main", err))
     merge_duplicate_row_for_column_set_for_flat_file(
         flat_file,
-        [static_data.CLASS_DEF, static_data.METHOD],
+        [parser_constants.CLASS_DEF, parser_constants.METHOD],
         flat_file)
     # rx.from_iterable(test_dic).subscribe( lambda value: print("Received {0".format(value)))
     updated_table, target_header = update_release_table_with_changes(file_to_process, latest_result, file_to_process, static_data.results_header)

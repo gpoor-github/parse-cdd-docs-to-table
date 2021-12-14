@@ -4,10 +4,10 @@ import os
 import pathlib
 import re
 
+import parser_constants
 import parser_helpers
-import static_data
 from parser_helpers import process_section_splits_md_and_html, create_full_table_from_cdd
-from static_data import CDD_MD_ROOT, full_key_string_for_re, req_id_re_str
+from parser_constants import CDD_MD_ROOT, req_id_re_str, full_key_string_for_re
 
 
 def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
@@ -86,5 +86,5 @@ if __name__ == '__main__':
     _key_to_full_requirement_text_local, _section_to_section_data = parse_cdd_md(root_older)
     create_full_table_from_cdd(_key_to_full_requirement_text_local, _key_to_full_requirement_text_local.keys(),
                                _section_to_section_data,
-                               "./output/md_cdd_12_master.tsv", static_data.cdd_info_only_header)
+                               "./output/md_cdd_12_master.tsv", parser_constants.cdd_info_only_header)
     print(len(_key_to_full_requirement_text_local))
