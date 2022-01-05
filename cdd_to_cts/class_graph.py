@@ -1,0 +1,218 @@
+import json
+import os
+import re
+import time
+from os.path import exists
+
+import parser_constants
+from cdd_to_cts import persist, parser_helpers
+from cdd_to_cts import static_data
+from parser_helpers import find_valid_path
+from general_helpers import remove_non_determinative_words, bag_from_text, filter_files_to_search
+from static_data import TEST_FILES_TO_DEPENDENCIES_STORAGE
+
+FILES_TO_TEST_METHODS_PICKLE = "storage/test_files_to_methods.pickle"
+
+
+def get_list_of_at_test_files(
+    stored_files: str = ("%s" % parser_constants.TEST_FILES_TXT)) -> set:
+    if not exists(parser_constants.TEST_FILES_TXT):
+        files_to_words_local, test_files_list = make_bags_of_words_all()
+        stored_files = parser_helpers.find_valid_path(stored_files)
+        test_file_string  = json.dumps(test_files_list)
+        f = open(stored_files, 'w')
+        f.write(test_file_string)
+        f.close()
+    else:
+        f = open(stored_files, 'r')
+        test_files_list = json.loads(f.read())
+    return test_files_list
+
+def get_package_name(class_path):
+    class_path = class_path.replace("/", ".").rstrip(".java")
+    split_path = class_path.split(".src.")
+    if len(split_path) > 1:
+        class_path = split_path[1]
+    return class_path
+
+
+def search_for_test_case_name(full_path_to_file, testcase_dictionary: dict, logging=False):
+    module = None
+    try:
+        full_path = os.path.dirname(os.path.abspath(full_path_to_file))
+        relative_path = str(full_path).removeprefix(parser_constants.CTS_SOURCE_ROOT).replace("/", ".").strip(".")
+
+
+        src_splits = relative_path.split('src')
+        key = src_splits[0]
+        if key:
+            key = key.strip('.')
+            module = testcase_dictionary.get(key)
+            if module:
+                return module
+            else:
+                while key.startswith('tests.'):
+                    key = key.removeprefix('tests.')
+                    module = testcase_dictionary.get(key)
+                    if module:
+                        return module
+    except Exception as e:
+        print(f"No test case found for {full_path_to_file} from exception {str(e)}")
+    if not module:
+        if logging: print(f"No test case found for {full_path_to_file}")
+    return module
+
+
+re_method = re.compile(parser_constants.METHOD_RE)
+re_class = re.compile('class (\w+)')
+
+
+def get_cached_grep_of_at_test_files(results_grep_at_test: str = FILES_TO_TEST_METHODS_PICKLE):
+    local_tests_files_methods: dict = dict()
+    try:
+        local_tests_files_methods: dict = persist.read(results_grep_at_test)
+    except IOError:
+        print("Could not open test_files_to_methods, recreating ")
+        test_files_to_methods = __parse_grep_of_at_test_files()
+        persist.write(test_files_to_methods, results_grep_at_test)
+
+    return local_tests_files_methods
+
+
+def clear_cached_grep_of_at_test_files():
+    try:
+        os.remove(FILES_TO_TEST_METHODS_PICKLE)
+    except IOError:
+        pass
+
+
+def __parse_grep_of_at_test_files(results_grep_at_test: str = parser_constants.TEST_FILES_TXT):
+    test_files_to_methods: {str: str} = dict()
+    count = 0
+    results_grep_at_test = find_valid_path(results_grep_at_test)
+
+    re_annotations = re.compile('@Test.*?$')
+    try:
+        with open(results_grep_at_test, "r") as grep_of_test_files:
+            file_content = grep_of_test_files.readlines()
+            count = 0
+            while count < len(file_content):
+                line = file_content[count]
+                count += 1
+                result = re_annotations.search(line)
+                # Skip lines without annotations
+                if result:
+                    test_annotated_file_name_absolute_path = line.split(":")[0]
+                    test_annotated_file_name = get_cts_root(test_annotated_file_name_absolute_path)
+                    # requirement = result.group(0)
+                    line_method = file_content.pop()
+                    count += 1
+                    class_def, method = parse_class_or_method(line_method)
+                    if class_def == "" and method == "":
+                        line_method = file_content.pop()
+                        count += 1
+                        class_def, method = parse_class_or_method(line_method)
+                    if method:
+                        if test_files_to_methods.get(test_annotated_file_name):
+                            test_files_to_methods[
+                                test_annotated_file_name] = f'{test_files_to_methods.get(test_annotated_file_name)} {method}'.strip(
+                                ' ')
+                        else:
+                            test_files_to_methods[test_annotated_file_name] = method.strip(' ')
+
+                    print(f'{count}) {test_annotated_file_name}:{method}')
+                grep_of_test_files.close()
+    except FileNotFoundError as e:
+        parser_helpers.print_system_error_and_dump(f" Could not find {results_grep_at_test} ", e)
+    print(f'{count}) {len(test_files_to_methods)}')
+    return test_files_to_methods
+
+
+def get_cts_root(test_annotated_file_name_absolute_path):
+    test_annotated_file_name_split = test_annotated_file_name_absolute_path.split('/cts/', 1)
+    test_annotated_file_name = f'cts/{test_annotated_file_name_split[1]}'
+    return test_annotated_file_name
+
+
+def parse_class_or_method(line_method):
+    method_result = re_method.search(line_method)
+    class_def = str()
+    method = str()
+    if method_result:
+        method = method_result.group(0)
+    else:
+        class_result = re_class.search(line_method)
+        if class_result:
+            class_def = class_result.group(0)
+    return class_def, method
+
+
+def parse_dependency_file(file_name_in: str = static_data.INPUT_DEPENDENCIES_FOR_CTS_TXT) -> dict[str, set]:
+    # /Volumes/graham-ext/AndroidStudioProjects/cts
+    test_classes_to_dependent_classes = dict()
+    start = time.perf_counter()
+    count = 0
+    try:
+        file_name_in = parser_helpers.find_valid_path(file_name_in)
+        input_file = open(file_name_in, 'r')
+        test_classes_to_dependent_classes: dict = dict()
+        file_as_string = input_file.read()
+        input_file.close()
+        file_splits = file_as_string.split('<file path=')
+        for a_file_split in file_splits:
+            target_file_name = re.search('\"(.+?)\"+?', a_file_split).group(0).strip(
+                '"')  # .replace('$PROJECT_DIR$/tests/acceleration/Android.bp"')
+            if filter_files_to_search(target_file_name) and target_file_name.find("$PROJECT_DIR$") > -1:
+                target_file_name = target_file_name.replace("$PROJECT_DIR$", parser_constants.CTS_SOURCE_ROOT)
+                # print(target_file_name)
+                dependencies_split = a_file_split.split('<dependency path=')
+                dependency_list: [] = list()
+                for a_dependencies_split in dependencies_split:
+                    count += 1
+                    # if count % 10 == 0:
+                    #     end = time.perf_counter()
+                    #     # print(f'{target_file_name} {count} time {end - start:0.4f}sec ')
+                    dependencies_file_name = re.search('\"(.+?)+\"', a_dependencies_split).group(0)
+                    if dependencies_file_name is not None and parser_helpers.find_valid_path(dependencies_file_name) and dependencies_file_name.find(
+                            "$PROJECT_DIR$") > -1:  # dependencies_file_name = dependencies_file_name.replace('$USER_HOME$', '~/')
+                        dependencies_file_name = dependencies_file_name.replace("$PROJECT_DIR$",
+                                                                                parser_constants.CTS_SOURCE_ROOT)
+                        dependency_list.append(dependencies_file_name.strip('"'))
+                test_classes_to_dependent_classes[target_file_name] = set(dependency_list)
+
+        end = time.perf_counter()
+        print(f'Finished parsing dependencies {count} time {end - start:0.4f}sec ')
+
+    except Exception as err:
+        parser_helpers.print_system_error_and_dump(f" Maybe couldn't open {file_name_in}", err)
+    return test_classes_to_dependent_classes
+
+def make_bags_of_words_all(root_cts_source_directory=parser_constants.CTS_SOURCE_ROOT)-> (dict[str:str], [str]):
+    # traverse root directory, and list directories as dirs and cts_files as cts_files
+    re_method = re.compile('(?= test\w+ ?\()')
+    files_to_words_local = dict()
+    test_files_list: [str] = list()
+    for root, dirs, files in os.walk(root_cts_source_directory):
+        for file in files:
+            if filter_files_to_search(file):
+                fullpath = '{}/{}'.format(root, file)
+                with open(fullpath, "r") as text_file:
+                    file_string = text_file.read()
+
+                    test_split = re_method.split(file_string)
+                    if len(test_split) > 1:
+                        bag = bag_from_text(file_string)
+                        files_to_words_local[fullpath] = remove_non_determinative_words(bag)
+                        words_string = " ".join(files_to_words_local[fullpath])
+                        test_files_list.append(fullpath)
+                        text_file.close()
+
+    return files_to_words_local, test_files_list
+
+if __name__ == '__main__':
+    start1 = time.perf_counter()
+
+    testfile_dependencies_to_words_local = parse_dependency_file()
+    dependencies_dict = persist.write(testfile_dependencies_to_words_local, TEST_FILES_TO_DEPENDENCIES_STORAGE)
+    end1 = time.perf_counter()
+    print(f'Took time {end1 - start1:0.4f}sec ')
