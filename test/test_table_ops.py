@@ -1,21 +1,10 @@
 from unittest import TestCase
 
 import table_ops
-import table_functions_for_release
 from table_ops import filter_first_table_by_keys_of_second
-from table_functions_for_release import update_release_table_with_changes
 
 
 class TestUpdate(TestCase):
-    def test_update_table(self, ):
-        target = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_target.csv"
-        result_file_name = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/output/result_output_from_input.csv"
-        source = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/test/input/input_update_source.csv"
-        header = ['Section', 'section_id', 'req_id', 'full_key', 'requirement', 'yes_2', 'other']
-        header_data_to_copy = ['yes_2', 'other']
-        updated_table, target_header = update_release_table_with_changes(target, source, result_file_name,
-                                                                         header_data_to_copy)
-        self.assertEqual(4, len(updated_table))
 
     def test_filter_cdd_12_table_dict_by_keys(self, ):
 
@@ -77,12 +66,6 @@ class TestUpdate(TestCase):
             new_table,
             header)
         self.assertEqual(len(keys), len(new_table))
-
-    def test_filter_by_table_files(self, ):
-        table_out = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/X_a1_working/to_do_undone_subset.csv"
-        table_source = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output1/to_do_undone.csv"
-        table_target = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/RX_WORKING_OUTPUT_TABLE_TO_EDIT.csv"
-        table_functions_for_release.make_new_table_with_row_keys_from_table(table_target, table_source, table_out)
 
     def test_filter_table_by_removing_keys(self, ):
         keys_to_filter_by = ['3.18/C-1-5', '7.1.4.2/C-1-9', '7.1.4.2/C-1-8', '3.18/C-1-3', '3.18/C-1-4', '9.10/C-0-3',

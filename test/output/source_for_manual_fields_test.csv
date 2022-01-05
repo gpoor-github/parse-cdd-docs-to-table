@@ -1,4 +1,0 @@
-Section,section_id,req_id,full_key,requirement,manual_search_terms,input_file_ex1,not_search_terms,protected,search_roots,not_search_roots,not_files,not_methods
-s,5.1,H-1-1,5.1/H-1-1,5.1/H-1-1: Yes req 1,Yes 1 manual_search_terms,Yes inputfile 1,Yes 1 not_search_terms,8 of protected,9 of search_roots,10 of not_search_roots,11 of not_files,12 of not_methods
-s,5.1,H-1-2,5.1/H-1-2,5.1/H-1-2: Yes req 2,Yes 2 manual_search_terms,Yes inputfile 2,Yes 2 not_search_terms,8 of protected,9 of search_roots,10 of not_search_roots,11 of not_files,12 of not_methods
-s,5.1,H-1-5,5.1/H-1-5,5.1/H-1-5: Yes req 3,Yes 3 manual_search_terms,Yes inputfile 3,Yes 3 not_search_terms,8 of protected,9 of search_roots,10 of not_search_roots,11 of not_files,12 of not_methods
