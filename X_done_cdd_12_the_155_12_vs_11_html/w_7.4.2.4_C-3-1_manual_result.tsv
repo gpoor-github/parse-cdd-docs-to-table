@@ -1,7 +1,0 @@
-Section	section_id	req_id	full_key	key_as_number	requirement	Test Availability	search_roots	search_terms	manual_search_terms	not_search_terms	not_files	max_matches	class_defs	methods	modules	protected	class_def	method	module	file_name	matched_files	methods_string	urls	method_text	matched_terms	qualified_method	Annotation?	New Req for S?	New CTS for S?	Comment(internal) e.g. why a test is not possible	CTS Bug Id	CDD Bug Id	Area	Shortened	Test Level
-7.4.2.4  . Wi	7.4.2.4	C-3-1	7.4.2.4/C-3-1	07040204.670301	"""C-3-1] MUST enable Passpoint by default. <h5 id=""7425_wi-fi_location_wi-fi_round_trip_time_-_rtt"" """	Test Available	""	enable default passpoint	""	""	""	""	""	""	""	""	android.net.wifi.p2p.cts.WifiP2pDeviceTest	testDefaultDeviceCapabilityCheck	CtsWifiTestCases	/home/gpoor/cts-12-source/cts/tests/tests/wifi/src/android/net/wifi/p2p/cts/WifiP2pDeviceTest.java	""	"public void testDefaultDeviceCapabilityCheck() {
-        WifiP2pDevice dev = new WifiP2pDevice();
-
-        assertFalse(dev.isServiceDiscoveryCapable());
-    }
-}"	""	""	default	""	""	""	""	""	""	""	""	""	""

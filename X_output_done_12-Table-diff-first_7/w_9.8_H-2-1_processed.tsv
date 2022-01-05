@@ -1,7 +1,0 @@
-"Section"	"section_id"	"req_id"	"full_key"	"manual_search_terms"	"requirement"	"Test Availability"	"class_def"	"method"	"module"	"matched_terms"	"methods_string"	"file_name"	"Comment(internal) e.g. why a test is not possible"	"CTS Bug Id"	"Test Level"
-"2.2.5  . Security Model"	"9.8"	"H-2-1"	"9.8/H-2-1"	"provide explicit notice ui hotword phrase supported"	"""[9.8/H-2-1] MUST provide explicit notice ui for each hotword phrase supported. """	"Test Available"	"android.voiceinteraction.cts.HotwordDetectionServiceBasicTest"	"testHotwordDetectionService_validHotwordDetectionComponentName_triggerSuccess"	"CtsVoiceInteractionTestCases"	"1: hotword"	"public void testHotwordDetectionService_validHotwordDetectionComponentName_triggerSuccess()
-            throws Throwable {
-        testHotwordDetection(Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_TEST,
-                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_RESULT_INTENT,
-                Utils.HOTWORD_DETECTION_SERVICE_TRIGGER_SUCCESS);
-    }"	"/home/gpoor/cts-12-source/cts/tests/tests/voiceinteraction/src/android/voiceinteraction/cts/HotwordDetectionServiceBasicTest.java"	""	""	""
