@@ -6,7 +6,8 @@ import parser_helpers
 import static_data
 import table_ops
 from react import RxData, my_print
-from table_ops import update_manual_fields, read_table_sect_and_req_key
+from table_ops import read_table_sect_and_req_key
+from table_functions_for_release import update_manual_fields
 
 
 class TestRxData(TestCase):

@@ -1,7 +1,7 @@
 #  Block to comment
 
 import react
-from table_ops import move_last_row_to_new_table
+from table_functions_for_release import move_last_row_to_new_table
 
 if __name__ == '__main__':
     keep_trying = True

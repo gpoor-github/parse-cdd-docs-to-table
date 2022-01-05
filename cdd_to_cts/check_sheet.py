@@ -7,7 +7,6 @@ import rx
 import general_helpers
 import parser_constants
 import parser_helpers
-import static_data
 import table_ops
 from parser_helpers import find_valid_path
 from parser_constants import CTS_SOURCE_ROOT
