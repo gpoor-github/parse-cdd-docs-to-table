@@ -106,7 +106,7 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
 
 if __name__ == '__main__':
     full_cdd_html = parser_helpers.find_valid_path(
-        "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/input/cdd_12_download.html")
+        "./input/cdd_11_download.html")
 
     key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
         full_cdd_html)
