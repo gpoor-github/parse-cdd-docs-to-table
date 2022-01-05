@@ -24,10 +24,12 @@ cdd_11_html="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/output/cdd_11_
 
 class TestCheckSheets(TestCase):
     def test_does_class_ref_file_exist(self):
+        all_cdd_12 ="/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/CDD_12_staging_downloaded-2021-12-6.tsv"
         december_6 = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/find_annotations.tsv"
+        annotations = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/data_files/annotations_mappings.tsv"
         sample_known_good = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/sample_sheet_for_mapping.tsv"
         rs = ReadSpreadSheet()
-        result_dict, not_found, found = rs.does_class_ref_file_exist(sample_known_good)
+        result_dict, not_found, found = rs.does_class_ref_file_exist(annotations)
         print('results {}\n class file found={} found={} not found={}'.format(json.dumps(result_dict, indent=4),rs.found_class_count, rs.found_count, rs.not_found_count))
 
     def test_check_create_table_from_difference_and_source_html(self):
