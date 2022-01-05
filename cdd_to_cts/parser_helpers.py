@@ -3,6 +3,8 @@ import sys
 import traceback
 
 import parser_constants
+import static_data
+from cdd_to_cts import static_data
 from parser_constants import CTS_SOURCE_PARENT
 from stackdump import stackdump
 
@@ -178,7 +180,7 @@ def create_populated_table(key_to_full_requirement_text:[str,str],keys_to_find_a
 
 
 def write_new_data_line_to_table( key_str: str, keys_to_sections: dict, table: [[str]], table_row_index: int,
-                                 section_to_data: dict, header: [] = parser_constants.cdd_info_only_header, search_func:()=None, logging=False):
+                                 section_to_data: dict, header: [] = static_data.cdd_to_cts_app_header, search_func:()=None, logging=False):
 
     section_data = keys_to_sections.get(key_str)
     row: [str] = list(header)
@@ -222,7 +224,7 @@ def create_full_table_from_cdd(
         key_to_full_requirement_text: [str, str], keys_to_find_and_write:iter,
         section_to_data: dict,
         output_file: str,
-        output_header: str = parser_constants.cdd_info_only_header):
+        output_header: str = static_data.cdd_to_cts_app_header):
 
     table_for_sheet, keys_to_table_indexes = create_populated_table(key_to_full_requirement_text,
                                                                     keys_to_find_and_write,

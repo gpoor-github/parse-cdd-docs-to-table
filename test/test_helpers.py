@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import general_helpers
+import parser_constants
 import parser_helpers
 import static_data
 
@@ -42,16 +43,16 @@ class TestHelpers1(TestCase):
         c="c"
         s1 = {a, b}
         s2 = {c, b}
-        general_helpers.add_list_to_count_dict(s1, search_results, static_data.MATCHED_TERMS)
-        cd = search_results.get(static_data.MATCHED_TERMS)
+        general_helpers.add_list_to_count_dict(s1, search_results, parser_constants.MATCHED_TERMS)
+        cd = search_results.get(parser_constants.MATCHED_TERMS)
         self.assertEqual(1,cd.count_value_dict.get(a))
         self.assertEqual(1,cd.count_value_dict.get(b))
 
-        general_helpers.add_list_to_count_dict(s1, search_results, static_data.MATCHED_TERMS)
+        general_helpers.add_list_to_count_dict(s1, search_results, parser_constants.MATCHED_TERMS)
         self.assertEqual(2,cd.count_value_dict.get(a))
         self.assertEqual(2,cd.count_value_dict.get(b))
 
-        general_helpers.add_list_to_count_dict(s2, search_results, static_data.MATCHED_TERMS)
+        general_helpers.add_list_to_count_dict(s2, search_results, parser_constants.MATCHED_TERMS)
         self.assertEqual(2, cd.count_value_dict.get(a))
         self.assertEqual(3, cd.count_value_dict.get(b))
 
