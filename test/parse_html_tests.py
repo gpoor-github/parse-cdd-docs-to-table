@@ -1,17 +1,15 @@
 import unittest
 
-
-import parser_constants
-import parser_helpers
-from parser_helpers import create_full_table_from_cdd
-from parse_cdd_md import parse_cdd_md
+from cdd_to_cts import parser_helpers, parser_constants
+from cdd_to_cts.parse_cdd_html import parse_cdd_html_to_requirements
+from cdd_to_cts.parse_cdd_md import parse_cdd_md
+from cdd_to_cts.parser_helpers import create_full_table_from_cdd
 
 
 class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_12_html_full(self, ):
         full_cdd_html = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_12_download.html"
-        from parse_cdd_html import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local,  cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
@@ -24,7 +22,6 @@ class ParseHTMLTests(unittest.TestCase):
     def test_parse_cdd_12_html_missed_7_11(self, ):
         full_cdd_html = parser_helpers.find_valid_path(
             "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/html_parsing_7-11_issue.html")
-        from parse_cdd_html import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -41,7 +38,6 @@ class ParseHTMLTests(unittest.TestCase):
     def test_parse_cdd_11_html_full(self, ):
         full_cdd_html = parser_helpers.find_valid_path(
             "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_11_download.html")
-        from parse_cdd_html import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -57,7 +53,6 @@ class ParseHTMLTests(unittest.TestCase):
     def test_parse_cdd_html_to_requirements_problem(self):
         problem_file= "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/problem_subset_cdd_12_wrong_section.html"
 
-        from parse_cdd_html import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(problem_file)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -76,7 +71,6 @@ class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_html_to_requirements(self):
         full_cdd_html = parser_helpers.find_valid_path("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/android-12-cdd_2021_11_22.html")
-        from parse_cdd_html import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -93,7 +87,6 @@ class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_11_html_to_requirements(self):
         full_cdd_html = parser_helpers.find_valid_path("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_11_download.html")
-        from parse_cdd_html import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -109,7 +102,6 @@ class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_section_issue(self):
         full_cdd_html = parser_helpers.find_valid_path("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/section_issue.html")
-        from parse_cdd_html import parse_cdd_html_to_requirements
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,

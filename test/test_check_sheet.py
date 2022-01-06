@@ -4,9 +4,8 @@
 import json
 from unittest import TestCase
 
-import check_sheet
-from check_sheet import ReadSpreadSheet
-from table_ops import add_table_new_rows, merge_tables_rows
+from cdd_to_cts.check_sheet import ReadSpreadSheet
+from cdd_to_cts.table_ops import merge_tables_rows
 
 cdd_11_gpoor = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/data_files/gpoor_final_completed_items_for_r.tsv"
 cdd_11_created = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/output/cdd_11_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"

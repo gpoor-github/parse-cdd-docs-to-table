@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-import table_ops
-from table_ops import filter_first_table_by_keys_of_second
+from cdd_to_cts import table_ops
+from cdd_to_cts.table_ops import filter_first_table_by_keys_of_second
 
 
 class TestUpdate(TestCase):
@@ -110,10 +110,6 @@ class TestUpdate(TestCase):
                                                                                           logging=True)
         table_ops.write_table(
             "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output1/to_do_undone.csv", table, header)
-
-    def test_write_file_fields_to_files(self):
-        input_table = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output1/3.2.3.5_output.tsv"
-        table_ops.write_file_fields_to_files(input_table)
 
     def test_try_tabs(self):
         input_table = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/o_cdd-cts-tracker - 3_2.3.5_out.tsv"
