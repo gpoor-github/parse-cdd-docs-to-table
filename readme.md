@@ -2,7 +2,7 @@ Steps to parse CDD HTML to table
 
 Prerequisites:
 
-1. Install Python3
+1. Install Python3 must be version 3.9 because of type features used. 
 2. Install requirements. pip requirements.txt
 3. Get cdd html file:
    - Option a: Install wget to use script download_html_create_sheet.sh
