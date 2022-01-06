@@ -9,7 +9,7 @@ from cdd_to_cts.parser_helpers import create_full_table_from_cdd
 class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_12_html_full(self, ):
-        full_cdd_html = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_12_download.html"
+        full_cdd_html = "parse-cdd-docs-to-tableinput/cdd_12_download.html"
         key_to_full_requirement_text_local,  cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
@@ -21,12 +21,12 @@ class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_12_html_missed_7_11(self, ):
         full_cdd_html = parser_helpers.find_valid_path(
-            "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/html_parsing_7-11_issue.html")
+            "parse-cdd-docs-to-tabletest/input/html_parsing_7-11_issue.html")
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
                                    section_to_section_data,
-                                   "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/output/html_parsing_7-11_issue.tsv",
+                                   "parse-cdd-docs-to-tabletest/output/html_parsing_7-11_issue.tsv",
                                    parser_constants.cdd_info_only_header)
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.11/C-1-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.11/C-1-1"))
@@ -37,7 +37,7 @@ class ParseHTMLTests(unittest.TestCase):
 
     def test_parse_cdd_11_html_full(self, ):
         full_cdd_html = parser_helpers.find_valid_path(
-            "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_11_download.html")
+            "parse-cdd-docs-to-tableinput/cdd_11_download.html")
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -51,7 +51,7 @@ class ParseHTMLTests(unittest.TestCase):
 
 
     def test_parse_cdd_html_to_requirements_problem(self):
-        problem_file= "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/problem_subset_cdd_12_wrong_section.html"
+        problem_file= "parse-cdd-docs-to-tabletest/input/problem_subset_cdd_12_wrong_section.html"
 
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(problem_file)
@@ -70,7 +70,7 @@ class ParseHTMLTests(unittest.TestCase):
         self.assertEqual(59, len(key_to_full_requirement_text_local))
 
     def test_parse_cdd_html_to_requirements(self):
-        full_cdd_html = parser_helpers.find_valid_path("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/android-12-cdd_2021_11_22.html")
+        full_cdd_html = parser_helpers.find_valid_path("parse-cdd-docs-to-tableinput/android-12-cdd_2021_11_22.html")
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -86,7 +86,7 @@ class ParseHTMLTests(unittest.TestCase):
         self.assertEqual(1593, len(key_to_full_requirement_text_local))
 
     def test_parse_cdd_11_html_to_requirements(self):
-        full_cdd_html = parser_helpers.find_valid_path("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_11_download.html")
+        full_cdd_html = parser_helpers.find_valid_path("parse-cdd-docs-to-tableinput/cdd_11_download.html")
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -101,7 +101,7 @@ class ParseHTMLTests(unittest.TestCase):
         self.assertEqual(1593, len(key_to_full_requirement_text_local))
 
     def test_parse_cdd_section_issue(self):
-        full_cdd_html = parser_helpers.find_valid_path("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/section_issue.html")
+        full_cdd_html = parser_helpers.find_valid_path("parse-cdd-docs-to-tabletest/input/section_issue.html")
         key_to_full_requirement_text_local,  \
         cdd_requirements_file_as_string, section_to_section_data = parse_cdd_html_to_requirements(full_cdd_html)
         create_full_table_from_cdd(key_to_full_requirement_text_local, key_to_full_requirement_text_local,
@@ -136,7 +136,7 @@ class ParseHTMLTests(unittest.TestCase):
         self.assertEqual(1382, len(key_to_full_requirement_text_local))
 
     def test_parse_md_9_problem(self):
-        key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/cdd_9_problem"
+        key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md("parse-cdd-docs-to-tabletest/input/cdd_9_problem"
                                                                                    ,logging=True)
         self.assertIsNotNone(key_to_full_requirement_text_local.get("9.8.1/C-0-1"))
 
@@ -145,7 +145,7 @@ class ParseHTMLTests(unittest.TestCase):
         self.assertEqual(62, len(key_to_full_requirement_text_local))
 
     def test_parse_cdd_html_to_requirements_md(self):
-        key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md("/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/test/input/cdd_md_full_key")
+        key_to_full_requirement_text_local, section_to_section_data = parse_cdd_md("parse-cdd-docs-to-tabletest/input/cdd_md_full_key")
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.1.1.1/H-1-1"))
         self.assertIsNotNone(key_to_full_requirement_text_local.get("7.2.4/H-0-1"))
         self.assertEqual(67, len(key_to_full_requirement_text_local))

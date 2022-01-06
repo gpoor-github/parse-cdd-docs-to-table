@@ -94,15 +94,16 @@ def check_update(original_sheet_file_name, table_name_to_write):
             f"Table update seems to have updated correctly, no new or removed rows, content 1/2 {len(dif_1_2_dict_content)} updated. Details of changes printed above")
 
 
-
+# This will be important once we add the annotation parsing functionality
 def update_release_table_with_changes_example():
-    annotations ="/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/data_files/annotations_mappings.tsv"
+
+    annotations ="input/annotations_mappings.tsv"
     annotation_header = ([parser_constants.TEST_AVAILABILITY, parser_constants.CLASS_DEF, parser_constants.METHOD,
                           parser_constants.MODULE, parser_constants.FILE_NAME, parser_constants.TEST_LEVEL,
                           parser_constants.ANNOTATION_])
-    target_to_update = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/a1_working_12/cdd_12_todo_remaining_manual.tsv"
-    source_for_data="/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/xCD12_3_9.9.3_in_progress/9.9.3.tsv"
-    new_table_to_made = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/a1_working_12/test.tsv"
+    target_to_update = "parse-cdd-docs-to-table/output/downloaded_table.tsv"
+    source_for_data="parse-cdd-docs-to-table/input/new_data_to_import.tsv"
+    new_table_to_made = "parse-cdd-docs-to-table/output/merged_table.tsv"
 
     update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
                                       annotation_header)
@@ -113,7 +114,7 @@ def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2,
     table_ops.make_new_table_from_keys(dif_2_1, table_for_source, output_file_for_results)
 
 if __name__ == '__main__':
-    cdd_11_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/cdd_11_gen_html.tsv"
-    cdd_12_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/cdd_12_gen_html.tsv"
-    cdd_12_html_vs_11_diffs = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/cdd_12_html_vs_11_diffs.tsv"
+    cdd_11_downloaded_html = "output/cdd_11_gen_html.tsv"
+    cdd_12_downloaded_html = "output/cdd_12_gen_html.tsv"
+    cdd_12_html_vs_11_diffs = "output/cdd_12_html_vs_11_diffs.tsv"
     create_table_from_differences_and_source(cdd_11_downloaded_html,cdd_12_downloaded_html,cdd_12_downloaded_html,cdd_12_html_vs_11_diffs)

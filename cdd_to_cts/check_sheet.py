@@ -8,9 +8,9 @@ import parser_constants
 import parser_helpers
 import table_ops
 from parser_helpers import find_valid_path
-from parser_constants import CTS_SOURCE_ROOT
+from cdd_to_cts.path_constants import CTS_SOURCE_ROOT
 
-
+# Method that takes file names in sheets and tries to find them.
 def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) -> bool:
     # file_name_from_class = "{}/tests/tests/{}.{}".format(CTS_SOURCE_ROOT,class_def_value.replace(".","/"),'java')
 

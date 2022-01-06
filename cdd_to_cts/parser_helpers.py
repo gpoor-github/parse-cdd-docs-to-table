@@ -2,8 +2,9 @@ import re
 import sys
 import traceback
 
+import cdd_to_cts.path_constants
 import parser_constants
-from parser_constants import CTS_SOURCE_PARENT
+from cdd_to_cts.path_constants import CTS_SOURCE_PARENT
 from stackdump import stackdump
 
 
@@ -127,14 +128,14 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 
 
 def find_valid_path(file_name: str) -> str:
-    if file_name.find(parser_constants.WORKING_ROOT[0:10]) != -1:
+    if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT[0:10]) != -1:
         return file_name
 
-    if file_name.find(parser_constants.WORKING_ROOT) == -1:
-        if not parser_constants.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
-            file_name = parser_constants.WORKING_ROOT + '/' + file_name
+    if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT) == -1:
+        if not cdd_to_cts.path_constants.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
+            file_name = cdd_to_cts.path_constants.WORKING_ROOT + '/' + file_name
         else:
-            file_name = parser_constants.WORKING_ROOT + file_name
+            file_name = cdd_to_cts.path_constants.WORKING_ROOT + file_name
     return file_name
 
 
