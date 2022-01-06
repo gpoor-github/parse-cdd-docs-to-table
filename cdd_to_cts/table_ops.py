@@ -1,9 +1,8 @@
 import csv
 import sys
 
-import parser_constants
-import parser_helpers
-from parser_constants import HEADER_KEY, SECTION_ID, REQ_ID, FULL_KEY
+from cdd_to_cts import parser_constants, parser_helpers
+from cdd_to_cts.parser_constants import SECTION_ID, REQ_ID, HEADER_KEY, FULL_KEY
 
 
 def remove_table_columns(table_source: [[str]], header_column_source: [str],

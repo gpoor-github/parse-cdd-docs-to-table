@@ -1,14 +1,8 @@
 #  Block to comment
 import re
 
-import parser_constants
-
-try:
-    from cdd_to_cts import parser_helpers
-except:
-    import parser_helpers
-
-from parser_helpers import build_composite_key, find_full_key, find_valid_path, \
+from cdd_to_cts import parser_helpers, parser_constants
+from cdd_to_cts.parser_helpers import build_composite_key, find_full_key, find_valid_path, \
     process_section_splits_md_and_html, create_full_table_from_cdd
 
 

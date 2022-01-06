@@ -3,9 +3,10 @@ import sys
 import traceback
 
 import cdd_to_cts.path_constants
-import parser_constants
+import cdd_to_cts.parser_constants
+from cdd_to_cts import parser_constants
 from cdd_to_cts.path_constants import CTS_SOURCE_PARENT
-from stackdump import stackdump
+from cdd_to_cts.stackdump import stackdump
 
 
 def convert_version_to_number_from_full_key(full_key: str):
@@ -231,5 +232,5 @@ def create_full_table_from_cdd(
                                                                     output_header)
     print(f"CDD csv file to write to output is [{output_file}] output header is [{str(output_header)}]")
 
-    from table_ops import write_table
+    from cdd_to_cts.table_ops import write_table
     write_table(output_file, table_for_sheet, output_header)
