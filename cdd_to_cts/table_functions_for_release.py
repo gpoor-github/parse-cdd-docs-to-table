@@ -116,4 +116,4 @@ if __name__ == '__main__':
     cdd_11_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/cdd_11_gen_html.tsv"
     cdd_12_downloaded_html = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/cdd_12_gen_html.tsv"
     cdd_12_html_vs_11_diffs = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/cdd_12_html_vs_11_diffs.tsv"
-    create_table_from_differences_and_source(cdd_12_downloaded_html,cdd_11_downloaded_html,cdd_12_downloaded_html,cdd_12_html_vs_11_diffs)
+    create_table_from_differences_and_source(cdd_11_downloaded_html,cdd_12_downloaded_html,cdd_12_downloaded_html,cdd_12_html_vs_11_diffs)
