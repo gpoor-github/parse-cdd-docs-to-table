@@ -666,9 +666,9 @@ def make_new_table_from_keys(keys_to_use: iter, file_name_of_table_input: str, f
 
 
 def merge_table_example():
-    _file_table_to_update = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
-    _file_table_to_use_as_input = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a_current_one/w_9_3.2.3.5_C-9-1_flat.tsv"
-    _file_output = "/home/gpoor/PycharmProjects/parse-cdd-html-to-source/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
+    _file_table_to_update = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
+    _file_table_to_use_as_input = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/a_current_one/w_9_3.2.3.5_C-9-1_flat.tsv"
+    _file_output = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/a1_working_12/cdd_12_done_of_the_118_manual.tsv"
     _table_merged, header_from_table_to_update = merge_tables_rows(_file_table_to_update, _file_table_to_use_as_input,
                                                                    _file_output)
 

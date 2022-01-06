@@ -2,8 +2,12 @@
 import re
 
 import parser_constants
-from cdd_to_cts import parser_helpers
-from cdd_to_cts.parser_helpers import build_composite_key, find_full_key, find_valid_path, \
+
+try:
+    from cdd_to_cts import parser_helpers
+except:
+    import parser_helpers
+from parser_helpers import build_composite_key, find_full_key, find_valid_path, \
     process_section_splits_md_and_html, create_full_table_from_cdd
 
 
@@ -106,7 +110,7 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
 
 if __name__ == '__main__':
     full_cdd_html = parser_helpers.find_valid_path(
-        "./input/cdd_11_download.html")
+        "input/cdd_12_download.html")
 
     key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
         full_cdd_html)
