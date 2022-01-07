@@ -41,10 +41,10 @@ cdd_12_full_header_for_ref_part_2 = [TEST_AVAILABILITY, ANNOTATION_, NEW_REQ_FOR
 cdd_12_full_header_for_ref = cdd_12_full_header_for_ref_part_1 + cdd_12_full_header_for_ref_part_2
 ccd_12_subset_target_field_header = [ANNOTATION_, NEW_REQ_FOR_S_, NEW_CTS_FOR_S_, COMMENT_INTERNAL, CTS_BUG_ID, CDD_BUG_ID,
                                      AREA, SHORTENED, TEST_LEVEL]
-cdd_info_only_header: [] = (
+cdd_info_only_header= (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',
      '', ''])
-update_release_header: [] = ([TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,COMMENT_INTERNAL,CTS_BUG_ID])
+update_release_header = ([TEST_AVAILABILITY, CLASS_DEF, METHOD, MODULE,COMMENT_INTERNAL,CTS_BUG_ID])
 table_delimiter = '\t'
 table_dialect = 'excel-tab'
 table_newline = ''

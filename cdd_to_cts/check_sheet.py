@@ -11,7 +11,7 @@ from parser_helpers import find_valid_path
 from cdd_to_cts.path_constants import CTS_SOURCE_ROOT
 
 # Method that takes file names in sheets and tries to find them.
-def check_for_file_and_method(file_name_from_class: str, method_value: str, file_name_to_result: dict) -> bool:
+def check_for_file_and_method(file_name_from_class, method_value, file_name_to_result) -> bool:
     # file_name_from_class = "{}/tests/tests/{}.{}".format(CTS_SOURCE_ROOT,class_def_value.replace(".","/"),'java')
 
     if file_name_from_class:
@@ -74,7 +74,7 @@ class ReadSpreadSheet:
         ccd_csv_file_name = find_valid_path(ccd_csv_file_name)
 
         with open(ccd_csv_file_name, newline=parser_constants.table_newline) as csv_file:
-            print(f"Opened {ccd_csv_file_name}")
+            print("Opened {}".format(ccd_csv_file_name))
             csv_reader = csv.reader(csv_file, delimiter=parser_constants.table_delimiter, dialect=parser_constants.table_dialect)
             line_count = 0
 
@@ -95,7 +95,7 @@ class ReadSpreadSheet:
                             file_name =  self.file_dict.get(class_def_value)
                             if not file_name:
                              for  class_key  in  self.file_dict:
-                                 file_name_in_dict:str = self.file_dict.get(class_key)
+                                 file_name_in_dict= self.file_dict.get(class_key)
                                  if file_name_in_dict.find(class_def_value) > -1 :
                                      file_name = file_name_in_dict
 
@@ -135,7 +135,7 @@ def observable_rows(table_file_name) -> rx.Observable:
         parser_helpers.print_system_error_and_dump(f"Failed to open file {table_file_name} exception -= {type(e)} exiting...")
         return rx.just(e)
 #
-# def check_row_for_requirement_match(key:str, row:[], header:[str]):
+# def check_row_for_requirement_match(key, row:[], header:[str]):
 #     requirement_text = row[header.index[static_data.REQUIREMENT]]
 #     requirement_start = requirement_text[0:50]
 #
@@ -259,8 +259,8 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
     intersection = key_set1.intersection(key_set2)
     dif_1_2 = key_set1.difference(key_set2)
     dif_2_1 = key_set2.difference(key_set1)
-    dif_1_2_dict_row_content: [str, set] = dict()
-    dif_2_1_dict_row_content: [str, set] = dict()
+    dif_1_2_dict_row_content= dict()
+    dif_2_1_dict_row_content = dict()
 
     for shared_key_to_table_index in intersection:
         i1 = _key_fields1.get(shared_key_to_table_index)

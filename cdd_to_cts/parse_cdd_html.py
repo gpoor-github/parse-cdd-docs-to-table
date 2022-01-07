@@ -16,10 +16,10 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
     with open(cdd_html_file, "r") as text_file:
         print(f"CDD HTML to csv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()
-        #  section_re_str: str = r'"(?:\d{1,3}_)+'
-        section_marker: str = r"data-text=\"\s*"
+        #  section_re_str= r'"(?:\d{1,3}_)+'
+        section_marker= r"data-text=\"\s*"
         # data-text=
-        # section_re_str: str = section_marker + static_data.SECTION_ID_RE_STR
+        # section_re_str= section_marker + static_data.SECTION_ID_RE_STR
         cdd_sections_splits = re.split('(?={})'.format(section_marker), cdd_requirements_file_as_string,
                                        flags=re.DOTALL)
         section_count = 0
@@ -86,7 +86,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count, section_text: str = "", logging=False):
+                    record_id_splits, section_id_count, total_requirement_count, section_text= "", logging=False):
     record_id_count = 0
 
     for record_id_split in record_id_splits:
