@@ -318,7 +318,7 @@ def add_columns(manual_fields_header, updated_header):
 #                                fields_to_write: [str] = static_data.cdd_to_cts_app_header) -> [[str]]:
 #     table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key(source_to_use_values)
 #     fields_to_write_str = " ".join(fields_to_write)
-#     path_for_files_root = static_data.WORKING_ROOT + "/output/" + source_to_use_values.rstrip(".csv")
+#     path_for_files_root = . + "/output/" + source_to_use_values.rstrip(".csv")
 #
 #     for i in range(0, len(table)):
 #         row = table[i]

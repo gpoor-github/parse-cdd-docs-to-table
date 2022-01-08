@@ -14,7 +14,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
     cdd_html_file = find_valid_path(cdd_html_file)
 
     with open(cdd_html_file, "r") as text_file:
-        print(f"CDD HTML to csv file is {cdd_html_file}")
+        print(f"CDD HTML to tsv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()
         #  section_re_str= r'"(?:\d{1,3}_)+'
         section_marker= r"data-text=\"\s*"
@@ -105,10 +105,10 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
 
 if __name__ == '__main__':
     full_cdd_html = parser_helpers.find_valid_path(
-        "input/cdd_12_download.html")
+        "../input/cdd_12_download.html")
 
     key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
         full_cdd_html)
     create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
                                section_to_section_data_,
-                               "./output/cdd_12_gen_html.tsv", parser_constants.cdd_info_only_header)
+                               "../output/cdd_12_gen_html.tsv", parser_constants.cdd_info_only_header)

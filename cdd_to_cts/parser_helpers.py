@@ -129,14 +129,14 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 
 
 def find_valid_path(file_name):
-    if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT[0:10]) != -1:
-        return file_name
-
-    if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT) == -1:
-        if not cdd_to_cts.path_constants.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
-            file_name = cdd_to_cts.path_constants.WORKING_ROOT + '/' + file_name
-        else:
-            file_name = cdd_to_cts.path_constants.WORKING_ROOT + file_name
+    # if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT[0:10]) != -1:
+    #     return file_name
+    #
+    # if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT) == -1:
+    #     if not cdd_to_cts.path_constants.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
+    #         file_name = cdd_to_cts.path_constants.WORKING_ROOT + '/' + file_name
+    #     else:
+    #         file_name = cdd_to_cts.path_constants.WORKING_ROOT + file_name
     return file_name
 
 
