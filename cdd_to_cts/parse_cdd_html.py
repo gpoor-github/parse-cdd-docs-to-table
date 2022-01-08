@@ -1,8 +1,8 @@
 #  Block to comment
 import re
-
-from cdd_to_cts import parser_helpers, parser_constants
-from cdd_to_cts.parser_helpers import build_composite_key, find_full_key, find_valid_path, \
+import parser_helpers
+import parser_constants
+from parser_helpers import build_composite_key, find_full_key, find_valid_path, \
     process_section_splits_md_and_html, create_full_table_from_cdd
 
 
@@ -42,10 +42,6 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
                 section_to_section_data[
                     cdd_section_id] = f'{section_to_section_data[cdd_section_id]}  {section_text}'
 
-            if '13' == cdd_section_id:
-                # section 13 is "Contact us" and has characters that cause issues at lest for git
-                print(f"Warning skipping section 13 {section}")
-                continue
             section = parser_helpers.process_requirement_text(section)
             key_to_full_requirement_text_local[cdd_section_id] = parser_helpers.prepend_any_previous_value(section,
                                                                                                            key_to_full_requirement_text_local.get(

@@ -1,8 +1,7 @@
 import csv
 import sys
-
-from cdd_to_cts import parser_constants, parser_helpers
-from cdd_to_cts.parser_constants import SECTION_ID, REQ_ID, HEADER_KEY, FULL_KEY
+import parser_constants, parser_helpers
+from parser_constants import SECTION_ID, REQ_ID, HEADER_KEY, FULL_KEY
 
 
 def remove_table_columns(table_source, header_column_source,
@@ -315,7 +314,7 @@ def add_columns(manual_fields_header, updated_header):
 
 # Not in use, before conversion to tabs
 # def write_file_fields_to_files(source_to_use_values,
-#                                fields_to_write: [str] = static_data.cdd_to_cts_app_header) -> [[str]]:
+#                                fields_to_write: [str] = static_data.app_header) -> [[str]]:
 #     table, keys_to_index, header, duplicate_rows = read_table_sect_and_req_key(source_to_use_values)
 #     fields_to_write_str = " ".join(fields_to_write)
 #     path_for_files_root = . + "/output/" + source_to_use_values.rstrip(".csv")
@@ -396,7 +395,7 @@ def find_full_key_index(table) -> int:
     return full_key_index
 
 
-def find_header(table):
+def find_header(table, logging=False):
     header = None
     try:
         potential_header_str = " ".join(table[0])
@@ -404,11 +403,11 @@ def find_header(table):
                 potential_header_str.find(REQ_ID) > -1 or \
                 potential_header_str.find(FULL_KEY) > -1:
             header = table[0]
-            print(f'write_table Found header, names are (truncated) {", ".join(table[0])[0:350]}')
+            if logging: print(f'write_table Found header, names are (truncated) {", ".join(table[0])[0:350]}')
         else:
             raise ValueError(f"Header not found (truncated){potential_header_str[0:250]}")
     except  (AttributeError, ValueError, IndexError) as ie:
-        print(f'No row 0 in table just writing use the one passed im header {str(ie)} (truncated) {str(header)[0:250]}')
+        if logging: print(f'No row 0 in table just writing use the one passed im header {str(ie)} (truncated) {str(header)[0:250]}')
     return header
 
 
@@ -462,7 +461,7 @@ def read_table_key_at_index(file_name, key_index, has_header= True, logging= Fal
     table = []
     header = []
     key_fields= dict()
-    duplicate_rows: [str, str] = dict()
+    duplicate_rows= dict()
 
     try:
         with open(file_name, newline=parser_constants.table_newline, encoding=parser_constants.table_encoding) as csv_file:

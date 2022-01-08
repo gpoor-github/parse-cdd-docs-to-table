@@ -8,7 +8,7 @@ import parser_constants
 import parser_helpers
 from parser_helpers import process_section_splits_md_and_html, create_full_table_from_cdd
 from parser_constants import req_id_re_str, full_key_string_for_re
-from cdd_to_cts.path_constants import CDD_MD_ROOT
+from path_constants import CDD_MD_ROOT
 
 
 def parse_cdd_md(cdd_md_root=CDD_MD_ROOT,logging=False):

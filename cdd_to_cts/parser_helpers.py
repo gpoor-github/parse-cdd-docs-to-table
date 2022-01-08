@@ -2,11 +2,11 @@ import re
 import sys
 import traceback
 
-import cdd_to_cts.path_constants
-import cdd_to_cts.parser_constants
-from cdd_to_cts import parser_constants
-from cdd_to_cts.path_constants import CTS_SOURCE_PARENT
-from cdd_to_cts.stackdump import stackdump
+import path_constants
+import parser_constants
+import parser_constants
+from path_constants import CTS_SOURCE_PARENT
+from stackdump import stackdump
 
 
 def convert_version_to_number_from_full_key(full_key):
@@ -129,14 +129,14 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 
 
 def find_valid_path(file_name):
-    # if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT[0:10]) != -1:
+    # if file_name.find(path_constants.WORKING_ROOT[0:10]) != -1:
     #     return file_name
     #
-    # if file_name.find(cdd_to_cts.path_constants.WORKING_ROOT) == -1:
-    #     if not cdd_to_cts.path_constants.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
-    #         file_name = cdd_to_cts.path_constants.WORKING_ROOT + '/' + file_name
+    # if file_name.find(path_constants.WORKING_ROOT) == -1:
+    #     if not path_constants.WORKING_ROOT.endswith('/') and not file_name.startswith('/'):
+    #         file_name = path_constants.WORKING_ROOT + '/' + file_name
     #     else:
-    #         file_name = cdd_to_cts.path_constants.WORKING_ROOT + file_name
+    #         file_name = path_constants.WORKING_ROOT + file_name
     return file_name
 
 
@@ -230,7 +230,7 @@ def create_full_table_from_cdd(
                                                                     keys_to_find_and_write,
                                                                     section_to_data,
                                                                     output_header)
-    print("CDD csv file to write to output is [{}] output header is [{}]".format(output_file,str(output_header)))
+    print("CDD csv file to write to output is [{}] output header is [{}]".format(output_file, str(output_header)))
 
-    from cdd_to_cts.table_ops import write_table
+    from table_ops import write_table
     write_table(output_file, table_for_sheet, output_header)

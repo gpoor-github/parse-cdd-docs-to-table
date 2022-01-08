@@ -10,4 +10,8 @@ Prerequisites:
    - Option b: manually download a version of cdd html from  https://source.android.com/compatibility/ for example
    - https://source.android.com/compatibility/12/android-12-cdd
    
-4. run python3 -m cdd_to_cts.parse_cdd_html
+4. cd into <my_project_root>/cdd_to_cts
+5. python3 parse_cdd_html.py
+6. python3 check_sheet.py
+7. python3 table_functions_for_release.py 
+

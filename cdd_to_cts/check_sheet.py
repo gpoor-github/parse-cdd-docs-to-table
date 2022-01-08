@@ -8,7 +8,8 @@ import parser_constants
 import parser_helpers
 import table_ops
 from parser_helpers import find_valid_path
-from cdd_to_cts.path_constants import CTS_SOURCE_ROOT
+from path_constants import CTS_SOURCE_ROOT
+
 
 # Method that takes file names in sheets and tries to find them.
 def check_for_file_and_method(file_name_from_class, method_value, file_name_to_result) -> bool:
@@ -23,7 +24,8 @@ def check_for_file_and_method(file_name_from_class, method_value, file_name_to_r
                 if method_index >= 0:
                     test_index = file_as_string.find('@', method_index - 300, method_index) >= 0
                     if file_as_string.index('@') >= 0 and ((test_index - method_index) < 100):
-                        file_name_to_result[file_name_from_class] = method_value + ":Found and is @ supporting annotation"
+                        file_name_to_result[
+                            file_name_from_class] = method_value + ":Found and is @ supporting annotation"
                         return True
                     else:
                         file_name_to_result[
@@ -40,6 +42,8 @@ def check_for_file_and_method(file_name_from_class, method_value, file_name_to_r
 def filter_files_to_search(f):
     return f.endswith(".java") or f.endswith(".py") or f.endswith(".cpp") or f.endswith(".kt") or f.endswith(
         ".c")
+
+
 class ReadSpreadSheet:
     file_dict = {}
     not_found_count = 0
@@ -51,7 +55,7 @@ class ReadSpreadSheet:
 
     def crawl(self, logging=False):
         # /Volumes/graham-ext/AndroidStudioProjects/cts
-        for directory, subdirlist, filelist in os.walk(CTS_SOURCE_ROOT ):
+        for directory, subdirlist, filelist in os.walk(CTS_SOURCE_ROOT):
             if logging: print(directory)
             path = directory.replace(CTS_SOURCE_ROOT, ".")
             for f in filelist:
@@ -75,7 +79,8 @@ class ReadSpreadSheet:
 
         with open(ccd_csv_file_name, newline=parser_constants.table_newline) as csv_file:
             print("Opened {}".format(ccd_csv_file_name))
-            csv_reader = csv.reader(csv_file, delimiter=parser_constants.table_delimiter, dialect=parser_constants.table_dialect)
+            csv_reader = csv.reader(csv_file, delimiter=parser_constants.table_delimiter,
+                                    dialect=parser_constants.table_dialect)
             line_count = 0
 
             for row in csv_reader:
@@ -92,18 +97,19 @@ class ReadSpreadSheet:
                         method_value = table[table_index][header.index(parser_constants.METHOD)]
                         # module_value = table[table_index][header.index("module")]
                         if class_def_value:
-                            file_name =  self.file_dict.get(class_def_value)
+                            file_name = self.file_dict.get(class_def_value)
                             if not file_name:
-                             for  class_key  in  self.file_dict:
-                                 file_name_in_dict= self.file_dict.get(class_key)
-                                 if file_name_in_dict.find(class_def_value) > -1 :
-                                     file_name = file_name_in_dict
+                                for class_key in self.file_dict:
+                                    file_name_in_dict = self.file_dict.get(class_key)
+                                    if file_name_in_dict.find(class_def_value) > -1:
+                                        file_name = file_name_in_dict
 
                             if file_name and exists(file_name):
                                 self.found_class_count += 1
-                                print(f' {self.found_class_count}) class name {class_def_value} class file { file_name } ')
+                                print(
+                                    f' {self.found_class_count}) class name {class_def_value} class file {file_name} ')
                                 is_found = check_for_file_and_method(file_name, method_value,
-                                                                 self.file_name_to_result)
+                                                                     self.file_name_to_result)
                             if is_found:
                                 self.found_count += 1
                                 print(f'Found class and method {line_count} lines. ')
@@ -121,6 +127,7 @@ class ReadSpreadSheet:
             print('Files {}'.format(self.found_count))
             return self.file_name_to_result, self.not_found_count, self.found_count
 
+
 def observable_rows(table_file_name) -> rx.Observable:
     try:
         table_file_name = find_valid_path(table_file_name)
@@ -132,8 +139,11 @@ def observable_rows(table_file_name) -> rx.Observable:
             return rx.from_iterable(csv_reader)
 
     except IOError as e:
-        parser_helpers.print_system_error_and_dump(f"Failed to open file {table_file_name} exception -= {type(e)} exiting...")
+        parser_helpers.print_system_error_and_dump(
+            f"Failed to open file {table_file_name} exception -= {type(e)} exiting...")
         return rx.just(e)
+
+
 #
 # def check_row_for_requirement_match(key, row:[], header:[str]):
 #     requirement_text = row[header.index[static_data.REQUIREMENT]]
@@ -205,8 +215,9 @@ def diff_tables_files(file_path1, file_path2):
                 duplicate_rows1, duplicate_rows2, file1, file2, header1, header2, intersection)
     return dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content
 
-def report_content_diff(_key_fields1, _key_fields2, dif_1_2_dict_content, dif_2_1_dict_content, file1, file2, header1, header2, intersection):
 
+def report_content_diff(_key_fields1, _key_fields2, dif_1_2_dict_content, dif_2_1_dict_content, file1, file2, header1,
+                        header2, intersection):
     print("\nDifferences in shared rows starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict_content)} diff=[{dif_1_2_dict_content}]")
     print(
@@ -216,7 +227,7 @@ def report_content_diff(_key_fields1, _key_fields2, dif_1_2_dict_content, dif_2_
     print(f"\n\nIntersection={len(intersection)} =[{intersection}]")
     header_set1 = set(header1)
     header_set2 = set(header2)
-    if (len(header_set1.difference(header_set2)) + len(header_set2.difference(header_set1))) ==0 :
+    if (len(header_set1.difference(header_set2)) + len(header_set2.difference(header_set1))) == 0:
         print(f"No Different  in headers f1=[{file1}]  f2=[{file2}]\n")
     else:
         print(
@@ -226,12 +237,15 @@ def report_content_diff(_key_fields1, _key_fields2, dif_1_2_dict_content, dif_2_
     print(
         f"Intersection of {len(intersection)}  content differs 1-2 {len(dif_1_2_dict_content)} and 2-1 {len(dif_2_1_dict_content)}  rows")
 
+
 def report_diff(_key_fields1, _key_fields2, dif_1_2, dif_1_2_dict_content, dif_2_1, dif_2_1_dict_content,
                 duplicate_rows1, duplicate_rows2, file1, file2, header1, header2, intersection):
     handle_duplicates(duplicate_rows1, duplicate_rows2, file1, file2)
-    report_content_diff(_key_fields1,_key_fields2,dif_1_2_dict_content,dif_2_1_dict_content,file1,file2,header1,header2,intersection)
-    report_key_diff(_key_fields1,_key_fields2,dif_1_2,dif_2_1,file1,file2)
+    report_content_diff(_key_fields1, _key_fields2, dif_1_2_dict_content, dif_2_1_dict_content, file1, file2, header1,
+                        header2, intersection)
+    report_key_diff(_key_fields1, _key_fields2, dif_1_2, dif_2_1, file1, file2)
     print(f"Difference 1st-2nd={len(dif_1_2)} 2st-1nd={len(dif_2_1)}  ")
+
 
 def report_key_diff(_key_fields1, _key_fields2, dif_1_2, dif_2_1, file1, file2):
     print(f"\n Size of {file1}={len(_key_fields1)} {file2}={len(_key_fields2)} ")
@@ -239,7 +253,7 @@ def report_key_diff(_key_fields1, _key_fields2, dif_1_2, dif_2_1, file1, file2):
     if len(dif_1_2) + len(dif_2_1) == 0:
         print(f"No KEY Different keys or headers {file1} and {file2}\n")
     else:
-        print(f"\nA total of {len(dif_1_2)+len(dif_2_1)} req differ between {file1} and {file2}")
+        print(f"\nA total of {len(dif_1_2) + len(dif_2_1)} req differ between {file1} and {file2}")
         print(f" {len(dif_1_2)} are in {file1} and not in {file2}")
         print(f" {len(dif_2_1)} are in {file2} and not in {file1}")
         sl_1_2 = list(dif_1_2)
@@ -259,7 +273,7 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
     intersection = key_set1.intersection(key_set2)
     dif_1_2 = key_set1.difference(key_set2)
     dif_2_1 = key_set2.difference(key_set1)
-    dif_1_2_dict_row_content= dict()
+    dif_1_2_dict_row_content = dict()
     dif_2_1_dict_row_content = dict()
 
     for shared_key_to_table_index in intersection:
@@ -276,4 +290,5 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
 
 
 if __name__ == '__main__':
-     diff_tables_files("./output/cdd_11_gen_html.tsv","./output/cdd_12_gen_html.tsv")
+    dif_1_2, dif_2_1, intersection, dif_1_2_dict_row_content, dif_2_1_dict_row_content = diff_tables_files(
+        "../output/cdd_11_gen_html.tsv", "../output/cdd_12_gen_html.tsv")
