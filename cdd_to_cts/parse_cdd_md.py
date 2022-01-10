@@ -8,10 +8,10 @@ import parser_constants
 import parser_helpers
 from parser_helpers import process_section_splits_md_and_html, create_full_table_from_cdd
 from parser_constants import req_id_re_str, full_key_string_for_re
-from cdd_to_cts.path_constants import CDD_MD_ROOT
+from path_constants import CDD_MD_ROOT
 
 
-def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
+def parse_cdd_md(cdd_md_root=CDD_MD_ROOT,logging=False):
     # /Volumes/graham-ext/AndroidStudioProjects/cts
     key_to_full_requirement_text_local = dict()
     section_to_section_data = dict()
@@ -22,7 +22,7 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
         parser_helpers.print_system_error_and_dump(f"Not directory {cdd_md_root}")
     for directory, subdirlist, filelist in os.walk(cdd_md_root):
         for sub_dir in subdirlist:
-            section_re_str: str = '(\d{1,3}_)+'
+            section_re_str= '(\d{1,3}_)+'
             cdd_section_id_search_results = re.search(section_re_str, sub_dir)
             if not cdd_section_id_search_results:
                 continue
@@ -34,7 +34,7 @@ def parse_cdd_md(cdd_md_root:str=CDD_MD_ROOT,logging=False):
             if logging: print(sub_dir)
             for section_dir, section_sub_dir_list, section_file_list in os.walk(directory+"/"+sub_dir):
                 for file in section_file_list:
-                    sub_cdd_section:str = str(file)
+                    sub_cdd_section= str(file)
                     cdd_section_id_search_results = re.search(section_re_str, sub_cdd_section)
                     if not cdd_section_id_search_results:
                         continue

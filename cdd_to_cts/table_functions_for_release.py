@@ -1,14 +1,13 @@
 import parser_constants
 import table_ops
 
-def update_table_column_subset(input_table_to_find_source_columns: str,
-                               header_columns_to_copy: [],
-                               output_file_to_write_updated_table: str) :
+def update_table_column_subset(input_table_to_find_source_columns,
+                               header_columns_to_copy,
+                               output_file_to_write_updated_table) :
     source_table, source_table_keys_to_index, source_header, duplicate_rows = table_ops.read_table_sect_and_req_key(
         input_table_to_find_source_columns)
 
     column_subset_table, column_subset_key_to_index= table_ops.remove_table_columns(source_table,
-
                                                                source_header,
                                                                header_columns_to_copy)
 
@@ -17,9 +16,9 @@ def update_table_column_subset(input_table_to_find_source_columns: str,
     return column_subset_table, column_subset_key_to_index
 
 
-def update_release_table_with_changes(table_to_update_and_write_to_output_file: str,
-                                      values_to_use_for_update: str,
-                                      output_file_to_write_updated_table: str,
+def update_release_table_with_changes(table_to_update_and_write_to_output_file,
+                                      values_to_use_for_update,
+                                      output_file_to_write_updated_table,
                                       header_columns_to_copy: []):
     target_table, target_table_keys_to_index, target_header, duplicate_rows = table_ops.read_table_sect_and_req_key(
         table_to_update_and_write_to_output_file)
@@ -42,8 +41,8 @@ def update_release_table_with_changes(table_to_update_and_write_to_output_file: 
     return updated_table, target_header
 
 
-def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, source_to_use_values: str,
-                                               table_name_to_write: str):
+def update_fullkey_table_with_only_new_changes(original_sheet_file_name, source_to_use_values,
+                                               table_name_to_write):
     full_before_gvp_sheet_table, full_before_gvp_sheet_table_keys_to_index, full_before_gvp_sheet_header, duplicate_rows1 = table_ops.read_table_sect_and_req_key(
         original_sheet_file_name)
 
@@ -65,9 +64,9 @@ def update_fullkey_table_with_only_new_changes(original_sheet_file_name: str, so
 
 
 # This function is essential, called after SourceCrawlerReducer and before RxData main_do_create_table
-def make_new_table_with_row_keys_from_table(original_sheet_file_name: str ,
-                                            rows_to_use_table_file_name: str,
-                                            table_name_to_write: str ):
+def make_new_table_with_row_keys_from_table(original_sheet_file_name,
+                                            rows_to_use_table_file_name,
+                                            table_name_to_write):
     to_update_table, to_update_table_keys_to_index, to_update_header, duplicate_rows1 = table_ops.read_table_sect_and_req_key(
         original_sheet_file_name)
     rows_to_use_table_not_needed, rows_to_use_table_keys_to_index, columns_to_use_not_needed, duplicate_rows2 = table_ops.read_table_sect_and_req_key(
@@ -114,7 +113,7 @@ def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2,
     table_ops.make_new_table_from_keys(dif_2_1, table_for_source, output_file_for_results)
 
 if __name__ == '__main__':
-    cdd_11_downloaded_html = "output/cdd_11_gen_html.tsv"
-    cdd_12_downloaded_html = "output/cdd_12_gen_html.tsv"
-    cdd_12_html_vs_11_diffs = "output/cdd_12_html_vs_11_diffs.tsv"
+    cdd_11_downloaded_html = "../output/cdd_11_gen_html.tsv"
+    cdd_12_downloaded_html = "../output/cdd_12_gen_html.tsv"
+    cdd_12_html_vs_11_diffs = "../output/cdd_12_html_vs_11_diffs.tsv"
     create_table_from_differences_and_source(cdd_11_downloaded_html,cdd_12_downloaded_html,cdd_12_downloaded_html,cdd_12_html_vs_11_diffs)
