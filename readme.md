@@ -1,17 +1,16 @@
-Steps to parse CDD HTML to table
 
 Prerequisites:
-
-1. Install Python3 must be version 3.9 because of type features used. 
-2. Install requirements: 
--- python -m pip install -r requirements.txt
-3. Get cdd html file:
-   - Option a: Install wget to use script download_html_create_sheet.sh
-   - Option b: manually download a version of cdd html from  https://source.android.com/compatibility/ for example
-   - https://source.android.com/compatibility/12/android-12-cdd
+1. Install git
+2. Clone project
+3. Install Python3 must be *version 3.7* or greater because of formatting F used. Verify by running:
+   - python3 --version    
+4. Install requirements: 
+   - python -m pip install -r requirements.txt
    
-4. cd into <my_project_root>/cdd_to_cts
-5. python3 parse_cdd_html.py
-6. python3 check_sheet.py
-7. python3 table_functions_for_release.py 
+Steps to parse CDD HTML to table:
+ 1. Change directories to be in <cloned root>/parse-cdd-docs-to-table/cdd_to_cts 
+ 2. Run the following to start the python program which should prompt you for an Android CDD version. It will then download 
+ the appropriate html file, parse it and generate a table, cdd_versionXX_generated_html.tsv, in the ../output directory.
+--python3 parse_cdd_html.py
+
 
