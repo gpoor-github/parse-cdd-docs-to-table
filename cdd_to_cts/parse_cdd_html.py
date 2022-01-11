@@ -2,6 +2,7 @@
 import re
 import parser_helpers
 import parser_constants
+import sys, getopt
 from parser_helpers import build_composite_key, find_full_key, find_valid_path, \
     process_section_splits_md_and_html, create_full_table_from_cdd
 
@@ -100,28 +101,62 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
     return total_requirement_count
 
 
-def download_file(android_cdd_version="12"):
+def download_file(url, target_file):
+    """
+
+    @param url:str
+    @param target_file: str
+    @return: str
+    """
+    import urllib.request
+
+    urllib.request.urlretrieve(url, target_file)
+    print (f"Downloaded {target_file} from {url}")
+    return target_file
+
+def download_default_from_cdd_version(android_cdd_version):
+    """
+
+    @param android_cdd_version: str
+    @return: str
+    """
     url = r"https://source.android.com/compatibility/{0}/android-{1}-cdd".format(android_cdd_version,
                                                                                 android_cdd_version)
     target_file = "../input/cdd_{0}_download.html".format(android_cdd_version)
-    import urllib.request
-    urllib.request.urlretrieve(url, target_file)
-    return target_file
+    return  download_file(url,target_file)
 
+def get_users_cdd_version(argv):
+    """
+    @param argv:
+    """
+    try:
+        opts, args = getopt.getopt(argv)
+    except Exception as e:
+        print ("Could not parse command line, enter the android version number as the last element")
+    android_cdd_version = ""
+    for arg in argv:
+        android_cdd_version = arg # last thing on the line will be used as the android version.
+    if not re.match("\d\d",android_cdd_version):
+        android_cdd_version = input("Please enter an Android CDD version number for example '12'\n")
+    return android_cdd_version
 
-if __name__ == '__main__':
-    selected_android_cdd_version = "11"
-    downloaded_file= download_file(selected_android_cdd_version)
-    full_cdd_html = parser_helpers.find_valid_path(downloaded_file)
+def main(argv):
+    """
 
-    key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
-        full_cdd_html)
-    created_table_file_name = "../output/cdd_{0}_generated_html.tsv".format(selected_android_cdd_version)
+    @param argv:
+    """
+    android_cdd_version =  get_users_cdd_version(argv)
+    full_cdd_html = download_default_from_cdd_version(android_cdd_version)
+    key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(full_cdd_html)
+    created_table_file_name = "../output/cdd_{0}_generated_html.tsv".format(android_cdd_version)
     create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
                                section_to_section_data_,
                                created_table_file_name, parser_constants.cdd_info_only_header)
+    return  created_table_file_name
+if __name__ == '__main__':
+    created_table_file_name= main(sys.argv)
     import table_ops
-
-    table1, key_fields1, header1, duplicate_rows2 = table_ops.read_table_sect_and_req_key(created_table_file_name)
-    table1, key_fields1 = table_ops.remove_none_requirements(table1, key_fields1)
-    table_ops.write_table(created_table_file_name, table1, header1)
+    table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(created_table_file_name)
+    # Removes rows generated from document sections without specific requirements, section introduction, contact us etc.
+    table, key_fields = table_ops.remove_none_requirements(table, key_fields)
+    table_ops.write_table(created_table_file_name, table, header)
