@@ -17,7 +17,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
         print(f"CDD HTML to tsv file is {cdd_html_file}")
         cdd_requirements_file_as_string = text_file.read()
         #  section_re_str= r'"(?:\d{1,3}_)+'
-        section_marker= r"data-text=\"\s*"
+        section_marker = r"data-text=\"\s*"
         # data-text=
         # section_re_str= section_marker + static_data.SECTION_ID_RE_STR
         cdd_sections_splits = re.split('(?={})'.format(section_marker), cdd_requirements_file_as_string,
@@ -69,7 +69,8 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
                 req_id_splits = re.split(composite_key_string_re, str(section))
 
                 total_requirement_count = process_section_splits_md_and_html(build_composite_key,
-                                                                             parser_constants.req_id_re_str, cdd_section_id,
+                                                                             parser_constants.req_id_re_str,
+                                                                             cdd_section_id,
                                                                              key_to_full_requirement_text_local,
                                                                              req_id_splits,
                                                                              section_count, total_requirement_count,
@@ -82,7 +83,7 @@ def parse_cdd_html_to_requirements(cdd_html_file, logging=False):
 
 
 def process_section(record_key_method, key_string_for_re, section_id, key_to_full_requirement_text_param,
-                    record_id_splits, section_id_count, total_requirement_count, section_text= "", logging=False):
+                    record_id_splits, section_id_count, total_requirement_count, section_text="", logging=False):
     record_id_count = 0
 
     for record_id_split in record_id_splits:
@@ -99,12 +100,28 @@ def process_section(record_key_method, key_string_for_re, section_id, key_to_ful
     return total_requirement_count
 
 
+def download_file(android_cdd_version="12"):
+    url = r"https://source.android.com/compatibility/{0}/android-{1}-cdd".format(android_cdd_version,
+                                                                                android_cdd_version)
+    target_file = "../input/cdd_{0}_download.html".format(android_cdd_version)
+    import urllib.request
+    urllib.request.urlretrieve(url, target_file)
+    return target_file
+
+
 if __name__ == '__main__':
-    full_cdd_html = parser_helpers.find_valid_path(
-        "../input/cdd_12_download.html")
+    selected_android_cdd_version = "11"
+    downloaded_file= download_file(selected_android_cdd_version)
+    full_cdd_html = parser_helpers.find_valid_path(downloaded_file)
 
     key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
         full_cdd_html)
+    created_table_file_name = "../output/cdd_{0}_generated_html.tsv".format(selected_android_cdd_version)
     create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
                                section_to_section_data_,
-                               "../output/cdd_12_gen_html.tsv", parser_constants.cdd_info_only_header)
+                               created_table_file_name, parser_constants.cdd_info_only_header)
+    import table_ops
+
+    table1, key_fields1, header1, duplicate_rows2 = table_ops.read_table_sect_and_req_key(created_table_file_name)
+    table1, key_fields1 = table_ops.remove_none_requirements(table1, key_fields1)
+    table_ops.write_table(created_table_file_name, table1, header1)

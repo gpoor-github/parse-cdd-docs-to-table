@@ -4,6 +4,7 @@ import traceback
 
 import path_constants
 import parser_constants
+import table_ops
 import parser_constants
 from path_constants import CTS_SOURCE_PARENT
 from stackdump import stackdump
@@ -129,6 +130,9 @@ def find_full_key(key_string_for_re, record_id_split, section_id=None):
 
 
 def find_valid_path(file_name):
+    """
+    @rtype: str
+    """
     # if file_name.find(path_constants.WORKING_ROOT[0:10]) != -1:
     #     return file_name
     #
@@ -230,6 +234,7 @@ def create_full_table_from_cdd(
                                                                     keys_to_find_and_write,
                                                                     section_to_data,
                                                                     output_header)
+
     print("CDD csv file to write to output is [{}] output header is [{}]".format(output_file, str(output_header)))
 
     from table_ops import write_table
