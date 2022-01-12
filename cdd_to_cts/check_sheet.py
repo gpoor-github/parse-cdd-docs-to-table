@@ -218,13 +218,11 @@ def diff_tables_files(file_path1, file_path2):
 
 def report_content_diff(_key_fields1, _key_fields2, dif_1_2_dict_content, dif_2_1_dict_content, file1, file2, header1,
                         header2, intersection):
-    print("\nDifferences in shared rows starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    print(f"\nCompare shared rows 1st-2nd={len(dif_1_2_dict_content)} diff=[{dif_1_2_dict_content}]")
-    print(
-        f"Differences 1st-2nd={len(dif_1_2_dict_content)} above  f1=[{file1}] ^ f2=[{file2}] . can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n")
-    print(f"\nCompare shared rows 2st-1nd={len(dif_2_1_dict_content)} diff= [{dif_2_1_dict_content}]")
+    print(f"\nDifferences in the shared rows starts >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print(f"\nShared row count ={len(intersection)} =\n[{intersection}]")
+    print(f"\nRequirements that have content differences with 1 and 2 =\n{len(dif_1_2_dict_content)} of {len(intersection)} diff=[{dif_1_2_dict_content}]")
+    print(f"\nAbove... content differences of f1=[{file1}] ^ f2=[{file2}] {len(dif_1_2_dict_content)} of {len(intersection)} details above can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n")
     print("Differences in shared rows ends... can be long <<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>\n\n")
-    print(f"\n\nIntersection={len(intersection)} =[{intersection}]")
     header_set1 = set(header1)
     header_set2 = set(header2)
     if (len(header_set1.difference(header_set2)) + len(header_set2.difference(header_set1))) == 0:
@@ -260,7 +258,9 @@ def report_key_diff(_key_fields1, _key_fields2, dif_1_2, dif_2_1, file1, file2):
         sl_1_2.sort()
         sl_2_1 = list(dif_2_1)
         sl_2_1.sort()
+        print ("\nDetails for 1 vs 2")
         print(f" {len(dif_1_2)} are in {file1} and not in {file2} \n Requirements ={sl_1_2}\n")
+        print ("\nDetails for 2 vs 1")
         print(f" {len(dif_2_1)} are in {file2} and not in {file1} \n Requirements ={sl_2_1}\n")
 
         print(f"Summary of requirements difference {file1}={len(_key_fields1)} {file2}={len(_key_fields2)}: ")
