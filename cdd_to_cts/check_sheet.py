@@ -288,12 +288,22 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
 
     return dif_1_2, dif_2_1, intersection, dif_1_2_dict_row_content, dif_2_1_dict_row_content
 
-def diff_cdd_version(version1, version2):
+def diff_cdd_from_html_version(version1, version2):
+    """
+
+    @param version1: str
+    @param version2: str
+    @return: (set, set, set, dict, dict)
+    """
     file1=  parser_constants.GENERATED_HTML_TSV.format(version1)
     file2=  parser_constants.GENERATED_HTML_TSV.format(version2)
-    # if os.path(file1)
+    import parse_cdd_html
+    if not exists(file1):
+        parse_cdd_html.do_create_table_at_version(version1)
+    if not exists(file2):
+        parse_cdd_html.do_create_table_at_version(version2)
     return diff_tables_files(file1,file2)
 
 
 if __name__ == '__main__':
-    diff_cdd_version("10","11")
+    diff_cdd_from_html_version("10", "11")

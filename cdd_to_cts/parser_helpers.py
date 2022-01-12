@@ -228,7 +228,8 @@ def create_full_table_from_cdd(
         key_to_full_requirement_text: [str, str], keys_to_find_and_write,
         section_to_data,
         output_file,
-        output_header= parser_constants.cdd_info_only_header):
+        output_header= parser_constants.cdd_info_only_header,
+        is_keep_section_headers=False):
 
     table_for_sheet, keys_to_table_indexes = create_populated_table(key_to_full_requirement_text,
                                                                     keys_to_find_and_write,
@@ -236,6 +237,7 @@ def create_full_table_from_cdd(
                                                                     output_header)
 
     print("CDD csv file to write to output is [{}] output header is [{}]".format(output_file, str(output_header)))
-
+    if not is_keep_section_headers:
+         table, key_fields = table_ops.remove_none_requirements(table_for_sheet, keys_to_table_indexes)
     from table_ops import write_table
     write_table(output_file, table_for_sheet, output_header)
