@@ -288,7 +288,12 @@ def diff_tables(table1, _key_fields1, table2, _key_fields2):
 
     return dif_1_2, dif_2_1, intersection, dif_1_2_dict_row_content, dif_2_1_dict_row_content
 
+def diff_cdd_version(version1, version2):
+    file1=  parser_constants.GENERATED_HTML_TSV.format(version1)
+    file2=  parser_constants.GENERATED_HTML_TSV.format(version2)
+    # if os.path(file1)
+    return diff_tables_files(file1,file2)
+
 
 if __name__ == '__main__':
-    dif_1_2, dif_2_1, intersection, dif_1_2_dict_row_content, dif_2_1_dict_row_content = diff_tables_files(
-        "../output/cdd_11_gen_html.tsv", "../output/cdd_12_gen_html.tsv")
+    diff_cdd_version("10","11")
