@@ -3,6 +3,8 @@ import re
 import parser_helpers
 import parser_constants
 import sys, getopt
+
+from cdd_to_cts.parser_constants import DOWNLOAD_HTML, GENERATED_HTML_TSV
 from parser_helpers import build_composite_key, find_full_key, find_valid_path, \
     process_section_splits_md_and_html, create_full_table_from_cdd
 
@@ -122,7 +124,7 @@ def download_default_from_cdd_version(android_cdd_version):
     """
     url = r"https://source.android.com/compatibility/{0}/android-{1}-cdd".format(android_cdd_version,
                                                                                 android_cdd_version)
-    target_file = "../input/cdd_{0}_download.html".format(android_cdd_version)
+    target_file = DOWNLOAD_HTML.format(android_cdd_version)
     return  download_file(url,target_file)
 
 def get_users_cdd_version(argv):
@@ -140,23 +142,24 @@ def get_users_cdd_version(argv):
         android_cdd_version = input("Please enter an Android CDD version number for example '12'\n")
     return android_cdd_version
 
+def do_create_table_at_version(android_cdd_version):
+    full_cdd_html = download_default_from_cdd_version(android_cdd_version)
+    key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
+        full_cdd_html)
+    created_table_file_name = GENERATED_HTML_TSV.format(android_cdd_version)
+    create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
+                               section_to_section_data_,
+                               created_table_file_name, parser_constants.cdd_info_only_header, False)
+    return created_table_file_name
+
 def main(argv):
     """
 
     @param argv:
     """
     android_cdd_version =  get_users_cdd_version(argv)
-    full_cdd_html = download_default_from_cdd_version(android_cdd_version)
-    key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(full_cdd_html)
-    created_table_file_name = "../output/cdd_{0}_generated_html.tsv".format(android_cdd_version)
-    create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
-                               section_to_section_data_,
-                               created_table_file_name, parser_constants.cdd_info_only_header)
-    return  created_table_file_name
+    return do_create_table_at_version(android_cdd_version)
+
 if __name__ == '__main__':
     created_table_file_name= main(sys.argv)
-    import table_ops
-    table, key_fields, header, duplicate_rows = table_ops.read_table_sect_and_req_key(created_table_file_name)
-    # Removes rows generated from document sections without specific requirements, section introduction, contact us etc.
-    table, key_fields = table_ops.remove_none_requirements(table, key_fields)
-    table_ops.write_table(created_table_file_name, table, header)
+

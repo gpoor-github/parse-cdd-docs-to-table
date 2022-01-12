@@ -57,3 +57,5 @@ section_id_re_str = "[\[>][\d+\.]+\d+"
 full_key_string_for_re = section_id_re_str+'/' + req_id_re_str
 METHOD_RE = '(\w+?)\(\)'
 SECTION_ID_RE_STR = "(?:(\d{1,2}\.)+(\d{1,2})?)"
+DOWNLOAD_HTML = "../input/cdd_{0}_download.html"
+GENERATED_HTML_TSV = "../output/cdd_{0}_generated_html.tsv"
