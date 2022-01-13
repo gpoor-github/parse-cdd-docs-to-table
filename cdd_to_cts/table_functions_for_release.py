@@ -93,27 +93,35 @@ def check_update(original_sheet_file_name, table_name_to_write):
             f"Table update seems to have updated correctly, no new or removed rows, content 1/2 {len(dif_1_2_dict_content)} updated. Details of changes printed above")
 
 
-# This will be important once we add the annotation parsing functionality
-def update_release_table_with_changes_example():
+# def make_new_table_with_row_keys_from_table_example():
+#     row_keys_from_table = static_data.FILTER_KEYS_DOWNLOADED_TABLE
+#     new_table_to_made = static_data.FILTERED_TABLE_TO_SEARCH
+#     make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, row_keys_from_table,
+#                                             new_table_to_made)
 
-    annotations ="input/annotations_mappings.tsv"
+def update_sheet_with_anotation( downloaded_table= "../input/cdd_12_downloaded_mod_to_annotate.tsv",
+                                 new_table_with_annotation_info_added="../output/merged_table.tsv"
+                                 ):
+    import path_constants
+    annotations_file = path_constants.ANNOTATIONS_MAPPING_FOUND_IN_CTS_SOURCE
     annotation_header = ([parser_constants.TEST_AVAILABILITY, parser_constants.CLASS_DEF, parser_constants.METHOD,
                           parser_constants.MODULE, parser_constants.FILE_NAME, parser_constants.TEST_LEVEL,
                           parser_constants.ANNOTATION_])
-    target_to_update = "parse-cdd-docs-to-table/output/downloaded_table.tsv"
-    source_for_data="parse-cdd-docs-to-table/input/new_data_to_import.tsv"
-    new_table_to_made = "parse-cdd-docs-to-table/output/merged_table.tsv"
 
-    update_release_table_with_changes(target_to_update, source_for_data, new_table_to_made,
+
+    update_release_table_with_changes(downloaded_table, annotations_file, new_table_with_annotation_info_added,
                                       annotation_header)
 
 def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2, table_for_source, output_file_for_results):
+
     from check_sheet import diff_tables_files
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_content, dif_2_1_dict_content = diff_tables_files(table_for_diff_1,table_for_diff_2 )
-    table_ops.make_new_table_from_keys(dif_2_1, table_for_source, output_file_for_results)
+    table_ops.make_new_table_from_keys(dif_1_2, table_for_source, output_file_for_results)
+
+# def create_table_from_downloaded_sheet_add_full_keys(table_file_for_source, output_file_for_results):
+#     table_for_source, source_keys, header_scr, duplicate_rows1 = table_ops.read_table_sect_and_req_key(table_file_for_source)
+#     table_target, key_to_index_target = table_ops.create_full_key_and_key_as_number( table_for_source,source_keys,header_scr, static_data.cdd_12_manual_merge_helper)
+#     table_ops.write_table(output_file_for_results, table_target, static_data.cdd_12_manual_merge_helper)
 
 if __name__ == '__main__':
-    cdd_11_downloaded_html = "../output/cdd_11_gen_html.tsv"
-    cdd_12_downloaded_html = "../output/cdd_12_gen_html.tsv"
-    cdd_12_html_vs_11_diffs = "../output/cdd_12_html_vs_11_diffs.tsv"
-    create_table_from_differences_and_source(cdd_11_downloaded_html,cdd_12_downloaded_html,cdd_12_downloaded_html,cdd_12_html_vs_11_diffs)
+    update_sheet_with_anotation()

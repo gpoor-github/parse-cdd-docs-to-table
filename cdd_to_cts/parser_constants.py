@@ -39,7 +39,7 @@ cdd_12_full_header_for_ref_part_2 = [TEST_AVAILABILITY, ANNOTATION_, NEW_REQ_FOR
                                      NEW_CTS_FOR_S_, CLASS_DEF, METHOD, MODULE, COMMENT_INTERNAL, "Comment (external)", "New vs Updated(Q)",
                                      CTS_BUG_ID, CDD_BUG_ID, "CDD CL", AREA, SHORTENED, TEST_LEVEL, "", "external version", "", "", ""]
 cdd_12_full_header_for_ref = cdd_12_full_header_for_ref_part_1 + cdd_12_full_header_for_ref_part_2
-ccd_12_subset_target_field_header = [ANNOTATION_, NEW_REQ_FOR_S_, NEW_CTS_FOR_S_, COMMENT_INTERNAL, CTS_BUG_ID, CDD_BUG_ID,
+cdd_12_subset_target_field_header = [ANNOTATION_, NEW_REQ_FOR_S_, NEW_CTS_FOR_S_, COMMENT_INTERNAL, CTS_BUG_ID, CDD_BUG_ID,
                                      AREA, SHORTENED, TEST_LEVEL]
 cdd_info_only_header= (
     [SECTION, SECTION_ID, REQ_ID, KEY_AS_NUMBER, FULL_KEY, REQUIREMENT, '', '', '', '', '', '', '', '', '',

@@ -4,7 +4,6 @@ import parser_helpers
 import parser_constants
 import sys, getopt
 
-from cdd_to_cts.parser_constants import DOWNLOAD_HTML, GENERATED_HTML_TSV
 from parser_helpers import build_composite_key, find_full_key, find_valid_path, \
     process_section_splits_md_and_html, create_full_table_from_cdd
 
@@ -124,7 +123,7 @@ def download_default_from_cdd_version(android_cdd_version):
     """
     url = r"https://source.android.com/compatibility/{0}/android-{1}-cdd".format(android_cdd_version,
                                                                                 android_cdd_version)
-    target_file = DOWNLOAD_HTML.format(android_cdd_version)
+    target_file = parser_constants.DOWNLOAD_HTML.format(android_cdd_version)
     return  download_file(url,target_file)
 
 def get_users_cdd_version(argv):
@@ -146,7 +145,7 @@ def do_create_table_at_version(android_cdd_version):
     full_cdd_html = download_default_from_cdd_version(android_cdd_version)
     key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
         full_cdd_html)
-    created_table_file_name = GENERATED_HTML_TSV.format(android_cdd_version)
+    created_table_file_name = parser_constants.GENERATED_HTML_TSV.format(android_cdd_version)
     create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
                                section_to_section_data_,
                                created_table_file_name, parser_constants.cdd_info_only_header, False)
