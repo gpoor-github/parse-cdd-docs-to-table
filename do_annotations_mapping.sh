@@ -1,9 +1,5 @@
 
-$ctsdir=$CTS_SOURCE_DIR
-echo Currently CTS source root dir is  ["$CTS_SOURCE_DIR"] running script to update environment variable
-python3 ./cdd_to_cts/static_data.py
-echo Now CTS source root dir is ["$CTS_SOURCE_DIR"]
-
+ctsdir="~/cts-12-source/"
 read -p "Enter the path the the CTS root  (n) for no Note: $CTS_SOURCE_DIR is the current dir, enter n to keep it " ctsdir
 if [[ $ctsdir != "n" ]]
   then
@@ -14,7 +10,6 @@ fi
 # #android-cts-12.0_r1
 # This script should be run in CTS source directory.
 echo this is what was entered $ctsdir
-#/home/gpoor/cts-12-source
 
 echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_data_from_cts/testcases-modules.txt
 grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_data_from_cts/testcases-modules.txt
@@ -26,3 +21,6 @@ grep -inr -A 2 "@CddTest" --include \*.java $ctsdir/* > input_data_from_cts/cdd_
 
 # Not used but good for additional information for mapping finds ccd in comments not java files etc.
 grep -inr -A 2 "[^.^/d]CDD " --include \*.java $ctsdir/* > input_data_from_cts/cdd_number.txt
+
+cd ./cdd_to_cts
+python3 process_annotations_references.py
