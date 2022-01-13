@@ -25,3 +25,9 @@
 *.html
 /input/*.html
 /input/cdd.html
+/output/annotations_mappings.tsv
+/output/cdd_10_generated_html.tsv
+/output/cdd_11_generated_html.tsv
+/input_data_from_cts/cdd_annotations_found.txt
+/input_data_from_cts/cdd_number.txt
+/input_data_from_cts/testcases-modules.txt

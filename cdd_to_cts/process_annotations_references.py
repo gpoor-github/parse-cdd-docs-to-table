@@ -86,7 +86,7 @@ class ProcessAnnotationReferences:
         testCasesToPath = build_test_cases_module_dictionary("../input_data_from_cts/testcases-modules.txt")
         # /Volumes/graham-ext/AndroidStudioProjects/cts
         input_file = open('../input_data_from_cts/cdd_annotations_found.txt', 'r')
-        output_file = open(path_constants.OUTPUT_FOR_IMPORT_CSV, 'w')
+        output_file = open(path_constants.ANNOTATIONS_MAPPING_FOUND_IN_CTS_SOURCE, 'w')
 
         # Section ,id,req_id,status,class_def,method,module,Comment,Bug
         output_file.write(
@@ -182,7 +182,5 @@ class ProcessAnnotationReferences:
         return class_def, method
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     ProcessAnnotationReferences().parse_data()
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
