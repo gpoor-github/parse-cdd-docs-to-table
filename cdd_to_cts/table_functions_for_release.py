@@ -99,7 +99,7 @@ def check_update(original_sheet_file_name, table_name_to_write):
 #     make_new_table_with_row_keys_from_table(static_data.DATA_SOURCES_CSV_FROM_HTML_1st, row_keys_from_table,
 #                                             new_table_to_made)
 
-def update_sheet_with_anotation( downloaded_table= "../output/cdd_12_generated_html.tsv",
+def update_sheet_with_anotation( downloaded_table= "../input/cdd_12_downloaded_mod_to_annotate.tsv",
                                  new_table_with_annotation_info_added="../output/merged_table.tsv"
                                  ):
     import path_constants
@@ -124,8 +124,4 @@ def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2,
 #     table_ops.write_table(output_file_for_results, table_target, static_data.cdd_12_manual_merge_helper)
 
 if __name__ == '__main__':
-    cdd_11_downloaded_html = "../output/cdd_11_gen_html.tsv"
-    cdd_12_downloaded_html = "../output/cdd_12_gen_html.tsv"
-    cdd_12_html_vs_11_diffs = "../output/cdd_12_html_vs_11_diffs.tsv"
-    # create_table_from_differences_and_source(cdd_11_downloaded_html,cdd_12_downloaded_html,cdd_12_downloaded_html,cdd_12_html_vs_11_diffs)
     update_sheet_with_anotation()
