@@ -1,15 +1,25 @@
 
-ctsdir="~/cts-12-source/"
-read -p "Enter the path the the CTS root  (n) for no Note: $CTS_SOURCE_DIR is the current dir, enter n to keep it " ctsdir
+ctsdir_default="~/cts-12-source/"
+ctsdir=$ctsdir_default
+read -p "Enter the path the the CTS root  (n) for no Note: $ctsdir is the current dir, enter n to keep it " ctsdir
 if [[ $ctsdir != "n" ]]
   then
-      CTS_SOURCE_DIR=$ctsdir
-      echo now the CTS source root dir is CTS_SOURCE_DIR ="$CTS_SOURCE_DIR"
+      echo now the CTS source root dir is "$ctsdir"
+fi
+
+if ][$ctsdir == ""]]
+  then
+    ctsdir = $ctsdir_default
+fi
+
+if [[$ctsdir == "n"]]
+  then
+    ctsdir = $ctsdir_default
 fi
 # android-cts-11.0_r5
 # #android-cts-12.0_r1
 # This script should be run in CTS source directory.
-echo this is what was entered $ctsdir
+echo Current value of ctsdir = $ctsdir
 
 echo grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_data_from_cts/testcases-modules.txt
 grep -inr "TestCases" --include \AndroidTest.xml "$ctsdir"/* > input_data_from_cts/testcases-modules.txt
