@@ -21,14 +21,14 @@
 4. Confirm that git pull had no errors by looking at the log.
 
 **Steps to parse CDD HTML to table:**
-1. Change directories to be in  _your_project_root_/parse-cdd-docs-to-table/cdd_to_cts_ 
+1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts_ 
 2. Run the following to start the python script which should prompt you for an Android CDD version. It will then download 
  the appropriate html file, parse it and generate a table, cdd_versionXX_generated_html.tsv, in the ../output directory.
    - python3 parse_cdd_html.py
 
 **Steps to Compare Versions 12 vs 11 and generate a table:** 
 Hard coded for now, but just change the numbers to any available version in the file  diff_cdd_from_html_version("12", "11")
-1. Change directories to be in _your_project_root_/parse-cdd-docs-to-table/cdd_to_cts_ 
+1. Change directories to be in ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts_ 
 2. Run the following to start the python script it will compare 2 versions. It needed it will download the html and parse them.
 The comparison results will be visible in the console. A table with the differences will be created in the output directory. ..\output\diff_12_vs_11.tsv
    - python3 check_sheet.py
@@ -40,8 +40,8 @@ The comparison results will be visible in the console. A table with the differen
    3. Copy the path to that directory to pass as a parameter later.
    4. Clone the desired version of the CTS tests to a directory. 
       - git clone https://android.googlesource.com/platform/cts
-2. Change directories to be in:
-   - ~/cts-12-source/parse-cdd-docs-to-table 
+2. Change directories to be in our cdd python project's root:
+   - ~/_your_project_root_/parse-cdd-docs-to-table/parse-cdd-docs-to-table 
 3. Run the following shell script to update grep for annotations and run the python script to generate a table that maps requirements to cts test by finding annotations and building the tests. A table in the output directory: ..\output\annotations_mappings.tsv 
    - Run the shell script in the parent directory
    - ./do_annotations_mapping.sh
