@@ -6,10 +6,19 @@
    - python3 --version    
 4. Install requirements: 
    - python -m pip install -r requirements.txt
+5. On MacOS there is a Python bug to work around:
+   1. Navigate to /Applications/Python3.x
+   2. run "Install Certificates.command"
+   3. Note you may do this in Finder by:
+      1. Select menu Go|Go to Folder
+      2. Type /Applications/Python3.x
+      3. Double click "Install Certificates.command"
 
 **Update and overwrite local changes**
 1. From the project git root run 
-2. git pull -f 
+2. git reset --hard
+3. git pull
+4. Confirm that git pull had no errors by looking at the log.
 
 **Steps to parse CDD HTML to table:**
 1. Change directories to be in  _<cloned root>/parse-cdd-docs-to-table/cdd_to_cts_ 
