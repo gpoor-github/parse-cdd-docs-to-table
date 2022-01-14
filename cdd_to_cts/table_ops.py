@@ -670,24 +670,4 @@ def merge_table_example():
 
 
 if __name__ == '__main__':
-    # _file1_before_g_eddy = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 8.1.tsv"
-    # _file1_sachiyo_recent = "../data_files/after-sachiyo - August 23, 2_49 PM - CDD 11.tsv"
-    # _file2_after_g = "../data_files/gpoor-updated-sept-11-2021.tsv"
-    # before_graham = "../data_files/Eddie july 16 before graham CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - July 16, 10_57 AM - CDD 11.tsv"
-    # latest_sheet = "../data_files/dups_removed.tsv"
-    # latest2 = "../data_files/version_up_there_sorted.tsv"
-    # x_file1_for_subset = "../output/created_output.cvs"
-    # x_file2_for_subset = "../input/new_recs_full_todo.tsv"
-    # release = "../output/release_updated_table2.tsv"
-    # from_more_recent_cdd_html = "../data_files/cdd_full_from_more_recent_worse_version.tsv"
-    # from_less_recent_cdd_html = "../data_files/cdd_full_from_less_recent_better_version.tsv"
-    #
-    # final_output = 'output/built_from_created2.tsv'
-    # sheet_from_before_gpoor = "data_files/CDD-11-2021-07-14-before-gpoor.tsv"
-    # sheet_from_server_no_mod = "data_files/CDD-11_2021-11-23-csv"
-    # original_sheet_file_name1 = "data_files/CDD-11_2021-11-23.tsv"
-    # # values_to_use_table_file1 = 'output/final_output_file.tsv'
-    # sorted_sheet_does_it_matter = "data_files/CDD-11_2021-11-23-sorted.tsv"
-    # new_updated_table_file1 = 'output/new_updated_table_for_release.tsv'
-    # fresh = "data_files/CDD_CTS, CTS-V Annotation Tracker(8.1_9_10_11) go_cdd-cts-tracker - CDD 11 (5).tsv"
     merge_table_example()

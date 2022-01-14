@@ -18,8 +18,8 @@ def parse_cdd_md(cdd_md_root=CDD_MD_ROOT,logging=False):
     print(cdd_md_root)
     section_count =0
     total_requirement_count =0
-    if not pathlib.Path(cdd_md_root).is_dir():
-        parser_helpers.print_system_error_and_dump(f"Not directory {cdd_md_root}")
+    # if not pathlib.Path(cdd_md_root).is_dir():
+    #     parser_helpers.print_system_error_and_dump(f"Not directory {cdd_md_root}")
     for directory, subdirlist, filelist in os.walk(cdd_md_root):
         for sub_dir in subdirlist:
             section_re_str= '(\d{1,3}_)+'
@@ -83,8 +83,8 @@ def get_section_id(cdd_section_id_search_results:[]):
     return cdd_section_id
 
 if __name__ == '__main__':
-    root_older = "/home/gpoor/aosp_cdd"
-    _key_to_full_requirement_text_local, _section_to_section_data = parse_cdd_md(root_older)
+    root_folder = "~/aosp_cdd"
+    _key_to_full_requirement_text_local, _section_to_section_data = parse_cdd_md(root_folder)
     create_full_table_from_cdd(_key_to_full_requirement_text_local, _key_to_full_requirement_text_local.keys(),
                                _section_to_section_data,
                                "../output/md_cdd_12_master.tsv", parser_constants.cdd_info_only_header)
