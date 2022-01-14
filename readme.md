@@ -45,4 +45,4 @@ The comparison results will be visible in the console. A table with the differen
 3. Run the following shell script to update grep for annotations and run the python script to generate a table that maps requirements to cts test by finding annotations and building the tests. A table in the output directory: ..\output\annotations_mappings.tsv 
    - Run the shell script in the parent directory
    - ./do_annotations_mapping.sh
-   - When prompted enter the CTS source directory. 
+   - When prompted hit enter if the default CTS source directory is correct, otherwise type it in. 
