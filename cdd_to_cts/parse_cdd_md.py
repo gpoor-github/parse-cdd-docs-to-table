@@ -87,5 +87,5 @@ if __name__ == '__main__':
     _key_to_full_requirement_text_local, _section_to_section_data = parse_cdd_md(root_older)
     create_full_table_from_cdd(_key_to_full_requirement_text_local, _key_to_full_requirement_text_local.keys(),
                                _section_to_section_data,
-                               "./output/md_cdd_12_master.tsv", parser_constants.cdd_info_only_header)
+                               "../output/md_cdd_12_master.tsv", parser_constants.cdd_info_only_header)
     print(len(_key_to_full_requirement_text_local))
