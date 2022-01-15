@@ -3,6 +3,7 @@
 import os
 import pathlib
 import re
+import sys
 
 import parser_constants
 import parser_helpers
@@ -82,10 +83,43 @@ def get_section_id(cdd_section_id_search_results:[]):
     cdd_section_id = cdd_section_id.replace('_', '.')
     return cdd_section_id
 
+def get_users_aosp_dir(argv):
+    """
+    @param argv:
+    """
+    try:
+        import getopt
+        opts, args = getopt.getopt(argv)
+    except Exception as e:
+        print ("Could not parse command line, enter the android version number as the last element")
+    aosp_md_doc_dir = ""
+    if len(argv) > 1:
+        aosp_md_doc_dir = argv[1]
+    if len(aosp_md_doc_dir) < 2:
+        aosp_md_doc_dir = input("Your aosp directory containing the cdd directory containing .md files.'\n")
+
+    return aosp_md_doc_dir
+
+def get_md_file_name_from_git_describe(git_root):
+    import subprocess
+    import parser_helpers
+    try:
+        result = subprocess.run(['git', 'describe'], cwd=git_root,stdout=subprocess.PIPE)
+
+        re_for_describe = re.compile("stdout\=b(.+)")
+        description = str(result.stdout,'utf-8').strip("\n")
+    except Exception as e:
+        parser_helpers.print_system_error_and_dump(f"failed to git discribe on {git_root}", e)
+    pass
+    file_name = description+".tsv"
+    print(f" Your md file will be [{file_name}]")
+    return file_name
+
 if __name__ == '__main__':
-    root_folder = "~/aosp_cdd"
+    root_folder = get_users_aosp_dir(sys.argv)
+    file_name = get_md_file_name_from_git_describe(root_folder)
     _key_to_full_requirement_text_local, _section_to_section_data = parse_cdd_md(root_folder)
     create_full_table_from_cdd(_key_to_full_requirement_text_local, _key_to_full_requirement_text_local.keys(),
                                _section_to_section_data,
-                               "../output/md_cdd_12_master.tsv", parser_constants.cdd_info_only_header)
+                               f"../output/{file_name}", parser_constants.cdd_info_only_header)
     print(len(_key_to_full_requirement_text_local))

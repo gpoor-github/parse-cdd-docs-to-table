@@ -20,7 +20,7 @@
 3. git pull
 4. Confirm that git pull had no errors by looking at the log.
 
-**Steps to parse CDD HTML to table:**
+**Steps to parse CDD HTML (MD file instructions below) to table:**
 1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
 2. Run the following to start the python script which should prompt you for an Android CDD version. It will then download 
  the appropriate html file, parse it and generate a table, cdd_versionXX_generated_html.tsv, in the ../output directory.
@@ -38,7 +38,7 @@ The comparison results will be visible in the console. A table with the differen
    1. Create a directory "~/cts-12-source/" 
    2. Go into that directory.
    3. Copy the path to that directory to pass as a parameter later.
-   4. Clone the desired version of the CTS tests to a directory. 
+   4. Clone the desired version of the CTS tests to the above directory. 
       - git clone https://android.googlesource.com/platform/cts
 2. Change directories to be in our cdd python project's root:
    - ~/_your_project_root_/parse-cdd-docs-to-table 
@@ -46,3 +46,24 @@ The comparison results will be visible in the console. A table with the differen
    - Run the shell script in the parent directory
    - ./do_annotations_mapping.sh
    - When prompted hit enter if the default CTS source directory is correct, otherwise type it in. 
+
+**Steps to parse CDD MD files to table:**
+1. Confirm you have the .md files at the correct version in an accessible directory and copy the directory name:  
+-- For example, through source control:
+   1. Clone CTS source:
+   2. Create a directory "~/aosp_cdd/" 
+   3. Go into that directory.
+   4. Copy the path to that directory + "/cdd" to pass as a parameter later.
+   5. Clone the desired version of the CDD subset of AOSP tests the above directory. 
+      - git clone https://android.googlesource.com/platform/compatibility/cdd
+2. Do you have the version you want? Git has a rich set of command to find and get versions please refer to your documentation and tools. Some examples of listing:
+   - git branch --sort=-committerdate
+   - git tag --list 'android-12*'
+   - Use appropriate git commands to get the version you want.
+3. The generated file will use "git describe" to name the file to tract the version. Confirm this is the version you want and remember the name:
+   - git describe
+-  Now that we have the correct version of .md files and know where they are:
+1. Change directories to be in our cdd project's python files sub folder:
+   - ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts
+2. run the parse_cdd_md.py file, you may pass it the path to the aosp_cdd git root, or run without arguments to be prompted:
+   - python3 parse_md_cdd.py ~/aosp_cdd/cdd
