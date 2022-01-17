@@ -152,10 +152,7 @@ def do_create_table_at_version(android_cdd_version):
     return created_table_file_name
 
 def main(argv):
-    """
 
-    @param argv:
-    """
     android_cdd_version =  get_users_cdd_version(argv)
     return do_create_table_at_version(android_cdd_version)
 
