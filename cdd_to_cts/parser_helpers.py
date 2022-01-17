@@ -238,6 +238,6 @@ def create_full_table_from_cdd(
 
     print("CDD csv file to write to output is [{}] output header is [{}]".format(output_file, str(output_header)))
     if not is_keep_section_headers:
-         table, key_fields = table_ops.remove_none_requirements(table_for_sheet, keys_to_table_indexes)
+         table_for_sheet, keys_to_table_indexes = table_ops.remove_none_requirements(table_for_sheet, keys_to_table_indexes)
     from table_ops import write_table
     write_table(output_file, table_for_sheet, output_header)
