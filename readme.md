@@ -65,22 +65,27 @@ The comparison results will be visible in the console. A table with the differen
    -- For example, through source control:
    1. **Clone CTS source (If not cloned earlier)**:
       1. Create a directory "~/aosp_cdd/" 
-      2. Go into that directory.
-      3. Copy the path to that directory + "/cdd" to pass as a parameter later.
-      4. Clone the desired version of the CDD subset of AOSP tests the above directory. 
+      2. Go into that directory:
+         - cd aosp_cdd
+      3. Clone the desired version of the CDD subset of AOSP tests the above directory. 
          - git clone https://android.googlesource.com/platform/compatibility/cdd
-   2. **Sync the version you want to parse:** Git has a rich set of command to find and get versions please refer to your documentation and tools. 
-      - _Optional see available versions:_ List branches: _git branch sort=-committerdate_ 
-        - Or list tags: _git tag --list 'android-12*'_
-      - Confirm the current version is the version you want and remember the name:
-        - git describe
-      - If the current version isn't correct use appropriate git commands to get the version you want.
+      4. Go into the newly cloned "cdd" directory confirm it has the directories with md files and copy the path to use as a parameter later:
+         - cd cdd 
+         - ls
+         - pwd
+2. **Sync the version you want to parse:** Git has a rich set of command to find and get versions please refer to your documentation and tools. 
+   - _Optional see available versions:_ List branches: 
+     - _git branch sort=-committerdate_ 
+     - Or list tags: _git tag --list 'android-12*'_
+   - Confirm the current version is the version you want and remember the output it will be your filename:
+     - git describe
+   - If the current version isn't correct use appropriate git commands to get the version you want.
    3. **Confirm this is the version you want and remember the name**:
    - _git describe_
    - The script will use "git describe" (see above) to name the file so that it corresponds the version. 
    - Now we have the correct version of .md files and know where they are:
-2. **Change directories to be in our cdd project's python files sub folder**:
+3. **Change directories to be in our cdd project's python files sub folder**:
    - ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts
-3. **run the parse_cdd_md.py file**, you may pass it the path to the aosp_cdd git root, or run without arguments to be prompted:
+4. **run the parse_cdd_md.py file**, you may pass it the path to the aosp_cdd git root, or run without arguments to be prompted:
    - python3 parse_cdd_md.py ~/aosp_cdd/cdd
-4. A table file will be created, you should see the name in the output, go to the output directory to find it.
+5. A table file will be created, you should see the name in the output, go to the output directory to find it.

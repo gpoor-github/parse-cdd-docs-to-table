@@ -98,14 +98,32 @@ def get_users_aosp_dir(argv):
         import getopt
         opts, args = getopt.getopt(argv)
     except Exception as e:
-        print("Could not parse command line, enter the android version number as the last element")
+        print(f"Exception parsing command line, this is probably okay = [{str(e)}]")
     aosp_md_doc_dir = ""
     if len(argv) > 1:
         aosp_md_doc_dir = argv[1]
     if len(aosp_md_doc_dir) < 2:
-        aosp_md_doc_dir = input("Your aosp directory containing the cdd directory containing .md files.\n")
+        aosp_md_doc_dir = input("Enter aosp directory containing the cdd directory containing .md files.\n")
     aosp_md_doc_dir = os.path.expanduser(aosp_md_doc_dir)
     return aosp_md_doc_dir
+
+def get_users_file_name(argv):
+    """
+    @param argv:
+    """
+    try:
+        import getopt
+        opts, args = getopt.getopt(argv)
+    except Exception as e:
+        print("Could not parse command line for file, normal will try to generate")
+    file_name = ""
+    if len(argv) > 2:
+        file_name = argv[2]
+    if len(file_name) < 2:
+        file_name = input("Enter your file_name or hit return and the app will try and generate one based on the value from git describe.\n")
+    file_name = os.path.expanduser(file_name)
+    return file_name
+
 
 
 def get_md_file_name_from_git_describe(git_root):
@@ -116,7 +134,7 @@ def get_md_file_name_from_git_describe(git_root):
         result = subprocess.run(['git', 'describe'], cwd=git_root, stdout=subprocess.PIPE)
         description = str(result.stdout, 'utf-8').strip("\n")
     except Exception as e:
-        parser_helpers.print_system_error_and_dump(f"failed to git discribe on {git_root}", e)
+        parser_helpers.print_system_error_and_dump(f"failed to git describe on {git_root}", e)
     pass
     file_name = description + ".tsv"
     print(f" Your md file will be [{file_name}]")
@@ -134,5 +152,7 @@ def do_parse_cdd_md_creat_file(file_name,
 
 if __name__ == '__main__':
     root_folder = get_users_aosp_dir(sys.argv)
-    local_file_name = get_md_file_name_from_git_describe(root_folder)
+    local_file_name = get_users_file_name(sys.argv)
+    if len(local_file_name) < 2:
+        local_file_name = get_md_file_name_from_git_describe(root_folder)
     do_parse_cdd_md_creat_file(local_file_name, False)

@@ -429,8 +429,7 @@ def convert_to_table_with_index_dict(table_keyed, header) :
     return index_table, table_index_dict, header
 
 
-def convert_to_keyed_table_dict(input_table, input_header) -> (
-        [[str]], dict[str, int], [str]):
+def convert_to_keyed_table_dict(input_table, input_header) :
     table_dict_req_ids_to_rows= dict()
     found_header = find_header(input_table)  # So we know if we should advance a row or not.
     full_key_index = find_full_key_index(input_table)
@@ -451,12 +450,13 @@ def convert_to_keyed_table_dict(input_table, input_header) -> (
     return table_dict_req_ids_to_rows, found_header
 
 
-def read_table_key_at_index(file_name, key_index, has_header= True, logging= False) -> [[[str]],
-                                                                                                                dict[
-                                                                                                                    str, int],
-                                                                                                                [str],
-                                                                                                                dict[
-                                                                                                                    str, str]]:
+def read_table_key_at_index(file_name, key_index, has_header= True, logging= False) :
+        # -> [[[str]],
+        #                                                                                                         dict[
+        #                                                                                                             str, int],
+        #                                                                                                         [str],
+        #                                                                                                         dict[
+        #                                                                                                             str, str]]:
     file_name = parser_helpers.find_valid_path(file_name)
     table = []
     header = []
@@ -510,14 +510,12 @@ def read_table_key_at_index(file_name, key_index, has_header= True, logging= Fal
     return table, key_fields, header, duplicate_rows
 
 
-def read_table_sect_and_req_key(file_name, header_in = None, logging= False) -> [[[str]],
-                                                                                                    dict[str, int],
-                                                                                                    [str],
-                                                                                                    dict[str, str]]:
-    """],
-
-    :rtype: {[[str]],dict,[]}
-    """
+def read_table_sect_and_req_key(file_name, header_in = None, logging= False):
+    #     -> [[[str]],
+    #                                                                                                 dict[str, int],
+    #                                                                                                 [str],
+    #                                                                                                 dict[str, str]]:
+    #
     file_name = parser_helpers.find_valid_path(file_name)
 
     table = []
@@ -607,7 +605,8 @@ def read_table_sect_and_req_key(file_name, header_in = None, logging= False) -> 
     # find urls that may help find the tests for the requirement
 
 
-def read_table_to_dictionary(file_name, logging= False) -> (dict[str, str], [str]):
+def read_table_to_dictionary(file_name, logging= False):
+        # -> (dict[str, str], [str]):
     table_dictionary = dict()
     table, key_fields, header, duplicate_rows = read_table_sect_and_req_key(file_name=file_name, logging=logging)
     for key in key_fields:
