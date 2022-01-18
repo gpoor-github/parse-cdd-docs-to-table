@@ -86,6 +86,6 @@ The comparison results will be visible in the console. A table with the differen
    - Now we have the correct version of .md files and know where they are:
 3. **Change directories to be in our cdd project's python files sub folder**:
    - ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts
-4. **run the parse_cdd_md.py file**, you may pass it the path to the aosp_cdd git root, or run without arguments to be prompted:
-   - python3 parse_cdd_md.py ~/aosp_cdd/cdd
+4. **run the parse_cdd_md.py file**, you may pass it the path to the aosp_cdd git root and/or file_name, or run without arguments to be prompted:
+   - python3 parse_cdd_md.py ~/aosp_cdd/cdd  optional_filename.tsv
 5. A table file will be created, you should see the name in the output, go to the output directory to find it.
