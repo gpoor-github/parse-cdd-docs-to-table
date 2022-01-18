@@ -20,20 +20,32 @@
 3. git pull
 4. Confirm that git pull had no errors by looking at the log.
 
-**Steps to parse CDD HTML (MD file instructions below) to table:**
+**Run any method or python function**
+1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
+2. Run the target function as supported by the python language. For example to compare to files:
+   - python3 -c 'import check_sheet; f1="../output/cdd_12_generated_html.tsv";  f2="../output/cdd_11_generated_html.tsv";check_sheet.diff_tables_files(f1,f2)'
+   
+**HTML files parsed (MD file instructions below) to table:**
 1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
 2. Run the following to start the python script which should prompt you for an Android CDD version. It will then download 
  the appropriate html file, parse it and generate a table, cdd_versionXX_generated_html.tsv, in the ../output directory.
    - python3 parse_cdd_html.py
 
-**Steps to Compare Versions 12 vs 11 and generate a table:** 
-Hard coded for now, but just change the numbers to any available version in the file  diff_cdd_from_html_version("12", "11")
+**Versions Compare and generate comparison table:** 
+Will take two numbers as parameters as Android version. If the numbers are missing it will prompt. The script takes version numbers and will try and download a public version and build tables and compare them.
 1. Change directories to be in ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts
-2. Run the following to start the python script it will compare 2 versions. It needed it will download the html and parse them.
+2. Run the following to start the python script it will compare 2 versions passed to it or entered. It needed it will download the html and parse them.
 The comparison results will be visible in the console. A table with the differences will be created in the output directory. ..\output\diff_12_vs_11.tsv
-   - python3 check_sheet.py
+   - python3 check_sheet.py 11 12
 
-**Steps to generate the Annotation Mapping:**
+**File Compare and generate comparison table:** 
+Will take two files as parameters. If the files are missing it will prompt. The script takes files and compares them.
+1. Change directories to be in ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts
+2. Run the following to start the python script and compare 2 files passed to it or entered.
+The comparison results will be visible in the console. A table with the differences will be created in the output directory. ..\output\diff_FILE_1_vs_FILE_2.tsv
+   - python3 compare_files.py ../output/cdd_12_generated_html.tsv ../output/cdd_11_generated_html.tsv
+
+**Generate the Annotation Mapping:**
 1. Clone CTS source: 
    1. Create a directory "~/cts-12-source/" 
    2. Go into that directory.
@@ -47,7 +59,7 @@ The comparison results will be visible in the console. A table with the differen
    - ./do_annotations_mapping.sh
    - When prompted hit enter if the default CTS source directory is correct, otherwise type it in. 
 
-**Steps to parse CDD MD files to table:**
+**MD CDD files parse to table:**
 
 1. **_Prerequisite:_ Confirm you have the .md files at the correct version in an accessible directory** and copy the directory name:  
    -- For example, through source control:

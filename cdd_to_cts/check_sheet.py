@@ -1,5 +1,6 @@
 import csv
 import os
+import sys
 from os.path import exists
 
 import rx
@@ -306,5 +307,33 @@ def diff_cdd_from_html_version(version1, version2):
     output_file= f"../output/diff_{version1}_vs_{version2}.tsv"
     table_ops.make_new_table_from_keys(dif_1_2, file1,output_file )
 
+
+def get_users_cdd_version(argv):
+        try:
+            import getopt
+            opts, args = getopt.getopt(argv)
+        except Exception as e:
+            print("Could not parse command line, enter the android versions ")
+        version_1 = ""
+        version_2 = ""
+
+        if len(argv) > 1:
+            version_1 = argv[1]
+        if len(argv) > 2:
+            version_2 = argv[2]
+        if len(version_1) < 1:
+            version_1 = input("Enter the first version you want to compare:\n")
+        if len(version_2) < 1:
+            version_2 = input(f"Enter the second version you want to compare to version {version_1}:\n")
+        if len(version_1) < 1:
+            version_1 = input("Enter the first version you want to compare:\n")
+
+        return version_1, version_2
+
+
+def main(argv):
+    version1, version2 =  get_users_cdd_version(argv)
+    diff_cdd_from_html_version(version1, version2)
+
 if __name__ == '__main__':
-    diff_cdd_from_html_version("12", "11")
+    compared_file_name= main(sys.argv)

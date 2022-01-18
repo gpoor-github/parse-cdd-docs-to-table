@@ -103,7 +103,7 @@ def get_users_aosp_dir(argv):
     if len(argv) > 1:
         aosp_md_doc_dir = argv[1]
     if len(aosp_md_doc_dir) < 2:
-        aosp_md_doc_dir = input("Your aosp directory containing the cdd directory containing .md files.'\n")
+        aosp_md_doc_dir = input("Your aosp directory containing the cdd directory containing .md files.\n")
     aosp_md_doc_dir = os.path.expanduser(aosp_md_doc_dir)
     return aosp_md_doc_dir
 
