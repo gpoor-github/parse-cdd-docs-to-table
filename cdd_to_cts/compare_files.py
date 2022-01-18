@@ -33,7 +33,8 @@ def diff_table_files_and_create_diff_file(argv):
     name_part2 = ntpath.basename(file2).strip(".tsv")
 
     output_file= f"../output/diff_{name_part1}_vs_{name_part2}.tsv"
-    from cdd_to_cts import table_ops
+    import table_ops
     table_ops.make_new_table_from_keys(dif_1_2, file1,output_file )
+
 if __name__ == '__main__':
     created_table_file_name= diff_table_files_and_create_diff_file(sys.argv)
