@@ -141,20 +141,28 @@ def get_users_cdd_version(argv):
         android_cdd_version = input("Please enter an Android CDD version number for example '12'\n")
     return android_cdd_version
 
-def do_create_table_at_version(android_cdd_version):
+def do_create_table_from_version(android_cdd_version, is_keep_section_headers=False):
     full_cdd_html = download_default_from_cdd_version(android_cdd_version)
     key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
         full_cdd_html)
     created_table_file_name = parser_constants.GENERATED_HTML_TSV.format(android_cdd_version)
     create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
                                section_to_section_data_,
-                               created_table_file_name, parser_constants.cdd_info_only_header, False)
+                               created_table_file_name, parser_constants.cdd_info_only_header, is_keep_section_headers)
     return created_table_file_name
+
+def do_create_table_from_html_file(full_cdd_html_file, table_file_name, is_keep_section_headers=False):
+    key_to_full_requirement_text_local_, cdd_requirements_file_as_string_, section_to_section_data_ = parse_cdd_html_to_requirements(
+        full_cdd_html_file)
+    create_full_table_from_cdd(key_to_full_requirement_text_local_, key_to_full_requirement_text_local_,
+                               section_to_section_data_,
+                               table_file_name, parser_constants.cdd_info_only_header, is_keep_section_headers)
+    return table_file_name
 
 def main(argv):
 
     android_cdd_version =  get_users_cdd_version(argv)
-    return do_create_table_at_version(android_cdd_version)
+    return do_create_table_from_version(android_cdd_version, False)
 
 if __name__ == '__main__':
     created_table_file_name= main(sys.argv)

@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import traceback
@@ -241,3 +242,17 @@ def create_full_table_from_cdd(
          table_for_sheet, keys_to_table_indexes = table_ops.remove_none_requirements(table_for_sheet, keys_to_table_indexes)
     from table_ops import write_table
     write_table(output_file, table_for_sheet, output_header)
+
+
+def get_users_file_name(argv, arg_number=1, prompt="Enter your file_name or hit return for empty file_name:",):
+    """
+    @param argv:
+    """
+
+    file_name = ""
+    if len(argv) > arg_number:
+        file_name = argv[arg_number]
+    if len(file_name) < 2:
+        file_name = input(prompt+"\n")
+    file_name = os.path.expanduser(file_name)
+    return file_name
