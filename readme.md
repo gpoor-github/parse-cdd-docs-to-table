@@ -27,6 +27,11 @@
    
 **HTML files parsed (MD file instructions below) to table:**
 1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
+2. Run the following to start the python script which takes an HTML input file and a name for an output table. If not given it will prompt. 
+   - python3 parse_cdd_html_to_file.py OPTIONAL_CDD_HTML_DOWNLOADED.html OPTIONAL_OUTPUT_TABLE_FILE.tsv
+
+**From Android Version download CDD HTML and parse to table:**
+1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
 2. Run the following to start the python script which should prompt you for an Android CDD version. It will then download 
  the appropriate html file, parse it and generate a table, cdd_versionXX_generated_html.tsv, in the ../output directory.
    - python3 parse_cdd_html.py
