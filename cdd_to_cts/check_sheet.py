@@ -300,9 +300,9 @@ def diff_cdd_from_html_version(version1, version2):
     file2=  parser_constants.GENERATED_HTML_TSV.format(version2)
     import parse_cdd_html
     if not exists(file1):
-        parse_cdd_html.do_create_table_at_version(version1)
+        parse_cdd_html.do_create_table_from_version(version1)
     if not exists(file2):
-        parse_cdd_html.do_create_table_at_version(version2)
+        parse_cdd_html.do_create_table_from_version(version2)
     dif_1_2, dif_2_1, intersection, dif_1_2_dict_row_content, dif_2_1_dict_row_content = diff_tables_files(file1,file2)
     output_file= f"../output/diff_{version1}_vs_{version2}.tsv"
     table_ops.make_new_table_from_keys(dif_1_2, file1,output_file )
