@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import re
 from os.path import exists
 
 import parser_constants
@@ -114,21 +115,27 @@ class ReadSpreadSheet:
     # Method that takes file names in sheets and tries to find them.
     def check_for_file_and_method(self, file_name_from_class, method_value, file_name_to_result) -> bool:
         # file_name_from_class = "{}/tests/tests/{}.{}".format(CTS_SOURCE_ROOT,class_def_value.replace(".","/"),'java')
+        method_value = method_value.strip('(').strip(')')
 
         if file_name_from_class:
             try:
                 file_as_string = parser_helpers.read_file_to_string(file_name_from_class)
                 # with open(file_name_from_class, "r") as f:
                 #     file_as_string = f.read()
-                method_value = method_value.replace(')', '')
-                method_index = file_as_string.find(method_value)
-                if method_index >= 0:
+                test_re2 = "(\n\s*)(public|protected|private|static)+\s*[\w\<\>\[\]]+\s+(\w+)\s*\([^\)]*\)\s*(\{?|[^;])"
+                method_re_str = "(\n\s*:?)(public|protected|private|static)+\s*[\w\<\>\[\]]+\s+" + method_value + "\s*\([^\)]*\)\s*(\{?|[^;])"
+
+                test_result = re.search(test_re2,file_as_string)
+                method_index_re_result = re.search(method_re_str,file_as_string)
+                method_index = method_index_re_result.start()
+                if method_index > -1:
                     is_annotation_for_method_found = file_as_string.find('@CddTest', method_index - 200, method_index) > 0
                     if not is_annotation_for_method_found:
+                        # No annotation inject one.
                         method_line_start_index = method_index
                         part_1 = file_as_string[:method_line_start_index]
                         part_2 = file_as_string[method_line_start_index:]
-                        annotate_file = part_1 + f'\n@CddTest(requirement="{self.section_id}/{self.req_id}")\n' + part_2
+                        annotate_file = part_1 + f'\n    @CddTest(requirement="{self.section_id}/{self.req_id}")' + part_2
                         parser_helpers.write_file_to_string(file_name_from_class, annotate_file)
 
 
