@@ -9,7 +9,6 @@ import parser_constants
 import parser_helpers
 import table_ops
 from parser_helpers import find_valid_path
-from path_constants import CTS_SOURCE_ROOT
 
 
 # Method that takes file names in sheets and tries to find them.
@@ -20,7 +19,7 @@ def check_for_file_and_method(file_name_from_class, method_value, file_name_to_r
         try:
             with open(file_name_from_class, "r") as f:
                 file_as_string = f.read()
-                method_value = method_value.replace(')', '').replace('(', '')
+                method_value = method_value.replace(')', '')
                 method_index = file_as_string.find(method_value)
                 if method_index >= 0:
                     test_index = file_as_string.find('@', method_index - 300, method_index) >= 0
@@ -39,94 +38,6 @@ def check_for_file_and_method(file_name_from_class, method_value, file_name_to_r
             file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found " + str(err)
     return False
 
-
-def filter_files_to_search(f):
-    return f.endswith(".java") or f.endswith(".py") or f.endswith(".cpp") or f.endswith(".kt") or f.endswith(
-        ".c")
-
-
-class ReadSpreadSheet:
-    file_dict = {}
-    not_found_count = 0
-    not_found_list = []
-    file_name_to_result = dict()
-    found_class_count = 0
-
-    found_count = 0
-
-    def crawl(self, logging=False):
-        # /Volumes/graham-ext/AndroidStudioProjects/cts
-        for directory, subdirlist, filelist in os.walk(CTS_SOURCE_ROOT):
-            if logging: print(directory)
-            path = directory.replace(CTS_SOURCE_ROOT, ".")
-            for f in filelist:
-                if filter_files_to_search(f):
-                    full_path = "{}/{}".format(directory, f)
-                    # with open(full_path, 'r') as file:
-                    #   file_string = file.read().replace('\n', '')
-                    class_path = "{}/{}".format(path, f)
-                    class_path = class_path.replace("/", ".").rstrip(".java")
-                    split_path = class_path.split(".src.")
-                    if len(split_path) > 1:
-                        class_path = split_path[1]
-                    self.file_dict[class_path] = full_path
-
-    def does_class_ref_file_exist(self, ccd_csv_file_name):
-        class_count = 0
-        table = []
-        header = []
-        self.crawl()
-        ccd_csv_file_name = find_valid_path(ccd_csv_file_name)
-
-        with open(ccd_csv_file_name, newline=parser_constants.table_newline) as csv_file:
-            print("Opened {}".format(ccd_csv_file_name))
-            csv_reader = csv.reader(csv_file, delimiter=parser_constants.table_delimiter,
-                                    dialect=parser_constants.table_dialect)
-            line_count = 0
-
-            for row in csv_reader:
-                try:
-                    if line_count == 0:
-                        print(f'Column names are {", ".join(row)}')
-                        header = row
-                        line_count += 1
-                    else:
-                        # print(f'\t{row[0]} row 1 {row[1]}  row 2 {row[2]}.')
-                        table.append(row)
-                        table_index = line_count - 1
-                        class_def_value = table[table_index][header.index(parser_constants.CLASS_DEF)]
-                        method_value = table[table_index][header.index(parser_constants.METHOD)]
-                        # module_value = table[table_index][header.index("module")]
-                        if class_def_value:
-                            file_name = self.file_dict.get(class_def_value)
-                            if not file_name:
-                                for class_key in self.file_dict:
-                                    file_name_in_dict = self.file_dict.get(class_key)
-                                    if file_name_in_dict.find(class_def_value) > -1:
-                                        file_name = file_name_in_dict
-
-                            if file_name and exists(file_name):
-                                self.found_class_count += 1
-                                print(
-                                    f' {self.found_class_count}) class name {class_def_value} class file {file_name} ')
-                                is_found = check_for_file_and_method(file_name, method_value,
-                                                                     self.file_name_to_result)
-                            if is_found:
-                                self.found_count += 1
-                                print(f'Found class and method {line_count} lines. ')
-
-                            else:
-                                self.not_found_count += 1
-
-                        line_count += 1
-                except Exception as err:
-                    print(f" Error {err}")
-                    pass
-            csv_file.close()
-            print("End for loop")
-            print('No files {}'.format(self.not_found_count))
-            print('Files {}'.format(self.found_count))
-            return self.file_name_to_result, self.not_found_count, self.found_count
 
 
 def observable_rows(table_file_name) -> rx.Observable:
@@ -309,11 +220,7 @@ def diff_cdd_from_html_version(version1, version2):
 
 
 def get_users_cdd_version(argv):
-        try:
-            import getopt
-            opts, args = getopt.getopt(argv)
-        except Exception as e:
-            print("Could not parse command line, enter the android versions ")
+
         version_1 = ""
         version_2 = ""
 
@@ -336,4 +243,4 @@ def main(argv):
     diff_cdd_from_html_version(version1, version2)
 
 if __name__ == '__main__':
-    compared_file_name= main(sys.argv)
+     main(sys.argv)
