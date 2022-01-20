@@ -123,20 +123,24 @@ class ReadSpreadSheet:
                 method_value = method_value.replace(')', '')
                 method_index = file_as_string.find(method_value)
                 if method_index >= 0:
-                    test_index = file_as_string.find('@', method_index - 300, method_index) >= 0
-                    if file_as_string.index('@') >= 0 and ((test_index - method_index) < 100):
+                    is_annotation_for_method_found = file_as_string.find('@CddTest', method_index - 200, method_index) > 0
+                    if not is_annotation_for_method_found:
+                        method_line_start_index = method_index
+                        part_1 = file_as_string[:method_line_start_index]
+                        part_2 = file_as_string[method_line_start_index:]
+                        annotate_file = part_1 + f'\n@CddTest(requirement="{self.section_id}/{self.req_id}")\n' + part_2
+                        parser_helpers.write_file_to_string(file_name_from_class, annotate_file)
+
+
+                    is_test_annotation_found = file_as_string.find('@Test', method_index - 100, method_index) > 0
+                    if is_test_annotation_found:
                         file_name_to_result[
-                            file_name_from_class] = method_value + ":Found and is @ supporting annotation"
+                            file_name_from_class] = method_value + ":Found and is @Tests supporting annotation"
                         return True
                     else:
 
-                        part_1 = file_as_string[0:method_index]
-                        part_2 = file_as_string[method_index:0]
-
-                        file_as_string=part_1+f'\n@CddTest(requirement="{self.section_id}/{self.req_id}")\n'+part_2
-                        parser_helpers.write_file_to_string(file_name_from_class,file_as_string)
                         file_name_to_result[
-                            file_name_from_class] = method_value + ":Found but ,@ annotation not found"
+                            file_name_from_class] = method_value + ":Found but ,@Test annotation not found"
                 else:
                     file_name_to_result[file_name_from_class] = method_value + ":Failed reason: Method not found"
             except Exception as err:

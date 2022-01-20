@@ -44,7 +44,7 @@ def parse_cdd_md(cdd_md_root=CDD_MD_ROOT, logging=False):
                     sub_cdd_section_id = get_section_id(cdd_section_id_search_results)
                     ccd_section_data = file.strip(".md")
                     section_to_section_data[sub_cdd_section_id] = ccd_section_data
-                    md_file_contents = parser_helpers.read_file_to_string(file, section_dir + '/')
+                    md_file_contents = parser_helpers.read_file_to_string_trim_copyright(file, section_dir + '/')
                     key_to_full_requirement_text_local[sub_cdd_section_id] = md_file_contents
                     if logging: print(sub_cdd_section_id)
                     section_md_splits = re.split("(?=###?#?)", md_file_contents)

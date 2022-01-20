@@ -92,7 +92,7 @@ def clean_html_anchors(raw_html):
     return raw_html.replace("</a>", "")
 
 
-def read_file_to_string(file, prepend_path_if_needed= CTS_SOURCE_PARENT):
+def read_file_to_string_trim_copyright(file, prepend_path_if_needed= CTS_SOURCE_PARENT):
     full_path = file
     if not file.startswith('/') and file.find(prepend_path_if_needed) == -1:
         if not  prepend_path_if_needed.endswith("/"):
@@ -105,6 +105,13 @@ def read_file_to_string(file, prepend_path_if_needed= CTS_SOURCE_PARENT):
         text_file.close()
         return file_string
 
+
+def read_file_to_string(file):
+
+    with open(file, "r") as text_file:
+        file_string= text_file.read()
+        text_file.close()
+        return file_string
 
 def write_file_to_string(full_path, value):
 
