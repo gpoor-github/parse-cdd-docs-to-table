@@ -11,19 +11,19 @@ import table_ops
 from cdd_to_cts import table_functions_for_release
 from parser_helpers import find_valid_path
 
-from check_sheet import check_for_file_and_method
 
 
 def filter_files_to_search(f):
     return f.endswith(".java") or f.endswith(".py") or f.endswith(".cpp") or f.endswith(".kt") or f.endswith(
         ".c")
-
 class ReadSpreadSheet:
     def __init__(self,root_to_crawl=path_constants.CTS_SOURCE_ROOT):
         root_to_crawl=os.path.expanduser(root_to_crawl)
         if not os.path.exists(root_to_crawl):
             parser_helpers.raise_error_system_exit(f"Path [{root_to_crawl}] does not exist, so it can not be crawled")
         self.root_to_crawl = root_to_crawl
+    section_id = ""
+    req_id = ""
 
     file_dict = {}
     not_found_count = 0
@@ -76,6 +76,9 @@ class ReadSpreadSheet:
                         table_index = csv_reader.line_num-2
                         class_def_value = table[table_index][header.index(parser_constants.CLASS_DEF)]
                         method_value = table[table_index][header.index(parser_constants.METHOD)]
+                        self.section_id = table[table_index][header.index(parser_constants.SECTION_ID)]
+                        self.req_id = table[table_index][header.index(parser_constants.REQ_ID)]
+
                         # module_value = table[table_index][header.index("module")]
                         if class_def_value:
                             file_name = self.file_dict.get(class_def_value)
@@ -89,7 +92,7 @@ class ReadSpreadSheet:
                                 self.found_class_count += 1
                                 print(
                                     f' {self.found_class_count}) class name {class_def_value} class file {file_name} ')
-                                is_found_method = check_for_file_and_method(file_name, method_value,
+                                is_found_method = self.check_for_file_and_method(file_name, method_value,
                                                                      self.file_name_to_result)
                             if is_found_method:
                                 self.found_method_count += 1
@@ -107,6 +110,40 @@ class ReadSpreadSheet:
             print('No files {}'.format(self.not_found_count))
             print('Files {}'.format(self.found_method_count))
             return self.file_name_to_result, self.not_found_count, self.found_method_count
+
+    # Method that takes file names in sheets and tries to find them.
+    def check_for_file_and_method(self, file_name_from_class, method_value, file_name_to_result) -> bool:
+        # file_name_from_class = "{}/tests/tests/{}.{}".format(CTS_SOURCE_ROOT,class_def_value.replace(".","/"),'java')
+
+        if file_name_from_class:
+            try:
+                file_as_string = parser_helpers.read_file_to_string(file_name_from_class)
+                # with open(file_name_from_class, "r") as f:
+                #     file_as_string = f.read()
+                method_value = method_value.replace(')', '')
+                method_index = file_as_string.find(method_value)
+                if method_index >= 0:
+                    test_index = file_as_string.find('@', method_index - 300, method_index) >= 0
+                    if file_as_string.index('@') >= 0 and ((test_index - method_index) < 100):
+                        file_name_to_result[
+                            file_name_from_class] = method_value + ":Found and is @ supporting annotation"
+                        return True
+                    else:
+
+                        part_1 = file_as_string[0:method_index]
+                        part_2 = file_as_string[method_index:0]
+
+                        file_as_string=part_1+f'\n@CddTest(requirement="{self.section_id}/{self.req_id}")\n'+part_2
+                        parser_helpers.write_file_to_string(file_name_from_class,file_as_string)
+                        file_name_to_result[
+                            file_name_from_class] = method_value + ":Found but ,@ annotation not found"
+                else:
+                    file_name_to_result[file_name_from_class] = method_value + ":Failed reason: Method not found"
+            except Exception as err:
+                print(" Could not open " + file_name_from_class)
+                file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found " + str(err)
+        return False
+
 
 def test_does_class_ref_file_exist(root):
     all_cdd_12 ="/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_12_downloaded_mod_to_annotate.tsv"

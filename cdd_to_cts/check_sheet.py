@@ -11,33 +11,6 @@ import table_ops
 from parser_helpers import find_valid_path
 
 
-# Method that takes file names in sheets and tries to find them.
-def check_for_file_and_method(file_name_from_class, method_value, file_name_to_result) -> bool:
-    # file_name_from_class = "{}/tests/tests/{}.{}".format(CTS_SOURCE_ROOT,class_def_value.replace(".","/"),'java')
-
-    if file_name_from_class:
-        try:
-            with open(file_name_from_class, "r") as f:
-                file_as_string = f.read()
-                method_value = method_value.replace(')', '')
-                method_index = file_as_string.find(method_value)
-                if method_index >= 0:
-                    test_index = file_as_string.find('@', method_index - 300, method_index) >= 0
-                    if file_as_string.index('@') >= 0 and ((test_index - method_index) < 100):
-                        file_name_to_result[
-                            file_name_from_class] = method_value + ":Found and is @ supporting annotation"
-                        return True
-                    else:
-                        file_name_to_result[
-                            file_name_from_class] = method_value + ":Found but ,@ annotation not found"
-                else:
-                    file_name_to_result[file_name_from_class] = method_value + ":Failed reason: Method not found"
-                f.close()
-        except Exception as err:
-            print(" Could not open " + file_name_from_class)
-            file_name_to_result[file_name_from_class] = method_value + " Failed reason: File not found " + str(err)
-    return False
-
 
 
 def observable_rows(table_file_name) -> rx.Observable:
