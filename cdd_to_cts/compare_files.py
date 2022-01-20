@@ -3,11 +3,6 @@ import sys
 
 
 def get_file_names(argv):
-        try:
-            import getopt
-            opts, args = getopt.getopt(argv)
-        except Exception as e:
-            print("Could not parse command line, enter the android files ")
         file_1 = ""
         file_2 = ""
 
@@ -19,8 +14,6 @@ def get_file_names(argv):
             file_1 = input("Enter the first file you want to compare:\n")
         if len(file_2) < 1:
             file_2 = input(f"Enter the second file you want to compare to file {file_1}:\n")
-        if len(file_1) < 1:
-            file_1 = input("Enter the first file you want to compare:\n")
 
         return file_1, file_2
 
