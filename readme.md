@@ -71,18 +71,22 @@ The comparison results will be visible in the console. A table with the differen
    3. Copy the path to that directory to pass as a parameter later.
    4. Clone the desired version of the CTS tests to the above directory. 
       - git clone https://android.googlesource.com/platform/cts
-2. Change directories to be in our cdd python project's root:
-   - ~/_your_project_root_/parse-cdd-docs-to-table 
-3. Run the following shell script to update grep for annotations and the creation of the list of Test Modules:
-   - ./refresh_annotation_data.sh
-   - When prompted hit enter if the default CTS source directory is correct, otherwise type it in. 
-**Run Annotation Injection, Warning this will change your source code in your cts-source directory**
-1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
-2. Run the following to start the python script which should prompt you for a table file with the mappings you wish to inject.
-- python3 inject_annotations_into_cts.py your_cts_source_directory True_False-modify-code your-cdd-to-cts-annotation-mappings-to-inject-to-cts-source.tsv your_desired_file_for_found_requirements.tsv (optional)
-- Sample:
-- python3 inject_annotations_into_cts.py ~/cts-12-source/ False ../input/cdd-12-new-cts-mapping.tsv ../output/sample_requirements_injected.tsv
-6. Do a git commit on the cts source to see changed files 
+   5. Change directories to be in our cdd python project's root:
+      - ~/_your_project_root_/parse-cdd-docs-to-table 
+   6. Run the following shell script to update grep for annotations and the creation of the list of Test Modules:
+      - ./refresh_annotation_data.sh
+      - When prompted hit enter if the default CTS source directory is correct, otherwise type it in. 
+
+2. **Run Annotation Injection, _Warning this will change your source code in your cts-source directory_**
+   1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
+   2. Run the following to start the python script which should prompt you for a table file with the mappings you wish to inject.
+      - General _inject_annotations_into_cts_ command arguments:
+        - python3 inject_annotations_into_cts.py your_cts_source_directory True_False-modify-code your-cdd-to-cts-annotation-mappings-to-inject-to-cts-source.tsv your_file_that_lists_found_requirements.tsv (optional)
+      - Sample:
+        - python3 inject_annotations_into_cts.py ~/cts-12-source/ True ../input/cdd-12-new-cts-mapping.tsv ../output/sample_requirements_injected.tsv
+   3. Look at the _your_file_that_lists_found_requirements.tsv_ to see what mapped requirements where found and injected.
+   4. Run _git status_ input the cts source git root to see changed files 
+   5. Make a merge request (PR) with the modified files.
 
 
 **MD CDD files parse to table:**
@@ -99,19 +103,13 @@ The comparison results will be visible in the console. A table with the differen
          - cd cdd 
          - ls
          - pwd
-2. **Sync the version you want to parse:** Git has a rich set of command to find and get versions please refer to your documentation and tools. 
-   - _Optional see available versions:_ List branches: 
-     - _git branch sort=-committerdate_ 
-     - Or list tags: _git tag --list 'android-12*'_
-   - Confirm the current version is the version you want and remember the output it will be your filename:
-     - git describe
-   - If the current version isn't correct use appropriate git commands to get the version you want.
-   3. **Confirm this is the version you want and remember the name**:
-   - _git describe_
-   - The script will use "git describe" (see above) to name the file so that it corresponds the version. 
-   - Now we have the correct version of .md files and know where they are:
-3. **Change directories to be in our cdd project's python files sub folder**:
+   2. **Sync the version you want to parse:** Git has a rich set of command to find and get versions please refer to your documentation and tools. 
+      - Confirm this is the version you want and remember the name:
+        - _git describe_
+              - The script will use "git describe"'s output to name the file so that it corresponds the version. 
+              - Now we have the correct version of .md files and know where they are.
+2. **Change directories to be in our cdd project's python files sub folder**:
    - ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts
-4. **run the parse_cdd_md.py file**, you may pass it the path to the aosp_cdd git root and/or file_name, or run without arguments to be prompted:
+3. **run the parse_cdd_md.py file**, you may pass it the path to the aosp_cdd git root and/or file_name, or run without arguments to be prompted:
    - python3 parse_cdd_md.py ~/aosp_cdd/cdd  optional_filename.tsv
-5. A table file will be created, you should see the name in the output, go to the output directory to find it.
+4. A table file will be created, you should see the name in the output, go to the output directory to find it.
