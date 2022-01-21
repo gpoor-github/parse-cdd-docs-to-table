@@ -73,15 +73,15 @@ The comparison results will be visible in the console. A table with the differen
       - git clone https://android.googlesource.com/platform/cts
 2. Change directories to be in our cdd python project's root:
    - ~/_your_project_root_/parse-cdd-docs-to-table 
-3. Run the following shell script to update grep for annotations and run the python script to generate a table that maps requirements to cts test by finding annotations and building the tests. A table in the output directory: ..\output\annotations_mappings.tsv 
-   - Run the shell script in the parent directory
+3. Run the following shell script to update grep for annotations and the creation of the list of Test Modules:
    - ./refresh_annotation_data.sh
    - When prompted hit enter if the default CTS source directory is correct, otherwise type it in. 
-4. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
-5. Run the following to start the python script which should prompt you for a table file with the mappings you wish to inject.
-- python3 inject_annotations_into_cts.py your_cts_source_directory True_False-modify-code your-cdd-to-cts-annotation-mappings-to-inject-to-cts-source.tsv
+**Run Annotation Injection, Warning this will change your source code in your cts-source directory**
+1. Change directories to be in  ~/_your_project_root_/parse-cdd-docs-to-table/cdd_to_cts 
+2. Run the following to start the python script which should prompt you for a table file with the mappings you wish to inject.
+- python3 inject_annotations_into_cts.py your_cts_source_directory True_False-modify-code your-cdd-to-cts-annotation-mappings-to-inject-to-cts-source.tsv your_desired_file_for_found_requirements.tsv (optional)
 - Sample:
-- python3 inject_annotations_into_cts.py ~/cts-12-source/ False ../input/cdd-12-new-cts-mapping.tsv
+- python3 inject_annotations_into_cts.py ~/cts-12-source/ False ../input/cdd-12-new-cts-mapping.tsv ../output/sample_requirements_injected.tsv
 6. Do a git commit on the cts source to see changed files 
 
 
