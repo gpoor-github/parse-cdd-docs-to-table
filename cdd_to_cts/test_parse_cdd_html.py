@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from cdd_to_cts import parse_cdd_html
+import parse_cdd_html
 
 
 class Test(TestCase):

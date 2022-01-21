@@ -263,3 +263,30 @@ def get_users_file_name(argv, arg_number=1, prompt="Enter your file_name or hit 
         file_name = input(prompt+"\n")
     file_name = os.path.expanduser(file_name)
     return file_name
+
+
+def get_user_true_false(argv, arg_number=1, prompt="Enter Y for True anything else for False", ):
+    """
+    @param argv:
+    """
+
+    true_false = ""
+    if len(argv) > arg_number:
+        true_false = argv[arg_number]
+    if len(true_false) == 0:
+        true_false = input(prompt+"\n")
+    return true_false =="Y"
+def get_users_target_dir(argv, prompt = "Enter aosp directory containing the cdd directory containing .md files:\n"):
+    """
+    @param argv:
+    """
+    target_dir = ""
+    if len(argv) > 1:
+        target_dir = argv[1]
+    if len(target_dir) < 2:
+        target_dir = input(prompt)
+    target_dir = os.path.expanduser(target_dir)
+    if not os.path.exists(target_dir):
+        raise_error_system_exit(f"Path not found {target_dir} please enter a valid path")
+
+    return target_dir

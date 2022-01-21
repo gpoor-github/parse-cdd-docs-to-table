@@ -6,6 +6,7 @@ import sys
 
 import parser_constants
 import parser_helpers
+from parser_helpers import get_users_target_dir
 
 from parser_constants import req_id_re_str, full_key_string_for_re
 from parser_helpers import process_section_splits_md_and_html, create_full_table_from_cdd
@@ -91,22 +92,6 @@ def get_section_id(cdd_section_id_search_results: []):
     return cdd_section_id
 
 
-def get_users_aosp_dir(argv):
-    """
-    @param argv:
-    """
-    aosp_md_doc_dir = ""
-    if len(argv) > 1:
-        aosp_md_doc_dir = argv[1]
-    if len(aosp_md_doc_dir) < 2:
-        aosp_md_doc_dir = input("Enter aosp directory containing the cdd directory containing .md files:\n")
-    aosp_md_doc_dir = os.path.expanduser(aosp_md_doc_dir)
-    if not os.path.exists(aosp_md_doc_dir):
-        parser_helpers.raise_error_system_exit(f"Path not found {aosp_md_doc_dir} please enter the path to the git root for md files.")
-
-    return aosp_md_doc_dir
-
-
 def get_md_file_name_from_git_describe(git_root):
     import subprocess
     import parser_helpers
@@ -132,7 +117,7 @@ def do_parse_cdd_md_create_file(file_name,
 
 
 if __name__ == '__main__':
-    root_folder = get_users_aosp_dir(sys.argv)
+    root_folder = get_users_target_dir(sys.argv)
     local_file_name = parser_helpers.get_users_file_name(sys.argv,2,"Enter your file_name or hit return and the app will try and generate one based on the value from 'git describe':\n")
     if len(local_file_name) < 2:
         local_file_name = get_md_file_name_from_git_describe(root_folder)
