@@ -154,21 +154,17 @@ class ReadSpreadSheet:
         return False
 
 
-def do_inject_annotations_into_cts(cts_source_root, is_modify_cts_source:bool, table_file_to_inject ):
+def do_inject_annotations_into_cts(cts_source_root, is_modify_cts_source:bool, table_file_to_inject, output_found_file="../output/output_found_annotations.tsv" ):
     rs = ReadSpreadSheet(cts_source_root)
     result_dict, not_found, found = rs.does_class_ref_file_exist(table_file_to_inject,is_modify_cts_source)
     print('results {}\n classes file found={} found_method={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_class_count, rs.found_method_count, rs.not_found_count))
-    table_ops.write_table(output_file,rs.rows_with_found_methods,None)
+    table_ops.write_table(output_found_file,rs.rows_with_found_methods,None)
 
 
 if __name__ == '__main__':
-    all_cdd_12 = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/input/cdd_12_downloaded_mod_to_annotate.tsv"
-    december_6 = "parse-cdd-docs-to-tablea1_working_12/find_annotations.tsv"
-    foundish = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/found_rows_found_2.tsv"
-    gpoor_map = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/gpoor_cdd12_mapping.tsv"
+    gpoor_map = "../input/cdd-12-new-cts-mapping.tsv"
     annotations = "../output/annotations_mappings.tsv"
     input_file = gpoor_map
-    output_file = input_file + "_out.tsv"
     root_folder = parser_helpers.get_users_target_dir(sys.argv, "Enter cts source code directory \n")
     print("Caution if you answer 'Y' your source code will be modified")
     is_do_modify = do_modify_source = parser_helpers.get_user_true_false(sys.argv,arg_number=2)
