@@ -20,10 +20,11 @@ def remove_table_columns(table_source, header_column_source,
             for column in columns_to_use:
                 if not column or column=='':
                     continue
-                if test_source_index_str.find(column + parser_constants.table_delimiter) > -1:  # Add space so names have less chance of overlap
+                if test_source_index_str.startswith(column+parser_constants.table_delimiter) or test_source_index_str.find(parser_constants.table_delimiter+column + parser_constants.table_delimiter) > -1:  # Add space so names have less chance of overlap
                     header_column_source_idx = header_column_source.index(column)
                     source_value_to_use = source_row[header_column_source_idx]
                     column_subset_row.append(source_value_to_use)
+            #end loop to remove columns
             column_subset_table.append(column_subset_row)
             key = source_row[header_column_source.index(parser_constants.FULL_KEY)]
             column_subset_key_to_index[key] = column_subset_table_idx_count

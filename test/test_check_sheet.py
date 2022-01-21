@@ -3,9 +3,9 @@
 #  Block to comment
 import json
 from unittest import TestCase
-
-from cdd_to_cts.check_sheet import ReadSpreadSheet
-from cdd_to_cts.table_ops import merge_tables_rows
+import input_data_from_cts
+from cdd_to_cts import table_ops
+from cdd_to_cts.inject_annotations_into_cts import ReadSpreadSheet
 
 cdd_11_gpoor = "parse-cdd-docs-to-tabledata_files/gpoor_final_completed_items_for_r.tsv"
 cdd_11_created = "parse-cdd-docs-to-tabletest/output/cdd_11_DATA_SOURCES_CSV_FROM_HTML_1st.tsv"
@@ -28,13 +28,13 @@ class TestCheckSheets(TestCase):
         sample_known_good = "parse-cdd-docs-to-tablea1_working_12/sample_sheet_for_mapping.tsv"
         rs = ReadSpreadSheet()
         result_dict, not_found, found = rs.does_class_ref_file_exist(annotations)
-        print('results {}\n class file found={} found={} not found={}'.format(json.dumps(result_dict, indent=4),rs.found_class_count, rs.found_count, rs.not_found_count))
+        print('results {}\n class file found={} found={} not found={}'.format(json.dumps(result_dict, indent=4), rs.found_class_count, rs.found_method_count, rs.not_found_count))
 
 
     def test_merge_tables(self):
         done_work1 = "parse-cdd-docs-to-tablea1_working_12/done_of_155_manual.tsv"
         done_work2 = "parse-cdd-docs-to-tablea1_working_12/done_of_155_manual_c.tsv"
         done_work_merge = "parse-cdd-docs-to-tablea1_working_12/done_merge_of_manual.tsv"
-        merge_tables_rows(done_work1,done_work2,done_work_merge)
+        table_ops.merge_tables_rows(done_work1,done_work2,done_work_merge)
 
 

@@ -123,5 +123,13 @@ def create_table_from_differences_and_source(table_for_diff_1, table_for_diff_2,
 #     table_target, key_to_index_target = table_ops.create_full_key_and_key_as_number( table_for_source,source_keys,header_scr, static_data.cdd_12_manual_merge_helper)
 #     table_ops.write_table(output_file_for_results, table_target, static_data.cdd_12_manual_merge_helper)
 
+def remove_extra_columns_example():
+    import table_functions_for_release
+    src = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/a1_working_12/done_of_155_manual.tsv"
+    columns =  parser_constants.cdd_12_full_header_for_ref+[parser_constants.FULL_KEY]
+    pruned_columns = "/home/gpoor/PycharmProjects/parse-cdd-docs-to-table/output/gpoor_cdd12_mapping.tsv"
+    table_functions_for_release.update_table_column_subset(src,columns,
+                                                           pruned_columns)
+
 if __name__ == '__main__':
     update_sheet_with_anotation()
